@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!-- loading动画 -->
+                <div class="cover" v-show="loadingShow" style="z-index: 1999;display: none;">
+                    <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                </div>
+                <!-- loading动画end -->
+                <!--编辑弹窗-->
+                <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">新增内容:</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form " style="padding: 0 50px 0 24px;">
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            渠道ID:</label>
+                                        <select name="" id="" style="width: 60%;" v-model="diachannelId">
+                                            <option v-for="item in channelMenu" :value="item.channelId" v-text="item.channelName"></option>
+                                        </select>
+                                       
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            布局ID:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="dialayoutId" id="dialayoutId"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            布局名称:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="dialayoutName"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            备注:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diaremark"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center">
+                                <button class="btn btn-sm btn-primary" @click="add">保存</button>
+                                <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--配置弹窗-->
+                <div class="modal" id="templateConfig" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" >
+                    <div class="modal-dialog" style="width: 80%;">
+                        <div class="modal-content" >
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">功能模块配置列表</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <div class="form-group">
+                                    <input type="button" class="btn btn-sm btn-primary" value="新增" @click="showAddTemplate">
+                                </div>
+                                <!--数据表-->
+                                <table id="simple-table1" class="table table-bordered table-hover dataTable">
+                                    <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">位置ID</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">模块ID</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">模块名称</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">备注</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">REQUESTURl</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">方法类型</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">数据来源</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">登录标识</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">是否可用</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <template v-if="templateData.length>0">
+                                        <tr v-for="(item,index) in templateData" :key="index">
+                                            <td class="center" v-text='item.funcmodId'></td>
+                                            <td class="center" v-text='item.temId'></td>
+                                            <td class="center" v-text='item.funcmodName'></td>
+                                            <td class="center" v-text='item.remark'></td>
+                                            <td class="center" v-text='overflowHide(item.requestUrl)' :title="item.requestUrl"></td>
+                                            <td class="center" v-text='item.requestMethod'></td>
+                                            <td class="center" v-text='item.dataFrom=="0"?"配置数据":item.dataFrom=="1"?"外调获取":item.dataFrom=="3"?"混合：配置优先":"-"'></td>
+                                            <td class="center" v-text='item.loginFlag=="2"?"不区分登录状态":item.loginFlag=="0"?"非登录显示":item.loginFlag=="1"?"登录显示":"-"'></td>
+                                            <td class="center" v-text='item.position'></td>
+
+                                            <td class="center" v-text='item.enable=="0"?"不可用":"可用"'></td>
+                                            <td class="center">
+                                                <a href="javascript:;" v-text='item.enable=="0"?"启用":"禁用"' @click="enableOrDisableTemplate(item)"></a>/<a href="javascript:;" @click="showUpdateTemplate(item)">修改</a>/<a href="javascript:;"
+                                                                                                                                                                                                            @click="deleteParamsTemplate(item)">删除</a>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" colspan="10">暂无数据</td>
+                                        </tr>
+                                    </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--配置新增-->
+                <div class="modal" id="addTemplate" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">新增内容:</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form " style="padding: 0 50px 0 24px;">
+                                    <!--<div class="form-group">-->
+                                        <!--<label class="control-label" style="width: 150px;text-align: right">-->
+                                            <!--模板ID:</label>-->
+                                        <!--<input type="text" style="width: 60%;" v-model.trim="diatemId"-->
+                                        <!--/>-->
+                                    <!--</div>-->
+                                    <!--<div class="form-group">-->
+                                        <!--<label class="control-label" style="width: 150px;text-align: right">-->
+                                            <!--模块名称:</label>-->
+                                        <!--<input type="text" style="width: 60%;" v-model.trim="diafuncmodName"-->
+                                        <!--/>-->
+                                    <!--</div>-->
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            模板ID:</label>
+                                        <select name="" id="" v-model="diatemId">
+                                            <option v-for="item in templateIdList" :value="item.temId" v-text="item.temName"></option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            方法类型:</label>
+                                        <select name="" id="" v-model="diarequestMethod">
+                                            <option value=""></option>
+                                            <option value="GET">GET</option>
+                                            <option value="POST">POST</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            数据来源:</label>
+                                        <select name="" id="" v-model="diadataFrom">
+                                            <option value=""></option>
+                                            <option value="0">配置数据</option>
+                                            <option value="1">外调获取</option>
+                                            <option value="3">混合：配置优先</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            登录标识:</label>
+                                        <select name="" id="" v-model="dialoginFlag">
+                                            <option value="2">不区分登录状态</option>
+                                            <option value="0">非登录显示</option>
+                                            <option value="1">登录显示</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            备注:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diatemplateRemark"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            排序:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diaposition"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center">
+                                <button class="btn btn-sm btn-primary" @click="addTemplate">保存</button>
+                                <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--删除弹窗1-->
+                <div class="modal" id="delete1" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">删除</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>是否确认删除?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal" @click="deleteConfirm">确定</button>
+                                <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--删除弹窗2-->
+                <div class="modal" id="delete2" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">删除</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>是否确认删除?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal" @click="deleteTemplateConfirm">确定</button>
+                                <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--刷新弹窗-->
+                <div class="modal" id="fresh" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close red" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title red">警告</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 class="red">该功能慎用，会导致所有客群布局刷新！！！</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" @click="fresh">确定</button>
+                                <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label">布局名称:</label>
+                        <input type="text" v-model.trim="layoutName">
+                    </div>
+
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                        <input type="button" class="btn btn-sm btn-primary" value="新增" @click="showAdd">
+                        <input type="button" class="btn btn-sm btn-danger " value="刷新" @click="showFresh">
+                    </div>
+                </div>
+
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length" id="dynamic-table_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                    <thead>
+                    <tr>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">布局ID</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">布局名称</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">备注</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">关联模块</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">是否可用</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="tableData.length>0">
+                        <tr v-for="(item,index) in tableData" :key="index">
+                            <td class="center" v-text='item.layoutId'></td>
+                            <td class="center" v-text='item.layoutName'></td>
+                            <td class="center" v-text='item.remark'></td>
+                            <td class="center" ><a href="javascript:;" @click="templateConfig(item)">关联模块</a></td>
+                            <td class="center" v-text='item.enable=="0"?"失效":"可用"'></td>
+                            <td class="center">
+                                <a href="javascript:;" v-text='item.enable=="0"?"启用":"禁用"' @click="enableOrDisable(item)"></a>/<a href="javascript:;" @click="showUpdate(item)">修改</a>/<a href="javascript:;"
+                                                                                           @click="deleteParams(item)">删除</a>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="loadingStatus" colspan="6"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <div v-if="tableData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers"
+                             id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/js/lib/ajaxfileupload.js"></script>
+<script src="/js/recommendSystem/recommendSystemConfigMgmt/layoutConfigMgmt.js"></script>
+</body>
+</html>

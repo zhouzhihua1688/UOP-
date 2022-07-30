@@ -1,0 +1,362 @@
+const request = require('./../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').IPOMgmtEC.IPOUpload;
+const IPOFilePath = require('../apiConfig').IPOFilePath;
+const formidable = require('formidable');
+const fs = require('fs');
+const path = require('path');
+module.exports = function (app) {
+    // 获取  基金名称数据
+    app.post('/businessMgmt/IPOMgmtEC/IPOUpload/collection.ajax', (req, res, next) => {
+        let params = req.body;
+        let userid = req.session.loginInfo.userid;
+        let option = {
+            pageUrl: '/businessMgmt/IPOMgmtEC/IPOUpload/collection.ajax',
+            req,
+            qs: params,
+            url: apiUrl.collection,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                result.body.userid = userid;
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+        });
+    });
+
+    // 获取  线上初始数据和查询
+    app.post('/businessMgmt/IPOMgmtEC/IPOUpload/getLineList.ajax', (req, res, next) => {
+        let params = req.body;
+        let userid = req.session.loginInfo.userid;
+        let option = {
+            pageUrl: '/businessMgmt/IPOMgmtEC/IPOUpload/getLineList.ajax',
+            req,
+            url: apiUrl.getLineList,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body,
+                    userid
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+        });
+    });
+
+    // 获取detail数据
+    app.post('/businessMgmt/IPOMgmtEC/IPOUpload/getDetail.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            pageUrl: '/businessMgmt/IPOMgmtEC/IPOUpload/getDetail.ajax',
+            req,
+            url: `${apiUrl.getDetail + params.fundid}/info/detail/query`,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+        });
+    });
+
+    // 修改detail数据
+    app.post('/businessMgmt/IPOMgmtEC/IPOUpload/modifyDetail.ajax', (req, res, next) => {
+        var params = req.body;
+        console.log('params', params)
+        let option = {
+            pageUrl: '/businessMgmt/IPOMgmtEC/IPOUpload/modifyDetail.ajax  updateDetail',
+            req,
+            body: JSON.parse(params.modify),
+            timeout: 15000,
+            json: true
+        };
+        option.url = `${apiUrl.updateDetail}${params.fundid}/info/detail/update-no-version`;
+        new Promise(function (resolve, reject) {
+            request.patch(option, (error, response, body) => {
+                if (error) {
+                    console.log(error)
+                    return reject({
+                        msg: '修改失败',
+                        error: 1,
+                        data: null
+                    });
+                }
+                let result = typeof body === 'string' ? JSON.parse(body) : body;
+                if (result && result.returnCode == '0') {
+                    return resolve({
+                        msg: '修改成功',
+                        error: 0,
+                        data: result.body
+                    });
+                } else if (result && result.returnCode == 9999) {
+                    return reject({
+                        msg: '修改失败',
+                        error: 1,
+                        data: null
+                    });
+                } else {
+                    return reject({
+                        msg: result.returnMsg,
+                        error: 1,
+                        data: null
+                    });
+                }
+            });
+        }).then(function (result) {
+            let clearFiles = JSON.parse(params.clearFiles);
+            let fail = [];
+
+            function delfile(file) {
+                if (file.length === 0) {
+                    return
+                }
+                let fileType = ['.doc', '.docx', '.pdf'],
+                    banner = ['.jpg', '.jpeg', '.gif', '.bmp', '.tiff', '.psd', '.png'];
+                let ext = path.parse(file[0]).ext;
+                let directory = '';
+                if (fileType.includes(ext)) {
+                    directory = 'attach'
+                } else if (banner.includes(ext)) {
+                    directory = 'banner'
+                } else {
+                    directory = 'detail'
+                }
+                fs.unlink(path.join(IPOFilePath, directory, file[0]), function (err) {
+                    if (err) {
+                        fail.push(item);
+                    }
+                    delfile(file.splice(1))
+                })
+            }
+            delfile(clearFiles)
+
+
+            if (fail.length > 0) {
+                return res.send({
+                    msg: '修改成功,文件删除失败',
+                    error: 0
+                });
+            } else {
+                return res.send({
+                    msg: '修改成功',
+                    error: 0
+                });
+            }
+
+        }).catch(function (err) {
+            res.send(err)
+        })
+
+    });
+
+
+    //文件上传  文档格式
+    app.post('/businessMgmt/IPOMgmtEC/IPOUpload/uploadFileAttach.ajax', (req, res, next) => {
+        let form = new formidable.IncomingForm();
+        let filepath = path.join(IPOFilePath, 'attach')
+        try {
+            if (!fs.existsSync(filepath)) {
+                fs.mkdirSync(filepath)
+            }
+        } catch (error) {
+            console.log('文件夹不存在', error)
+            return res.send({
+                error: 1,
+                msg: '上传失败，文件夹不存在',
+                data: null
+            });
+        }
+        form.uploadDir = filepath;
+        form.keepExtensions = true;
+        form.parse(req, (err, fields, files) => {
+            if (err) {
+                console.log('/businessMgmt/IPOMgmtEC/IPOUpload/uploadFileAttach.ajax:', err);
+                return res.send({
+                    error: 1,
+                    msg: '上传失败',
+                    data: null
+                });
+            }
+            console.log('参数表管理页面表单接收完毕:', fields);
+            console.log('参数表管理页面表单文件接收完毕:', files);
+            // var filename = path.join(form.uploadDir, files.file.name)
+            fs.renameSync(files.file.path, path.join(form.uploadDir, files.file.name)) //文件改名
+            // files.file.path = path.join(form.uploadDir, files.file.name) //文件改名
+            res.send({
+                error: 0,
+                msg: '上传成功',
+                data: files.file.name
+            })
+        });
+    });
+    //文件上传  banner格式
+    app.post('/businessMgmt/IPOMgmtEC/IPOUpload/uploadFileBanner.ajax', (req, res, next) => {
+        let form = new formidable.IncomingForm();
+        let filepath = path.join(IPOFilePath, 'banner')
+        try {
+            if (!fs.existsSync(filepath)) {
+                fs.mkdirSync(filepath)
+            }
+        } catch (error) {
+            console.log('文件夹不存在', error)
+            return res.send({
+                error: 1,
+                msg: '上传失败，文件夹不存在',
+                data: null
+            });
+        }
+        form.uploadDir = filepath;
+        form.keepExtensions = true;
+        form.parse(req, (err, fields, files) => {
+            if (err) {
+                console.log('/businessMgmt/IPOMgmtEC/IPOUpload/uploadFileBanner.ajax:', err);
+                return res.send({
+                    error: 1,
+                    msg: '上传失败',
+                    data: null
+                });
+            }
+            console.log('参数表管理页面表单接收完毕:', fields);
+            console.log('参数表管理页面表单文件接收完毕:', files);
+            // var filename = path.join(form.uploadDir, files.file.name)
+            fs.renameSync(files.file.path, path.join(form.uploadDir, files.file.name)) //文件改名
+            // files.file.path = path.join(form.uploadDir, files.file.name) //文件改名
+            res.send({
+                error: 0,
+                msg: '上传成功',
+                data: files.file.name
+            })
+        });
+    });
+    //文件上传  zip格式
+    app.post('/businessMgmt/IPOMgmtEC/IPOUpload/uploadFileDetail.ajax', (req, res, next) => {
+        let form = new formidable.IncomingForm();
+        let filepath = path.join(IPOFilePath, 'detail')
+        try {
+            if (!fs.existsSync(filepath)) {
+                fs.mkdirSync(filepath)
+            }
+        } catch (error) {
+            console.log('文件夹不存在', error)
+            return res.send({
+                error: 1,
+                msg: '上传失败，文件夹不存在',
+                data: null
+            });
+        }
+        form.uploadDir = filepath;
+        form.keepExtensions = true;
+        form.parse(req, (err, fields, files) => {
+            if (err) {
+                console.log('/businessMgmt/IPOMgmtEC/IPOUpload/uploadFileDetail.ajax:', err);
+                return res.send({
+                    error: 1,
+                    msg: '上传失败',
+                    data: null
+                });
+            }
+            console.log('参数表管理页面表单接收完毕:', fields);
+            console.log('参数表管理页面表单文件接收完毕:', files);
+            // var filename = path.join(form.uploadDir, files.file.name)
+            fs.renameSync(files.file.path, path.join(form.uploadDir, files.file.name)) //文件改名
+            // files.file.path = path.join(form.uploadDir, files.file.name) //文件改名
+            res.send({
+                error: 0,
+                msg: '上传成功',
+                data: files.file.name
+            })
+        });
+    });
+
+
+
+    //  下载
+    app.get('/businessMgmt/IPOMgmtEC/IPOUpload/download.ajax', (req, res, next) => {
+        var params = {
+            fileName: req.query.fileName
+        };
+        var fileType = ['.doc', '.docx', '.pdf'],
+            banner = ['.jpg', '.jpeg', '.gif', '.bmp', '.tiff', '.psd', '.png'],
+            zip = ['.zip'];
+        var ext = path.parse(params.fileName).ext
+        console.log('/businessMgmt/IPOMgmtEC/IPOUpload/download.ajax params:', params);
+        var directory = ''
+        if (fileType.includes(ext)) {
+            directory = 'attach'
+        } else if (banner.includes(ext)) {
+            directory = 'banner'
+        } else if (zip.includes(ext)) {
+            directory = 'detail'
+        } else {
+            res.send({
+                error: 1,
+                msg: '下载失败',
+                data: null
+            })
+        }
+        try {
+            console.log(path.join(IPOFilePath, directory, params.fileName))
+            res.download(path.join(IPOFilePath, directory, params.fileName))
+        } catch (error) {
+            console.log('error', error)
+            res.send({
+                error: 1,
+                msg: '下载失败',
+                data: null
+            })
+        }
+    });
+
+};

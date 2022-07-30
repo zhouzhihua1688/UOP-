@@ -1,0 +1,1001 @@
+new Vue({
+    el: '#content',
+    data: {
+        //主页面相关数据
+        //查询
+        mainTitle: '',   //查询标题
+        remark: '',
+        tableData: [],
+        pagePreviewImgurl:'',
+        isBufferModify:false,
+        userId: '',
+        diaMsg: '',
+        previewPath: '',
+        loadingStatus: '数据获取中...',
+        updateId: '',
+        deleteId: '',
+        isUpdate: false,
+        loadingShow: false,
+        uploadSuccessed1: false,
+
+        //dialog新增修改数据
+        diapopTitle: "",    //主标题
+        diapopContent: "",  //副标题
+        diapopupButtons: "",
+        compositeButtons:'',
+        diapreviewTemid: "",
+        mainJumpUrl:'',       //跳转地址
+        subJumpUrl:'',       //跳转地址
+        diaremark: "",       //备注
+        bufferData:[],
+        bufferInit:{
+            btnName:'',
+            btnSubName:'',
+            url:'',
+            imageUrl:''
+        },
+        modifyBufferIndex:'',
+        mangerData:[],
+        mangerInit:{
+            fundMangerName:'',
+            fundMangerId:'',
+        },
+        informationData:[],
+        informationInit:{
+            title:'',
+            subTitle:'',
+            adviceRelateId:'',
+            adviceCategory:'',
+            imageUrl:'',
+            url:'',
+        },
+        compositeFundManagers: '',
+        compositeAdvices: '',
+        // 是否修改
+        isModifyFlag:true,
+        channelId: "",        //渠道
+        elementCollection: '',  //模板
+        viewList: [],
+        channelMenu: [],
+        elementCollectionData: [],
+        elementShow: {
+            diapopTitle: true,
+            diapopContent: true,
+            diapopupButtons: true,
+            compositeButtons:true,
+            diapreviewTemid: true,
+            diaremark: true,
+            diaimageUrl: true
+        },
+        searchChannelId:'1',
+        //主表格分页数据
+        currentIndex: 0,
+        maxSpace: 5,
+        totalPage: 0,
+        pageMaxNum: 10,
+
+        imageUrl:'',
+    },
+    computed: {
+        pageList: function () {
+            var arr = [];
+            if (this.totalPage <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex <= this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex <= this.maxSpace) {
+                var space = this.totalPage - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            } else {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        },
+        checkAll: function () {
+            if (this.tableData.length == 0) {
+                return false;
+            }
+            for (var i = 0; i < this.tableData.length; i++) {
+                if (!this.tableData[i].check) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    },
+    watch: {
+        pageMaxNum: function () {
+            this.getTableData(0);
+        },
+        elementCollection: {
+            handler: function (val, oldval) {
+                var _this = this;
+                if (val) {
+                    this.getViewData(val);
+                } else {
+                    for (var ele in this.elementShow) {
+                        this.elementShow[ele] = true;
+                    }
+                }
+            }
+        }
+    },
+    mounted: function () {
+        var _this = this;
+        var dialogs = ['info', 'rejectCheck', 'delete1'];
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        $('#uploadBtn1').click(function () {
+            $('#uploadFileInput1').click();
+        });
+        $('#uploadBtn2').click(function () {
+            $('#uploadFileInput2').click();
+        });
+        $('#uploadBtn3').click(function () {
+            $('#uploadFileInput3').click();
+        });
+        $('#uploadBtn4').click(function () {
+            $('#uploadFileInput4').click();
+        });
+        //获取渠道列表
+        $.post({
+            url: '/recommendSystem/recommendSystemTemplateConfig/blackBoardConfig/channelMenu.ajax',
+            data: {
+                pageNo: 1,
+                pageSize: 9999
+            },
+            success: function (result) {
+                if (result.error === 0) {
+                    if (result.data.rows.length > 0) {
+                        _this.channelMenu = result.data.rows;
+                    } else {
+                        _this.showDialog('', 'info', false, '渠道列表暂无数据');
+                    }
+                } else {
+                    _this.showDialog('', 'info', false, result.msg);
+                }
+            }
+        });
+        // 获取视图列表
+        this.getViewData();
+        var objconfigId = this.getUrlParam('objconfigId');
+        if (objconfigId) {
+            this.getOneDetail(objconfigId)
+        } else {
+            this.getTableData(0);
+        }
+        if(this.getUrlParam('openNewDialog')){
+            this.showAdd();
+        }
+    },
+    methods: {
+        // 根据传来的objconfigId 查找该条数据
+        getOneDetail: function (objconfigId) {
+            var params = {};
+            var _this = this;
+            params.pageNo = 1;
+            params.pageSize = this.pageMaxNum;
+            params.compositeConfigId = objconfigId;
+            params.channelId=this.searchChannelId;
+            // console.log(params);
+            _this.loadingStatus = '数据获取中...';
+            $.post({
+                url: '/recommendSystem/recommendSystemTemplateConfig/blackBoardConfig/queryInfo.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        if (result.data.rows && result.data.rows.length > 0) {
+                            _this.userId = result.data.userId;
+                            _this.tableData = result.data.rows;
+                            _this.currentIndex = result.data.pageNum - 1;
+                            _this.totalPage = result.data.pages;
+                            if (result.data.rows.length > 0) {
+                                _this.showUpdate(result.data.rows[0]);
+                            }
+                        } else {
+                            _this.tableData = [];
+                            _this.currentIndex = 0;
+                            _this.totalPage = 0;
+                            _this.loadingStatus = '没有数据';
+                        }
+
+                    } else {
+                        _this.tableData = [];
+                        _this.currentIndex = 0;
+                        _this.totalPage = 0;
+                        _this.showDialog('', 'info', false, result.msg);
+                        _this.loadingStatus = '没有数据';
+                    }
+                }
+            });
+        },
+        // 获取视图列表
+        getViewData: function (val, once) {
+            var _this = this;
+            var params = {};
+            var str = '';
+            params.pageNo = 1;
+            params.pageSize = 9999;
+            params.contentTp = 'composite';
+            val && (params.temId = val);
+            $.post({
+                url: '/recommendSystem/recommendSystemTemplateConfig/blackBoardConfig/viewList.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        if (result.data.rows.length > 0) {
+                            !val && (_this.viewList = result.data.rows);
+                            if (val) {
+                                if(result.data.rows&&result.data.rows.length>1){
+                                    var obj=result.data.rows.filter(function(item){
+                                        return item.temId==val;
+                                    })[0];
+                                    _this.pagePreviewImgurl=obj.previewImgurl;
+                                    if(obj.elementCollection){
+                                        _this.elementCollectionData = obj.elementCollection.toString().split(',')
+                                    }else{
+                                        for (var items in _this.elementShow) {
+                                            _this.elementShow[items] = true;
+                                        }
+                                        return;
+                                    }
+                                }else{
+                                    _this.pagePreviewImgurl = result.data.rows[0].previewImgurl;
+                                    if(result.data.rows[0].elementCollection){
+                                        _this.elementCollectionData = result.data.rows[0].elementCollection.toString().split(',');
+                                    }else{
+                                        for (var item in _this.elementShow) {
+                                            _this.elementShow[item] = true;
+                                        }
+                                        return;
+                                    }
+                                }
+                            }else{
+                                for (var item in _this.elementShow) {
+                                    _this.elementShow[item] = true;
+                                }
+                                return;
+                            }
+                            for (var ele in _this.elementShow) {
+                                if (_this.elementCollectionData.map(function (item) {
+                                    return 'dia' + item;
+                                }).indexOf(ele) > -1) {
+                                    _this.elementShow[ele] = true;
+                                }
+                                else {
+                                    _this.elementShow[ele] = false;
+                                }
+                            }
+                        } else {
+                            if (once) {
+                                _this.showDialog('add', 'info', true, '视图列表暂无数据');
+                            } else {
+                                _this.showDialog('', 'info', false, '视图列表暂无数据');
+                            }
+                        }
+                    } else {
+                        if (once) {
+                            _this.showDialog('add', 'info', true, result.msg);
+                        } else {
+                            _this.showDialog('', 'info', false, result.msg);
+                        }
+                    }
+                }
+            });
+        },
+        //list
+        getTableData: function (currentIndex) {
+            var params = {};
+            var _this = this;
+            params.pageNo = currentIndex + 1;
+            params.pageSize = this.pageMaxNum;
+            params.title = this.mainTitle;
+            params.channelId=this.searchChannelId;
+            // params.remark = this.remark;
+            console.log(params);
+            _this.loadingStatus = '数据获取中...';
+            $.post({
+                url: '/recommendSystem/recommendSystemTemplateConfig/blackBoardConfig/queryInfo.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        if (result.data.rows && result.data.rows.length > 0) {
+                            _this.userId = result.data.userId;
+                            _this.tableData = result.data.rows;
+                            _this.currentIndex = result.data.pageNum - 1;
+                            _this.totalPage = result.data.pages;
+                        } else {
+                            _this.tableData = [];
+                            _this.currentIndex = 0;
+                            _this.totalPage = 0;
+                            _this.loadingStatus = '没有数据';
+                        }
+
+                    } else {
+                        _this.tableData = [];
+                        _this.currentIndex = 0;
+                        _this.totalPage = 0;
+                        _this.showDialog('', 'info', false, result.msg);
+                        _this.loadingStatus = '没有数据';
+                    }
+                }
+            });
+        },
+        //新增活动配置
+        setAddData: function (obj) {
+            this.diapopTitle = obj.title ? obj.title: '';     //主标题
+            this.diapopContent = obj.subTitle ? obj.subTitle : '';   //副标题
+            this.compositeButtons = obj.compositeButtons ? obj.compositeButtons : '';
+            // this.diaremark = obj.remark ? obj.remark : '';             //备注
+            this.channelId = obj.channelId ? obj.channelId : '';       //渠道
+            this.elementCollection = obj.previewTemid ? obj.previewTemid : '';   //模板
+
+            $('#uploadInput1').val(obj.adimageUrl ? obj.adimageUrl : '');     //主图地址
+            this.mainJumpUrl= obj.adimageJumpUrl ? obj.adimageJumpUrl : '';   //主图跳转
+            $('#uploadInput2').val(obj.smallImageUrl ? obj.smallImageUrl : '');     //副图地址
+            this.subJumpUrl= obj.url ? obj.url : '';   //副图跳转
+            this.compositeFundManagers = obj.compositeFundManagers ? obj.compositeFundManagers : '';
+            this.compositeAdvices= obj.compositeAdvices ? obj.compositeAdvices : '';
+            
+        },
+        showAdd: function () {
+            var _this = this;
+            this.bufferData=[];
+            this.elementCollection = '';
+            this.pagePreviewImgurl = '';
+            this.isUpdate = false;
+            this.uploadSuccessed1 = false;
+            this.updateId = '';
+            $('#uploadFileInput1').on('change', function () {
+                _this.uploadSuccessed1 = false;
+                $('#uploadInput1').val($(this).val());
+            });
+            $('#uploadFileInput2').on('change', function () {
+                _this.uploadSuccessed1 = false;
+                $('#uploadInput2').val($(this).val());
+            });
+            $('#uploadFileInput3').on('change', function () {
+                _this.uploadSuccessed1 = false;
+                $('#uploadInput3').val($(this).val());
+            });
+            $('#uploadFileInput4').on('change', function () {
+                _this.uploadSuccessed1 = false;
+                $('#uploadInput4').val($(this).val());
+            });
+            this.setAddData({
+                isDelete: '0'
+            });
+            this.showDialog('', 'add');
+            $("#previewImg").show();
+        },
+        showUpdate: function (item) {
+            console.log(item);
+            var _this = this;
+            this.bufferData=[];
+            item.compositeButtons&&(this.bufferData=JSON.parse(item.compositeButtons));
+            item.compositeFundManagers&&(this.mangerData=JSON.parse(item.compositeFundManagers));
+            item.compositeAdvices&&(this.informationData=JSON.parse(item.compositeAdvices));
+            if (item.previewTemid) {
+                this.getViewData(item.previewTemid, true);
+            } else {
+                for (var ele in this.elementShow) {
+                    this.elementShow[ele] = true;
+                }
+            }
+            this.pagePreviewImgurl = '';
+            this.isUpdate = true;
+            this.uploadSuccessed1 = true;
+            $('#uploadFileInput1').on('change', function () {
+                _this.uploadSuccessed1 = false;
+                $('#uploadInput1').val($(this).val());
+            });
+            $('#uploadFileInput2').on('change', function () {
+                _this.uploadSuccessed1 = false;
+                $('#uploadInput2').val($(this).val());
+            });
+            $('#uploadFileInput3').on('change', function () {
+                _this.uploadSuccessed1 = false;
+                $('#uploadInput3').val($(this).val());
+            });
+            $('#uploadFileInput4').on('change', function () {
+                _this.uploadSuccessed1 = false;
+                $('#uploadInput4').val($(this).val());
+            });
+            this.updateId = item.compositeConfigId;
+            this.setAddData(item);
+            this.showDialog('', 'add');
+            $("#previewImg").show();
+        },
+        add: function () {
+            if (this.channelId == '') {
+                this.showDialog('add', 'info', true, '渠道必须选择！');
+                return false;
+            }
+            // if (this.elementCollection == '') {
+            //     this.showDialog('add', 'info', true, '模板必须选择！');
+            //     return false;
+            // }
+            if($("#uploadInput1").val()&&$("#uploadInput1").val().indexOf('/res/')==-1 && $("#uploadInput1").val().indexOf('/mss/')==-1){
+                this.showDialog('add', 'info', true, '图片选择后请上传！');
+                return false;
+            }
+            if($("#uploadInput2").val()&&$("#uploadInput2").val().indexOf('/res/')==-1 && $("#uploadInput2").val().indexOf('/mss/')==-1){
+                this.showDialog('add', 'info', true, '图片选择后请上传！');
+                return false;
+            }
+            var _this = this;
+            var params = {};
+
+            // this.diapopupButtons = obj.popupButtons ? obj.popupButtons : '';
+
+            params.title= this.diapopTitle;      //主标题
+            params.subTitle= this.diapopContent;  //副标题
+            // params.remark = this.diaremark;
+            params.isDelete = 0;                              //是否删除
+            params.channelId = this.channelId;               //渠道
+            params.previewTemid = this.elementCollection;   //模板
+
+            params.adimageUrl = $('#uploadInput1').val();  //广告图片地址
+            params.adimageJumpUrl=this.mainJumpUrl;    //广告图片跳转地址
+
+            params.smallImageUrl= $('#uploadInput2').val();  //小图地址
+            params.url=this.subJumpUrl;                //跳转地址
+
+            params.compositeButtons = this.bufferData.length>0?JSON.stringify(this.bufferData):'';
+
+            this.isUpdate && (params.compositeConfigId = this.updateId);   //修改
+            this.isUpdate && (params.modifyBy = this.userId);
+            !this.isUpdate && (params.createBy = this.userId);
+
+            params.compositeFundManagers = this.mangerData.length>0?JSON.stringify(this.mangerData):'';
+            params.compositeAdvices = this.informationData.length>0?JSON.stringify(this.informationData):'';
+
+            console.log(params);
+            var url = '/recommendSystem/recommendSystemTemplateConfig/blackBoardConfig/';
+            url += this.isUpdate ? 'update.ajax' : 'add.ajax';
+            $.post({
+                url: url,
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.getTableData(0);
+                    }
+                    $("#previewImg").hide();
+                    _this.showDialog('add', 'info', false, result.msg);
+                }
+            });
+
+        },
+        hideImg: function () {
+            $("#previewImg").hide();
+        },
+        //删除
+        deleteParams: function (item) {
+            this.deleteId = item.compositeConfigId;
+            this.showDialog('', 'delete1', false);
+        },
+        deleteConfirm: function () {
+            var _this = this;
+            $.post({
+                url: '/recommendSystem/recommendSystemTemplateConfig/blackBoardConfig/delete.ajax',
+                data: {
+                    compositeConfigId: this.deleteId
+                },
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('', 'info', false, '操作成功');
+                        _this.getTableData(_this.currentIndex);
+                    } else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            })
+        },
+        // 缓存数据处理
+        bufferOpen:function(){
+            this.isBufferModify=false;
+            $('#uploadInput3').val("");
+            this.bufferInit={
+                btnName:'',
+                btnSubName:'',
+                url:'',
+                imageUrl:''
+            }
+            this.showDialog('add', 'bufferBox', true);
+        },
+        bufferAdd:function(){
+            console.log(this.bufferInit);
+            // console.log($('#uploadInput3').val());
+            this.bufferInit.imageUrl=$('#uploadInput3').val();
+            // this.bufferInit.imageUrl= this.imageUrl;
+            if(!this.isBufferModify){
+                this.bufferData.push(this.bufferInit);
+            }else{
+                this.bufferData.splice(this.modifyBufferIndex, 0,this.bufferInit);
+            }
+        },
+        // 新需求
+        mangerOpen:function(){
+            this.isBufferModify=false;
+            $('#uploadInput3').val("");
+            this.mangerInit={
+                fundMangerName:'',
+                fundMangerId:'',
+            }
+            this.showDialog('add', 'managerBox', true);
+        },
+        mangerAdd:function(){
+            console.log(this.mangerInit);
+            if(!this.isBufferModify){
+                this.mangerData.push(this.mangerInit);
+            }else{
+                this.mangerData.splice(this.modifyBufferIndex, 0,this.mangerInit);
+            }
+        },
+        informationOpen:function(){
+            this.isBufferModify=false;
+            $('#uploadInput4').val("");
+            this.informationInit={
+                title:'',
+                subTitle:'',
+                adviceRelateId:'',
+                adviceCategory:'',
+                imageUrl:'',
+                url:'',
+            },
+            this.showDialog('add', 'informationBox', true);
+        },
+        informationAdd:function(){
+            console.log(this.informationInit);
+            // console.log($('#uploadInput3').val());
+            this.informationInit.imageUrl=$('#uploadInput4').val();
+            // this.informationInit.imageUrl= this.imageUrl;
+            if(!this.isBufferModify){
+                this.informationData.push(this.informationInit);
+            }else{
+                this.informationData.splice(this.modifyBufferIndex, 0,this.informationInit);
+            }
+        },
+       
+        deleteBufferData:function(index){
+            this.bufferData.splice(index, 1);
+        },
+        deleteMangerData:function(index){
+            this.mangerData.splice(index, 1);
+        },
+        deleteInformationData:function(index){
+            this.informationData.splice(index, 1);
+        },
+        modifyBufferData:function(item,index){
+            this.modifyBufferIndex=index;
+            this.bufferData.splice(index, 1);
+            this.isBufferModify=true;
+            console.log(item);
+            this.bufferInit={
+                // btnName:item.btnName,
+                // operateTp:item.operateTp,
+                // url:item.url
+                btnName:item.btnName,
+                btnSubName:item.btnSubName,
+                imageUrl:item.imageUrl,
+                url:item.url
+            }
+            $('#uploadInput3').val(this.bufferInit.imageUrl);
+            this.showDialog('add', 'bufferBox', true);
+        },
+        modifyMangerData:function(item,index){
+            this.modifyBufferIndex=index;
+            this.mangerData.splice(index, 1);
+            this.isBufferModify=true;
+            console.log(item);
+            this.mangerInit={
+                fundMangerName:item.fundMangerName,
+                fundMangerId:item.fundMangerId,
+            }
+            this.showDialog('add', 'managerBox', true);
+        },
+
+        modifyInformationData:function(item,index){
+            this.modifyBufferIndex=index;
+            this.informationData.splice(index, 1);
+            this.isBufferModify=true;
+            console.log(item);
+            this.informationInit={
+                title:item.title,
+                subTitle:item.subTitle,
+                adviceRelateId:item.adviceRelateId,
+                adviceCategory:item.adviceCategory,
+                imageUrl:item.imageUrl,
+                url:item.url,
+            }
+            $('#uploadInput4').val(this.informationInit.imageUrl);
+            this.showDialog('add', 'informationBox', true);
+        },
+        bufferTpTranslate:function(val){
+            if(val){
+                switch(val){
+                    case "01":
+                        return '无操作（关闭弹窗）';
+                        break;
+                    case "02":
+                        return '跳转';
+                        break;  
+                    case "03":
+                        return '关闭界面';
+                        break;        
+                }
+            }else{
+                return '-'
+            }
+        },
+        fresh: function () {
+            var _this = this;
+            $.post({
+                url: '/recommendSystem/recommendSystemTemplateConfig/blackBoardConfig/fresh.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('', 'info', false, '操作成功');
+                    } else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            })
+        },
+        configMgmt:function(){
+            var hasCheck = false;
+            for (var i = 0; i < this.tableData.length; i++) {
+                if (this.tableData[i].check) {
+                    hasCheck = true;
+                    break;
+                }
+            }
+            if (!hasCheck) {
+                this.showDialog('', 'info', false, '未选择任何资源');
+                return;
+            }
+            var ids = [];
+            var channelIds=[];
+            console.log("===",this.tableData);
+            for (var j = 0; j < this.tableData.length; j++) {
+                if (this.tableData[j].check) {
+                    this.tableData[j].objconfigId=this.tableData[j].compositeConfigId;
+                    this.tableData[j].startTime='';
+                    this.tableData[j].endTime='';
+                    this.tableData[j].modifyTime='';
+                    this.tableData[j].typeKey='composite';
+                    this.tableData[j].position='';
+                    this.tableData[j].dataType='local';
+                    this.tableData[j].modifyBy=this.userId;
+                    ids.push(this.tableData[j]);
+                    channelIds.push(this.tableData[j].channelId)
+                }
+            }
+            // console.log(channelIds);
+            for(var m = 0; m < channelIds.length-1; m++){
+                for(var n = 0; n < channelIds.length-1-m; n++){
+                    if(!(channelIds[n]==channelIds[n+1])){
+                        this.showDialog('','info',false,'请选择相同渠道的数据进行配置！')
+                        return;
+                    }
+                }
+            }
+            if(!window.localStorage){
+                this.showDialog('','info',false,'您的浏览器不支持该功能，请下载最新的谷歌浏览器！')
+                return false;
+            }else{
+                var storage=window.localStorage;
+                var url="/recommendSystem/recommendSystemConfigMgmt/positionTheThemeMgmt.html?pageType=Modify&contentTp=composite&channelId="+channelIds[0]
+                storage.setItem("composite",JSON.stringify(ids));
+                window.open(url);
+            }
+            
+        },
+        // 
+        // 上传图片1
+        uploadPic1: function () {
+            if (!$('#uploadInput1').val()) {
+                this.showDialog('add', 'info', true, '未选择要上传的图片');
+                return;
+            }
+            if (!/.+(\.gif|\.jpeg|\.png|\.jpg|\.bmp)$/.test($('#uploadInput1').val())) {
+                this.showDialog('add', 'info', true, '文件格式错误');
+                return;
+            }
+            this.loadingShow = true;
+            this.uploadSuccessed1 = false;
+            var _this = this;
+            $.ajaxFileUpload({
+                url: '/recommendSystem/recommendSystemTemplateConfig/blackBoardConfig/upload1.ajax',
+                type: 'POST',
+                dataType: 'json',
+                fileElementId: 'uploadFileInput1',
+                success: function (result) {
+                    _this.loadingShow = false;
+                    if (result.error === 0) {
+                        _this.uploadSuccessed1 = true;
+                        $('#uploadInput1').val(result.data);
+                        _this.showDialog('', 'add');
+                    }
+                    else {
+                        _this.showDialog('add', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+
+        uploadPic2: function () {
+            if (!$('#uploadInput2').val()) {
+                this.showDialog('add', 'info', true, '未选择要上传的图片');
+                return;
+            }
+            if (!/.+(\.gif|\.jpeg|\.png|\.jpg|\.bmp)$/.test($('#uploadInput2').val())) {
+                this.showDialog('add', 'info', true, '文件格式错误');
+                return;
+            }
+            this.loadingShow = true;
+            this.uploadSuccessed1 = false;
+            var _this = this;
+            $.ajaxFileUpload({
+                url: '/recommendSystem/recommendSystemTemplateConfig/blackBoardConfig/upload2.ajax',
+                type: 'POST',
+                dataType: 'json',
+                fileElementId: 'uploadFileInput2',
+                success: function (result) {
+                    _this.loadingShow = false;
+                    if (result.error === 0) {
+                        _this.uploadSuccessed1 = true;
+                        $('#uploadInput2').val(result.data);
+                        _this.showDialog('', 'add');
+                    }
+                    else {
+                        _this.showDialog('add', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+        uploadPic3: function () {
+            if (!$('#uploadInput3').val()) {
+                this.showDialog('bufferBox', 'add', false, '未选择要上传的图片');
+                return;
+            }
+            if (!/.+(\.gif|\.jpeg|\.png|\.jpg|\.bmp)$/.test($('#uploadInput3').val())) {
+                this.showDialog('bufferBox', 'add', true, '文件格式错误');
+                return;
+            }
+            this.loadingShow = true;
+            this.uploadSuccessed1 = false;
+            var _this = this;
+            $.ajaxFileUpload({
+                url: '/recommendSystem/recommendSystemTemplateConfig/blackBoardConfig/upload3.ajax',
+                type: 'POST',
+                dataType: 'json',
+                fileElementId: 'uploadFileInput3',
+                success: function (result) {
+                    _this.loadingShow = false;
+                    if (result.error === 0) {
+                        _this.uploadSuccessed1 = true;
+                        $('#uploadInput3').val(result.data);
+                        _this.showDialog('', 'bufferBox');
+                    }
+                    else {
+                        _this.showDialog('bufferBox', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+        uploadPic4: function () {
+            if (!$('#uploadInput4').val()) {
+                this.showDialog('informationBox', 'add', false, '未选择要上传的图片');
+                return;
+            }
+            if (!/.+(\.gif|\.jpeg|\.png|\.jpg|\.bmp)$/.test($('#uploadInput4').val())) {
+                this.showDialog('informationBox', 'add', true, '文件格式错误');
+                return;
+            }
+            this.loadingShow = true;
+            this.uploadSuccessed1 = false;
+            var _this = this;
+            $.ajaxFileUpload({
+                url: '/recommendSystem/recommendSystemTemplateConfig/blackBoardConfig/upload4.ajax',
+                type: 'POST',
+                dataType: 'json',
+                fileElementId: 'uploadFileInput4',
+                success: function (result) {
+                    _this.loadingShow = false;
+                    if (result.error === 0) {
+                        _this.uploadSuccessed1 = true;
+                        $('#uploadInput4').val(result.data);
+                        _this.showDialog('', 'informationBox');
+                    }
+                    else {
+                        _this.showDialog('informationBox', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+        configThis:function(item){
+            var ids = [];
+            var channelIds=item.channelId;
+            var obj={
+                objconfigId:item.compositeConfigId,
+                startTime:'',
+                endTime:'',
+                modifyTime:'',
+                typeKey:'composite',
+                position:'',
+                dataType:'local',
+                modifyBy:this.userId
+            }
+            ids.push(Object.assign(item,obj));
+            if(!window.localStorage){
+                this.showDialog('','info',false,'您的浏览器不支持该功能，请下载最新的谷歌浏览器！')
+                return false;
+            }else{
+                var storage=window.localStorage;
+                var url="/recommendSystem/recommendSystemConfigMgmt/positionTheThemeMgmt.html?pageType=Modify&contentTp=composite&channelId="+channelIds+'&objconfigId='+ids[0].objconfigId;
+                storage.setItem("composite",JSON.stringify(ids));
+                window.open(url);
+            }
+        },
+        //主表格分页方法
+        check: function (item) {
+            item.check = !item.check;
+        },
+        allCheck: function () {
+            
+            var _this = this;
+            var flag = this.checkAll;
+            this.tableData.forEach(function (item) {
+                item.check = !flag;
+            });
+        },
+        prev: function () {
+            if (this.currentIndex <= 0) {
+                return;
+            }
+            this.getTableData(this.currentIndex - 1);
+        },
+        next: function () {
+            if (this.currentIndex >= this.totalPage - 1) {
+                return;
+            }
+            this.getTableData(this.currentIndex + 1);
+        },
+        changeIndex: function (index) {
+            this.getTableData(index - 1);
+        },
+        toFirst: function () {
+            this.getTableData(0);
+        },
+        toLast: function () {
+            this.getTableData(this.totalPage - 1);
+        },
+        //公共方法
+        getUrlParam: function (name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+            var r = window.location.search.substr(1).match(reg); //匹配目标参数
+            if (r != null) return unescape(r[2]);
+            return '';
+        },
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            } else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            } else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            } else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            } else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        inSelected: function (item, arr, prop) {
+            var _index = -1;
+            arr.forEach(function (value, index) {
+                if (item[prop] == value[prop]) {
+                    _index = index;
+                }
+            });
+            return _index;
+        },
+        formatTime: function (timestamp) {
+            var date = new Date(timestamp); //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var Y = date.getFullYear() + '-';
+            var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+            var D = (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) + ' ';
+            var h = (date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ':';
+            var m = (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()) + ':';
+            var s = (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds());
+            return Y + M + D + h + m + s;
+        },
+        overflowHide: function (val) {
+            var str = val.toString();
+            if (str.length > 30) {
+                str = str.substring(0, 12) + '...'
+            }
+            return str;
+        },
+        // yes or no
+        whetherDelete: function (val) {
+            if (val) {
+                if (val == '0') {
+                    return '否';
+                } else {
+                    return '是';
+                }
+            } else {
+                return '-';
+            }
+        },
+        stringTimeFat: function (val) {
+            if (val) {
+                return val 
+                // return val.replace(/['.']/g, ':')
+            } else {
+                return '-'
+            }
+        },
+        channelNameForId: function (val) {
+            var str = '';
+            if (val) {
+                this.channelMenu.forEach(function (item) {
+                    if (val == item.channelId) {
+                        str = item.channelName;
+                    }
+                })
+            } else {
+                str = '-'
+            }
+            return str;
+        },
+        adviceCategory: function (val) {
+            if (val) {
+                if (val == '1') {
+                    return '视频';
+                } else if(val == '2'){
+                    return '文章';
+                }
+            } else {
+                return '';
+            }
+        },
+    }
+});

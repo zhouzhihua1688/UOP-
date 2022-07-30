@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datepicker3.min.css" />
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <style>
+        [v-cloak]{
+            display: none!important
+        }
+        .show {
+            display: none;
+        }
+
+        .hide {
+            display: block;
+        }
+        .reviewer{
+            display: inline-block;font-size: 12px;position: absolute;right: 10%;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+                        <div class="col-xs-12">
+                            <!--信息提示弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- DIALOG ENDS -->
+                            <div class="form-inline" style="padding: 10px 0;">
+
+                                <span class="form-group" style="display: inline-block;font-size: 14px;text-align: right;width: 140px">
+                                    认购费分成：
+                                    <i style="font-style: normal" v-text='divideInputData.subscriberate*100+"%"'></i>
+                                </span>
+                                <label class="control-label">调整为：</label>
+                                <div class="form-group">
+                                    <input type="text" class="input-mini" :readonly='reviewStatus' v-model.trim='keepStatus.rengChange' />%
+                                </div>
+                                <label class="control-label">认购费调增：</label>
+                                <div class="form-group">
+                                    <input type="text" class="input-mini" :readonly='reviewStatus' v-model.trim='keepStatus.rengUp' />
+                                </div>
+                                <label class="control-label">调整说明：</label>
+                                <div class="form-group">
+                                    <input type="text" :readonly='reviewStatus' v-model.trim='keepStatus.rengExplain' />
+                                </div>
+
+                                <div class="pull-right" v-cloak v-show="!feedbackgo">
+                                    <div class="form-group" v-show="onlywrite!=1">
+                                        <input type="button" class="btn btn-sm btn-primary right" v-show='reviewStatus'
+                                            @click='anew=true,reviews=true' value="重新复核">
+                                    </div>
+                                    <div class="form-group" v-show="onlywrite!=1">
+                                        <input type="button" class="btn btn-sm btn-primary right" v-show='!reviewStatus'
+                                            value="保存" @click='keepOrReview(1,1)'>
+                                    </div>
+                                    <div class="form-group" v-show="onlywrite!=1">
+                                        <input type="button" class="btn btn-sm btn-primary right" v-show='!reviewStatus'
+                                            value="复核" @click='keepOrReview(2,2)'>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="button" class="btn btn-sm btn-primary right" value="刷新参数" @click='update' v-show="onlywrite!=1">
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="button" class="btn btn-sm btn-primary right" @click='back' value="返回">
+                                    </div>
+                                </div>
+
+
+                            </div>
+                            <div class="form-inline" style="padding: 10px 0;">
+                                <span class="form-group" style="display: inline-block;font-size: 14px;text-align: right;width: 140px">
+                                    申购费分成：
+                                    <i style="font-style: normal" v-text='divideInputData.buyrate*100+"%"'></i> </span>
+                                <label class="control-label">调整为：</label>
+                                <div class="form-group">
+                                    <input type="text" class="input-mini" :readonly='reviewStatus' v-model.trim='keepStatus.shenChange'  />%
+                                </div>
+                                <label class="control-label">申购费调增：</label>
+                                <div class="form-group">
+                                    <input type="text" class="input-mini" :readonly='reviewStatus' v-model.trim='keepStatus.shenUp' />
+                                </div>
+                                <label class="control-label">调整说明：</label>
+                                <div class="form-group">
+                                    <input type="text" :readonly='reviewStatus' v-model.trim='keepStatus.shenExplain' />
+                                </div>
+                            </div>
+                            <div class="form-inline" style="padding: 10px 0;">
+                                <span class="form-group" style="display: inline-block;font-size: 14px;text-align: right;width: 140px">
+                                    赎回费分成：
+                                    <i style="font-style: normal" v-text='divideInputData.redeemrate*100+"%"'></i>
+                                </span>
+                                <label class="control-label">调整为：</label>
+                                <div class="form-group">
+                                    <input type="text" class="input-mini" :readonly='reviewStatus' v-model.trim='keepStatus.shuChange' />%
+                                </div>
+                                <label class="control-label">赎回费调增：</label>
+                                <div class="form-group">
+                                    <input type="text" class="input-mini" :readonly='reviewStatus' v-model.trim='keepStatus.shuUp' />
+                                </div>
+                                <label class="control-label">调整说明：</label>
+                                <div class="form-group">
+                                    <input type="text" :readonly='reviewStatus' v-model.trim='keepStatus.shuExplain' />
+                                </div>
+                            </div>
+
+
+                            <div class="table-header" style="text-align: center">
+                                <span class="detailTitle">现金宝销售渠道保有量及费用明细--民生</span>
+                                <span class="reviewer">复核人：张三 2018/8/24</span>
+                            </div>
+                            <!--分页器和快速查询-->
+                            <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                <div class="col-xs-6">
+                                    <div class="dataTables_length" id="dynamic-table_length">
+                                        <label>每页显示</label>
+                                        <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                            <option value="200">200</option>
+                                            <option value="500">500</option>
+                                            <option value="800">800</option>
+                                        </select>
+                                        <label>条</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center">计提日期(日期)</th>
+                                        <th class="center">网点号</th>
+                                        <th class="center">市行名称</th>
+                                        <th class="center">基金代码</th>
+                                        <th class="center">基金名称</th>
+                                        <th class="center">尾佣比例</th>
+                                        <th class="center">基金规模</th>
+                                        <th class="center">认购金额</th>
+                                        <th class="center">认购费(实付)</th>
+                                        <th class="center">申购金额</th>
+                                        <th class="center">申购费(实付)</th>
+                                        <th class="center">赎回金额</th>
+                                        <th class="center">赎回费(实付)</th>
+                                        <th class="center">交易费合计</th>
+                                        <th class="center">尾随佣金</th>
+                                        <!-- <th class="center">总认购费</th> -->
+                                        <!-- <th class="center">总申购费</th> -->
+                                        <!-- <th class="center">总赎回费</th> -->
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <template v-if="viewData.length>0">
+                                    <tr v-for="(item, index) in viewData" :key="index">
+                                        <td class="center" v-text='item.holddate'></td><!-- 计提日期(日期) -->
+                                        <td class="center" v-text='item.branchcode'></td><!-- 网点号 -->
+                                        <td class="center" v-text='item.branchnm'></td> <!-- 市行名称 -->
+                                        <td class="center" v-text='item.fundid'></td><!-- 基金代码 -->
+                                        <td class="center" v-text='item.fundnm'></td><!-- 基金名称 -->
+                                        <td class="center" v-text='item.tailfarerate'></td><!-- 尾佣比例 -->
+                                        <td class="center" v-text='item.thirdshare'></td><!-- 基金规模 -->
+                                        <td class="center" v-text='item.subscribeamt'></td><!-- 认购金额 -->
+                                        <td class="center" :class='"reng"+index'>{{filters(renggou(item.subscribefare))}}</td><!-- 认购费(实付) subscribereal-->
+                                        <td class="center" v-text='item.buyamt'></td><!-- 申购金额 -->
+                                        <td class="center" :class='"shen"+index'>{{filters(shengou(item.buyfare))}}</td><!-- 申购费(实付) buyreal-->
+                                        <td class="center" v-text='item.redeemamt'></td><!-- 赎回金额 -->
+                                        <td class="center" :class='"shu"+index'>{{filters(shuhui(item.redeemfare))}}</td><!-- 赎回费(实付) redeemreal-->
+                                        <td class="center" :class='"num"+index'>{{computedDays(renggou(item.subscribefare),shengou(item.buyfare),shuhui(item.redeemfare))}}</td><!-- 交易费合计 -->
+                                        <td class="center" v-text='item.tailfarereal'></td><!-- 尾随佣金 -->
+                                        <!-- <td class="center" v-text='item.subscribefare'></td>总认购费 -->
+                                        <!-- <td class="center" v-text='item.buyfare'></td>总申购费 -->
+                                        <!-- <td class="center" v-text='item.redeemfare'></td>总赎回费 -->
+                                    </tr>
+                                    <tr v-for="(item, index) in tradeMonth">
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td class="center">认购费调增</td>
+                                        <td class="center" v-text='keepStatus.rengUp'></td>
+                                        <td class="center">申购费调增</td>
+
+                                        <td class="center" v-text='keepStatus.shenUp'></td>
+                                        <td class="center">赎回费调增</td>
+                                        <td class="center" v-text='keepStatus.shuUp'></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr v-for="(item, index) in tradeMonth">
+                                        <td class="center">小计</td>
+                                        <td></td>
+                                        <td class="center" v-text='item.branchnm'></td>
+                                        <td></td>
+                                        <td class="center" v-text='item.fundnm'></td>
+                                        <td></td>
+                                        <td></td>
+
+                                        <td class="center" v-text='item.thirdshare'></td><!-- 基金规模 -->
+                                        <td class="center" v-text='renRel'></td><!-- 认购费（实付）  -->
+                                        <td></td>
+
+                                        <td class="center" v-text='shenRel'></td><!-- 申购费（实付） -->
+                                        <td></td>
+                                        <td class="center" v-text='shuRel' ></td><!-- 赎回费（实付） -->
+                                        <td class="center" v-text="sumAll"></td><!-- 交易费合计 -->
+                                        <td class="center" v-text='item.tailfarereal'></td><!-- 尾随佣金 -->
+                                    </tr>
+                                </template>
+                                <template v-else>
+                                    <tr>
+                                        <td class="center" v-text="'没有数据'" colspan="16"></td>
+                                    </tr>
+                                </template>
+                                </tbody>
+                            </table>
+                            <!--底部页码-->
+                            <div v-if="viewData.length>0" class="row" style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+viewData.length+' 条'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                        <ul class="pagination">
+                                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in middleData.length" @click="changeIndex(value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- PAGE CONTENT ENDS -->
+                        </div><!-- /.col -->
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+
+        <% include ../../common/footer.html %>
+
+    </div><!-- /.main-container -->
+
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/bootstrap-datepicker.min.js"></script>
+    <script src="/js/thirdPartyOperation/expenseMgmt/transactionDays.js"></script>
+</body>
+
+</html>

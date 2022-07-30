@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <h1 class="center col-sm-12 col-md-12 col-lg-12" v-text='viewData.moduleName+"模型配置(id:"+moduleId+")"'></h1>
+                            <div class="form-group pull-left">
+                                <input type="button" class="btn btn-sm btn-primary " value="保存" @click='keepData'>
+                            </div>
+                            <div class="form-group pull-right">
+                                <input type="button" class="btn btn-sm btn-primary " value="返回" @click='windowBack'>
+                            </div>
+
+                            <!--数据表-->
+                            <div class="row">
+                                <div v-for="(cut,cutIndex) in actCut" class=" col-sm-12 col-md-12 col-lg-12" style="font-size: 16px;margin-bottom: 30px;background-color: #F3F3F3;">
+                                    <p class=" col-sm-12 col-md-12 col-lg-12" style="color: #337AB7;">
+                                        <span class="col-sm-2 col-md-2 col-lg-2">
+                                            <label class="pos-rel">
+                                                <!-- 复选框 -->
+                                                <input type="checkbox" class="ace" :checked='cut.checked' @click='vueset(cut,cut.checked,cutIndex)'>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            {{cut.cutinPointName}}
+                                        </span>
+                                    </p>
+                                    <p :key='cutIndex' class="col-sm-12 col-md-12 col-lg-12" style="border-top: 1px solid #ccc;">
+                                        <span v-for="(component, componentIndex) in cut.mcpActComponentConfigs" :key="componentIndex"
+                                            class="col-sm-2 col-md-2 col-lg-2">
+                                            <label class="pos-rel">
+                                                <!-- 复选框 -->
+                                                <input type="checkbox" class="ace " :checked='component.checked' :key='componentIndex'
+                                                    :disabled='!cut.checked' @click='vueset(component,component.checked)'>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            {{component.componentName}}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                            <!--数据表end-->
+
+
+
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/thirdPartyOperation/common/ajaxfileupload.js"></script>
+    <script src="/js/marketingActive/activeTemplateMgmt/activeTemplateDeploy.js"></script>
+</body>
+
+</html>

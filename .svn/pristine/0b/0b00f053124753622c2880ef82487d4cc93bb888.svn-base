@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        input[type=checkbox]{
+            cursor: pointer;
+            font-family: fontAwesome;
+            font-weight: 400;
+            font-size: 12px;
+            color: #FFF;
+            content: "\a0";
+            background-color: #FAFAFA;
+            border: 1px solid #C8C8C8;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            border-radius: 0;
+            display: inline-block;
+            text-align: center;
+            height: 16px;
+            line-height: 14px;
+            min-width: 16px;
+            margin-right:3px;
+            position: relative;
+            top:4px;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--新增弹窗-->
+                <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:700px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">新增配置</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <div style="text-align:center">
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:10px">组合产品ID:</label>
+                                            <!--<select name="" id="" style="width:170px">-->
+                                                <!--<option value=""></option>-->
+                                            <!--</select>-->
+                                            <input type="text" style="width:175px;" v-model.trim="groupid"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-2px">产品系列分类:</label>
+                                            <!--<input type="text" style="width:175px;" v-model.trim="shiftType"/>-->
+                                            <select name="" style="width:175px;" v-model.trim="shiftType">
+                                                <option value="">请选择</option>
+                                                <option :value="item.shiftType" v-for="(item,index) in SeriesList">
+                                                    {{item.shiftType}}---{{item.typeName}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-28px">运作结束默认操作:</label>
+                                            <!--<input type="text" style="width:175px;" v-model.trim="defaultEndOperation"/>-->
+                                            <select name="" style="width:175px;" v-model.trim="defaultEndOperation">
+                                                <option value="">请选择</option>
+                                                <option value="01">赎回</option>
+                                                <option value="02">解散</option>
+                                                <option value="03">转托管</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-28px">运作结束可选操作:</label>
+                                            <!--<input type="text" style="width:175px;" v-model.trim="optionalEndOperations"/>-->
+                                            <!--<select name="" style="width:175px;" v-model.trim="optionalEndOperations">-->
+                                                <!--<option value="">请选择</option>-->
+                                                <!--<option value="01">赎回</option>-->
+                                                <!--<option value="02">解散</option>-->
+                                                <!--<option value="03">转托管</option>-->
+                                            <!--</select>-->
+                                            <label class="pos-rel" style="text-align: center"><input type="checkbox" value="01">赎回</label>
+                                            <label class="pos-rel"><input type="checkbox" value="02">解散</label>
+                                            <label class="pos-rel"><input type="checkbox" value="03">转托管</label>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">产品期数描述:</label>
+                                            <input type="text" style="width:175px;" v-model.trim="totalPeriod"/>
+                                        </div>
+                                        <div class="form-group" style="margin-left:140px">
+                                            <div class="input-group">
+                                                <label class="control-label" style="width:150px;text-align: right">申购开始时间:</label>
+                                                <input type="text" id="bidStartDate" class="date-timepicker"
+                                                       style="width:145px;">
+                                                <span class="input-group-addon" style="width: 40px;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" style="margin-left:140px">
+                                            <div class="input-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">申购结束时间:</label>
+                                                <input type="text" id="bidEndDate" class="date-timepicker"
+                                                       style="width:145px;">
+                                                <span class="input-group-addon" style="width: 40px;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" style="margin-left:140px">
+                                            <div class="input-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">运作结束时间:</label>
+                                                <input type="text" id="operationEndDate" class="date-timepicker"
+                                                       style="width:145px;">
+                                                <span class="input-group-addon" style="width: 40px;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="saveParam()">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--修改弹窗-->
+                <div class="modal" id="revise" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:700px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">修改</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <div style="text-align:center">
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:10px">组合产品ID:</label>
+                                            <!--<select name="" id="" style="width:170px">-->
+                                            <!--<option value=""></option>-->
+                                            <!--</select>-->
+                                            <input type="text" style="width:175px;" v-model.trim="groupid" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-2px">产品系列分类:</label>
+                                            <!--<input type="text" style="width:175px;" v-model.trim="shiftType"/>-->
+                                            <select name="" style="width:175px;" v-model="shiftType">
+                                            <!--<option value="">请选择</option>-->
+                                            <option :value="item.shiftType" v-for="(item,index) in SeriesList">
+                                                {{item.shiftType}}
+                                            </option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-28px">运作结束默认操作:</label>
+                                            <!--<input type="text" style="width:175px;" v-model.trim="defaultEndOperation"/>-->
+                                            <select name="" style="width:175px;" v-model.trim="defaultEndOperation">
+                                                <option value="">请选择</option>
+                                                <option value="01">赎回</option>
+                                                <option value="02">解散</option>
+                                                <option value="03">转托管</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-28px">运作结束可选操作:</label>
+                                            <!--<input type="text" style="width:175px;" v-model.trim="optionalEndOperations"/>-->
+                                            <!--<select name="" style="width:175px;" v-model.trim="optionalEndOperations">-->
+                                            <!--<option value="">请选择</option>-->
+                                            <!--<option value="01">赎回</option>-->
+                                            <!--<option value="02">解散</option>-->
+                                            <!--<option value="03">转托管</option>-->
+                                            <!--</select>-->
+                                            <label class="pos-rel" style="text-align: center"><input type="checkbox" name="checkData" value="01">赎回</label>
+                                            <label class="pos-rel"><input type="checkbox" name="checkData" value="02">解散</label>
+                                            <label class="pos-rel"><input type="checkbox" name="checkData" value="03">转托管</label>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">产品期数描述:</label>
+                                            <input type="text" style="width:175px;" v-model.trim="totalPeriod"/>
+                                        </div>
+                                        <div class="form-group" style="margin-left:140px">
+                                            <div class="input-group">
+                                                <label class="control-label" style="width:150px;text-align: right">申购开始时间:</label>
+                                                <input type="text" id="bidStartDates" ref="bidStartDates" class="date-timepicker"
+                                                       style="width:145px;">
+                                                <span class="input-group-addon" style="width: 40px;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" style="margin-left:140px">
+                                            <div class="input-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">申购结束时间:</label>
+                                                <input type="text" id="bidEndDates" ref="bidEndDates" class="date-timepicker"
+                                                       style="width:145px;">
+                                                <span class="input-group-addon" style="width: 40px;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" style="margin-left:140px">
+                                            <div class="input-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">运作结束时间:</label>
+                                                <input type="text" id="operationEndDates" ref="operationEndDates" class="date-timepicker"
+                                                       style="width:145px;">
+                                                <span class="input-group-addon" style="width: 40px;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="update()">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 10px 0;height: 54px">
+                    <div class="form-group">
+                        <label class="control-label">组合产品ID:</label>
+                        <input type="text" style="width:175px;" v-model.trim="condition"/>
+                    </div>
+                    <div class="form-group pull-right" style="vertical-align: middle">
+                        <!--<input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">-->
+                        <input type="button" class="btn btn-sm btn-primary" value="新增" @click="showAdd()">
+                    </div>
+
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length" id="dynamic-table_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                    <thead>
+                    <tr>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">组合产品ID</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">产品系列分类</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">产品系列名称</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">产品系列描述</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">产品期数描述</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">运作结束默认操作</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">运作结束可选操作</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="viewData.length>0">
+                        <tr v-for="(item,index) in viewData" :key="index">
+                            <td class="center" v-text='item.groupid'></td>
+                            <td class="center" v-text='item.shiftType'></td>
+                            <td class="center">
+                                <span v-for="(itemSeries,index) in SeriesList" :key="index">
+                                    <span v-if="itemSeries.shiftType==item.shiftType">{{itemSeries.typeName}}</span>
+                                </span>
+                            </td>
+                            <td class="center">
+                               <span v-for="(itemSeries,index) in SeriesList" :key="index">
+                                    <span v-if="itemSeries.shiftType==item.shiftType">{{itemSeries.typeDesc}}</span>
+                               </span>
+                            </td>
+                            <td class="center" v-text='item.totalPeriod'></td>
+                            <td class="center">{{item.defaultEndOperation | defaultEndOperation}}</td>
+                            <td class="center">{{item.optionalEndOperations | optionalEndOperations}}</td>
+                            <td class="center">
+                                <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'没有数据'" colspan="10"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+
+                <!--底部页码-->
+                <div v-if="viewData.length>0"  class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+middleData.length+'页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in middleData.length" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/businessMgmt/combinationProductConfig/productParamsAdd.js"></script>
+</body>
+</html>

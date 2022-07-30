@@ -1,0 +1,407 @@
+module.exports = [
+    {
+        "menuId": "8",
+        "parentMenuId": "",
+        "hasSubmenu": true,
+        "page": false,
+        "type": "2",
+        "name": "奖励系统",
+        "url": "/awardMgmt"
+    },
+    {
+        "menuId": "8-1",
+        "parentMenuId": "8",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "奖励配置管理",
+        "url": "/awardMgmt/awardSetting"
+    },
+    {
+        "menuId": "8-1-1",
+        "parentMenuId": "8-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "奖励类型配置",
+        "url": "/awardMgmt/awardSetting/typeSetting.html"
+    },
+    {
+        "menuId": "8-1-2",
+        "parentMenuId": "8-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "奖励对接渠道配置",
+        "url": "/awardMgmt/awardSetting/portSetting.html"
+    },
+    {
+        "menuId": "8-1-3",
+        "parentMenuId": "8-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "奖励卡种配置",
+        "url": "/awardMgmt/awardSetting/cardSetting.html"
+    },
+    {
+        "menuId": "8-1-4",
+        "parentMenuId": "8-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "奖励卡信息配置",
+        "url": "/awardMgmt/awardSetting/infoSetting.html"
+    },
+    {
+        "menuId": "8-1-5",
+        "parentMenuId": "8-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "批量生成奖励卡",
+        "url": "/awardMgmt/awardSetting/batchCard.html"
+    },
+    {
+        "menuId": "8-1-6",
+        "parentMenuId": "8-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "三方手机充值配置",
+        "url": "/awardMgmt/awardSetting/phoneSetting.html"
+    },
+    {
+        "menuId": "8-1-7",
+        "parentMenuId": "8-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "手机号运营商号段",
+        "url": "/awardMgmt/awardSetting/phoneNumRun.html"
+    },
+    {
+        "menuId": "8-1-8",
+        "parentMenuId": "8-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "奖励包配置",
+        "url": "/awardMgmt/awardSetting/awardTable.html"
+    },
+    {
+        "menuId": "8-2",
+        "parentMenuId": "8",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "用户奖励领取查询",
+        "url": "/awardMgmt/awardSearch"
+    },
+    {
+        "menuId": "8-2-1",
+        "parentMenuId": "8-2",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "奖励卡/兑换领取记录",
+        "url": "/awardMgmt/awardSearch/awardRecord.html"
+    },
+    {
+        "menuId": "8-2-2",
+        "parentMenuId": "8-2",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "用户奖励包明细表",
+        "url": "/awardMgmt/awardSearch/userDetail.html"
+    },
+    {
+        "menuId": "8-2-3",
+        "parentMenuId": "8-2",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "用户奖励包总记录表",
+        "url": "/awardMgmt/awardSearch/awardLogAll.html"
+    },
+    {
+        "menuId": "8-3",
+        "parentMenuId": "8",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "红包配置管理",
+        "url": "/awardMgmt/redPacketSettingMgmt"
+    },
+    {
+        "menuId": "8-3-1",
+        "parentMenuId": "8-3",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "红包类型管理",
+        "url": "/awardMgmt/redPacketSettingMgmt/redPacketType.html"
+    },
+    {
+        "menuId": "8-3-2",
+        "parentMenuId": "8-3",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "红包查询管理",
+        "url": "/awardMgmt/redPacketSettingMgmt/redPacketQuery.html"
+    },
+    {
+        "menuId": "8-3-3",
+        "parentMenuId": "8-3",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "红包发送管理",
+        "url": "/awardMgmt/redPacketSettingMgmt/redPacketSend.html"
+    },
+    {
+        "menuId": "8-4",
+        "parentMenuId": "8",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "积分配置管理",
+        "url": "/awardMgmt/integralSettingMgmt"
+    },
+    {
+        "menuId": "8-4-1",
+        "parentMenuId": "8-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "积分类型管理",
+        "url": "/awardMgmt/integralSettingMgmt/integralType.html"
+    },
+    {
+        "menuId": "8-4-2",
+        "parentMenuId": "8-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "积分查询管理",
+        "url": "/awardMgmt/integralSettingMgmt/integralQuery.html"
+    },
+    {
+        "menuId": "8-4-3",
+        "parentMenuId": "8-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "积分发放管理",
+        "url": "/awardMgmt/integralSettingMgmt/integralCalc.html"
+    },
+    {
+        "menuId": "8-4-4",
+        "parentMenuId": "8-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "积分兑换配置",
+        "url": "/awardMgmt/integralSettingMgmt/integralExchange.html"
+    },
+    {
+        "menuId": "8-4-5",
+        "parentMenuId": "8-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "东航积分兑换管理",
+        "url": "/awardMgmt/integralSettingMgmt/integralExchangeDH.html"
+    },
+    {
+        "menuId": "8-5",
+        "parentMenuId": "8",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "礼券配置管理",
+        "url": "/awardMgmt/couponSettingMgmt"
+    },
+    {
+        "menuId": "8-5-1",
+        "parentMenuId": "8-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "礼券管理",
+        "url": "/awardMgmt/couponSettingMgmt/couponMgmt.html"
+    },
+    {
+        "menuId": "8-5-2",
+        "parentMenuId": "8-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "礼券类型管理",
+        "url": "/awardMgmt/couponSettingMgmt/couponTypeMgmt.html"
+    },
+    {
+        "menuId": "8-5-3",
+        "parentMenuId": "8-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "礼券用户管理",
+        "url": "/awardMgmt/couponSettingMgmt/couponUserMgmt.html"
+    },
+    {
+        "menuId": "8-5-4",
+        "parentMenuId": "8-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "礼券转赠管理",
+        "url": "/awardMgmt/couponSettingMgmt/couponPresentMgmt.html"
+    },
+    {
+        "menuId": "8-6",
+        "parentMenuId": "8",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "道乐微信红包管理",
+        "url": "/awardMgmt/daoLeWechatRedPackeMgmt"
+    },
+    {
+        "menuId": "8-6-1",
+        "parentMenuId": "8-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "红包类型管理",
+        "url": "/awardMgmt/daoLeWechatRedPackeMgmt/redPacketType.html"
+    },
+    {
+        "menuId": "8-6-2",
+        "parentMenuId": "8-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "红包查询管理",
+        "url": "/awardMgmt/daoLeWechatRedPackeMgmt/redPacketQuery.html"
+    },
+    {
+        "menuId": "8-6-3",
+        "parentMenuId": "8-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "红包状态查询",
+        "url": "/awardMgmt/daoLeWechatRedPackeMgmt/redPacketStatus.html"
+    },
+    {
+        "menuId": "8-7",
+        "parentMenuId": "8",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "高净值权益管理",
+        "url": "/awardMgmt/highNetWorthEquityMgmt"
+    },
+    {
+        "menuId": "8-7-1",
+        "parentMenuId": "8-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基础权益配置",
+        "url": "/awardMgmt/highNetWorthEquityMgmt/basicInterestConfig.html"
+    },
+    {
+        "menuId": "8-7-2",
+        "parentMenuId": "8-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "权益包配置",
+        "url": "/awardMgmt/highNetWorthEquityMgmt/rightsPackageConfig.html"
+    },
+    {
+        "menuId": "8-7-3",
+        "parentMenuId": "8-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "权益合作方信息",
+        "url": "/awardMgmt/highNetWorthEquityMgmt/equityPartners.html"
+    },
+    {
+        "menuId": "8-7-4",
+        "parentMenuId": "8-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "高净值权益关联配置",
+        "url": "/awardMgmt/highNetWorthEquityMgmt/interestRelationConfig.html"
+    },
+    {
+        "menuId": "8-7-5",
+        "parentMenuId": "8-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "高净值权益领取查询",
+        "url": "/awardMgmt/highNetWorthEquityMgmt/interestReceiveQuery.html"
+    },
+    {
+        "menuId": "8-8",
+        "parentMenuId": "8",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "体验金配置",
+        "url": "/awardMgmt/experienceGold"
+    },
+    {
+        "menuId": "8-8-1",
+        "parentMenuId": "8-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "体验金券参数配置",
+        "url": "/awardMgmt/experienceGold/configSetting.html"
+    },
+    {
+        "menuId": "8-8-2",
+        "parentMenuId": "8-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "体验金券管理",
+        "url": "/awardMgmt/experienceGold/experienceGoldMgmt.html"
+    },
+    {
+        "menuId": "8-8-3",
+        "parentMenuId": "8-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "体验金券奖励配置",
+        "url": "/awardMgmt/experienceGold/rewardSetting.html"
+    },
+    {
+        "menuId": "8-8-4",
+        "parentMenuId": "8-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "体验金券奖励查询",
+        "url": "/awardMgmt/experienceGold/rewardQuery.html"
+    },     
+    {
+        "menuId": "8-8-5",
+        "parentMenuId": "8-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "体验金券发送查询",
+        "url": "/awardMgmt/experienceGold/sendQuery.html"
+    }, 
+];

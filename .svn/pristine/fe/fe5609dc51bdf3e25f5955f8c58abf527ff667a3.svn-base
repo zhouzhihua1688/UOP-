@@ -1,0 +1,6 @@
+
+module.exports = function (app) {
+    require('./parameterMgmt')(app);
+    require('./publicOfferReview')(app);
+    require('./firmOfferRank')(app);
+};

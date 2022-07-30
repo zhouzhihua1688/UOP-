@@ -1,0 +1,236 @@
+const request = require('./../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').productInfoConfig.productExpandContent;
+
+module.exports = function(app) {
+	// 获取基金列表
+	app.post('/businessMgmt/productInfoConfig/productExpandContent/getFundList.ajax', (req, res, next) => {
+		let option = {
+			session: req.session,
+			url: apiUrl.getFundList,
+			qs: req.body,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/businessMgmt/productInfoConfig/productExpandContent/getFundList.ajax option:', option);
+		request(option, (error, response, body) => {
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/getFundList.ajax error:', error);
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/getFundList.ajax statusCode:', response &&
+				response.statusCode);
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/getFundList.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+			if (body.returnCode == 0) {
+				body.body.forEach(item => {
+					item.extendCategory = 'FND';
+				});
+				return res.send({
+					error: 0,
+					msg: '查询成功',
+					data: body.body
+				});
+			} else if (body && body.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: body.returnMsg,
+					data: null
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '查询失败',
+					data: null
+				});
+			}
+		});
+	});
+	// 获取类型列表
+	app.post('/businessMgmt/productInfoConfig/productExpandContent/getTypeList.ajax', (req, res, next) => {
+		let option = {
+			session: req.session,
+			url: apiUrl.getTypeList,
+			qs: req.body,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/businessMgmt/productInfoConfig/productExpandContent/getTypeList.ajax option:', option);
+		request(option, (error, response, body) => {
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/getTypeList.ajax error:', error);
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/getTypeList.ajax statusCode:', response &&
+				response.statusCode);
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/getTypeList.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+			if (body.returnCode == 0) {
+				body.body.forEach(item => {
+					item.extValue = '';
+				});
+				return res.send({
+					error: 0,
+					msg: '查询成功',
+					data: body.body
+				});
+			} else if (body && body.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: body.returnMsg,
+					data: null
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '查询失败',
+					data: null
+				});
+			}
+		});
+	});
+	// 查询
+	app.post('/businessMgmt/productInfoConfig/productExpandContent/query.ajax', (req, res, next) => {
+		let getAllType = new Promise((resolve, reject) => {
+			let option = {
+				session: req.session,
+				url: apiUrl.getTypeList,
+				qs: {
+					extendCategory: req.body.extendCategory
+				},
+				timeout: 15000,
+				json: true
+			};
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/query.ajax --getAllType option:', option);
+			request(option, (error, response, body) => {
+				console.log('/businessMgmt/productInfoConfig/productExpandContent/query.ajax --getAllType error:', error);
+				console.log('/businessMgmt/productInfoConfig/productExpandContent/query.ajax --getAllType statusCode:',
+					response && response.statusCode);
+				console.log('/businessMgmt/productInfoConfig/productExpandContent/query.ajax --getAllType body:', body);
+				if (error) {
+					return reject({
+						message: '获取所有基金类型列表失败'
+					});
+				}
+				if (body.returnCode == 0) {
+					return resolve(body.body);
+				} else if (body && body.returnCode != 9999) {
+					return reject({
+						message: body.returnMsg
+					});
+				} else {
+					return reject({
+						message: '获取所有基金类型列表失败'
+					});
+				}
+			});
+		});
+
+		let getFundType = new Promise((resolve, reject) => {
+			let option = {
+				session: req.session,
+				url: apiUrl.query,
+				qs: {
+					productId: req.body.productId
+				},
+				timeout: 15000,
+				json: true
+			};
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/query.ajax --getFundType option:', option);
+			request(option, (error, response, body) => {
+				console.log('/businessMgmt/productInfoConfig/productExpandContent/query.ajax --getFundType error:', error);
+				console.log('/businessMgmt/productInfoConfig/productExpandContent/query.ajax --getFundType statusCode:',
+					response && response.statusCode);
+				console.log('/businessMgmt/productInfoConfig/productExpandContent/query.ajax --getFundType body:', body);
+				if (error) {
+					return reject({
+						message: '获取该基金对应扩展信息失败'
+					});
+				}
+				if (body.returnCode == 0) {
+					return resolve(body.body);
+				} else if (body && body.returnCode != 9999) {
+					return reject({
+						message: body.returnMsg
+					});
+				} else {
+					return reject({
+						message: '获取该基金对应扩展信息失败'
+					});
+				}
+			});
+		});
+
+		Promise.all([getAllType, getFundType]).then(([allType, fundType]) => {
+			let resultData = allType.map(item => {
+				let filterItem = fundType.filter(data => data.extColumn === item.extColumn)[0];
+				return {
+					extCategory: item.extCategory,
+					extColumn: item.extColumn,
+					extColumnDesc: item.extColumnDesc,
+					productId: req.body.productId,
+					extValue: filterItem && filterItem.extValue ? filterItem.extValue : ''
+				};
+			});
+			return res.send({
+				error: 0,
+				msg: '调用成功',
+				data: resultData
+			})
+		}).catch(error => {
+			return res.send({
+				error: 1,
+				msg: error.message,
+				data: null
+			})
+		});
+	});
+	// 新增
+	app.post('/businessMgmt/productInfoConfig/productExpandContent/operate.ajax', (req, res, next) => {
+		let option = {
+			session: req.session,
+			url: apiUrl.add,
+			body: {
+				productId: req.body.productId,
+				recordList: JSON.parse(req.body.recordList),
+			},
+			timeout: 15000,
+			json: true
+		};
+		console.log('/businessMgmt/productInfoConfig/productExpandContent/operate.ajax option:', option);
+		request.post(option, (error, response, body) => {
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/operate.ajax error:', error);
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/operate.ajax statusCode:', response &&
+				response.statusCode);
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/operate.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '保存失败'
+				});
+			}
+			if (body.returnCode == 0) {
+				return res.send({
+					error: 0,
+					msg: '保存成功',
+					data: null
+				});
+			} else if (body && body.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: body.returnMsg,
+					data: null
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '保存失败',
+					data: null
+				});
+			}
+		});
+	});
+};

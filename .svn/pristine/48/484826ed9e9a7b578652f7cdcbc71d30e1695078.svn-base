@@ -1,0 +1,269 @@
+const request = require('../../../local_data/requestWrapper');
+const path = require('path');
+const fs = require('fs');
+const formidable = require('formidable');
+const apiConfig = require('../apiConfig');
+const apiUrlList = apiConfig.classMgmt.classMgmt;
+const filePath = apiConfig.filePath;
+const filePathExternal = apiConfig.filePathExternal + '/classMgmt';
+const filePathExternal_url = apiConfig.filePathExternal_url + '/classMgmt';
+module.exports = function (app) {
+    //查询
+    app.post('/messageCenter/classMgmt/classMgmt/search.ajax', (req, res, next) => {
+        let params = {};
+        req.body.categoryId && (params.categoryId = req.body.categoryId );
+        let option = {
+            session: req.session,
+            url: params.categoryId ? apiUrlList.query : apiUrlList.search,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/classMgmt/classMgmt/search.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/messageCenter/classMgmt/classMgmt/search.ajax error:', error);
+            console.log('/messageCenter/classMgmt/classMgmt/search.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/classMgmt/classMgmt/search.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0 && result.body) {
+                if (Array.isArray(result.body)) {
+                    result.body.forEach(item => {
+                        item.showPushType = item.pushType.split(',').map(value => {
+                            if (value == 1) {
+                                return 'App站内信';
+                            }
+                            if (value == 2) {
+                                return 'App-push';
+                            }
+                            if (value == 3) {
+                                return '短信';
+                            }
+                            if (value == 4) {
+                                return '微信';
+                            }
+                            if (value == 5) {
+                                return '微信高端';
+                            }
+                            return '';
+                        }).join(',');
+                        item.showOpenEnable = item.openEnable ? '是' : '否';
+                        item.showTimeEnable = item.timeEnable ? '是' : '否';
+                        item.showReceiveEnable = item.receiveEnable ? '是' : '否';
+                        item.showMultiEnable = item.multiEnable ? '是' : '否';
+                        item.showShowStatus = item.showStatus ? '是' : '否';
+                        item.showOpenStatus = item.openStatus ? '开' : '关';
+                    });
+                    res.send({error: 0, msg: '查询成功', data: result.body});
+                }
+                else {
+                    res.send({error: 0, msg: '查询成功', data: [result.body]});
+                }
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '查询失败'});
+            }
+        });
+    });
+    //删除
+    app.post('/messageCenter/classMgmt/classMgmt/del.ajax', (req, res, next) => {
+        let params = {};
+        req.body.categoryId && (params.categoryId = req.body.categoryId );
+        let option = {
+            session: req.session,
+            qs: params,
+            url: apiUrlList.del,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/classMgmt/classMgmt/del.ajax option:', option);
+        request.del(option, (error, response, body) => {
+            sysLogger(3, req, option, body);
+            console.log('/messageCenter/classMgmt/classMgmt/del.ajax error:', error);
+            console.log('/messageCenter/classMgmt/classMgmt/del.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/classMgmt/classMgmt/del.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({error: 0, msg: '删除成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: result.returnCode, msg: '删除失败'});
+            }
+        });
+    });
+    //上传
+    app.post('/messageCenter/classMgmt/classMgmt/add.ajax', (req, res, next) => {
+        let form = new formidable.IncomingForm();
+        form.uploadDir = filePath;
+        form.keepExtensions = true;
+        form.parse(req, (error, fields, files) => {
+            if (error) {
+                console.log('文件上传出错:', error);
+                res.send({error: 1, msg: '上传失败', data: null});
+            }
+            console.log('fields=', fields);
+            console.log('files=', files);
+            let params = {};
+            params.categoryName = fields.categoryName;
+            params.pushType = fields.pushType;
+            params.pushTime = fields.pushTime;
+            params.openEnable = fields.openEnable === 'true';
+            params.timeEnable = fields.timeEnable === 'true';
+            params.receiveEnable = fields.receiveEnable === 'true';
+            params.multiEnable = fields.multiEnable === 'true';
+            params.openStatus = fields.openStatus === 'true';
+            params.showStatus = fields.showStatus === 'true';
+            params.imageUrl = path.resolve(files.file.path);
+            params.creator = req.session['loginInfo'].username;
+            // 对外展示,需要更改文件路径
+            if (fields.showExternal === 'true') {
+                try {
+                    let originFilePath = path.resolve(files.file.path);
+                    let originFileName = files.file.name.split('.')[0];
+                    let originFileType = files.file.name.split('.')[1];
+                    let newFileName = `${originFileName}_${new Date().getTime()}.${originFileType}`;
+                    let readerStream = fs.createReadStream(originFilePath);
+                    let writerStream = fs.createWriteStream(`${filePathExternal}/${newFileName}`);
+                    readerStream.pipe(writerStream);
+                    fs.unlinkSync(originFilePath);
+                    params.imageUrl = `${filePathExternal_url}/${newFileName}`;
+                } catch (error) {
+                    console.log('文件上传出错:', error);
+                    return res.send({error: 1, msg: '上传失败', data: null});
+                }
+            }
+            let option = {
+                session: req.session,
+                url: apiUrlList.add,
+                timeout: 30000,
+                body: params,
+                json: true
+            };
+            console.log('/messageCenter/classMgmt/classMgmt/add.ajax option:', option);
+            request.post(option, (error, response, body) => {
+                sysLogger(1, req, option, body);
+                console.log('/messageCenter/classMgmt/classMgmt/add.ajax error:', error);
+                console.log('/messageCenter/classMgmt/classMgmt/add.ajax statusCode:', response && response.statusCode);
+                console.log('/messageCenter/classMgmt/classMgmt/add.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                let result = typeof body === 'string' ? JSON.parse(body) : body;
+                if (result && result.returnCode === 0) {
+                    res.send({error: 0, msg: '添加成功'});
+                }
+                else if (result && result.returnCode != 9999) {
+                    res.send({error: 1, msg: result.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '添加失败'});
+                }
+            });
+        });
+    });
+    //更新
+    app.post('/messageCenter/classMgmt/classMgmt/update.ajax', (req, res, next) => {
+        let form = new formidable.IncomingForm();
+        form.uploadDir = filePath;
+        form.keepExtensions = true;
+        form.parse(req, (err, fields, files) => {
+            console.log('表单接收完毕:', fields);
+            console.log('表单文件接收完毕:', files);
+            let params = {};
+            fields.categoryId && (params.categoryId = fields.categoryId);
+            fields.categoryName && (params.categoryName = fields.categoryName);
+            params.categoryName = fields.categoryName;
+            params.pushType = fields.pushType;
+            params.pushTime = fields.pushTime;
+            params.openEnable = fields.openEnable === 'true';
+            params.timeEnable = fields.timeEnable === 'true';
+            params.receiveEnable = fields.receiveEnable === 'true';
+            params.multiEnable = fields.multiEnable === 'true';
+            params.openStatus = fields.openStatus === 'true';
+            params.showStatus = fields.showStatus === 'true';
+            params.imageUrl = path.resolve(files.file.path);
+            params.creator = req.session['loginInfo'].username;
+            let option = {
+                session: req.session,
+                url: apiUrlList.update,
+                timeout: 30000,
+                body: params,
+                json: true
+            };
+            console.log('/messageCenter/classMgmt/classMgmt/update.ajax option:', option);
+            request.post(option, (error, response, body) => {
+                sysLogger(2, req, option, body);
+                console.log('/messageCenter/classMgmt/classMgmt/update.ajax error:', error);
+                console.log('/messageCenter/classMgmt/classMgmt/update.ajax statusCode:', response && response.statusCode);
+                console.log('/messageCenter/classMgmt/classMgmt/update.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                let result = typeof body === 'string' ? JSON.parse(body) : body;
+                if (result && result.returnCode === 0) {
+                    res.send({error: 0, msg: '更新成功'});
+                }
+                else if (result && result.returnCode != 9999) {
+                    res.send({error: 1, msg: result.returnMsg});
+                }
+                else {
+                    res.send({error: result.returnCode, msg: '更新失败'});
+                }
+            });
+        });
+    });
+    //无文件更新
+    app.post('/messageCenter/classMgmt/classMgmt/updateNoFile.ajax', (req, res, next) => {
+        let params = {};
+        params.categoryId = req.body.categoryId;
+        params.categoryName = req.body.categoryName;
+        params.pushType = req.body.pushType;
+        params.pushTime = req.body.pushTime;
+        params.openEnable = req.body.openEnable === 'true';
+        params.timeEnable = req.body.timeEnable === 'true';
+        params.receiveEnable = req.body.receiveEnable === 'true';
+        params.multiEnable = req.body.multiEnable === 'true';
+        params.openStatus = req.body.openStatus === 'true';
+        params.showStatus = req.body.showStatus === 'true';
+        params.imageUrl = req.body.imageUrl;
+        params.creator = req.session['loginInfo'].username;
+        let option = {
+            session: req.session,
+            url: apiUrlList.update,
+            timeout: 30000,
+            body: params,
+            json: true
+        };
+        console.log('/messageCenter/classMgmt/classMgmt/updateNoFile.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            sysLogger(2, req, option, body);
+            console.log('/messageCenter/classMgmt/classMgmt/updateNoFile.ajax error:', error);
+            console.log('/messageCenter/classMgmt/classMgmt/updateNoFile.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/classMgmt/classMgmt/updateNoFile.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({error: 0, msg: '更新成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: result.returnCode, msg: '更新失败'});
+            }
+        });
+    });
+};

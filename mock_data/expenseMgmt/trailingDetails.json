@@ -1,0 +1,90 @@
+{
+  "returnCode":0,
+  "returnMsg":"调用成功",
+  "data": [
+    {
+      "ymonth": "201801",
+      "edition": "1.0",
+      "branchcode": "002",
+      "branchnm": "��������",
+      "fundid": "470006",
+      "fundnm": "��ҽҩ",
+      "tailfare": 128211.36,
+      "importtime": "2018-10-11 10:52:58",
+      "inserttime": "2018-10-11 10:52:58",
+      "updatetime": null,
+      "attach1": null,
+      "attach2": null
+    },
+    {
+      "ymonth": "201801",
+      "edition": "1.0",
+      "branchcode": "002",
+      "branchnm": "��������",
+      "fundid": "470007",
+      "fundnm": "����֤",
+      "tailfare": 88670.45,
+      "importtime": "2018-10-11 10:56:37",
+      "inserttime": "2018-10-11 10:56:37",
+      "updatetime": null,
+      "attach1": null,
+      "attach2": null
+    },
+    {
+      "ymonth": "201801",
+      "edition": "1.0",
+      "branchcode": "002",
+      "branchnm": "��������",
+      "fundid": "470009",
+      "fundnm": "����Ӫ",
+      "tailfare": 583292.99,
+      "importtime": "2018-10-11 10:56:37",
+      "inserttime": "2018-10-11 10:56:37",
+      "updatetime": null,
+      "attach1": null,
+      "attach2": null
+    },
+    {
+      "ymonth": "201801",
+      "edition": "1.0",
+      "branchcode": "003",
+      "branchnm": "ũҵ����",
+      "fundid": "470006",
+      "fundnm": "��ҽҩ",
+      "tailfare": 86579.02,
+      "importtime": "2018-10-11 10:56:38",
+      "inserttime": "2018-10-11 10:56:38",
+      "updatetime": null,
+      "attach1": null,
+      "attach2": null
+    },
+    {
+      "ymonth": "201801",
+      "edition": "1.0",
+      "branchcode": "003",
+      "branchnm": "ũҵ����",
+      "fundid": "470007",
+      "fundnm": "����֤",
+      "tailfare": 4879.91,
+      "importtime": "2018-10-11 10:56:38",
+      "inserttime": "2018-10-11 10:56:38",
+      "updatetime": null,
+      "attach1": null,
+      "attach2": null
+    },
+    {
+      "ymonth": "201801",
+      "edition": "1.0",
+      "branchcode": "003",
+      "branchnm": "ũҵ����",
+      "fundid": "470009",
+      "fundnm": "����Ӫ",
+      "tailfare": 118629.96,
+      "importtime": "2018-10-11 10:56:38",
+      "inserttime": "2018-10-11 10:56:38",
+      "updatetime": null,
+      "attach1": null,
+      "attach2": null
+    }
+  ]
+}

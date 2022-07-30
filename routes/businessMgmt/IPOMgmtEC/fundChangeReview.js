@@ -1,0 +1,346 @@
+const request = require('./../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').IPOMgmtEC.fundChangeReview;
+const tableName = 'bm_ipo_fundtransform'
+module.exports = function (app) {
+    // 获取  基金名称查询数据
+    app.post('/businessMgmt/IPOMgmtEC/fundChangeReview/collection.ajax', (req, res, next) => {
+        let userId = req.session.loginInfo.userid;
+        let params = req.body;
+        let option = {
+            pageUrl: '/businessMgmt/IPOMgmtEC/fundChangeReview/collection.ajax',
+            req,
+            url: apiUrl.collection,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                result.body.userId = userId;
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+        });
+    });
+
+    // 获取  线上初始数据和查询
+    app.post('/businessMgmt/IPOMgmtEC/fundChangeReview/getLineList.ajax', (req, res, next) => {
+        let params = req.body;
+        let userId = req.session.loginInfo.userid;
+        let option = {
+            pageUrl: '/businessMgmt/IPOMgmtEC/fundChangeReview/getLineList.ajax',
+            req,
+            url: `${apiUrl.getLineList}${params.fundid}/convert/query`,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body,
+                    userId
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+        });
+    });
+
+    // 获取  本地初始数据和查询
+    app.post('/businessMgmt/IPOMgmtEC/fundChangeReview/getLocalList.ajax', (req, res, next) => {
+        let params = req.body;
+        let userId = req.session.loginInfo.userid;
+
+        pool.getConnection(function (err, connection) {
+            if (err) {
+                console.log('/businessMgmt/IPOMgmtEC/fundChangeReview/add.ajax  链接失败', err)
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            console.log('params', params)
+
+            var $sql = `SELECT * FROM ${tableName} WHERE delete_flag='F'&&status<>'1';`;
+            if (params.fundid != '' || params.status != '') {
+                $sql = `SELECT * FROM ${tableName} WHERE delete_flag='F'&&status<>'1'${params.fundid == '' ? '' : `AND JSON_EXTRACT(content, '$.fundid')='${params.fundid}'`}${params.status == '' ? '' : '&&status=' + params.status};`
+            }
+            connection.query($sql, function (err, data) { //新增
+                if (err) {
+                    console.log(err)
+                    return res.send({
+                        error: 1,
+                        msg: '查询失败'
+                    });
+                } else {
+                    data.forEach(element => {
+                        element.content = JSON.parse(element.content)
+                        element.fundid = element.content.fundid
+                        element.ofundid = element.content.ofundid
+                        element.update_timestamp = formatTimeStamp(element.update_timestamp)
+                        delete element.content
+                    });
+                    res.send({
+                        error: 0,
+                        msg: '查询成功',
+                        data,
+                        userId
+                    });
+                }
+            })
+            connection.release()
+        })
+    });
+
+    //   驳回数据
+    app.post('/businessMgmt/IPOMgmtEC/fundChangeReview/rejectFund.ajax', (req, res, next) => {
+        let params = req.body;
+        let userid = req.session.loginInfo.userid;
+        let review_time = formatTimeStamp(new Date())
+
+        let $sql = `UPDATE ${tableName} SET ? WHERE delete_flag='F'&&local_id=${params.local_id}&&update_timestamp='${params.update_timestamp}';`;
+        let $sql_params = {
+            status: 9,
+            reviewer: userid,
+            remark: params.remark,
+            review_time
+        };
+        sql_query(res, $sql, $sql_params, function (err, data) {
+            if (err) {
+                console.log('驳回失败' + err);
+                return res.send({
+                    error: 1,
+                    msg: '驳回失败',
+                    data: null
+                });
+            }
+            console.log('data', data);
+            if (data.changedRows == 1) {
+                let $sql = `insert into ${tableName} (service_id,operate,status,content,creator,operator,reviewer,review_time,remark,comment,delete_flag,create_timestamp) select service_id,operate,status,content,creator,operator,reviewer,review_time,remark,'驳回','T',create_timestamp from ${tableName} WHERE delete_flag='F'&&service_id='${params.service_id}'&&local_id=${params.local_id}`
+
+                sql_query(res, $sql, [], function (err, insertdata) { //修改
+                    if (err) {
+                        console.log('驳回成功，数据留痕失败' + err);
+                        return res.send({
+                            error: 0,
+                            msg: '驳回成功，数据留痕失败' + err
+                        })
+                    }
+                    if (insertdata.affectedRows == 1) {
+                        return res.send({
+                            error: 0,
+                            msg: '驳回成功'
+                        })
+
+                    } else {
+                        return res.send({
+                            error: 0,
+                            msg: '驳回成功，数据留痕失败'
+                        })
+                    }
+                })
+
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '驳回失败,请刷新页面',
+                    data: null
+                });
+            }
+
+        })
+
+    });
+
+
+    // pass
+    app.post('/businessMgmt/IPOMgmtEC/fundChangeReview/passFund.ajax', (req, res, next) => {
+        let params = req.body;
+        let userId = req.session.loginInfo.userid;
+        new Promise(function (resolve, reject) {
+            if (params.operate == 3) {
+                console.log(params)
+                let option = {
+                    pageUrl: '/businessMgmt/IPOMgmtEC/fundChangeReview/passFund.ajax',
+                    req,
+                    url: `${apiUrl.delConvert}${params.fundid}/convert/delete`,
+                    qs: {
+                        ofundid: params.ofundid
+                    },
+                    timeout: 15000,
+                    json: true
+                };
+                console.log(option)
+                request.delete(option, (error, response, body) => {
+                    if (error) {
+                        return reject({
+                            error: 1,
+                            msg: '失败'
+                        });
+                    }
+                    let result = typeof body === 'string' ? JSON.parse(body) : body;
+                    if (result && result.returnCode == '0') {
+                        return resolve({
+                            msg: '删除成功',
+                            error: 0
+                        });
+                    } else if (result && result.returnCode == 9999) {
+                        return reject({
+                            msg: '删除失败',
+                            error: 1
+                        });
+                    } else {
+                        return reject({
+                            msg: '删除失败' + result.returnMsg,
+                            error: 1
+                        });
+                    }
+                });
+            } else {
+                let option = {
+                    pageUrl: '/businessMgmt/IPOMgmtEC/fundChangeReview/passFund.ajax',
+                    req,
+                    url: apiUrl.addConvert,
+                    body: {
+                        fundid: params.fundid,
+                        ofundid: params.ofundid
+                    },
+                    timeout: 15000,
+                    json: true
+                };
+                request.post(option, (error, response, body) => {
+                    if (error) {
+                        return reject({
+                            error: 1,
+                            msg: '失败'
+                        });
+                    }
+                    let result = typeof body === 'string' ? JSON.parse(body) : body;
+                    if (result && result.returnCode == '0') {
+                        return resolve({
+                            msg: '新增成功',
+                            error: 0
+                        });
+                    } else if (result && result.returnCode == 9999) {
+                        return reject({
+                            msg: '新增失败',
+                            error: 1
+                        });
+                    } else {
+                        return reject({
+                            msg: '新增失败' + result.returnMsg,
+                            error: 1
+                        });
+                    }
+                });
+            }
+        }).then(function () {
+            let review_time = formatTimeStamp(new Date())
+            let $sql = `insert into ${tableName} (service_id,operate,status,content,creator,operator,reviewer,review_time,remark,comment,delete_flag,create_timestamp) select service_id,operate,0,content,creator,'${userId}','${userId}','${review_time}',remark,'${params.operate == 1 ? '新增通过' : '删除通过'}','T',create_timestamp from ${tableName} WHERE delete_flag='F'&&service_id='${params.service_id}'&&local_id=${params.local_id}`
+            sql_query(res, $sql, [], function (err, insertdata) {
+                if (err) {
+                    console.log('留痕失败' + err);
+                    return res.send({
+                        error: 1,
+                        msg: `复核成功,留痕失败`,
+                        data: null
+                    });
+                }
+                if (insertdata.affectedRows == 1) {
+                    let $sql = `UPDATE ${tableName} SET  ?  WHERE delete_flag='F'&&service_id='${params.service_id}'&&local_id=${params.local_id}&&update_timestamp='${params.update_timestamp}';`;
+                    let undateSql_Params = {
+                        status: 0,
+                        reviewer: userId,
+                        operator: userId,
+                        remark: null,
+                        review_time
+                    };
+                    sql_query(res, $sql, undateSql_Params, function (err, data) {
+                        if (err) {
+                            console.log('本地数据修改失败' + err);
+                            return res.send({
+                                error: 1,
+                                msg: `复核成功,本地数据修改失败,请联系管理员`,
+                                data: null
+                            });
+                        }
+                        if (data.changedRows == 1) {
+                            return res.send({
+                                error: 0,
+                                msg: `复核成功`,
+                                data: null
+                            });
+                        } else {
+                            return res.send({
+                                error: 1,
+                                msg: `复核成功,本地数据修改失败，请联系管理员`,
+                                data: null
+                            });
+                        }
+                    })
+                } else {
+                    return res.send({
+                        error: 1,
+                        msg: `复核成功,留痕失败`,
+                        data: null
+                    });
+                }
+            })
+
+        }).catch(function (err) {
+            res.send(err)
+        })
+
+    })
+};
+
+function sql_query(res, $sql, params, callback) {
+
+    pool.getConnection(function (err, connection) {
+        if (err) {
+            console.log('链接失败', err)
+            return res.send({
+                error: 1,
+                msg: '数据库链接失败'
+            });
+        }
+        connection.query($sql, params, callback)
+        connection.release()
+    })
+}
+
+function formatTimeStamp(timestamp) {
+    let d = new Date(timestamp);
+    let fixZero = function (num) {
+        return num < 10 ? '0' + num : num;
+    };
+    return [d.getFullYear(), d.getMonth() + 1, d.getDate()].map(value => fixZero(value)).join('-') +
+        ' ' + [d.getHours(), d.getMinutes(), d.getSeconds()].map(value => fixZero(value)).join(':');
+}

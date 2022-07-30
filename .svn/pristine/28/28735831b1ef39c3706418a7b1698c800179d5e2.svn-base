@@ -1,0 +1,14 @@
+try {
+    const mysql = require('mysql');
+    const mysqlConfig = require('../apiConfig').mysqlConfig;
+    const mysqlPool = mysql.createPool(Object.assign({ connectionLimit: 10 }, mysqlConfig))
+} catch (error) {
+    console.log('mysqlPool error=', error)
+}
+module.exports = function (app) {
+    // 页面菜单
+    require('./discountHandle')(app);
+    require('./discountReview')(app);
+    require('./quotaHandle')(app);
+    require('./quotaReview')(app);
+};

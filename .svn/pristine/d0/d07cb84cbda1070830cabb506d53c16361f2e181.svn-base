@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--新增弹窗-->
+                <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:600px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding:10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">新增信息</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding: 0 10px;">
+                                    <div style="text-align:center">
+                                        <div class="form-group">
+                                            <label class="control-label">客群名称:</label>
+                                            <select style="width:175px" v-model="custNos">
+                                                <option value="">全部</option>
+                                                <option :value="item.custGroupNo" v-for="(item,index) in custGroup">
+                                                    {{item.custGroupName}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:28px">姓名:</label>
+                                            <input type="text" style="width:175px;" v-model.trim="custNames"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">证件类型:</label>
+                                            <select style="width:175px" v-model="custIds">
+                                                <option value="">全部</option>
+                                                <option :value="item.pmco" v-for="(item,index) in custIdlist">
+                                                    {{item.pmnm}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:15px">证件号:</label>
+                                            <input type="text" style="width:175px;" v-model.trim="custIdnos"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="saveParam()">保存</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--提示信息弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--删除数据弹框-->
+                <!--删除弹窗-->
+                <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">删除数据</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确认删除此条数据?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="deleteList()">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- 上传文件弹窗 -->
+                <!--<div class="modal" id="addfile" tabindex="-1" role="dialog" aria-hidden="true"-->
+                     <!--data-backdrop="static">-->
+                    <!--<div class="modal-dialog">-->
+                        <!--<div class="modal-content">-->
+                            <!--<div class="form-horizontal">-->
+                                <!--<div class="modal-header" style="padding: 10px;">-->
+                                    <!--<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>-->
+                                    <!--<h4 class="modal-title">导入文件</h4>-->
+                                <!--</div>-->
+                                <!--<div class="form-group">-->
+                                    <!--<label class="control-label col-sm-3">-->
+                                        <!--文件导入: </label>-->
+                                    <!--<div class="col-sm-9">-->
+                                        <!--<input type="text" class="col-sm-6" placeholder="请选择" disabled-->
+                                               <!--v-model.trim='filePath' />-->
+                                        <!--<input type="button" class="btn btn-sm btn-primary" id="uploadBtn"-->
+                                               <!--value="选择" @click='select'>-->
+                                        <!--<input type="button" value="上传" class="btn btn-sm btn-success"-->
+                                               <!--@click='fileUpload'>-->
+                                        <!--<form id="updateForm" enctype="multipart/form-data">-->
+                                            <!--<input id="uploadFileInput" @change='showFileName' type="file"-->
+                                                   <!--name="file" style="display: none" />-->
+                                        <!--</form>-->
+
+                                    <!--</div>-->
+                                <!--</div>-->
+                                <!--<div class="modal-footer">-->
+                                    <!--<div class="col-md-offset-3 col-md-9">-->
+                                        <!--<button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">-->
+                                            <!--取消-->
+                                        <!--</button>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+
+                            <!--</div>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
+
+
+                <div class="modal" id="addfile" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title inline">导入文件</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding: 0 12px;">
+                                    <div class="form-group" style="margin-top: 20px;">
+                                        <span class="control-label" style="margin-right: 20px;">文件:</span>
+                                        <input type="text" id="uploadInput" style="width: 55%;"
+                                               placeholder="请上传.xls文件" disabled/>
+                                        <input type="button" class="btn btn-sm btn-primary" id="uploadBtn"
+                                               value="选择">
+                                        <input type="button" class="btn btn-sm btn-danger" id="downloadExcel"
+                                               value="下载模板文件">
+                                    </div>
+                                </div>
+                                <input id="uploadFileInput" type="file" style="display:none"/>
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary" @click="batchAdd">导入</button>
+                                    <button class="btn btn-sm btn-primary" data-dismiss="modal" aria-hidden="true">
+                                        取消
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="form-inline" style="padding: 10px 0;">
+                    <label class="control-label">客群名称:</label>
+                    <select style="width:175px" v-model="custGroupNo">
+                        <option value="">全部</option>
+                        <option :value="item.custGroupNo" v-for="(item,index) in custGroup">
+                            {{item.custGroupName}}
+                        </option>
+                    </select>
+                    <label class="control-label">客户姓名:</label>
+                    <div class="form-group">
+                        <input class="scrollable" type="text" v-model="custName"/>
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <label class="control-label">证件类型:</label>
+                    <select style="width:175px" v-model="custIdtp">
+                        <option value="">全部</option>
+                        <option :value="item.pmco" v-for="(item,index) in custIdlist">
+                            {{item.pmnm}}
+                        </option>
+                    </select>
+                    <label class="control-label" style="margin-left:15px">证件号:</label>
+                    <div class="form-group">
+                        <input class="tscrollable" type="text" v-model="custIdno"/>
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                        <input type="button" class="btn btn-sm btn-primary" value="新增" @click="showAdd();">
+                        <input type="button" class="btn btn-sm btn-primary" value="导入文件" @click="addFile();">
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <div>
+                    <!--分页器和快速查询-->
+                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length" id="dynamic-table_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="500">500</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!--数据表-->
+                    <table class="table table-striped table-bordered table-hover dataTable" style="margin-bottom: 0;">
+                        <thead>
+                        <tr>
+                            <!-- <th class="center">
+                                <label class="pos-rel">
+                                    <input type="checkbox" class="ace" v-model="allCheck" @click="selectAll(allCheck)"/>
+                                    <span class="lbl"></span>
+                                </label>
+                            </th> -->
+                            <th class="center">序号</th>
+                            <th class="center">客群编号</th>
+                            <th class="center">客群名称</th>
+                            <th class="center">客户姓名</th>
+                            <th class="center">证件类型</th>
+                            <th class="center">证件号码</th>
+                            <th class="center">保存时间</th>
+                            <th class="center">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!--真分页业务数据-->
+                        <template v-if="tableData.length>0">
+                            <tr v-for="(item,index) in tableData" :key="index"
+                                :style="index%2==0?'background-color: #f9f9f9;':''">
+                                <!-- <td class="center">
+                                    <label class="pos-rel">
+                                        <input type="checkbox" class="ace" v-model="item.check" @click="check(index)"/>
+                                        <span class="lbl"></span>
+                                    </label>
+                                </td> -->
+                                <td class="center" v-text="index+1"></td>
+                                <td class="center" v-text="item.custGroupNo"></td>
+                                <td class="center" v-text="item.custGroupName"></td>
+                                <td class="center" v-text="item.custName"></td>
+                                <td class="center" v-text="item.custIdtp"></td>
+                                <td class="center" v-text="item.custIdno"></td>
+                                <td class="center" v-text="item.insertTimestamp"></td>
+                                <td class="center">
+                                    <a href="javascript:;" @click="showDelete(item)">删除</a>
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <tr>
+                                <td class="center" v-text="'没有数据'" colspan="22"></td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+
+                    <!--底部页码-->
+                    <!--后端真分页-->
+                    <div v-if="tableData.length>0" class="row"
+                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                        <div class="col-xs-2">
+                            <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                        </div>
+                        <div class="col-xs-10">
+                            <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                <ul class="pagination">
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                    </li>
+                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                        @click="prev">
+                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                    </li>
+                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                        v-for="value in pageList" @click="changeIndex(value)">
+                                        <a href="javascript:;" v-text="value"></a>
+                                    </li>
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                    </li>
+                                    <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                        @click="next">
+                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 下载模板 -->
+                    <table id="data-table" border="1" style="display: none;">
+                        <tr>
+                            <td>index</td>
+                            <td>custGroupNo</td>
+                            <td>custName</td>
+                            <td>custIdtp</td>
+                            <td>custIdno</td>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>1002</td>
+                            <td>Dearq</td>
+                            <td>0</td>
+                            <td>110115198406050078</td>
+                        </tr>
+                    </table>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/js/lib/xlsx.core.min.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<!--<script src="/js/lib/ajaxfileupload.js"></script>-->
+<script src="/js/thirdPartyOperation/common/ajaxfileupload.js"></script>
+<script src="/js/businessMgmt/highFinancialMgmt/custInfo.js"></script>
+</body>
+</html>

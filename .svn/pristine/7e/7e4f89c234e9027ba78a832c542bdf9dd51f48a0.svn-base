@@ -1,0 +1,717 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').productMaterialMgmt.productList;
+const baseUrl = '/advertising/productMaterialMgmt/productList';
+const XLSX = require('xlsx');
+const node_xlsx = require('node-xlsx');
+const fs = require('fs');
+const path = require('path');
+const formidable = require('formidable');
+module.exports = function (app) {
+    // 获取初始数据和查询
+    app.post('/advertising/productMaterialMgmt/productList/getTableData.ajax', (req, res, next) => {
+        let params = {};
+        params.searchKey = req.body.searchKey;
+        params.isSeparate = req.body.isSeparate;
+        params.page = req.body.page;
+        params.size = req.body.size;
+        params.startTime = req.body.startTime;
+        params.endTime = req.body.endTime;
+        let option = {
+            pageUrl: '/advertising/productMaterialMgmt/productList/getTableData.ajax',
+            req,
+            url: apiUrlList.getTableData,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            console.log("body==", body);
+            console.log("result==", result);
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '查询成功',
+                    data: body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+        });
+    });
+    //获取已有的产品列表
+    app.post('/advertising/productMaterialMgmt/productList/getProductList.ajax', (req, res, next) => {
+        let option = {
+            pageUrl: '/advertising/productMaterialMgmt/productList/getProductList.ajax',
+            req,
+            url: apiUrlList.getProductList,
+            // body: params,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '获取产品代码失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            console.log("body==", body);
+            console.log("result==", result);
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '获取产品代码成功',
+                    data: body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '获取产品代码失败'
+                });
+            }
+        });
+    });
+    // 新增
+    app.post(`${baseUrl}/add.ajax`, (req, res, next) => {
+        let params = req.body;
+        let option = {
+            pageUrl: `${baseUrl}/add.ajax`,
+            req: req,
+            // operateType: 1, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrlList.add,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '保存失败',
+                    data: null
+                });
+            }
+            if (body.returnCode === 0) {
+                res.send({
+                    error: 0,
+                    msg: '保存成功',
+                    data: null
+                });
+            } else if (body && body.returnCode != 9999) {
+                res.send({
+                    error: 1,
+                    msg: body.returnMsg,
+                    data: null
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '保存失败',
+                    data: null
+                });
+            }
+        });
+    });
+    // 查询单个产品信息
+    app.post('/advertising/productMaterialMgmt/productList/searchSingle.ajax', (req, res, next) => {
+        let params = {};
+        params.fundCode = req.body.fundCode;
+        let option = {
+            pageUrl: '/advertising/productMaterialMgmt/productList/searchSingle.ajax',
+            req,
+            // operateType: 3, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrlList.searchSingle + '/' + encodeURIComponent(req.body.fundCode),
+            // qs: params,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询单个产品失败',
+                    data: null
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '查询单个产品成功',
+                    data: body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '查询单个产品失败',
+                    data: null
+                });
+            }
+        });
+    });
+
+    // 修改
+    app.post(`${baseUrl}/update.ajax`, (req, res, next) => {
+        let params = req.body;
+        let option = {
+            pageUrl: `${baseUrl}/update.ajax`,
+            req: req,
+            // operateType: 1, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrlList.update + '/' + encodeURIComponent(req.body.fundCode),
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.patch(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '修改失败',
+                    data: null
+                });
+            }
+            if (body.returnCode === 0) {
+                res.send({
+                    error: 0,
+                    msg: '修改成功',
+                    data: null
+                });
+            } else if (body && body.returnCode != 9999) {
+                res.send({
+                    error: 1,
+                    msg: body.returnMsg,
+                    data: null
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '修改失败',
+                    data: null
+                });
+            }
+        });
+    });
+
+    // 删除
+    app.post('/advertising/productMaterialMgmt/productList/deleteParam.ajax', (req, res, next) => {
+        let params = {};
+        params.fundCode = req.body.fundCode;
+        let option = {
+            pageUrl: '/advertising/productMaterialMgmt/productList/deleteParam.ajax',
+            req,
+            operateType: 3, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrlList.deleteParam + '/' + encodeURIComponent(req.body.fundCode),
+            // qs: params,
+            timeout: 15000,
+            json: true
+        };
+        request.delete(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '删除失败',
+                    data: null
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '删除成功',
+                    data: null
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '删除失败',
+                    data: null
+                });
+            }
+        });
+    });
+
+    // 产品列表修改产品的状态-开关
+    app.post('/advertising/productMaterialMgmt/productList/switchUpdate.ajax', (req, res, next) => {
+        let params = {};
+        // params.fundCode = req.body.fundCode;
+        params.enableFlag = req.body.enableFlag;
+        let option = {
+            pageUrl: '/advertising/productMaterialMgmt/productList/switchUpdate.ajax',
+            req,
+            url: apiUrlList.switchUpdate + '/' + encodeURIComponent(req.body.fundCode),
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        request.patch(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '操作产品的状态失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            console.log("body==", body);
+            console.log("result==", result);
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '操作产品的状态成功',
+                    data: body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '操作产品的状态失败'
+                });
+            }
+        });
+    });
+
+    //获取用户类型列表
+    app.post('/advertising/productMaterialMgmt/productList/getUserParam.ajax', (req, res, next) => {
+        let option = {
+            pageUrl: '/advertising/productMaterialMgmt/productList/getUserParam.ajax',
+            req,
+            url: apiUrlList.getUserParam,
+            // body: params,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询用户类型失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            console.log("body==", body);
+            console.log("result==", result);
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '查询用户类型成功',
+                    data: body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '查询用户类型失败'
+                });
+            }
+        });
+    });
+
+    //获取渠道
+    app.post('/advertising/productMaterialMgmt/productList/getChannel.ajax', (req, res, next) => {
+        let option = {
+            pageUrl: '/advertising/productMaterialMgmt/productList/getChannel.ajax',
+            req,
+            url: apiUrlList.getChannel,
+            // body: params,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询渠道失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            console.log("body==", body);
+            console.log("result==", result);
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '查询渠道成功',
+                    data: body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '查询渠道失败'
+                });
+            }
+        });
+    });
+
+    //点击查询PV,UV的数据
+    app.post('/advertising/productMaterialMgmt/productList/getPvData.ajax', (req, res, next) => {
+        let params = {};
+
+        params.page = req.body.page;
+        params.size = req.body.size;
+        params.channelCode = req.body.channelCode;
+        params.endTime = req.body.endTime
+        params.isSeparate = req.body.isSeparate;
+        params.startTime = req.body.startTime;
+        params.userType = req.body.userType;
+        let option = {
+            pageUrl: '/advertising/productMaterialMgmt/productList/getPvData.ajax',
+            req,
+            url: apiUrlList.getPvData + '/' + encodeURIComponent(req.body.fundCode) + '/pvuv',
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            console.log("body==", body);
+            console.log("result==", result);
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '查询成功',
+                    data: body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+        });
+    });
+
+    //上传图片
+    app.post('/advertising/productMaterialMgmt/productList/uploadImg.ajax', (req, res, next) => {
+        let form = new formidable.IncomingForm();
+        form.keepExtensions = true;
+        form.parse(req, (err, fields, files) => {
+            console.log('图片接收完毕:', files);
+            let formData = {
+                file: fs.createReadStream(path.resolve(files.file.path))
+            };
+            console.log("formData===", formData);
+            let option = {
+                session: req.session,
+                url: apiUrlList.upload,
+                timeout: 30000,
+                formData: formData,
+                headers: {'Content-Type': 'multipart/form-data'}
+            };
+            console.log('/advertising/productMaterialMgmt/productList/uploadImg.ajax:', option);
+            request.post(option, (error, response, body) => {
+                console.log('/advertising/productMaterialMgmt/productList/uploadImg.ajax error:', error);
+                console.log('/advertising/productMaterialMgmt/productList/uploadImg.ajax statusCode:', response && response.statusCode);
+                console.log('/advertising/productMaterialMgmt/productList/uploadImg.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '上传图片失败'});
+                }
+                let result = typeof body === 'string' ? JSON.parse(body) : body;
+                if (result) {
+                    res.send({error: 0, msg: '上传图片成功', data: result});
+                }
+                else if (result && result.returnCode != 9999) {
+                    res.send({error: 1, msg: result.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '上传图片失败'});
+                }
+            });
+        });
+    });
+
+    // 导出主数据
+    // app.get('/advertising/productMaterialMgmt/productList/exportAll.ajax', (req, res, next) => {
+    //     let params = {};
+    //     params.searchKey = req.query.searchKey;
+    //     params.isSeparate = req.query.isSeparate;
+    //     params.page = req.query.page;
+    //     params.size = req.query.size;
+    //     params.startTime = req.query.startTime;
+    //     params.endTime = req.query.endTime;
+    //     console.log(params);
+    //     // params.size =9999;
+    //     let option = {
+    //         pageUrl: '/advertising/productMaterialMgmt/productList/exportAll.ajax',
+    //         req,
+    //         url: apiUrlList.exportAll,
+    //         body: params,
+    //         timeout: 15000,
+    //         json: true
+    //     };
+    //     // request(option).pipe(res);
+    //     request.post(option, (error, response, body) => {
+    //         if (error) {
+    //             return res.send({
+    //                 error: 1,
+    //                 msg: '操作失败'
+    //             });
+    //         }
+    //         let result = typeof body === 'string' ? JSON.parse(body) : body;
+    //         if (result && result.returnCode == 0) {
+    //             let data = result.body.data;
+    //             console.log("下载", data);
+    //             if (data && Array.isArray(data) && data.length > 0) {
+    //                 console.log("----------", data)
+    //                 var arr = [
+    //                     ['ID', '产品名称', '产品代码', 'PV', 'UV', '创建时间',]
+    //                 ];
+    //                 data.forEach(function (item) {
+    //                     arr.push([item.rowId, item.fundName, item.fundCode, item.pv, item.uv, item.createTime,])
+    //                 });
+    //                 const stream = require('stream');
+    //                 const book = XLSX.utils.book_new();
+    //                 const sheet = XLSX.utils.aoa_to_sheet(arr);
+    //                 XLSX.utils.book_append_sheet(book, sheet, "test");
+    //                 const fileContents = XLSX.write(book, {
+    //                     type: 'buffer',
+    //                     bookType: 'xlsx',
+    //                     bookSST: false
+    //                 });
+    //                 let readStream = new stream.PassThrough();
+    //                 readStream.end(fileContents);
+    //                 var myDate = new Date();
+    //                 var mytime = myDate.toLocaleDateString();
+    //                 let fileName = mytime + ".xlsx";
+    //                 res.set('Content-disposition', 'attachment; filename=' + fileName);
+    //                 res.set('Content-Type', 'text/plain');
+    //                 readStream.pipe(res);
+    //             } else {
+    //                 res.send('没有数据');
+    //             }
+    //         } else if (result && result.returnCode != 9999) {
+    //             res.send({
+    //                 error: 1,
+    //                 msg: result.returnMsg
+    //             });
+    //         } else {
+    //             res.send({
+    //                 error: 1,
+    //                 msg: '查询失败'
+    //             });
+    //         }
+    //     });
+    // });
+
+    app.post('/advertising/productMaterialMgmt/productList/exportAll.ajax', (req, res, next) => {
+        let params = {};
+
+        params.searchKey = req.body.searchKey;
+        params.startTime = req.body.startTime;
+        params.endTime = req.body.endTime;
+        params.isSeparate = req.body.isSeparate;
+        params.emailUser='zhulu';//先固定传zhulu测试用---req.session.loginInfo.userid;
+        console.log('===',params)
+        let option = {
+            pageUrl: '/advertising/productMaterialMgmt/productList/exportAll.ajax',
+            req,
+            url: apiUrlList.exportAll,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '操作失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            console.log("body==", body);
+            console.log("result==", result);
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '数据导出中，请稍后至邮箱查看。',
+                    data: body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '操作失败'
+                });
+            }
+        });
+    });
+
+    // 导出PV，UV弹窗数据
+    // app.get('/advertising/productMaterialMgmt/productList/exportPvData.ajax', (req, res, next) => {
+    //     let params = {};
+    //     params.fundCode = req.query.fundCode;
+    //     params.userType =req.query.userType;
+    //     params.channelCode = req.query.channelCode;
+    //     params.isSeparate =req.query.isSeparate;
+    //     params.endTime = req.query.endTime;
+    //     params.startTime =req.query.startTime;
+    //     params.page = req.query.page;
+    //     params.size = req.query.size;
+    //     console.log(params);
+    //     let option = {
+    //         pageUrl: '/advertising/productMaterialMgmt/productList/exportPvData.ajax',
+    //         req,
+    //         url: apiUrlList.exportPvData + `/${req.query.fundCode}` + '/pvuv',
+    //         body: params,
+    //         timeout: 15000,
+    //         json: true
+    //     };
+    //     // request(option).pipe(res);
+    //     request.post(option, (error, response, body) => {
+    //         if (error) {
+    //             return res.send({
+    //                 error: 1,
+    //                 msg: '操作失败'
+    //             });
+    //         }
+    //         let result = typeof body === 'string' ? JSON.parse(body) : body;
+    //         if (result && result.returnCode == 0) {
+    //             let data = result.body.data;
+    //             console.log("下载", data);
+    //             if (data && Array.isArray(data) && data.length > 0) {
+    //                 console.log("----------", data)
+    //                 var arr = [
+    //                     ['用户ID', '用户姓名', '用户类型', '所在渠道', '本人PV', '带来PV', '带来UV',]
+    //                 ];
+    //                 data.forEach(function (item) {
+    //                     arr.push([item.userId, item.username, item.userType, item.channel,])
+    //                 });
+    //                 const stream = require('stream');
+    //                 const book = XLSX.utils.book_new();
+    //                 const sheet = XLSX.utils.aoa_to_sheet(arr);
+    //                 XLSX.utils.book_append_sheet(book, sheet, "test");
+    //                 const fileContents = XLSX.write(book, {
+    //                     type: 'buffer',
+    //                     bookType: 'xlsx',
+    //                     bookSST: false
+    //                 });
+    //                 let readStream = new stream.PassThrough();
+    //                 readStream.end(fileContents);
+    //                 var myDate = new Date();
+    //                 var mytime = myDate.toLocaleDateString();
+    //                 let fileName = mytime + ".xlsx";
+    //                 res.set('Content-disposition', 'attachment; filename=' + fileName);
+    //                 res.set('Content-Type', 'text/plain');
+    //                 readStream.pipe(res);
+    //             } else {
+    //                 res.send('没有数据');
+    //             }
+    //         } else if (result && result.returnCode != 9999) {
+    //             res.send({
+    //                 error: 1,
+    //                 msg: result.returnMsg
+    //             });
+    //         } else {
+    //             res.send({
+    //                 error: 1,
+    //                 msg: '查询失败'
+    //             });
+    //         }
+    //     });
+    // });
+
+     app.post('/advertising/productMaterialMgmt/productList/exportPvData.ajax', (req, res, next) => {
+        let params = {};
+
+        params.fundCode = req.query.fundCode;
+        params.userType =req.query.userType;
+        params.channelCode = req.query.channelCode;
+        params.isSeparate =req.query.isSeparate;
+        params.endTime = req.query.endTime;
+        params.startTime =req.query.startTime;
+        params.emailUser='zhulu';//先固定传zhulu测试用---req.session.loginInfo.userid;
+        console.log('===',params)
+        let option = {
+            pageUrl: '/advertising/productMaterialMgmt/productList/exportPvData.ajax',
+            req,
+            url: apiUrlList.exportPvData + '/' + encodeURIComponent(req.body.fundCode) + '/export',
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '操作失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            console.log("body==", body);
+            console.log("result==", result);
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '数据导出中，请稍后至邮箱查看。',
+                    data: body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '操作失败'
+                });
+            }
+        });
+    });
+}

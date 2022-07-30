@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../common/head.html %>
+    <style>
+    .captcha-input {width:65%; display: inline-block;}
+    .tip-err-div {margin-top:-12px; line-height: 25px;}
+    </style>
+</head>
+
+<body class="login-layout light-login">
+<div class="main-container">
+    <div class="main-content">
+        <div class="row">
+            <div class="col-sm-10 col-sm-offset-1">
+                <div class="login-container">
+                    <div class="center">
+                        <h1>
+                            <!-- <i class="ace-icon fa fa-leaf green"></i> -->
+                            <span class="red">统一运营平台</span>
+                            <!-- <span class="grey" id="id-text2">统一运营平台</span> -->
+                        </h1>
+                        <h4 class="blue" id="id-company-text">&copy; HTF Application</h4>
+                    </div>
+
+                    <div class="space-6"></div>
+
+                    <div class="position-relative">
+                        <div id="login-box" class="login-box visible widget-box no-border">
+                            <div class="widget-body">
+                                <div class="widget-main">
+                                    <h4 class="header blue lighter bigger">
+                                        <i class="ace-icon fa fa-coffee green"></i>
+                                        用户登录信息
+                                    </h4>
+
+                                    <div class="space-6"></div>
+
+                                    <form>
+                                        <fieldset>
+                                            <label class="block clearfix">
+                                                <span class="block input-icon input-icon-right">
+                                                    <input type="text" class="form-control" placeholder="用户名" id="loginName" name="loginName" />
+                                                    <i class="ace-icon fa fa-user"></i>
+                                                </span>
+                                            </label>
+
+                                            <label class="block clearfix">
+                                                <span class="block input-icon input-icon-right">
+                                                    <input type="password" class="form-control" placeholder="密码" id="loginPassword" name="loginPassword"/>
+                                                    <i class="ace-icon fa fa-lock"></i>
+                                                </span>
+                                            </label>
+
+                                            <label class="block clearfix">
+                                                <span class="block input-icon input-icon-right">
+                                                    <input type="text" class="form-control captcha-input" placeholder="验证码" id="captcha" name="captcha" maxlength="4" />
+                                                    <!-- <i class="ace-icon fa fa-user"></i> -->
+                                                    <img class="captcha-img float-right" src="/user/captcha.ajax" onclick="javascript:this.src='/user/captcha.ajax?time='+(+new Date())" alt="图片验证码">
+                                                </span>
+                                            </label>
+
+                                            <!-- <div class="space"></div> -->
+
+                                            <div class="clearfix tip-err-div">
+                                                <span class="tip-err red invisible">错误信息</span>
+                                            </div>
+
+                                            <div class="clearfix">
+                                                <label class="inline">
+                                                    <input type="checkbox" class="ace" />
+                                                    <span class="lbl"> 记住登录信息 </span>
+                                                </label>
+
+                                                <button type="button" class="width-35 pull-right btn btn-sm btn-primary btn-login">
+                                                    <i class="ace-icon fa fa-key"></i>
+                                                    <span class="bigger-110">登录</span>
+                                                </button>
+                                            </div>
+
+                                            <div class="space-4"></div>
+                                        </fieldset>
+                                    </form>
+
+                                    <!-- <div class="social-or-login center">
+                                        <span class="bigger-110">Or Login Using</span>
+                                    </div>
+
+                                    <div class="space-6"></div>
+
+                                    <div class="social-login center">
+                                        <a class="btn btn-primary">
+                                            <i class="ace-icon fa fa-facebook"></i>
+                                        </a>
+
+                                        <a class="btn btn-info">
+                                            <i class="ace-icon fa fa-twitter"></i>
+                                        </a>
+
+                                        <a class="btn btn-danger">
+                                            <i class="ace-icon fa fa-google-plus"></i>
+                                        </a>
+                                    </div> -->
+                                </div><!-- /.widget-main -->
+                                
+                            </div><!-- /.widget-body -->
+                        </div><!-- /.login-box -->
+
+                    </div><!-- /.position-relative -->
+
+                    <div class="navbar-fixed-top align-right hidden">
+                        <br />
+                        &nbsp;
+                        <a id="btn-login-dark" href="#">Dark</a>
+                        &nbsp;
+                        <span class="blue">/</span>
+                        &nbsp;
+                        <a id="btn-login-blur" href="#">Blur</a>
+                        &nbsp;
+                        <span class="blue">/</span>
+                        &nbsp;
+                        <a id="btn-login-light" href="#">Light</a>
+                        &nbsp; &nbsp; &nbsp;
+                    </div>
+                </div>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.main-content -->
+</div><!-- /.main-container -->
+
+<% include ../common/basic-scripts.html %>
+
+<!-- inline scripts related to this page -->
+<script type="text/javascript">
+
+var getUrlParameter = function getUrlParameter(sParam) {
+    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+    }
+};
+
+$("form input").on("keydown", function (event) {
+    var e = event || window.event || arguments.callee.caller.arguments[0];
+    if (e && e.keyCode == 13) {
+        $(".btn.btn-login").click();
+    }
+});
+
+$(".btn.btn-login").on("click", function () {
+    $(".tip-err").addClass("invisible");
+
+    var params = {
+        loginName: $("form input[name='loginName']").val(),
+        loginPassword: $("form input[name='loginPassword']").val(),
+        _goto: getUrlParameter("_goto"),
+        captcha: $("form input[name='captcha']").val()
+    }
+
+    if ($.trim(params.loginName) === "" || $.trim(params.loginPassword) === "") {
+        $(".tip-err").text("用户名或密码不能为空").removeClass("invisible");
+        return;
+    }
+console.log(params)
+    $.ajax({
+        url: "/user/signin.ajax",
+        method: "post",
+        data: params,
+        dataType: 'json',
+        t: new Date(),
+        success: function (response, ioArgs) {
+            console.log("response=", response);
+            if (response["error"] == 0) {
+                window.location.href = response["resultOpen"];
+            }else{
+                $(".tip-err").text(response["msg"]).removeClass("invisible");
+                $(".captcha-img").click();
+            }
+        }
+
+    });
+
+})
+
+    
+//you don't need this, just used for changing background
+jQuery(function($) {
+    $('#btn-login-dark').on('click', function(e) {
+    $('body').attr('class', 'login-layout');
+    $('#id-text2').attr('class', 'white');
+    $('#id-company-text').attr('class', 'blue');
+    
+    e.preventDefault();
+    });
+    $('#btn-login-light').on('click', function(e) {
+    $('body').attr('class', 'login-layout light-login');
+    $('#id-text2').attr('class', 'grey');
+    $('#id-company-text').attr('class', 'blue');
+    
+    e.preventDefault();
+    });
+    $('#btn-login-blur').on('click', function(e) {
+    $('body').attr('class', 'login-layout blur-login');
+    $('#id-text2').attr('class', 'white');
+    $('#id-company-text').attr('class', 'light-blue');
+    
+    e.preventDefault();
+    });
+    
+});
+</script>
+</body>
+</html>

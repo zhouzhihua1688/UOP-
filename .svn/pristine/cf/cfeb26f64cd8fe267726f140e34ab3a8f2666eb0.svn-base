@@ -1,0 +1,36 @@
+{
+  "returnCode":0,
+  "returnMsg":"调用成功",
+"data": [
+{
+"ymonth": "2018年08月",
+"faretype": 1,
+"status": "待对比",
+"inform": "-",
+"nonuniformity": "-",
+"uniformity": "-",
+"unfeedback": "-",
+"feedbacktime": "2018-08-08 18:18" 
+},
+{
+"ymonth": "2018年08月",
+"faretype":2,
+"status": "反馈中",
+"inform": "20",
+"nonuniformity": "5",
+"uniformity": "5",
+"unfeedback": "10",
+"feedbacktime": "2018-08-08 18:18" 
+},
+{
+"ymonth": "2018年08月",
+"faretype": 2,
+"status": "未出",
+"inform": "-",
+"nonuniformity": "-",
+"uniformity": "-",
+"unfeedback": "-",
+"feedbacktime": "2018-08-08 18:18" 
+}
+]
+}

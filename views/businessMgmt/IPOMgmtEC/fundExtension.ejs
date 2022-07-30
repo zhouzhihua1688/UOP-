@@ -1,0 +1,36 @@
+<div id="fundExtension" class="tab-pane " style="overflow: hidden;">
+    <table id="simple-table" class="table table-bordered table-hover dataTable">
+        <!-- 开始 -->
+        <tr>
+                <td class="text-right" style="width: 200px;">最低认购金额</td>
+                <td class="text-left" v-html='fundExtension.minsubamt'></td>
+                <td class="text-right" style="width: 200px;">最高认购金额</td>
+                <td class="text-left" v-html='fundExtension.maxsubamt'></td>
+                <td class="text-right" style="width: 200px;">最低赎回份额</td>
+                <td class="text-left" v-html='fundExtension.minredamt'></td>
+        </tr>
+        <tr>
+                <td class="text-right" style="width: 200px;">最低申购金额</td>
+                <td class="text-left" v-html='fundExtension.minbidamt'></td>
+                <td class="text-right" style="width: 200px;">最高申购金额</td>
+                <td class="text-left" v-html='fundExtension.maxbidamt'></td>
+                <td class="text-right" style="width: 200px;">最低转换份额</td>
+                <td class="text-left" v-html='fundExtension.minconvamt'></td>
+        </tr>
+        <tr>
+                <td class="text-right" style="width: 200px;">最低定投金额</td>
+                <td class="text-left" v-html='fundExtension.minrspamt'></td>
+                <td class="text-right" style="width: 200px;">最低持有份额</td>
+                <td class="text-left" v-html='fundExtension.minholdamt'></td>
+                <td class="text-right" style="width: 200px;">最低追加申购金额</td>
+                <td class="text-left" v-html='fundExtension.minaddamt'></td>
+        </tr>
+        <tr>
+                <td class="text-right" style="width: 200px;">最低追加认购金额</td>
+                <td class="text-left" v-html='fundExtension.minaddsubamt'></td>
+                <td class="text-right" style="width: 200px;">金额级差</td>
+                <td class="text-left" v-html='fundExtension.rangeamt'></td>
+        </tr>
+    </table>
+
+</div>

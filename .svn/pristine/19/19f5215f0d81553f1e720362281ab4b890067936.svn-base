@@ -1,0 +1,164 @@
+module.exports = [
+    {
+        "menuId": "14",
+        "parentMenuId": "",
+        "hasSubmenu": true,
+        "page": false,
+        "type": "2",
+        "name": "客服操作",
+        "url": "/customerService"
+    },
+    {
+        "menuId": "14-1",
+        "parentMenuId": "14",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "账户查询",
+        "url": "/customerService/accountQuery"
+    },
+    {
+        "menuId": "14-1-1",
+        "parentMenuId": "14-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "客户信息查询",
+        "url": "/customerService/accountQuery/custInfo.html"
+    },
+    {
+        "menuId": "14-2",
+        "parentMenuId": "14",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "变更银行卡审核",
+        "url": "/customerService/bankCardAudit"
+    },
+    {
+        "menuId": "14-2-1",
+        "parentMenuId": "14-2",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "银行卡变更",
+        "url": "/customerService/bankCardAudit/changeCard.html"
+    },
+    {
+        "menuId": "14-2-2",
+        "parentMenuId": "14-2",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "业务经办",
+        "url": "/customerService/bankCardAudit/businessHandle.html"
+    },
+    {
+        "menuId": "14-2-3",
+        "parentMenuId": "14-2",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "业务复核",
+        "url": "/customerService/bankCardAudit/businessReview.html"
+    },
+    {
+        "menuId": "14-2-4",
+        "parentMenuId": "14-2",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "申请记录",
+        "url": "/customerService/bankCardAudit/applyRecord.html"
+    },
+    {
+        "menuId": "14-3",
+        "parentMenuId": "14",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "资产证明业务",
+        "url": "/customerService/assetTestify"
+    },
+    {
+        "menuId": "14-3-1",
+        "parentMenuId": "14-3",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "申请查询",
+        "url": "/customerService/assetTestify/applyQuery.html"
+    },
+    {
+        "menuId": "14-3-2",
+        "parentMenuId": "14-3",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "已处理查询",
+        "url": "/customerService/assetTestify/doneQuery.html"
+    },
+    {
+        "menuId": "14-4",
+        "parentMenuId": "14",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "修改手机号审核",
+        "url": "/customerService/modifyPhoneNum"
+    },
+    {
+        "menuId": "14-4-1",
+        "parentMenuId": "14-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "业务经办",
+        "url": "/customerService/modifyPhoneNum/businessHandle.html"
+    },
+    {
+        "menuId": "14-4-2",
+        "parentMenuId": "14-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "业务复核",
+        "url": "/customerService/modifyPhoneNum/businessReview.html"
+    },
+    {
+        "menuId": "14-4-3",
+        "parentMenuId": "14-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "申请记录",
+        "url": "/customerService/modifyPhoneNum/applyRecord.html"
+    },
+    {
+        "menuId": "14-5",
+        "parentMenuId": "14",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "本金处理",
+        "url": "/customerService/selfFundManage"
+    },
+    {
+        "menuId": "14-5-1",
+        "parentMenuId": "14-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "静态本金修改",
+        "url": "/customerService/selfFundManage/staticFund.html"
+    },
+    {
+        "menuId": "14-5-2",
+        "parentMenuId": "14-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "批量本金重算修正",
+        "url": "/customerService/selfFundManage/batchStaticFund.html"
+    },
+];

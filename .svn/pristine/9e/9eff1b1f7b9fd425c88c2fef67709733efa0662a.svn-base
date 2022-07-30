@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/css/thirdPartyOperation/products/paramsMgmt.css">
+    <style>
+        .show {
+            display: none;
+        }
+
+        .hide {
+            display: block;
+        }
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+
+<% include ../../common/header.html %>
+
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!-- PAGE CONTENT BEGINS -->
+                <!-- DIALOG BEGINS -->
+                <!--上传弹窗-->
+                <div class="modal" id="upload" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title inline">上传</h4>
+                            </div>
+                            <div class="modal-body">
+                                <form id="uploadForm" enctype="multipart/form-data" class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label no-padding-right">产品代码:</label>
+                                        <div class="col-sm-10">
+                                            <input class="typeahead scrollable" v-model="uploadFundid" type="text"
+                                                   @input='binding("uploadFundid","uploadFundnm")' placeholder="必填"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label no-padding-right">产品名称:</label>
+                                        <div class="col-sm-10">
+                                            <input v-model="uploadFundnm" type="text" placeholder="必填"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-2">参数表:</label>
+                                        <input type="text" class="col-sm-6" id="uploadInput" placeholder="请选择"
+                                               style="margin-left:12px" disabled/>
+                                        <input type="button" class="btn btn-sm btn-primary" id="uploadBtn" value="选择">
+                                    </div>
+                                    <input id="uploadFileInput" type="file" name="file" style="display: none"
+                                           class="upload"/>
+                                </form>
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary" @click="upload">上传</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--更新弹窗-->
+                <div class="modal" id="update" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title inline">更新</h4>
+                            </div>
+                            <div class="modal-body">
+                                <form id="updateForm" enctype="multipart/form-data" class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-lg-2">产品代码:</label>
+                                        <input type="text" class="col-lg-4" v-model="updateFundid" disabled
+                                               placeholder="请输入数字,必填">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-lg-2">产品名称:</label>
+                                        <input type="text" class="col-lg-4" v-model="updateFundnm" disabled
+                                               placeholder="必填">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-lg-2">参数表:</label>
+                                        <input type="text" class="col-lg-6" placeholder="请选择" id="updateInput"
+                                               disabled/>
+                                        <input type="button" class="btn btn-sm btn-primary" id="updateBtn" value="选择">
+                                    </div>
+                                    <input id="updateFileInput" type="file" name="file" style="display: none"/>
+                                </form>
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary" @click="update">更新</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--删除弹窗-->
+                <div class="modal" id="delete" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">删除</h4>
+                            </div>
+                            <p>
+                            <div class="modal-body text-center">
+                                <h4>确认删除该数据吗?</h4>
+                            </div>
+                            </p>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="deleteData">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- loading动画 -->
+                <div class="cover" v-show='progress' v-cloak style="z-index: 1999;">
+                    <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                </div><!-- loading动画结束 -->
+
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--发送邮件弹窗-->
+                <% include ../diaEmail.html %>
+                <!-- DIALOG ENDS -->
+                <div class="form-inline" style="padding: 10px 0;margin-bottom:30px">
+                   <!--  <label class="control-label">产品代码:</label>
+                    <div class="form-group">
+                        <input class="typeahead scrollable" v-model="fundid" type="text"
+                               @input='binding("fundid","fundnm")'/>
+                    </div>
+                    <label class="control-label">产品名称:</label>
+                    <div class="form-group">
+                        <input v-model="fundnm" type="text"/>
+                    </div> -->
+                    <div class="form-group pull-right" >
+                        <input type="button" class="btn btn-sm btn-primary" value="上传" @click="showUpload">
+                        <input type="button" class="btn btn-sm btn-primary" value="发送" @click="showEmail">
+                    </div>
+                </div>
+
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                    <div class="col-xs-6">
+                        <div class="dataTables_filter">
+                            <label>快速查询:</label>
+                            <input type="text" class="input-sm" v-model="condition">
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table class="table table-striped table-bordered table-hover dataTable" style="margin-bottom: 0;">
+                    <thead>
+                    <tr>
+                        <th class="center">
+                            <label class="pos-rel">
+                                <input type="checkbox" class="ace" :checked="allCheck" @click="selectAll"/>
+                                <span class="lbl"></span>
+                            </label>
+                        </th>
+                        <th class="center">产品代码</th>
+                        <th class="center">产品名称</th>
+                        <th class="center">参数表</th>
+                        <th class="center">上传人</th>
+                        <th class="center">上传时间</th>
+                        <th class="center">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="viewData.length>0">
+                        <tr v-for="(item,index) in viewData" :key="index" :class="item.check?'active':''">
+                            <td class="center col-md-1">
+                                <label class="pos-rel">
+                                    <input type="checkbox" class="ace" :checked="item.check" @click="add(index)"/>
+                                    <span class="lbl"></span>
+                                </label>
+                            </td>
+                            <td class="center col-md-1" v-text="item.fundid"></td>
+                            <td class="center col-md-1" v-text="item.fundnm" style="white-space:nowrap"></td>
+                            <td class="center col-md-4"><a
+                                    :href="'/thirdPartyOperation/products/paramsMgmt/download.ajax?fundid='+item.fundid"
+                                    v-text="item.filename" style="white-space:nowrap"></a></td>
+                            <td class="center col-md-1" v-text="item.operater"></td>
+                            <td class="center col-md-2" v-text="item.updatetime"></td>
+                            <td class="center col-md-2">
+                                <a href="javascript:;" @click="showUpdate(index)">更新</a>
+                                /
+                                <a href="javascript:;" @click="showDelete(index)">删除</a>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'没有数据'" colspan="7"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <div v-if="viewData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in middleData.length"
+                                    @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<% include ../../common/footer.html %>
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<!-- inline scripts related to this page -->
+<script src="/ace/assets/js/jquery-ui.custom.min.js"></script>
+<script src="/ace/assets/js/jquery.ui.touch-punch.min.js"></script>
+<script src="/ace/assets/js/markdown.min.js"></script>
+<script src="/ace/assets/js/bootstrap-markdown.min.js"></script>
+<script src="/ace/assets/js/jquery.hotkeys.index.min.js"></script>
+<script src="/ace/assets/js/bootstrap-wysiwyg.min.js"></script>
+<script src="/ace/assets/js/bootbox.js"></script>
+<script src="/ace/assets/js/tree.min.js"></script>
+<script src="/js/thirdPartyOperation/common/richTextBox.js"></script>
+<script src="/js/thirdPartyOperation/common/ajaxfileupload.js"></script>
+<script src="/js/thirdPartyOperation/products/paramsMgmt.js"></script>
+<script src="/ace/assets/js/jquery-typeahead.js"></script>
+</body>
+
+</html>

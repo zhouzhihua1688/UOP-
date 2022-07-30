@@ -1,0 +1,170 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').businessParamConfig.productOpenDayMgmt;
+module.exports = function (app) {
+    //查询用户
+    app.post('/businessMgmt/businessParamConfig/productOpenDayMgmt/getTableData.ajax', (req, res, next) => {
+        let fundId = req.body.fundId;
+        // params.page = req.body.page;
+        // params.rows = req.body.rows;
+        let option = {
+            session: req.session,
+            url: apiUrlList.getTableData+'/'+fundId+'/info/detail/query',
+            // qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/getTableData.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/getTableData.ajax error:', error);
+            console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/getTableData.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/getTableData.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode == 0) {
+                let resultData = {};
+                resultData.tableData = result.body;
+                res.send({error: 0, msg: '查询成功', data: resultData});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '查询失败'});
+            }
+        });
+    });
+    // 同步跟新
+    app.post('/businessMgmt/businessParamConfig/productOpenDayMgmt/syncParams.ajax', (req, res, next) => {
+        let option = {
+            session: req.session,
+            url: apiUrlList.syncParams,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/syncParams.ajax option:', option);
+        request.patch(option, (error, response, body) => {
+            console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/syncParams.ajax error:', error);
+            console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/syncParams.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/syncParams.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode == 0) {
+                let resultData = {};
+                resultData.tableData = result.body;
+                res.send({error: 0, msg: '操作成功', data: resultData});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '操作失败'});
+            }
+        });
+    });
+    // 更新验证基金ID是否存在
+    app.post('/businessMgmt/businessParamConfig/productOpenDayMgmt/checkId.ajax', (req, res, next) => {
+        let fundId = req.body.fundid;
+        // params.page = req.body.page;
+        // params.rows = req.body.rows;
+        let option = {
+            session: req.session,
+            url: apiUrlList.checkId+'/'+fundId+'/info/detail/query',
+            // qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/checkId.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/checkId.ajax error:', error);
+            console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/checkId.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/checkId.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode == 0) {
+                let resultData = {};
+                resultData.tableData = result.body;
+                res.send({error: 0, msg: '操作成功', data: resultData});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg:'基金代码不存在'});
+            }
+            else {
+                res.send({error: 1, msg: '操作失败'});
+            }
+        });
+    });
+    //新增更新
+    app.post('/businessMgmt/businessParamConfig/productOpenDayMgmt/saveParam.ajax', (req, res, next) => {
+        let params = {};
+        params.fundId = req.body.fundId;
+        params.expectedOpenDate = req.body.expectedOpenDate;
+        params.expectedOpenAmend = req.body.expectedOpenAmend;
+        params.expectedOpenDesc =req.body.expectedOpenDesc;
+        let option = {
+            session: req.session,
+            url: apiUrlList.saveParam,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/saveParam.ajax option:', option);
+        request.patch(option, (error, response, body) => {
+            console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/saveParam.ajax error:', error);
+            console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/saveParam.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/businessParamConfig/productOpenDayMgmt/saveParam.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode == 0) {
+                res.send({error: 0, msg: '操作成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg:"参数状态校验不通过"});
+            }
+            else {
+                res.send({error: 1, msg: '操作失败'});
+            }
+        });
+    });
+    //修改更新
+    app.post('/businessMgmt/businessParamConfig/productOpenDayMgmt/update.ajax', (req, res, next) => {
+        let params = {};
+        params.fundId = req.body.fundId;
+        params.expectedOpenDate = req.body.expectedOpenDate;
+        params.expectedOpenAmend = req.body.expectedOpenAmend;
+        params.expectedOpenDesc =req.body.expectedOpenDesc;
+        let option = {
+            session: req.session,
+            url: apiUrlList.update,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/operationMgmt/channelMgmt/externalChannel/update.ajax option:', option);
+        request.patch(option, (error, response, body) => {
+            console.log('/operationMgmt/channelMgmt/externalChannel/update.ajax error:', error);
+            console.log('/operationMgmt/channelMgmt/externalChannel/update.ajax statusCode:', response && response.statusCode);
+            console.log('/operationMgmt/channelMgmt/externalChannel/update.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode == 0) {
+                res.send({error: 0, msg: '操作成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg:"参数状态校验不通过"});
+            }
+            else {
+                res.send({error: 1, msg: '操作失败'});
+            }
+        });
+    });
+};

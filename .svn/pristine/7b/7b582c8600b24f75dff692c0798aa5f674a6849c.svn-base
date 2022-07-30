@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--提示信息弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--立即收市弹窗-->
+                <div class="modal" id="close" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">立即收市</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>是否确定收市</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="close">确定
+                                </button>
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--强制收市弹窗-->
+                <div class="modal" id="listClose" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">强制收市</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <label class="control-label" style="vertical-align: top;width: 80px;">收市备注:</label>
+                                <textarea cols="60" rows="8" v-model="remark" style="resize:none;"></textarea>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-sm btn-danger" @click="listClose">强制收市
+                                </button>
+                                <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal">取消
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- DIALOG ENDS -->
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group" style="line-height: 33px;">
+                        <label class="control-label">当前收市日期:</label>
+                        <span v-text="checkDate"></span>
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="search">
+                        <input type="button" v-cloak :class="canClose&&isPause?'btn btn-sm btn-primary':'btn btn-sm'"
+                               :disabled="!canClose||!isPause" value="恢复"
+                               @click="recover">
+                        <input type="button" v-cloak :class="canClose&&!isPause?'btn btn-sm btn-primary':'btn btn-sm'"
+                               value="暂停" :disabled="!canClose||isPause"
+                               @click="pause">
+                        <input type="button" v-cloak :class="allSystemCanClose?'btn btn-sm btn-danger':'btn btn-sm'" value="立即收市"
+                               :disabled="!allSystemCanClose" @click="showClose">
+                    </div>
+                    <div style="clear: both;"></div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                    <div class="col-xs-6">
+                        <div id="dynamic-table_filter" class="dataTables_filter">
+                            <label>快速查询:</label>
+                            <input type="text" class="input-sm" v-model="condition">
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                    <thead>
+                    <tr>
+                        <th class="center col-sm-1">系统名称</th>
+                        <th class="center col-sm-1">收市日期</th>
+                        <th class="center col-sm-1">收市状态</th>
+                        <th class="center col-sm-2">收市时间</th>
+                        <th class="center col-sm-2">收市结果</th>
+                        <th class="center col-sm-4">备注</th>
+                        <th class="center col-sm-1">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="viewData.length>0">
+                        <tr v-for="(item,index) in viewData" :key="index">
+                            <td class="center" v-text="item.sysName"></td>
+                            <td class="center" v-text="item.checkDate"></td>
+                            <td class="center" :class="item.showResult=='未收市'?'red':''" v-text="item.showResult"></td>
+                            <td class="center" v-text="item.updateTime"></td>
+                            <td class="center" v-text="item.resultDescription"></td>
+                            <td class="center" v-text="item.remark"></td>
+                            <td v-if="item.showResult=='未收市'" class="center">
+                                <a href="javascript:;" class="red"
+                                   @click="showListClose(item)">强制收市</a>
+                            </td>
+                            <td v-else class="center">-</td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'暂无数据'" colspan="7"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <div v-if="viewData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+middleData.length" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /.page-content -->
+    </div>
+</div><!-- /.main-content -->
+<% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/js/businessMgmt/closingMgmt/closingMgmt.js"></script>
+</body>
+</html>

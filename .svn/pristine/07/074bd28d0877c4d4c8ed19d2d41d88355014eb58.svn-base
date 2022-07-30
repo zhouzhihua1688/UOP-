@@ -1,0 +1,45 @@
+// 运维管理平台总路由
+const mapRouter = require('./breadRouter');
+module.exports = function (app) {
+    app.get('/operationMgmt/:menu/:page', (req, res, next) => {
+        let channel = 'operationMgmt';
+        let menu = req.params.menu;
+        let page = req.params.page;
+        if (page.slice(-5) !== ".html") {
+            return next();
+        }
+        if (page.indexOf('index.html') !== -1) {
+            page = mapRouter[menu].index;
+        }
+        res.locals.title = mapRouter[menu].child[page.slice(0, -5)];
+        let renderData = {
+            channel: channel,
+            menu: menu,
+            page: page.slice(0, -5),
+            cchannel: mapRouter.index.name,
+            cmenu: mapRouter[menu].name,
+            cpage: mapRouter[menu].child[page.slice(0, -5)]
+        };
+        res.render(channel + '/' + menu + '/' + page, renderData);
+    });
+    app.get('/operationMgmt/:menu', (req, res, next) => {
+        let channel = 'operationMgmt';
+        let menu = req.params.menu;
+        let renderData = {
+            channel: channel,
+            menu: menu,
+            page: '',
+            cchannel: mapRouter.index.name,
+            cmenu: mapRouter[menu.slice(0,-5)].name,
+            cpage: ''
+        };
+        res.locals.title = mapRouter[menu.slice(0,-5)].name;
+        res.render(channel + '/' + menu, renderData);
+    });
+    // 二级菜单路由
+    require('./userMgmt')(app);
+    require('./appMgmt')(app);
+    require('./resourceMgmt')(app);
+    require('./roleMgmt')(app);
+    require('./channelMgmt')(app);
+};

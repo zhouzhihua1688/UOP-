@@ -1,0 +1,525 @@
+new Vue({
+    el: '#content',
+    data: {
+        // 主页面相关数据
+        tableData: [],
+        diaMsg: '',
+
+        //主表格分页数据
+        currentIndex: 0,
+        maxSpace: 5,
+        pageMaxNum: '10',
+        condition: '',
+        // 新增
+        userName: '',
+        description: '',
+        privilegeId: '',
+        jumpUrl: '',
+        privilegeType: '01',
+        privilegeKey: '',
+        privilegeValue: '',
+        privilegeName: '',
+        deleteStatus: false,
+        iconUrl: '',
+        enable: true,
+        //查看修改
+        viewChange: {
+            // id: '',
+            description: '',
+            privilegeId: '',
+            jumpUrl: '',
+            privilegeType: '',
+            privilegeKey: '',
+            privilegeName: '',
+            privilegeValue: '',
+            deleteStatus: false,
+            enable: '',
+            iconUrl: '',
+
+        },
+        // queryKey: '', //查询
+        // queryId: '',
+        anew: false, //重新渲染file框
+        deleteinfo: {},
+        oldPath: '' //旧路径
+    },
+    mounted: function () {
+        var dialogs = ['info', 'addNotice', 'changeNotice', 'deleteDialog'];
+        var _this = this;
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+
+        this.getTableData(0);
+    },
+    computed: {
+        //主表格分页
+        middleData: function () {
+            var middleData = [];
+            var filterData = [];
+            var pageMaxNum = parseInt(this.pageMaxNum);
+            var _this = this;
+            this.tableData.forEach(function (jsonObj) {
+                var valueArr = [];
+                for (var prop in jsonObj) {
+                    valueArr.push(jsonObj[prop]);
+                }
+                for (var i = 0, len = valueArr.length; i < len; i++) {
+                    if (valueArr[i]) {
+                        if (valueArr[i].toString().indexOf(_this.condition) != -1) {
+                            filterData.push(jsonObj);
+                            break;
+                        }
+                    }
+                }
+            });
+            if (filterData.length <= pageMaxNum) {
+                middleData.push(filterData);
+                return middleData;
+            } else {
+                var i = 0;
+                while ((i + 1) * pageMaxNum < filterData.length) {
+                    middleData.push(filterData.slice(i * pageMaxNum, (i + 1) * pageMaxNum));
+                    i++;
+                }
+                middleData.push(filterData.slice(i * pageMaxNum, filterData.length));
+                return middleData;
+            }
+        },
+        viewData: function () {
+            var currentIndex = parseInt(this.currentIndex);
+            return this.middleData[currentIndex];
+        },
+        pageList: function () {
+            var arr = [];
+            if (this.middleData.length <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex <= this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex <= this.maxSpace) {
+                var space = this.middleData.length - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+            } else {
+                for (var i = 0; i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        },
+    },
+    watch: {
+        pageMaxNum: function (val, oldval) {
+            this.currentIndex = 0;
+        },
+        condition: function () {
+            this.currentIndex = 0;
+        }
+    },
+    methods: {
+        addDialog: function () {
+            var _this = this;
+
+            this.anew = true;
+            this.showDialog('', 'addNotice', false);
+
+        },
+        select: function (item) {
+            if (item == 'change') {
+                document.getElementById("uploadFileInputCge").click();
+            } else {
+                document.getElementById("uploadFileInput").click();
+            }
+
+        },
+        fileUpload: function (item) {
+            var _this = this;
+            var fileElementId;
+            if (item == 'change') {
+                fileElementId = 'uploadFileInputCge'
+            } else {
+                fileElementId = 'uploadFileInput'
+            }
+            console.log(fileElementId)
+            $.ajaxFileUpload({
+                url: '/clientMgmt/vipGrade/privilege/upLoad.ajax',
+                type: 'POST',
+                dataType: 'json',
+                secureuri: false,
+                fileElementId: fileElementId,
+                success: function (result) {
+                    console.log(result)
+                    if (result.error == 0) {
+                        if (item == 'change') {
+                            _this.viewChange.iconUrl = result.data
+                            _this.showDialog('changeNotice', 'info', true, result.msg)
+
+                        } else {
+                            _this.iconUrl = result.data
+                            _this.showDialog('addNotice', 'info', true, result.msg)
+                        }
+                    } else {
+                        if (item == 'change') {
+                            _this.showDialog('changeNotice', 'info', true, result.msg)
+                        } else {
+                            _this.showDialog('addNotice', 'info', true, result.msg)
+                        }
+                    }
+                }
+            });
+        },
+        showFileName: function (event) {
+            this.iconUrl = event.target.files[0].name
+            this.viewChange.iconUrl = event.target.files[0].name
+            console.log(111)
+        },
+        getTableData: function (currentIndex) {
+            var params = {};
+            var _this = this;
+            params.pageNo = currentIndex + 1;
+            params.pageSize = this.pageMaxNum;
+            $.post({
+                url: '/clientMgmt/vipGrade/privilege/getList.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.tableData = result.data;
+                        // _this.currentIndex = result.data.pageNum - 1;
+                        // _this.totalPage = result.data.pages;
+                        _this.userName = result.userName;
+                        console.log(result)
+                    } else {
+                        _this.tableData = [];
+                        _this.currentIndex = 0;
+                        _this.totalPage = 0;
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            } else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            } else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            } else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            } else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        //主表格分页方法
+        prev: function () {
+            this.currentIndex <= 0 ? 0 : this.currentIndex--;
+        },
+        next: function () {
+            this.currentIndex >= this.middleData.length - 1 ? this.middleData.length - 1 : this.currentIndex++;
+        },
+        changeIndex: function (index) {
+            this.currentIndex = index - 1;
+        },
+        toFirst: function () {
+            this.currentIndex = 0;
+        },
+        toLast: function () {
+            this.currentIndex = this.middleData.length - 1;
+        },
+        add: function () {
+            if (this.privilegeId === '') {
+                this.showDialog('addNotice', 'info', true, '特权ID不能为空');
+                return;
+            }
+            if (this.privilegeName === '') {
+                this.showDialog('addNotice', 'info', true, '特权名称不能为空');
+                return;
+            }
+            if (!/^\d*$/.test(this.privilegeValue)) {
+                this.showDialog('changeNotice', 'info', true, '特权value只能为数字');
+                return;
+            }
+            var filePath = this.iconUrl;
+            var afterFile = filePath.lastIndexOf('.');
+            afterFile = filePath.substr(afterFile - 0 + 1) //获取文件后缀名
+            afterFile = afterFile.toLocaleLowerCase() //转为小写
+            if (this.iconUrl !== '' && afterFile != 'png' && afterFile != 'jpg' && afterFile != 'gif') {
+                this.showDialog('addNotice', 'info', true, '只能上传png、jpg、gif格式图片');
+                return;
+            }
+            var _this = this;
+            var fileElementId;
+            if (uploadFileInput.value != '') {
+                fileElementId = 'uploadFileInput'
+            }
+            $.ajaxFileUpload({
+                url: '/clientMgmt/vipGrade/privilege/dataAdd.ajax',
+                type: 'POST',
+                dataType: 'json',
+                secureuri: false,
+                data: {
+                    description: this.description,
+                    jumpUrl: this.jumpUrl,
+                    privilegeId: this.privilegeId,
+                    privilegeType: this.privilegeType,
+                    privilegeKey: this.privilegeKey.replace(/，/g, ','),
+                    privilegeValue: this.privilegeValue,
+                    deleteStatus: this.deleteStatus,
+                    iconUrl: this.iconUrl,
+                    enable: this.enable,
+                    privilegeName: this.privilegeName,
+                },
+                fileElementId: fileElementId,
+                success: function (result) {
+                    console.log(result)
+                    if (result.error == 0) {
+                        _this.getTableData(0)
+                        _this.description = '';
+                        _this.jumpUrl = '';
+                        _this.privilegeId = '';
+                        _this.privilegeType = '';
+                        _this.privilegeKey = '';
+                        _this.privilegeValue = '';
+                        _this.deleteStatus = false;
+                        _this.iconUrl = '';
+                        _this.privilegeName = '';
+                        _this.anew = false;
+                        _this.showDialog('addNotice', 'info', false, result.msg)
+                    } else {
+
+                        _this.showDialog('addNotice', 'info', true, result.msg)
+                    }
+                }
+            });
+        },
+        deleteDialog: function (id, path) {
+            this.deleteinfo.privilegeId = id
+            this.deleteinfo.path = path
+            this.showDialog("", "deleteDialog")
+        },
+        deleteData: function () {
+            var params = {
+                privilegeId: this.deleteinfo.privilegeId,
+                // modifyBy: this.userName
+            };
+            console.log(params)
+            var _this = this;
+            $.post({
+                url: '/clientMgmt/vipGrade/privilege/dataDelete.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('deleteDialog', 'info', false, result.msg);
+                        _this.getTableData(0)
+                        console.log(result)
+                    } else {
+                        _this.showDialog('deleteDialog', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        showView: function (item) {
+            this.anew = true;
+            // var params = {
+            //     cutinPointId: id,
+            // };
+            // console.log(params)
+
+            var _this = this;
+            // $.post({
+            //     url: '/clientMgmt/vipGrade/privilege/dataQuery.ajax',
+            //     data: params,
+            //     success: function (result) {
+            //         if (result.error == 0) {
+
+            //             _this.viewChange.cutinPointDesc = result.data.cutinPointDesc;
+            //             _this.viewChange.cutinPointName = result.data.cutinPointName;
+            //             _this.viewChange.cutionPointKey = result.data.cutionPointKey;
+            //             _this.viewChange.id = result.data.cutinPointId;
+            //             console.log(result)
+            //         } else {
+            //             _this.showDialog('', 'info', false, '查询失败');
+            //         }
+            //     }
+            // });
+            _this.viewChange.privilegeId = item.privilegeId
+            _this.viewChange.iconUrl = item.iconUrl
+            _this.viewChange.enable = item.enable;
+            _this.viewChange.description = item.description
+            _this.viewChange.jumpUrl = item.jumpUrl
+            _this.viewChange.privilegeType = item.privilegeType
+            _this.viewChange.privilegeKey = item.privilegeKey
+            _this.viewChange.privilegeValue = item.privilegeValue
+            _this.viewChange.privilegeName = item.privilegeName
+            this.oldPath = this.viewChange.iconUrl;
+
+
+            this.showDialog('', 'changeNotice', false)
+        },
+        changeDate: function () {
+            if (this.viewChange.privilegeId === '') {
+                this.showDialog('changeNotice', 'info', true, '特权ID不能为空');
+                return;
+            }
+            if (this.viewChange.privilegeName === '') {
+                this.showDialog('changeNotice', 'info', true, '特权名称不能为空');
+                return;
+            }
+            if (!/^\d*$/.test(this.privilegeValue)) {
+                this.showDialog('changeNotice', 'info', true, '特权value只能为数字');
+                return;
+            }
+            var filePath = this.viewChange.iconUrl;
+            var afterFile = filePath.lastIndexOf('.');
+            afterFile = filePath.substr(afterFile - 0 + 1) //获取文件后缀名
+            afterFile = afterFile.toLocaleLowerCase() //转为小写
+            if (this.viewChange.iconUrl !== '' && afterFile != 'png' && afterFile != 'jpg' && afterFile != 'gif') {
+                this.showDialog('changeNotice', 'info', true, '只能上传png、jpg、gif格式图片');
+                return;
+            }
+            var _this = this;
+            var fileElementId;
+            if (uploadFileInputCge.value != '') {
+                fileElementId = 'uploadFileInputCge'
+            }
+            $.ajaxFileUpload({
+                url: '/clientMgmt/vipGrade/privilege/dataChange.ajax',
+                type: 'POST',
+                dataType: 'json',
+                secureuri: false,
+                data: {
+                    description: this.viewChange.description,
+                    jumpUrl: this.viewChange.jumpUrl,
+                    privilegeId: this.viewChange.privilegeId,
+                    privilegeType: this.viewChange.privilegeType,
+                    privilegeKey: this.viewChange.privilegeKey.replace(/，/g, ','),
+                    privilegeValue: this.viewChange.privilegeValue,
+                    deleteStatus: this.viewChange.deleteStatus,
+                    iconUrl: this.viewChange.iconUrl,
+                    enable: this.viewChange.enable,
+                    privilegeName: this.viewChange.privilegeName,
+                },
+                fileElementId: fileElementId,
+                success: function (result) {
+                    console.log(result)
+                    if (result.error == 0) {
+                        _this.anew = false;
+                        _this.iconUrl = ''
+                        _this.showDialog('changeNotice', 'info', false, result.msg)
+                        _this.getTableData(0)
+                        if (_this.viewChange.iconUrl != _this.oldPath) {
+                            $.post({ //修改成功时移动文件到del
+                                url: '/clientMgmt/vipGrade/privilege/del.ajax',
+                                data: {
+                                    oldPath: _this.oldPath
+                                },
+                                success: function (result) {
+                                    if (result.error === 0) {
+                                    } else {
+                                    }
+                                }
+                            });
+                        }
+                        _this.oldPath = ''
+
+                    } else {
+                        _this.showDialog('changeNotice', 'info', true, result.msg)
+
+                    }
+                }
+            });
+
+        },
+        queryData: function () {
+            var params = {};
+            var _this = this;
+            params.pageNo = 1;
+            params.cutinPointId = this.queryId;
+            params.cutionPointKey = this.queryKey;
+            params.pageSize = this.pageMaxNum;
+            $.post({
+                url: '/clientMgmt/vipGrade/privilege/getList.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.tableData = result.data.rows;
+                        _this.currentIndex = result.data.pageNum - 1;
+                        _this.totalPage = result.data.pages;
+                        _this.userName = result.userName;
+                        console.log(result)
+                    } else {
+                        _this.tableData = [];
+                        _this.currentIndex = 0;
+                        _this.totalPage = 0;
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        }
+    },
+    filters: {
+        setType: function (val) {
+            if (val == '01') {
+                return '信用卡额度'
+            } else if (val == '02') {
+                return '快取额度'
+            } else if (val == '03') {
+                return '多卡取现'
+            } else if (val == '11') {
+                return '申购优惠'
+            } else if (val == '12') {
+                return '认购优惠'
+            } else if (val == '31') {
+                return '积分翻倍'
+            } else if (val == '51') {
+                return '奖励包'
+            } else if (val == '61') {
+                return '跟我投'
+            } else if (val == '71') {
+                return '赎回特权'
+            } else if (val == '72') {
+                return '组合转换'
+            } else if (val == '73') {
+                return '基金组合费率'
+            } else if (val == '91') {
+                return '其它'
+            } else {
+                return val
+            }
+
+        }
+    }
+});

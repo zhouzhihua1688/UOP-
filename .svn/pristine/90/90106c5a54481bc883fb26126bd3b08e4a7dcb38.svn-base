@@ -1,0 +1,37 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').manualMgmt.deleteMsg;
+module.exports = function (app) {
+    //删除
+    app.post('/messageCenter/manualMgmt/deleteMsg/del.ajax', (req, res, next) => {
+        let params = {};
+        req.body.routeRuleId && (params.routeRuleId = req.body.routeRuleId);
+        req.body.batchId && (params.batchId = req.body.batchId);
+        let option = {
+            session: req.session,
+            url: apiUrlList.del,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/manualMgmt/deleteMsg/del.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            sysLogger(3, req, option, body);
+            console.log('/messageCenter/manualMgmt/deleteMsg/del.ajax error:', error);
+            console.log('/messageCenter/manualMgmt/deleteMsg/del.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/manualMgmt/deleteMsg/del.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                res.send({error: 0, msg: '删除成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '删除失败'});
+            }
+        });
+    });
+};

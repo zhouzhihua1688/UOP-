@@ -1,0 +1,53 @@
+module.exports = {
+    index:{
+        name:'三方营运'
+    },
+    products:{
+        index:'onSale.html',
+        name:'产品管理',
+        child:{
+            paramsMgmt:'参数表管理',
+            open: '产品开放',
+            library: '产品库及净值管理'
+        }
+    },
+    expenseMgmt:{
+        index:'procedureSum.html',
+        name:'费用管理',
+        child:{
+            procedureSum:'手续费/汇总',
+            procedureSumreview:'手续费/复核',
+            procedureSumdetails:'手续费/详情',
+            transactionSum:'交易费/汇总',
+            transactionSumreview:'交易费/复核',
+            transactionSumdays:'交易费/详情',
+            trailingSum:'代销尾佣/汇总',
+            trailingSumdetails:'代销尾佣/详情',
+            feedbackSum:'三方反馈/汇总',
+            feedbackSumdetails:'三方反馈/详情',
+            paramSetting:'报表参数设置',
+            export:'报表导出',
+        }
+    },
+    mails:{
+        index:'new.html',
+        name:'邮件系统',
+        child:{
+            new: '新建邮件',
+            sent:'已发邮件'
+        }
+    },
+    channelMaintain:{
+        index:'directSelling.html',
+        name:'渠道维护',
+        child:{
+            directSelling:'直销三方上架',
+            proxySelling:'代销三方上架',
+            contactMaintain:'联系人维护',
+            fileInteraction:'三方文件交互',
+            partnerSelling:'合作方上架',
+            closeCheck:"三方收市检查"
+        }
+
+    }
+};

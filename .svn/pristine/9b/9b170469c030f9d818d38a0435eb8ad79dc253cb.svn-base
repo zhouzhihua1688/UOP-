@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datepicker3.min.css" />
+    <style>
+        [v-cloak]{
+            display: none;
+        }
+        .cover {
+position: fixed;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(9, 10, 10, 0.527);
+z-index: 999;
+}
+
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content" id="content">
+                    <% include ../breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <!--信息提示弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--邮件详情弹窗-->
+                    <div class="modal" id="email" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog" style="min-width:800px;">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                    <h4 class="modal-title" style="display: inline">发送邮件</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row" style="margin: 0 0 10px 0;">
+                                        <button class="btn btn-info btnstyle col-lg-2 col-sm-2" style="line-height: 12px;margin-right: 5px;">收件人</button>
+                                        <div class="tags col-lg-9 col-sm-9" style="min-height: 34px;">
+                                            <span class="tag" style="padding: 5px 9px;" v-for="(item, index) in recipient"
+                                                :key="index">
+                                                {{item.receivernm}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin: 0 0 10px 0;">
+                                        <button class="btn btn-info btnstyle col-lg-2 col-sm-2" style="line-height: 12px;margin-right: 5px;">抄送人</button>
+                                        <div class="tags col-lg-9 col-sm-9" style="min-height: 34px;">
+                                            <span class="tag" style="padding: 5px 9px;" v-for="(item, index) in copy"
+                                                :key="index">
+                                                {{item.receivernm}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin: 0 0 10px 0;">
+                                        <button class="btn btn-info btnstyle col-lg-2 col-sm-2" style="line-height: 12px;margin-right: 5px;">密送人</button>
+                                        <div class="tags col-lg-9 col-sm-9" style="min-height: 34px;">
+                                            <span class="tag" style="padding: 5px 9px;" v-for="(item, index) in encryption"
+                                                :key="index">
+                                                {{item.receivernm}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin: 0 0 10px 0;position: relative;">
+                                        <button class="btn btn-info btnstyle col-lg-2 col-sm-2" style="line-height: 12px;margin-right: 5px;">邮件标题</button>
+                                        <input type="text" class="col-lg-9 col-sm-9" v-model="themeName">
+                                    </div>
+                                    <div class="row" style="margin: 0 0 10px 0;">
+                                        <button class="btn btn-info btnstyle col-lg-2 col-sm-2" style="line-height: 12px;margin-right: 5px;">附件</button>
+                                        <div class="tags col-lg-9 col-sm-9" style="min-height: 34px;">
+                                            <span class="tag" v-for="(item, index) in excel" :key="index">
+                                                {{item.filename | fileNameFilter}}
+                                                <button v-if="showSend" type="button" class="close" @click="removefile(index)">×</button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="wysiwyg-editor" id="editor1"></div>
+                                </div>
+                                <div class="modal-footer" v-show="showSend">
+                                    <div class="text-center">
+                                        <button class="btn btn-sm btn-primary" @click="sendEmail">发送</button>
+                                        <button class="btn btn-sm btn-primary" @click="saveEmail">保存</button>
+                                        <button class="btn btn-sm btn-default" data-dismiss="modal">取消</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- loading动画 -->
+                    <div class="cover" v-show='progress' v-cloak style="z-index: 1999;">
+                        <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                    </div><!-- loading动画结束 -->
+
+
+
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <!-- PAGE CONTENT BEGINS -->
+                            <form class="form-inline" style="padding: 10px 0;">
+                                <div class="form-group">
+                                    <label class="control-label">标题:</label>
+                                    <input type="text" v-model="title">
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">接收地址:</label>
+                                    <input type="text" v-model="address">
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">发送状态:</label>
+                                    <select name="state" class="form-control" style="width: 170px;" v-model="status">
+                                        <option value=""></option>
+                                        <option value="D">草稿</option>
+                                        <option value="N">未发送</option>
+                                        <option value="S">已发送</option>
+                                        <option value="F">发送失败</option>
+                                        <option value="E">发送异常</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">发送日期:</label>
+                                    <div class="input-group">
+                                        <input type="text" id="sendtime" class="form-control date-picker">
+                                        <span class="input-group-addon">
+                                            <i class="fa fa-calendar bigger-110"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary" value="查询" @click="search">
+                                </div>
+                            </form>
+
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!--分页器和快速查询-->
+                            <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                <div class="col-xs-6">
+                                    <div class="dataTables_length" id="dynamic-table_length">
+                                        <label>每页显示</label>
+                                        <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                            <option value="10">10</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                            <option value="500">500</option>
+                                        </select>
+                                        <label>条</label>
+                                    </div>
+                                </div>
+                                <div class="col-xs-6">
+                                    <div id="dynamic-table_filter" class="dataTables_filter">
+                                        <label>快速查询:</label>
+                                        <input type="text" class="input-sm" v-model="condition">
+                                    </div>
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center">操作</th>
+                                        <th class="center">标题</th>
+                                        <th class="center">接收地址</th>
+                                        <th class="center">发送状态</th>
+                                        <th class="center sort" v-sort data-prop="orderTime">发送时间</th>
+                                        <th class="center">操作员</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <template v-if="viewData.length>0">
+                                        <tr v-for="(item,index) in viewData" :key="index">
+                                            <td class="center col-md-1" v-text="index+1"></td>
+                                            <td class="center col-md-2"><a href="javascript:;" @click="showEmail(index)"
+                                                    v-text="item.title"></a></td>
+                                            <td class="center col-md-4" style="padding: 0;">
+                                                <select class="ace" style="width: 100%;border: solid 0px #fff;">
+                                                    <option v-for="(item,index) in item.showRecvList" :value="item.address"
+                                                        v-text="item.address"></option>
+                                                </select>
+                                            </td>
+                                            <td class="center col-md-1" v-text="item.status"></td>
+                                            <td class="center col-md-2" v-text="item.sendtime"></td>
+                                            <td class="center col-md-2" v-text="item.operators"></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="6"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                             <!--底部页码-->
+                            <div v-if="viewData.length>0" class="row"
+                                style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                        <ul class="pagination">
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                            </li>
+                                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in pageList" @click="changeIndex(value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'...'+middleData.length" @click="toLast"></a>
+                                            </li>
+                                            <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- PAGE CONTENT ENDS -->
+                        </div><!-- /.col -->
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+
+        <% include ../../common/footer.html %>
+
+    </div><!-- /.main-container -->
+
+    <% include ../../common/basic-scripts.html %>
+
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <!-- inline scripts related to this page -->
+    <script src="/ace/assets/js/jquery-ui.custom.min.js"></script>
+    <script src="/ace/assets/js/jquery.ui.touch-punch.min.js"></script>
+    <script src="/ace/assets/js/chosen.jquery.min.js"></script>
+    <script src="/ace/assets/js/spinbox.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datepicker.min.js"></script>
+    <script src="/ace/assets/js/autosize.min.js"></script>
+    <script src="/ace/assets/js/jquery.inputlimiter.min.js"></script>
+    <script src="/ace/assets/js/jquery.maskedinput.min.js"></script>
+    <script src="/ace/assets/js/markdown.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-markdown.min.js"></script>
+    <script src="/ace/assets/js/jquery.hotkeys.index.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-wysiwyg.min.js"></script>
+    <script src="/ace/assets/js/bootbox.js"></script>
+    <script src="/js/thirdPartyOperation/common/richTextBox.js"></script>
+    <script src="/js/thirdPartyOperation/mails/sent.js"></script>
+</body>
+
+</html>

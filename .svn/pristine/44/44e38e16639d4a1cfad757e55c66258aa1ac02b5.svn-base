@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .table>tbody>tr>td * {
+            margin: 0;
+            padding: 0;
+        }
+
+        #onLine table tr td:nth-child(odd),
+        #add table tr td:nth-child(odd) {
+            background-color: #eee;
+        }
+
+        #onLine1 table tr td:nth-child(odd),
+        #add table tr td:nth-child(odd) {
+            background-color: #eee;
+        }
+
+
+        .tab-content p {
+            display: inline-block
+        }
+
+        span.modify {
+            color: blue;
+            padding-left: 20px;
+        }
+
+        span.del {
+            color: red;
+            text-decoration: line-through;
+        }
+
+        span.add {
+            color: green;
+            /* text-decoration:line-through; */
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-html="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--后退信息弹窗-->
+                            <div class="modal" id="goBackInfo" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-html="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                                @click='goBack'>确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--复核提示弹窗-->
+                            <div class="modal" id="reviewInfo" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-html="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" @click='review'>确定
+                                            </button>
+                                            <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="tabbable">
+                                <ul class="nav nav-tabs padding-12 tab-color-blue background-blue" id="myTab4">
+                                    <li class="active">
+                                        <a data-toggle="tab" href="#onLine">基本信息</a>
+                                    </li>
+                                    <li>
+                                        <a data-toggle="tab" href="#onLine1">交易限额</a>
+                                    </li>
+
+                                </ul>
+
+                                <div class="tab-content">
+                                    <div id="onLine" class="tab-pane in active">
+                                        <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                            <tbody>
+                                                <tr>
+                                                    <td class="text-right">基金代码</td>
+                                                    <td class="text-left"
+                                                        v-html='approve.fundid?approve.fundid:onLine.fundid'></td>
+                                                    <td class="text-right">基金名称</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(approve.fundchinesenm,onLine.fundchinesenm)'>
+                                                    </td>
+                                                    <td class="text-right">基金简称</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(approve.fundnm,onLine.fundnm)'></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-right">注册登记代码</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(chinese(approve.tano,showChinese.tanoList),chinese(onLine.tano,showChinese.tanoList))'>
+                                                    </td>
+                                                    <td class="text-right">货币类型</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(chinese(approve.currencytype,showChinese.currencytypeList),chinese(onLine.currencytype,showChinese.currencytypeList))'>
+                                                    </td>
+                                                    <td class="text-right">收费方式</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(chinese(approve.sharetype,showChinese.sharetypeList),chinese(onLine.sharetype,showChinese.sharetypeList))'>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-right">基金等级</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(approve.shareclass,onLine.shareclass)'></td>
+                                                    <td class="text-right">基金风险等级</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(chinese(approve.fundrisklevel,showChinese.fundrisklevelList),chinese(onLine.fundrisklevel,showChinese.fundrisklevelList))'>
+                                                    </td>
+                                                    <td class="text-right">基金类别</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(approve.fundtp,onLine.fundtp)'></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-right">基金面值</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(approve.facevalue,onLine.facevalue)'></td>
+                                                    <td class="text-right">基金净值小数位数</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(approve.navfracnum,onLine.navfracnum)'></td>
+                                                    <td class="text-right">基金净值小数处理方式</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(chinese(approve.navfracmode,showChinese.navfracmodeList),chinese(onLine.navfracmode,showChinese.navfracmodeList))'>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-right">发行价格</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(approve.issueprice,onLine.issueprice)'></td>
+                                                    <td class="text-right">注册登记机构名称</td>
+                                                    <td class="text-left" v-html='contrast(approve.tanm,onLine.tanm)'>
+                                                    </td>
+                                                    <td class="text-right">投资区域</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(chinese(approve.investarea,showChinese.investareaList),chinese(onLine.investarea,showChinese.investareaList))'>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-right">申购确认日期</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(approve.ackbidday,onLine.ackbidday)'></td>
+                                                    <td class="text-right">赎回确认日期</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(approve.ackredday,onLine.ackredday)'></td>
+                                                    <td class="text-right">展示类别</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(chinese(approve.displayfundtp,showChinese.displayfundtpList),chinese(onLine.displayfundtp,showChinese.displayfundtpList))'>
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td class="text-right">资金到账日期</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(approve.transferdays,onLine.transferdays)'>
+                                                    </td>
+                                                    <td class="text-right">资金交付日期</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(approve.deliverydays,onLine.deliverydays)'>
+                                                    </td>
+                                                    <td class="text-right">产品类型</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(chinese(approve.producttype,showChinese.producttypeList),chinese(onLine.producttype,showChinese.producttypeList))'>
+                                                    </td>
+
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-right">分红方式</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(chinese(approve.melonmd,showChinese.melonmdList),chinese(onLine.melonmd,showChinese.melonmdList))'>
+                                                    </td>
+                                                    <td class="text-right">是否在直销发行</td>
+                                                    <td class="text-left"
+                                                        v-html='contrast(chinese(approve.directsellingsign,showChinese.directsellingsignList),chinese(onLine.directsellingsign,showChinese.directsellingsignList))'>
+                                                    </td>
+                                                </tr>
+                                                <!-- <tr>
+                                                    <td class="text-right">分红划款日期</td>
+                                                    <td class="text-left" v-html='onLine.melonmddays'></td>
+                                                    <td class="text-right">申购划款日期</td>
+                                                    <td class="text-left" v-html='onLine.biddays'></td>
+                                                </tr> -->
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                    <div id="onLine1" class="tab-pane " style="overflow: hidden;">
+                                        <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                            <!-- 开始 -->
+                                            <tr>
+                                                <td class="text-right" style="width: 200px;">最低认购金额</td>
+                                                <td class="text-left"
+                                                    v-html='contrast(approve.minsubamt,onLine.minsubamt)'></td>
+                                                <td class="text-right" style="width: 200px;">最高认购金额</td>
+                                                <td class="text-left"
+                                                    v-html='contrast(approve.maxsubamt,onLine.maxsubamt)'></td>
+                                                <td class="text-right" style="width: 200px;">最低赎回份额</td>
+                                                <td class="text-left"
+                                                    v-html='contrast(approve.minredamt,onLine.minredamt)'></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-right" style="width: 200px;">最低申购金额</td>
+                                                <td class="text-left"
+                                                    v-html='contrast(approve.minbidamt,onLine.minbidamt)'></td>
+                                                <td class="text-right" style="width: 200px;">最高申购金额</td>
+                                                <td class="text-left"
+                                                    v-html='contrast(approve.maxbidamt,onLine.maxbidamt)'></td>
+                                                <td class="text-right" style="width: 200px;">最低转换份额</td>
+                                                <td class="text-left"
+                                                    v-html='contrast(approve.minconvamt,onLine.minconvamt)'></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-right" style="width: 200px;">最低定投金额</td>
+                                                <td class="text-left"
+                                                    v-html='contrast(approve.minrspamt,onLine.minrspamt)'></td>
+                                                <td class="text-right" style="width: 200px;">最低持有份额</td>
+                                                <td class="text-left"
+                                                    v-html='contrast(approve.minholdamt,onLine.minholdamt)'></td>
+                                                <td class="text-right" style="width: 200px;">最低追加申购金额</td>
+                                                <td class="text-left"
+                                                    v-html='contrast(approve.minaddamt,onLine.minaddamt)'></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-right" style="width: 200px;">最低追加认购金额</td>
+                                                <td class="text-left"
+                                                    v-html='contrast(approve.minaddsubamt,onLine.minaddsubamt)'></td>
+                                                <td class="text-right" style="width: 200px;">金额级差</td>
+                                                <td class="text-left"
+                                                    v-html='contrast(approve.rangeamt,onLine.rangeamt)'></td>
+                                            </tr>
+                                        </table>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex;;justify-content: center;margin-top: 10px;">
+                                <template v-if="getUrlParam('fundStatus')==='N'">
+                                    <input type="button" class="btn btn-sm btn-primary" value="通过"
+                                        @click='showReviewDialog("S","通过")' style='margin-right:30px;'>
+                                    <input type="button" class="btn btn-sm btn-danger" value="驳回"
+                                        @click='showReviewDialog("F","驳回")' style='margin-right:30px;'>
+                                </template>
+                                <button type="button" class="btn btn-primary btn-sm " @click='goBack'>返回</button>
+                            </div>
+
+                        </div>
+
+                    </div><!--  style='margin-right:50px;'/.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/businessMgmt/IPOMgmtOCReview/IPOSetDetail.js"></script>
+
+</body>
+
+</html>

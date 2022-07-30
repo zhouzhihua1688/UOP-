@@ -1,0 +1,32 @@
+{
+	"retCode":"0000",
+	"retMsg":"调用成功",
+	"cost":[
+		{	
+			"costTypehood":"三方手续费",
+			"quarter":"2018Q1",
+			"reportName":"201803第三方手续费.xlsx",
+			"thirdParty":"网易",
+			"sendTime":"2018/6/6  14:20:41",
+			"status":"1"
+		},
+		{	
+			"costTypehood":"三方尾佣",
+			"quarter":"2018Q1",
+			"reportName":"201803第三方交易费报表.xlsx",
+			"thirdParty":"京东",
+			"sendTime":"2018/6/7  14:20:41",
+			"status":"2"
+		},
+		{	
+			"costTypehood":"代销尾佣",
+			"quarter":"2018Q1",
+			"reportName":"2018年1季度尾佣汇总.xlsx",
+			"thirdParty":"苏宁",
+			"sendTime":"2018/6/8  14:20:41",
+			"status":"3"
+		}
+
+		
+	]
+}

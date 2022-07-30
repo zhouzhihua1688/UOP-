@@ -1,0 +1,104 @@
+const request = require('./../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').assetTestify.applyQuery;
+module.exports = function (app) {
+
+    // 获取  初始数据和查询
+    app.post('/customerService/assetTestify/applyQuery/getList.ajax', (req, res, next) => {
+        let params = req.body,
+            userName = req.session.loginInfo.username;
+        let option = {
+            session: req.session,
+            req,
+            url: apiUrl.getList,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/customerService/assetTestify/applyQuery/getList.ajax option:', {
+            ...option,
+            req: '#'
+        });
+        request(option, (error, response, body) => {
+            console.log('/customerService/assetTestify/applyQuery/getList.ajax error:', error);
+            console.log('/customerService/assetTestify/applyQuery/getList.ajax statusCode:', response && response.statusCode);
+            console.log('/customerService/assetTestify/applyQuery/getList.ajax body:', {
+                ...body,
+                ['body']: '*****'
+            });
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '调用失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+    app.post('/customerService/assetTestify/applyQuery/update.ajax', (req, res, next) => {
+        let params = req.body;
+        params && (params.operAcco = req.session.loginInfo.userid);
+        let option = {
+            session: req.session,
+            url: apiUrl.update,
+            req,
+            headers: {
+                operator: req.session.loginInfo.userid
+            },
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/customerService/assetTestify/applyQuery/update.ajax option:', {
+            ...option,
+            req: '#'
+        });
+        request.post(option, (error, response, body) => {
+            console.log('/customerService/assetTestify/applyQuery/update.ajax error:', error);
+            console.log('/customerService/assetTestify/applyQuery/update.ajax statusCode:', response && response.statusCode);
+            console.log('/customerService/assetTestify/applyQuery/update.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '受理失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+
+                res.send({
+                    error: 0,
+                    msg: '受理成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '调用失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+
+};

@@ -1,0 +1,26 @@
+try {
+    const mysql = require('mysql');
+    const mysqlConfig = require('../apiConfig').mysqlConfig;
+    // const mysqlPool = mysql.createPool({
+    //     connectionLimit: 10,
+    //     host: 'example.org',
+    //     user: 'bob',
+    //     password: 'secret',
+    //     database: 'my_db'
+    // });
+    var mysqlPool = mysql.createPool(Object.assign({ connectionLimit: 10 }, mysqlConfig))
+} catch (error) {
+    console.log('mysqlPool error=', error)
+}
+module.exports = function (app) {
+        // 页面菜单
+    require('./discountHandle')(app);
+    require('./discountReview')(app);
+    require('./quotaHandle')(app);
+    require('./quotaReview')(app);
+    require('./paymentHandle')(app);
+    require('./paymentReview')(app);
+    require('./discountTrial')(app);
+    require('./quotaTrial')(app);
+    require('./productOpenDayMgmt')(app);
+};

@@ -1,0 +1,39 @@
+module.exports = {
+    index:{
+        name:'内容管理'
+    },
+		productData:{
+			index:'productList.html',
+			name:'产品材料',
+			child:{
+					productList:'产品列表'
+			}
+		},
+    productMaterial:{
+        index:'investPrefecture.html',
+        name:'投教策略',
+        child:{
+            investPrefecture:'投教专区',
+            contentInvestStrategy:'内容投资策略',
+            activity:'活动'
+        }
+    },
+    tagMgmt:{
+        index:'tagClassifyMgmt.html',
+        name:'标签管理',
+        child:{
+            tagClassifyMgmt:'标签分类管理',
+            tagContentMgmt:'标签内容管理'
+        }
+    },
+    contentClassifyMgmt:{
+        index:'firstLevel.html',
+        name:'内容分类管理',
+        child:{
+            firstLevel:'一级分类',
+            secondLevel:'一级分类',
+            threeLevel:'一级分类',
+        }
+    },
+    
+};

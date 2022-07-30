@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/select2.min.css" />
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+            word-break: break-all;
+        }
+        .colorBlock{
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+            vertical-align: middle;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .chosenActive{
+            box-shadow: 0 0 10px #f00;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!-- loading动画 -->
+                <div class="cover" v-show="loadingShow" style="z-index: 1999;display: none;">
+                    <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                </div>
+                <!-- loading动画end -->
+                <!--第一级新增/修改弹窗-->
+                <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">新增内容:</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form " style="padding: 0 50px 0 24px;">
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            主题名称:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diathemenm"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            主题标题:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diathemeTitle"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">主题标题展示模式 :</label>
+                                        <select name="" id="" v-model="diathemeTitleDisplayMode">
+                                            <option value="">请选择</option>
+                                            <option value="titleDefault">默认(titleDefault)</option>
+                                            <option value="titleWithLeftFlag">主题带左浮标(titleWithLeftFlag)</option>
+                                            <option value="titleVipGradient">尊享渐变(titleVipGradient)</option>
+                                            <option value="topRoundRect">顶部圆角样式(topRoundRect)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            主题副标:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diathemesubTitle"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right;vertical-align: top;">主题描述:</label>
+                                        <textarea name="" id="" style="width: 60%;" v-model.trim="diathemeDescription"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            模块左上标题:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diaupperleftTitle"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            模块显示更多标题:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diaviewmoreTitle"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            显示更多url:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diaviewmoreUrl"
+                                        />
+                                    </div>
+                                    <div class="form-group" style="display: flex;">
+                                        <label class="control-label" style="width: 150px;text-align: right">查看更多图片地址:</label>
+                                        <input type="text" id="uploadInput5" placeholder="请选择"
+                                               style="width: 37%;" disabled/>
+                                        <input type="button" class="btn btn-sm btn-primary" id="uploadBtn5" value="选择" style="margin-right:1px">
+                                        <input type="button" class="btn btn-sm btn-primary" @click="uploadPic5" value="上传" style="margin-right:1px">
+                                        <input type="button" class="btn btn-sm btn-danger" @click="rmImgUrl" value="删除">
+                                        <input id="uploadFileInput5" type="file" name="file" style="display: none"
+                                               class="upload"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            模块内容显示数量<span class="red">*</span>:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diadisplayCount"
+                                        />
+                                    </div>
+                                    <div class="form-group" style="display: flex;">
+                                        <label class="control-label" style="width: 150px;text-align: right">主题图标图片地址(上传):</label>
+                                        <input type="text" id="uploadInput1" placeholder="请选择"
+                                               style="width: 37%;" disabled/>
+                                        <input type="button" class="btn btn-sm btn-primary" id="uploadBtn1" value="选择" style="margin-right:1px">
+                                        <input type="button" class="btn btn-sm btn-primary" @click="uploadPic1" value="上传" style="margin-right:1px">
+                                        <input type="button" class="btn btn-sm btn-danger" @click="rmImgUrl" value="删除">
+                                        <input id="uploadFileInput1" type="file" name="file" style="display: none"
+                                               class="upload"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            主题底部按钮名称:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diabottomBtnName"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            主题底部按钮跳转url:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diabottomBtnUrl"
+                                        />
+                                    </div>
+                                    <div class="form-group" style="display: flex;">
+                                        <label class="control-label" style="width: 150px;text-align: right">图片地址:</label>
+                                        <input type="text" id="uploadInput2" placeholder="请选择"
+                                               style="width: 37%;" disabled/>
+                                        <input type="button" class="btn btn-sm btn-primary" id="uploadBtn2" value="选择" style="margin-right:1px">
+                                        <input type="button" class="btn btn-sm btn-primary" @click="uploadPic2" value="上传" style="margin-right:1px">
+                                        <input type="button" class="btn btn-sm btn-danger" @click="rmImgUrl" value="删除">
+                                        <input id="uploadFileInput2" type="file" name="file" style="display: none"
+                                               class="upload"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">展示类型:</label>
+                                        <select name="" id="" v-model="diashowtp">
+                                            <option value="2">展示该主题下的配置的内容数据</option>
+                                            <option value="1">展示该主题</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            模块与主题关系排序<span class="red">*</span>:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diasort"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            每行显示项数<span class="red">*</span>:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diacolumnNum"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            主题展示行数:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diarowNum"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">主题对应内容类型:</label>
+                                        <input type="text" style="width: 60%;" disabled v-model="diacontentName"/>
+                                        <!-- <select name="" id="" v-model="diacontentTp" >
+                                            <option v-for="item in contentTpList" :value="item.contentKey" v-text="item.contentName"></option>
+                                        </select> -->
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            主题对应模版类型:</label>
+                                        <input type="text" style="width: 60%;" disabled v-model="diatemId"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">数据来源:</label>
+                                        <select name="" id="" v-model="diadataFrom">
+                                            <option value="0">配置数据</option>
+                                            <option value="1">外调获取</option>
+                                            <option value="2">智能推荐</option>
+                                            <option value="3">自动化运营-配置数据</option>
+                                            <option value="4">配置数据-基于目标因子获取</option>
+                                            <option value="5">配置+文件读取</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" v-show="diadataFrom==1||diadataFrom==2||diadataFrom==5">
+                                        <label class="control-label" style="width: 150px;text-align: right">数据场景key:</label>
+                                        <select name="" id="" v-model="diadynamicscenekey">
+                                            <option v-for="item in scenekeyList" :value="item.sceneKey" v-text="item.sceneName"></option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">主题标题位置:</label>
+                                        <select name="" id="" v-model="diathemeTitlePosition">
+                                            <option value="">请选择</option>
+                                            <option value="1">左</option>
+                                            <option value="2">中</option>
+                                            <option value="3">右</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">主题背景模式:</label>
+                                        <select name="" id="" v-model="diabackgroundMode">
+                                            <option value="">请选择</option>
+                                            <option value="taskGridCard">任务网格卡片(taskGridCard)</option>
+                                            <option value="gridDivider">网格分割线(gridDivider)</option>
+                                            <option value="roundRect">圆角矩形(roundRect)</option>
+                                            <option value="topRoundRect">顶部圆角矩形(topRoundRect)</option>
+                                            <option value="bottomRoundRect">底部圆角样式(bottomRoundRect)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">是否需要上边距:</label>
+                                        <select name="" id="" v-model="diahasTopMargin">
+                                            <option value="1">需要</option>
+                                            <option value="0">不需要</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="display: flex;">
+                                        <label class="control-label" style="width: 150px;text-align: right">主题标题图片地址:</label>
+                                        <input type="text" id="uploadInput3" placeholder="请选择"
+                                               style="width: 37%;" disabled/>
+                                        <input type="button" class="btn btn-sm btn-primary" id="uploadBtn3" value="选择" style="margin-right:1px">
+                                        <input type="button" class="btn btn-sm btn-primary" @click="uploadPic3" value="上传" style="margin-right:1px">
+                                        <input type="button" class="btn btn-sm btn-danger" @click="rmImgUrl" value="删除">
+                                        <input id="uploadFileInput3" type="file" name="file" style="display: none"
+                                               class="upload"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">主题背景色:</label>
+                                        <span class="colorBlock" style="background: #fbf3e4;" data-color="#fbf3e4" ></span>
+                                        <span class="colorBlock" style="background: #e9ebf7;" data-color="#e9ebf7" ></span>
+                                        <span class="colorBlock" style="background: #fbecec;" data-color="#fbecec" ></span>
+                                        <span class="colorBlock" style="background: #e7f1f9;" data-color="#e7f1f9" ></span>
+                                    </div>
+                                    <!-- <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            主题背景图片:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diabackgroundImageUrl"
+                                        />
+                                    </div> -->
+                                    <div class="form-group" style="display: flex;">
+                                        <label class="control-label" style="width: 150px;text-align: right">主题背景图片:</label>
+                                        <input type="text" id="uploadInput6" placeholder="请选择"
+                                               style="width: 37%;" disabled/>
+                                        <input type="button" class="btn btn-sm btn-primary" id="uploadBtn6" value="选择" style="margin-right:1px">
+                                        <input type="button" class="btn btn-sm btn-primary" @click="uploadPic6" value="上传" style="margin-right:1px">
+                                        <input type="button" class="btn btn-sm btn-danger" @click="rmImgUrl" value="删除">
+                                        <input id="uploadFileInput6" type="file" name="file" style="display: none"
+                                               class="upload"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            主题外部导航栏颜色:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diaexternalNavigationColor"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">是否禁用主题背景模式:</label>
+                                        <select name="" id="" v-model="diadisableBackgroundMode">
+                                            <option value="0">开启</option>
+                                            <option value="1">禁用</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right;vertical-align: top;">备注<span class="red">*</span>:</label>
+                                        <textarea name="" id="" style="width: 60%;" v-model.trim="diaremark" placeholder="必填，神策统计使用"></textarea>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <p class="text-center">
+                                <button class="btn btn-sm btn-primary" @click="add">保存</button>
+                                <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--查看主题内容弹窗-->
+                <div class="modal" id="checkThemeContent" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog" style="width: 80%;">
+                        <div class="modal-content" >
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">内容配置列表</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <div class="form-inline" style="padding: 10px 0;">
+                                    <div class="form-group">
+                                        <label class="control-label">主题对应内容类型:</label>
+                                        <span v-text="positionName+'('+contentTp+')'"></span>
+                                    </div>
+                                    <div class="form-group pull-right" style="margin-bottom: 10px">
+                                        <input type="button" class="btn btn-sm btn-primary" value="新建内容" @click="showAddSecond">
+                                    </div>
+                                </div>
+                                <!--数据表-->
+                                <template v-if="contentTp=='index'">
+                                    <table id="index" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">热力指数模板ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">指数编码</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">指数名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.object.indexCode'></td>
+                                                <td class="center" v-text='item.object.indexName'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                    
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="10">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='wx_product'">
+                                    <table id="wx_product" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">产品模板ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">产品标题</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.object.prdTitle'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='manager'">
+                                    <table id="manager" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">基金经理名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.object.managerName'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="7">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='wx_adImg'">
+                                    <table id="wx_adImg" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">微信图片ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">微信图片备注</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.object.remark'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='adImg'">
+                                    <table id="adImg" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">跳转URl</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">主题下产品排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">备注</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index" 
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='overflowHide(item.object.url)' :title="item.object.url"></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-text='item.object.remark'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='activity'">
+                                    <table id="activity" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">ID编号</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">活动ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">活动名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">图片地址</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">产品排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">创建时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">创建人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.object.activityid'></td>
+                                                <td class="center" v-text='item.object.title'></td>
+                                                <td class="center" v-text='item.object.imageUrl'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.object.createTime)'></td>
+                                                <td class="center" v-text='item.object.createBy'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="12">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="11">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='funcbtn'">
+                                <table id="funcbtn" class="table table-bordered table-hover dataTable">
+                                    <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">按钮名称</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">跳转URl</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">图片地址</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <template v-if="themeContentData.length>0">
+                                        <tr v-for="(item,index) in themeContentData" :key="index"
+                                        :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                            <td class="center" v-text='item.object.funcBtnName'></td>
+                                            <td class="center" v-text='item.object.url'></td>
+                                            <td class="center" v-text='item.object.imageUrl'></td>
+                                            <td class="center" v-text='item.position'></td>
+                                            <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                            <td class="center" v-text='formatTime(item.startTime)'></td>
+                                            <td class="center" v-text='formatTime(item.endTime)'></td>
+                                            <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                            <td class="center" v-text='item.modifyBy'></td>
+                                            <td class="center" >
+                                                <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <template v-if="isDataForm">
+                                                <td class="center"  colspan="10">暂无数据</td>
+                                            </template>
+                                            <template v-else>
+                                                <td class="center"  colspan="9">暂无数据</td>
+                                            </template>
+                                        </tr>
+                                    </template>
+                                    </tbody>
+                                </table>
+                            </template>
+                                <template v-if="contentTp=='fund'">
+                                    <table id="fund" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">产品id</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">产品名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">产品副标</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">推荐要素名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.object.fundId'></td>
+                                                <td class="center" v-text='item.object.fundTitle'></td>
+                                                <td class="center" v-text='item.object.fundsubTitle'></td>
+                                                <td class="center" v-text='item.object.recomelementnm'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='notice'">
+                                    <table id="notice" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">通知内容</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">跳转URl</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.object.noticeValue'></td>
+                                                <td class="center" v-text='item.object.url'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="7">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="6">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='webanner'">
+                                    <table id="webanner" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">小程序图片地址</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">小程序广告标题</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">主题下产品排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.object.bannerUrl'></td>
+                                                <td class="center" v-text='item.object.bannerTitle'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="7">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="6">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='fundgroup'">
+                                    <table id="fundgroup" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">组合ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">组合名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.object.fundGroupId'></td>
+                                                <td class="center" v-text='item.object.fundGroupTitle'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='custombtn'">
+                                    <table id="custombtn" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">按钮名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.object.btnName'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="7">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='advice'">
+                                    <table id="advice" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">对象名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">对象描述</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">主题下产品排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">咨询来源</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">咨询发布时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.object.adviceTitle'></td>
+                                                <td class="center" v-text='item.object.adviceDesc'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-text='item.object.dataSource'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.object.publicTime)'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='loadpage'">
+                                    <table id="loadpage" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">备注名</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.object.remark'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='product'">
+                                    <table id="product" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">产品模板ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">产品标题</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.object.prdTitle'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='tags'">
+                                    <table id="tags" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">标签模板ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">标签名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">标签关联子内容类型</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.object.tagName'></td>
+                                                <td class="center" v-text='item.object.childContentTp'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="10">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='coupon'">
+                                    <table id="coupon" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">礼券模板ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">礼券名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.object.couponno'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='wap_advice'">
+                                    <table id="wap_advice" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">对象名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">对象描述</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">主题下产品排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">咨询来源</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">咨询发布时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.object.adviceTitle'></td>
+                                                <td class="center" v-text='item.object.adviceDesc'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='item.object.dataSource'></td>
+                                                <td class="center" v-text='formatTime(item.object.publicTime)'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='weprod'">
+                                    <table id="weprod" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">小程序产品基金ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">小程序产品功能名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">图片地址</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">主题下产品排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.object.sceneName'></td>
+                                                <td class="center" v-text='overflowHide(item.object.sceneIconUrl)' :title="item.object.sceneIconUrl"></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="7">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='wx_funcbtn'">
+                                    <table id="wx_funcbtn" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">微信按钮ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">微信按钮名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.object.btnName'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='wx_fund'">
+                                    <table id="wx_fund" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">微信推荐要素ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">微信推荐要素名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.object.fundTitle'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="8">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='leavemsg'">
+                                    <table id="leavemsg" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">留言模板ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">留言ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">类型值</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">备注</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.object.leavemsgId'></td>
+                                                <td class="center" v-text='item.typeKey'></td>
+                                                <td class="center" v-text='item.object.remark'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="11">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="10">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='popup'">
+                                    <table id="popup" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">弹窗配置ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">类型值</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">备注</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.typeKey'></td>
+                                                <td class="center" v-text='item.object.remark'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="10">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='privilege'">
+                                    <table id="privilege" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">特权配置ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">特权ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">特权名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">备注</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">类型值</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.object.privilegeId'></td>
+                                                <td class="center" v-text='item.object.privilegeName'></td>
+                                                <td class="center" v-text='item.object.remark'></td>
+                                                <td class="center" v-text='item.typeKey'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="12">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="11">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='survey'">
+                                    <table id="survey" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">问卷配置ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">问卷ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">问卷描述</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">备注</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">类型值</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.object.surveyId'></td>
+                                                <td class="center" v-text='item.object.surveyDesc'></td>
+                                                <td class="center" v-text='item.object.remark'></td>
+                                                <td class="center" v-text='item.typeKey'></td>
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="12">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="11">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='composite'">
+                                    <table id="composite" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">主键ID</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">类型值</th>
+                                            <!--<th class="center col-sm-1 col-md-1 col-lg-1">备注</th>-->
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.objconfigId'></td>
+                                                <td class="center" v-text='item.typeKey'></td>
+                                                <!--<td class="center" v-text='item.object.remark'></td>-->
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>/<a href="javascript:;" @click="goToPageUpdate(item)">内容详情</a>/
+                                                    <a href="javascript:;" @click="goToPageTiming(item)">定时任务</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="10">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="9">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template v-if="contentTp=='emptyContent'">
+                                    <table id="emptyContent" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1" v-show="isDataForm">目标过滤因子</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="themeContentData.length>0">
+                                            <tr v-for="(item,index) in themeContentData" :key="index"
+                                            :style="currentTime>item.endTime?'background-color: #EEE;':''">
+                                                <td class="center" v-text='item.position'></td>
+                                                <td class="center" v-show="isDataForm" v-text='item.targetobjectkey?item.targetobjectkey:"--"'></td>
+                                                <td class="center" v-text='formatTime(item.startTime)'></td>
+                                                <td class="center" v-text='formatTime(item.endTime)'></td>
+                                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" >
+                                                    <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <template v-if="isDataForm">
+                                                    <td class="center"  colspan="7">暂无数据</td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center"  colspan="6">暂无数据</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--第二级新增/修改弹窗-->
+                <div class="modal" id="addSecond" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline" v-text="positionName+'配置信息:'"></h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form " style="padding: 0 50px 0 24px;">
+                                    <div class="form-group" v-show="contentTp!='emptyContent'">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            关联数据信息:</label>
+                                        <select id="objconfigId" v-model="diaobjconfigId" class="select2" data-placeholder="请选择">
+                                            <option v-for="item in linkDataInfoList" :value="item.value" v-text="item.name"></option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label"
+                                               style="width: 150px;text-align: right">主题下产品排序:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diaposition"
+                                        />
+                                    </div>
+                                    <div class="form-group" v-show="isDataForm">
+                                        <label class="control-label"
+                                               style="width: 150px;text-align: right">目标过滤因子:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diatargetobjectkey"
+                                        />
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <label class="control-label " style="width: 150px;  text-align: right;">开始时间:</label>
+                                            <input type="text" id="startTime" class="date-timepicker" style="width: 145px; margin-left: 2px;" autocomplete="off"> <span class="input-group-addon" style="width: 16%;"><i class="fa fa-clock-o bigger-110"></i></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <label class="control-label " style="width: 150px;  text-align: right;">结束时间:</label>
+                                            <input type="text" id="endTime" class="date-timepicker" style="width: 145px; margin-left: 2px;" autocomplete="off"> <span class="input-group-addon" style="width: 16%;"><i class="fa fa-clock-o bigger-110"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center">
+                                <button class="btn btn-sm btn-primary"  @click="addSecond">保存</button>
+                                <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--Excel文件上传弹窗-->
+                <div class="modal" id="excelUpdate" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">文件上传</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <div class="form " style="padding: 0px 50px 0px 24px;">
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            是否覆盖:</label>
+                                        <select name="" id="" v-model="isCover" style="width:60%">
+                                            <option value="1">是</option>
+                                            <option value="0">否</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="width: 150px;text-align: right">Excel文件(上传):</label>
+                                        <input type="text" id="uploadInput4" placeholder="请选择"
+                                               style="width: 37%;" disabled/>
+                                        <input type="button" class="btn btn-sm btn-primary" id="uploadBtn4" value="选择">
+                                        <input type="button" class="btn btn-sm btn-primary" @click="uploadPic4" value="上传">
+                                        <input id="uploadFileInput4" type="file" name="file" style="display: none"
+                                               class="upload"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="uploadExcel">确定</button>
+                                <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--删除弹窗1-->
+                <div class="modal" id="delete1" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">删除</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>是否确认删除?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal" @click="deleteConfirm1">确定</button>
+                                <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--删除弹窗2-->
+                <div class="modal" id="delete2" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">删除</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>是否确认删除?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal" @click="deleteConfirm2">确定</button>
+                                <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label">一级菜单选项:</label>
+                        <select  id="firstMenu" name="state" class="select2" data-placeholder="请选择一级菜单..." v-model="firstMenuData" >
+                            <option v-for="item in firstMenuList" :value="item.LAYOUTID">{{item.LAYOUTNAME}}({{item.LAYOUTID}})</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">二级菜单选项:</label>
+                        <select  v-model="position" style="width: 100px;">
+                            <option v-for="item in positionList" :value="item.POSITION" v-text="'位置'+item.POSITION"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">详情选项:</label>
+                        <select  v-model="positionDetail" style="width: 100px;">
+                            <option v-for="(item,key) in positionDetailList" :value="item.FUNCMODID" v-text="item.FUNCMODNAME" ></option>
+                        </select>
+                    </div>
+                    <div class="form-group " >
+                        <% if(canShow||authorityList.includes('U')) { %>
+                        <input type="button" value="刷新" class="btn btn-sm btn-info" @click="fresh">
+                        <% } %>
+                    </div>
+                </div>
+                <div class="tabbable" >
+                    <ul class="nav nav-tabs" id="myTab">
+                        <li class="active">
+                            <a data-toggle="tab" href="#home">主题管理</a>
+                        </li>
+
+                        <li>
+                            <a data-toggle="tab" href="#messages">主题分组管理</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div id="home" class="tab-pane fade in active">
+                            <div class="form-inline" style="padding: 10px 0;" v-show="positionName">
+                                <div class="form-group">
+                                    <label class="control-label">模块名称:</label>
+                                    <span v-text="positionName"></span>
+                                </div>
+                                <div class="form-group pull-right" style="margin-bottom: 10px">
+                                    <input type="button" class="btn btn-sm btn-primary" value="导入内容" @click="showExcelImport">
+                                    <input type="button" class="btn btn-sm btn-primary" value="新建主题" @click="showAdd">
+
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                <tr>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">配置ID</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">主题名称</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">主题标题</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">模块内容数量</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">模块下主题排序</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">展示类型</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">是否可用</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">主题内容</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <template v-if="tableData.length>0">
+                                    <tr v-for="(item,index) in tableData" :key="index">
+                                        <td class="center" v-text='item.thmconfigId'></td>
+                                        <td class="center" v-text='item.themenm'></td>
+                                        <td class="center" v-text='item.themeTitle'></td>
+                                        <td class="center" v-text='item.displayCount'></td>
+                                        <td class="center"  v-text='item.sort'></td>
+                                        <td class="center" v-text='item.showtp=="2"?"展示该主题下的配置的内容数据":"展示该主题"'></td>
+                                        <td class="center" v-text='item.enable=="0"?"不可用":"可用"'></td>
+                                        <td class="center" >
+                                            <a href="javascript:;" v-text='item.enable=="0"?"启用":"禁用"' @click="enableOrDisable(item)"></a>/<a href="javascript:;" @click="showUpdate(item)" >修改</a>/<a href="javascript:;" @click="deleteParams(item)" >删除</a>/<a href="javascript:;" @click="copyParams(item)" >复制</a>
+                                        </td>
+                                        <td class="center"> <a href="javascript:;" @click="checkThemeContent(item)" >查看主题内容</a></td>
+                                    </tr>
+                                </template>
+                                <template v-else>
+                                    <tr>
+                                        <td class="center"  colspan="9">暂无数据</td>
+                                    </tr>
+                                </template>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div id="messages" class="tab-pane fade">
+                            <div v-show="positionName">
+                                <div class="form-inline" style="padding: 20px 0;">
+                                    <div class="form-group">
+                                        <label class="control-label">功能模块名称:</label>
+                                        <span v-text="positionName" style="display: inline-block;
+    vertical-align: middle;"></span>
+                                    </div>
+                                    <div class="form-group pull-right" style="padding-bottom: 10px">
+                                        <label class="control-label" >关联分组:</label>
+                                        <select name="" id="" v-model="linkThmconfigId">
+                                            <option v-for="item in tableData" :value="item.thmconfigId" v-text="item.themenm"></option>
+                                        </select>
+                                        <input type="button" class="btn btn-sm btn-primary" value="增加模块关联分组" @click="addDom" >
+                                        <input type="button" class="btn btn-sm btn-primary" value="保存"  @click="saveData">
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <table id="simple-table1" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                <tr>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1" >分组名称</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1" >权重</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1" >操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <template v-if="tableData1.length>0">
+                                    <tr v-for="(item,index) in tableData1" :key="index">
+                                        <template v-if="item.newData">
+                                            <td class="center" >
+                                                <select name="" id="" v-model="item.groupId">
+                                                    <option v-for="item1 in userGroupList" :value="item1.groupId" v-text="item1.groupName"></option>
+                                                </select>
+                                            </td>
+                                        </template>
+                                        <template v-else>
+                                            <td class="center" >
+                                                <select name="" id="" v-model="item.groupId">
+                                                    <option :value="item.groupId" v-text="translateUserGroup(item.groupId)"></option>
+                                                </select>
+                                            </td>
+                                        </template>
+
+                                        <td class="center" >
+                                            <input type="text" v-model="item.weight" >
+                                        </td>
+                                        <td class="center">
+                                            <a href="javascript:;" @click="deleteParams1(index)">删除</a>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <template v-else>
+                                    <tr>
+                                        <td class="center"  colspan="3">暂无数据</td>
+                                    </tr>
+                                </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/select2.min.js"></script>
+<script src="/js/lib/ajaxfileupload.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/recommendSystem/recommendSystemConfigMgmt/positionTheThemeMgmt.js"></script>
+</body>
+</html>

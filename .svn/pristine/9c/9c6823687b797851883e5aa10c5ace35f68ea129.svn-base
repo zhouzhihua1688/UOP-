@@ -1,0 +1,420 @@
+[
+  {
+    "menuId": "1",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "type": "0",
+    "name": "三方营运",
+    "url": "/thirdPartyOperation"
+  },
+  {
+    "menuId": "1-1",
+    "parentMenuId": "1",
+    "hasSubmenu": true,
+    "type": "9",
+    "page": false,
+    "name": "三方管理",
+    "url": "/thirdPartyOperation/thirdPartyMgmt"
+  },
+  {
+    "menuId": "1-1-1",
+    "parentMenuId": "1-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "直销上架",
+    "url": "/thirdPartyOperation/thirdPartyMgmt/directSelling.html"
+  },
+  {
+    "menuId": "1-1-2",
+    "parentMenuId": "1-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "线上三方",
+    "url": "/thirdPartyOperation/thirdPartyMgmt/onlineThirdPary.html"
+  },
+  {
+    "menuId": "1-1-3",
+    "parentMenuId": "1-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "线上业务",
+    "url": "/thirdPartyOperation/thirdPartyMgmt/onlineBusiness.html"
+  },
+  {
+    "menuId": "1-1-4",
+    "parentMenuId": "1-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "星级维护",
+    "url": "/thirdPartyOperation/thirdPartyMgmt/starLevel.html"
+  },
+  {
+    "menuId": "1-2",
+    "parentMenuId": "1",
+    "hasSubmenu": true,
+    "type": "1",
+    "page": false,
+    "name": "产品管理",
+    "url": "/thirdPartyOperation/products"
+  },
+  {
+    "menuId": "1-2-1",
+    "parentMenuId": "1-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "产品开放",
+    "url": "/thirdPartyOperation/products/open.html"
+  },
+  {
+    "menuId": "1-2-2",
+    "parentMenuId": "1-2",
+    "hasSubmenu": false,
+    "type": "9",
+    "page": true,
+    "name": "产品折扣",
+    "url": "/thirdPartyOperation/products/discount.html"
+  },
+  {
+    "menuId": "1-2-3",
+    "parentMenuId": "1-2",
+    "hasSubmenu": false,
+    "type": "9",
+    "page": true,
+    "name": "产品限额",
+    "url": "/thirdPartyOperation/products/limit.html"
+  },
+  {
+    "menuId": "1-2-4",
+    "parentMenuId": "1-2",
+    "hasSubmenu": false,
+    "type": "9",
+    "page": true,
+    "name": "产品上架",
+    "url": "/thirdPartyOperation/products/onSale.html"
+  },
+  {
+    "menuId": "1-3",
+    "parentMenuId": "1",
+    "hasSubmenu": true,
+    "type": "1",
+    "page": false,
+    "name": "中台支撑",
+    "url": "/thirdPartyOperation/middleground"
+  },
+  {
+    "menuId": "1-3-1",
+    "parentMenuId": "1-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "参数表管理",
+    "url": "/thirdPartyOperation/middleground/paramsMgmt.html"
+  },
+  {
+    "menuId": "1-3-2",
+    "parentMenuId": "1-3",
+    "hasSubmenu": false,
+    "type": "9",
+    "page": true,
+    "name": "费用报表管理",
+    "url": "/thirdPartyOperation/middleground/feeReports.html"
+  },
+  {
+    "menuId": "1-4",
+    "parentMenuId": "1",
+    "hasSubmenu": true,
+    "type": "1",
+    "page": false,
+    "name": "邮件工具",
+    "url": "/thirdPartyOperation/mails"
+  },
+  {
+    "menuId": "1-4-1",
+    "parentMenuId": "1-4",
+    "hasSubmenu": false,
+    "type": "9",
+    "page": true,
+    "name": "新建邮件",
+    "url": "/thirdPartyOperation/mails/new.html"
+  },
+  {
+    "menuId": "1-4-2",
+    "parentMenuId": "1-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "已发邮件",
+    "url": "/thirdPartyOperation/mails/sent.html"
+  },
+  {
+    "menuId": "2",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "type": "0",
+    "name": "消息中心",
+    "url": "/messageCenter"
+  },
+  {
+    "menuId": "2-1",
+    "parentMenuId": "2",
+    "hasSubmenu": true,
+    "type": "1",
+    "page": false,
+    "name": "消息模板管理",
+    "url": "/messageCenter/templateMgmt"
+  },
+  {
+    "menuId": "2-1-1",
+    "parentMenuId": "2-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "消息模板管理",
+    "url": "/messageCenter/templateMgmt/templateMgmt.html"
+  },
+  {
+    "menuId": "2-2",
+    "parentMenuId": "2",
+    "hasSubmenu": true,
+    "type": "1",
+    "page": false,
+    "name": "消息分类管理",
+    "url": "/messageCenter/classMgmt"
+  },
+  {
+    "menuId": "2-2-1",
+    "parentMenuId": "2-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "消息分类管理",
+    "url": "/messageCenter/classMgmt/classMgmt.html"
+  },
+  {
+    "menuId": "2-3",
+    "parentMenuId": "2",
+    "hasSubmenu": true,
+    "type": "1",
+    "page": false,
+    "name": "消息规则管理",
+    "url": "/messageCenter/ruleMgmt"
+  },
+  {
+    "menuId": "2-3-1",
+    "parentMenuId": "2-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "消息规则管理",
+    "url": "/messageCenter/ruleMgmt/ruleMgmt.html"
+  },
+  {
+    "menuId": "2-4",
+    "parentMenuId": "2",
+    "hasSubmenu": true,
+    "type": "1",
+    "page": false,
+    "name": "人工发送管理",
+    "url": "/messageCenter/manualMgmt"
+  },
+  {
+    "menuId": "2-4-1",
+    "parentMenuId": "2-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "人工发送管理",
+    "url": "/messageCenter/manualMgmt/manualMgmt.html"
+  },
+  {
+    "menuId": "2-5",
+    "parentMenuId": "2",
+    "hasSubmenu": true,
+    "type": "1",
+    "page": false,
+    "name": "场景发送管理",
+    "url": "/messageCenter/scenceMgmt"
+  },
+  {
+    "menuId": "2-5-1",
+    "parentMenuId": "2-5",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "场景发送管理",
+    "url": "/messageCenter/scenceMgmt/scenceMgmt.html"
+  },
+  {
+    "menuId": "2-6",
+    "parentMenuId": "2",
+    "hasSubmenu": true,
+    "type": "1",
+    "page": false,
+    "name": "消息发送统计",
+    "url": "/messageCenter/sendCount"
+  },
+  {
+    "menuId": "2-6-1",
+    "parentMenuId": "2-6",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "消息发送统计",
+    "url": "/messageCenter/sendCount/sendCount.html"
+  },
+  {
+    "menuId": "3",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "type": "0",
+    "name": "权限管理",
+    "url": "/authorityMgmt"
+  },
+  {
+    "menuId": "3-1",
+    "parentMenuId": "3",
+    "hasSubmenu": true,
+    "type": "1",
+    "page": false,
+    "name": "所有频道",
+    "url": "/authorityMgmt/allChannels"
+  },
+  {
+    "menuId": "3-1-1",
+    "parentMenuId": "3-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "用户管理",
+    "url": "/authorityMgmt/allChannels/users.html"
+  },
+  {
+    "menuId": "3-1-2",
+    "parentMenuId": "3-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "角色管理",
+    "url": "/authorityMgmt/allChannels/roles.html"
+  },
+  {
+    "menuId": "3-1-3",
+    "parentMenuId": "3-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "菜单管理",
+    "url": "/authorityMgmt/allChannels/menus.html"
+  },
+  {
+    "menuId": "3-2",
+    "parentMenuId": "3",
+    "hasSubmenu": true,
+    "type": "1",
+    "page": false,
+    "name": "三方营运",
+    "url": "/authorityMgmt/thirdPartyOperation"
+  },
+  {
+    "menuId": "3-2-1",
+    "parentMenuId": "3-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "用户管理",
+    "url": "/authorityMgmt/thirdPartyOperation/users.html"
+  },
+  {
+    "menuId": "3-2-2",
+    "parentMenuId": "3-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "角色管理",
+    "url": "/authorityMgmt/thirdPartyOperation/roles.html"
+  },
+  {
+    "menuId": "3-3",
+    "parentMenuId": "3",
+    "hasSubmenu": true,
+    "type": "1",
+    "page": false,
+    "name": "消息中心",
+    "url": "/authorityMgmt/messageCenter"
+  },
+  {
+    "menuId": "3-3-1",
+    "parentMenuId": "3-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "用户管理",
+    "url": "/authorityMgmt/messageCenter/users.html"
+  },
+  {
+    "menuId": "3-3-2",
+    "parentMenuId": "3-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "角色管理",
+    "url": "/authorityMgmt/messageCenter/roles.html"
+  },
+  {
+    "menuId": "4",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "type": "0",
+    "name": "公共配置",
+    "url": "/publicConfig"
+  },
+  {
+    "menuId": "4-1",
+    "parentMenuId": "4",
+    "hasSubmenu": true,
+    "type": "1",
+    "page": false,
+    "name": "短链接管理",
+    "url": "/publicConfig/shortLink"
+  },
+  {
+    "menuId": "4-1-1",
+    "parentMenuId": "4-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "短链接配置",
+    "url": "/publicConfig/shortLink/linkConfig.html"
+  },
+  {
+    "menuId": "5",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "type": "0",
+    "name": "现金管理",
+    "url": "/cashMgmt"
+  },
+  {
+    "menuId": "5-1",
+    "parentMenuId": "5",
+    "hasSubmenu": true,
+    "type": "1",
+    "page": false,
+    "name": "生活缴费",
+    "url": "/cashMgmt/livingPay"
+  },
+  {
+    "menuId": "5-1-1",
+    "parentMenuId": "5-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "生活缴费",
+    "url": "/cashMgmt/livingPay/livingPay.html"
+  }
+]

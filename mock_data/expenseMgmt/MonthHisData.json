@@ -1,0 +1,36 @@
+{
+	  "returnCode":0,
+  "returnMsg":"调用成功",
+"MonthHisData": [
+{
+"ymonth": "201806",
+"edition": "1.0",
+"fundnm": "和聚宝",
+"branchcode": "24711",
+"branchnm": "民生",
+"tailfareremark": "233",
+"servicefareremark": "23232",
+"operater": "调整人",
+"changetime": "2018/8/1 0:00",
+"inserttime": null,
+"updatetime": null,
+"attach1": null,
+"attach2": null
+},
+{
+"ymonth": "201806",
+"edition": "1.1",
+"fundnm": "和聚宝",
+"branchcode": "24711",
+"branchnm": "民生",
+"tailfareremark": "233",
+"servicefareremark": "23232",
+"operater": "调整人",
+"changetime": "2018/8/2 0:00",
+"inserttime": null,
+"updatetime": null,
+"attach1": null,
+"attach2": null
+}
+]
+}

@@ -1,0 +1,99 @@
+const request = require('./../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').highFinancialMgmt.custCareQry;
+module.exports = function (app) {
+    // 获取初始数据和查询
+    app.post('/businessMgmt/highFinancialMgmt/custCareQry/getTableData.ajax', (req, res, next) => {
+        let params = {};
+        req.body.fundId && (params.fundId = req.body.fundId);
+        req.body.tradeAcco && (params.tradeAcco = req.body.tradeAcco);
+        req.body.status && (params.status = req.body.status);
+        req.body.startDate && (params.startDate = req.body.startDate);
+        req.body.endDate && (params.endDate = req.body.endDate);
+        req.body.pageNum && (params.pageNum = req.body.pageNum);
+        req.body.pageSize && (params.pageSize = req.body.pageSize);
+        let option = {
+            pageUrl: '/businessMgmt/highFinancialMgmt/custCareQry/getTableData.ajax',
+            req,
+            url: apiUrlList.getTableData,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode == 0 && Array.isArray(result.body.results)) {
+                let resultData = {};
+                // resultData.pageNo = result.body.pageNo; //页数
+
+                resultData.pageNo = result.body.pageNo; //页数
+                resultData.totalSize = Math.ceil(result.body.totalRecord / req.body.pageSize); //总页数d;//总页数
+                resultData.tableData = result.body.results;
+                return res.send({
+                    error: 0,
+                    msg: '查询成功',
+                    data: resultData
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+        });
+    });
+    //下拉列表数据(产品名称)
+    app.post('/businessMgmt/highFinancialMgmt/custCareQry/fundList.ajax', (req, res, next) => {
+        let params = {};
+        req.body.pageNum && (params.pageNum = req.body.pageNum);
+        req.body.pageSize && (params.pageSize = req.body.pageSize);
+        let option = {
+            pageUrl: '/businessMgmt/highFinancialMgmt/custCareQry/fundList.ajax',
+            req,
+            url: apiUrlList.fundList,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode == 0 && Array.isArray(result.body.fundInfos)) {
+                let fundData = {};
+                fundData.pageNum = result.body.pageNum; //页数
+                fundData.totalSize = Math.ceil(result.body.totalSize / req.body.pageSize); //总页数d;//总页数
+                fundData.listData = result.body.fundInfos;
+                return res.send({
+                    error: 0,
+                    msg: '查询成功',
+                    data: fundData
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+        });
+    });
+}

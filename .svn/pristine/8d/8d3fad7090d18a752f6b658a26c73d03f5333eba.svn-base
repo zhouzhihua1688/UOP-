@@ -1,0 +1,21 @@
+let menus = [];
+
+menus = menus.concat(require('./thirdPartyOperation')); // 三方运营
+menus = menus.concat(require('./messageCenter'));       // 消息中心
+menus = menus.concat(require('./authorityMgmt'));       // 权限管理
+menus = menus.concat(require('./publicConfig'));        // 公共配置
+menus = menus.concat(require('./cashMgmt'));            // 现金管理
+menus = menus.concat(require('./operationMgmt'));       // 运维管理
+menus = menus.concat(require('./marketingActive'));     // 营销活动
+menus = menus.concat(require('./awardMgmt'));           // 奖励系统
+menus = menus.concat(require('./businessMgmt'));        // 业务管理
+menus = menus.concat(require('./clientMgmt'));          // 客户管理
+menus = menus.concat(require('./recommendSystem'));     // 推荐系统
+menus = menus.concat(require('./automatedOperation'));  // 自动化运营
+menus = menus.concat(require('./systemMgmt'));          // 系统管理
+menus = menus.concat(require('./customerService'));     // 客服操作
+menus = menus.concat(require('./productIndexes'));      // 产品指标监控
+menus = menus.concat(require('./investmentMgmt'));      // 投顾业务管理
+menus = menus.concat(require('./tableauPanel'));      // 数据看板
+menus = menus.concat(require('./advertising'));      // 广告宣传（添富赢家）
+module.exports = menus;

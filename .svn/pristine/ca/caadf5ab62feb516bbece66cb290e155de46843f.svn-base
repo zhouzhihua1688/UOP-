@@ -1,0 +1,4 @@
+module.exports = function (app) {
+    require('./polyphoneConfig')(app);
+    require('./searchConfig')(app);
+};

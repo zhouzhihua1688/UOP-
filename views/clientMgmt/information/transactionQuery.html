@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content" id="content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <!--提示信息弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                        data-backdrop="static">
+                        <div class="modal-dialog" style="width:600px;">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                            aria-hidden="true">×
+                                    </button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--交易详情-->
+                    <div class="modal" id="details" tabindex="-1" role="dialog" aria-hidden="true"
+                        data-backdrop="static">
+                        <div class="modal-dialog" style="width:500px;" >
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;text-align:center">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                        &times;
+                                    </button>
+                                    <h4 class="modal-title" style="display: inline;">交易详情</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div style="padding-left: 100px;">                                        
+                                    <div style="font-weight: bold; font-size: 15px;" class="form-group"><span v-if="checkDatils.tradeTypeName!=null" v-text="checkDatils.tradeTypeName"></span>
+                                        <span v-if="checkDatils.tradeUnit!=null" v-text="'('+checkDatils.tradeUnit+'):'" style="padding-right: 10px;"></span><span style="padding-right: 10px;"v-text="checkDatils.tradeAmount"></span><span v-text="checkDatils.tradeStatusName"></span>
+                                    </div>
+
+                                    <div class="form-group" v-if="checkDatils.tradeProcesses!=null" v-for="(item, index) in checkDatils.tradeProcesses" :key="index+'i'">
+                                        <div style="padding-right: 10px;" v-text="item"></div>
+                                    </div>
+                                        
+                                    <div class="form-group" v-if="checkDatils.tradeInfos!=null" v-for="(tradeInfo, index) in checkDatils.tradeInfos" :key="index+'j'">
+                                        <div style="font-weight: bold; font-size: 15px;">{{tradeInfo.infoTypeName}}</div>
+                                        <div v-for="(item, index) in tradeInfo.infos" style="margin: 0 2px 2px 0;" :key="index">
+                                            <span style="padding-right: 10px;" v-text="item.title"></span>
+                                            <span style="padding-right: 10px;" v-text="item.content"></span>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="fundGroupTradeDetailsApp.length>0" class="form-group">
+                                        <div style="font-weight: bold; font-size: 15px;">{{checkDatils.tradeTypeName}} 明细</div>
+                                        <div v-for="(fundgroup, index) in fundGroupTradeDetailsApp" style="margin-bottom: 15px;" :key="index">
+                                            <div>
+                                                <span style="font-weight: bold;" v-text="fundgroup.fundName"></span><span v-if="fundgroup.ofundName"><span>转为</span><span style="font-weight: bold;"v-text="fundgroup.ofundName" ></span></span>
+                                            </div>
+                                            <div>
+                                                <span style="padding-right: 10px;" v-if="fundgroup.remark" v-text="fundgroup.remark"></span>
+                                                <span style="padding-right: 10px;" v-if="fundgroup.correlateTypeName" v-text="fundgroup.correlateTypeName"></span>
+                                            </div>
+                                            <div>
+                                                <span style="padding-right: 10px;" v-if="fundgroup.pmNameApp" v-text="fundgroup.pmNameApp"></span>
+                                                <span style="padding-right: 10px;" v-if="fundgroup.actionRemark" v-text="fundgroup.actionRemark"></span>
+                                            </div>
+                                            <div>
+                                                <span v-if="fundgroup.ackQutyDisplay" style="padding-right: 10px;"v-text="fundgroup.ackActionName + fundgroup.ackQutyDisplay + '份'"></span>
+                                                <span v-if="fundgroup.ackAmtDisplay" style="padding-right: 10px;"v-text="fundgroup.ackActionName + fundgroup.ackAmtDisplay+ fundgroup.tradeUnit"></span>
+                                            </div>
+                                            <div style="padding-right: 10px;">{{fundgroup.status}}</div>
+                                            <div v-if="fundgroup.status=='交易成功'"style="padding-right: 10px;">手续费{{fundgroup.fee}}{{fundgroup.tradeUnit}}</div>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="checkDatils.balance!=null">
+                                        <span style="padding-right: 10px;">交易后余额:</span>
+                                        <span style="padding-right: 10px;" v-text="checkDatils.balance"></span>
+                                    </div>
+                                    </div>
+                                    <div class="text-center" style="clear: both">
+                                        <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal">取消</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    
+
+                    <div class="form-inline" style="padding: 10px 0;">
+                        <div class="form-group">
+                            <label class="control-label">证件号:</label>
+                            <input type="text" v-model="idNo">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">客户号:</label>
+                            <input type="text" v-model="custNo">
+                        </div>
+                        <label class="control-label">平台:</label>
+                        <select style="width:120px;height: 34px;" v-model.trim='tradeMode' >
+                            <option value="0">直销</option>
+                            <option value="3">代销</option>
+                        </select>
+                        <div class="form-group">
+                            <label class="control-label">产品ID:</label>
+                            <input type="text" v-model="productId">
+                        </div>
+                        <label class="control-label">交易系统:</label>
+                        <select style="width:120px;height: 34px;" v-model.trim='productType' >
+                            <option value="">全部</option>
+                            <option value="0">现金宝</option>
+                            <option value="1">基金</option>
+                            <option value="3">组合</option>
+                            <option value="4">资管</option>
+                            <option value="6">投顾</option>
+                        </select>
+                        <label class="control-label">交易类型:</label>
+                        <select style="width:120px;height: 34px;" v-model.trim='tradeType' >
+                            <option value="">全部</option>
+                            <option value="1">买入</option>
+                            <option value="2">卖出</option>
+                            <option value="3">转换</option>
+                            <option value="4">分红</option>
+                            <option value="9">其他</option>
+                        </select>
+                        <label class="control-label">交易状态:</label>
+                        <select style="width:120px;height: 34px;" v-model.trim='tradeState' >
+                            <option value="00">全部</option>
+                            <option value="01">成功</option>
+                            <option value="02">失败</option>
+                            <option value="03">进行中</option>
+                            <option value="04">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-inline" style="padding: 10px 0;">
+                        <div class="form-group ">
+                            <label class="control-label" >起始日:</label>
+                                <label>
+                                    <date-picker v-model='apdtStart' :config="{format:'YYYY-MM-DD'}" ref="apdtStart">
+                                        <span class="input-group-addon" slot='right'>
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </date-picker>
+                                </label>
+                        </div>
+                        <div class="form-group ">
+                            <label class="control-label" >截止日:</label>
+                                <label>
+                                    <date-picker v-model='apdtEnd' :config="{format:'YYYY-MM-DD'}" ref="apdtEnd">
+                                        <span class="input-group-addon" slot='right'>
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </date-picker>
+                                </label>
+                        </div>
+                            <div class="form-group pull-right">
+                                <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                            </div>
+                    </div>
+                    <div class="table-header">
+                        <%= cpage %>--表格数据
+                    </div>
+                    <!--分页器-->
+                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="500">500</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!--数据表-->
+                    <div style="width: 100%;">
+                        <table id="simple-table" class="table table-bordered table-hover dataTable">
+                            <thead>
+                                <tr>
+                                    <th class="center">交易申请时间</th>
+                                    <th class="center">交易完成时间</th>
+                                    <th class="center">交易类型</th>
+                                    <th class="center">产品</th>
+                                    <th class="center">APP展示金额/份额</th>
+                                    <th class="center">交易金额</th>
+                                    <th class="center">交易份额</th>
+                                    <th class="center">手续费率折扣</th>
+                                    <th class="center">交易状态</th>
+                                    <th class="center">更多</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template v-if="tableData.length>0">
+                                    <tr v-for="(item,index) in tableData" :key="index">
+                                        <td class="center" v-text="item.tradeDt+' '+item.tradeTm"></td> 
+                                        <td class="center" v-text="item.ackdt.substring(0,4)+'-'+item.ackdt.substring(4,6)+'-'+item.ackdt.substring(6,8)"></td>
+                                        <td class="center" v-text="item.tradeTypeBriefName"></td>
+                                        <td class="center" v-text="item.tradeName"></td>
+                                        <td class="center" v-text="item.tradeAmount+' '+item.tradeUnit"></td>
+                                        <td class="center" v-text="item.amt"></td>
+                                        <td class="center" v-text="item.quty"></td>
+                                        <td class="center" v-text="item.discount"></td>
+                                        <td class="center" v-text="item.tradeStatusName"></td>
+                                        <td class="center">
+                                            <a href="javascript:;" @click="showDetail(item)">详情</a>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <template v-else>
+                                    <tr>
+                                        <td class="center" v-text="'暂无数据'" colspan="10"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!--底部页码-->
+                    <div v-if="tableData.length>0" class="row"
+                        style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                        <div class="col-xs-2">
+                            <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                        </div>
+                        <div class="col-xs-10">
+                            <div class="dataTables_paginate paging_simple_numbers"
+                                id="dynamic-table_paginate">
+                                <ul class="pagination">
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'1...'"
+                                            @click="toFirst"></a>
+                                    </li>
+                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                        @click="prev">
+                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                    </li>
+                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                        v-for="value in pageList"
+                                        @click="changeIndex(value)">
+                                        <a href="javascript:;" v-text="value"></a>
+                                    </li>
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'...'+totalPage"
+                                            @click="toLast"></a>
+                                    </li>
+                                    <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                        @click="next">
+                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                                   
+                </div>
+            </div><!-- /.main-content -->
+        </div>
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/ace/assets/js/v-datetimepicker.js"></script>
+    <script src="/js/clientMgmt/information/transactionQuery.js"></script>
+    </body>
+    </html>

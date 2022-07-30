@@ -1,0 +1,43 @@
+[
+	{
+		"_comment": "UAA-->web，获取角色list，item中的id是UAA生成的role_id",
+		"list_items": [
+			{
+				"name": "admin",
+				"id": "role_id_uaa",
+				"channel": "*",
+				"menu_list": [ "*" ]
+			},
+			{
+				"name": "三方运营-admin",
+				"id": "role_id_uaa",
+				"channel": "1",
+				"menu_list": [ "1-*" ]
+			},
+			{
+				"name": "三方运营-一般人员",
+				"id": "role_id_uaa",
+				"channel": "1",
+				"menu_list": ["1", "1-1", "1-1-1", "1-1-2"]
+			}
+		]
+	},
+	{
+		"_comment": "web-->UAA，新增角色，channel对应的值为menuId，此时新增情况没有role_id",
+		"name": "三方运营-admin",
+		"channel": "1",
+		"menu_list": [ "1-*" ]
+	},
+	{
+		"_comment": "web-->UAA，删除角色，channel对应的值为menuId，id对应的值为UAA生成的role_id",
+		"id": "role_id_uaa"
+	},
+	{
+		"_comment": "web-->UAA，修改角色，channel对应的值为menuId，id对应的值为UAA生成的role_id",
+		"name": "三方运营-一般人员",
+		"channel": "1",
+		"id": "role_id_uaa",
+		"menu_list": ["1", "1-1", "1-1-1"]
+	}
+
+]

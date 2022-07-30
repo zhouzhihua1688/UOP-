@@ -1,0 +1,7 @@
+module.exports = function (app) {
+    // 页面菜单
+    require('./IPOSet')(app);
+    require('./IPOSetDetail')(app);
+    require('./datumRate')(app);
+    require('./largePurchaseLimit')(app);
+};

@@ -1,0 +1,14 @@
+module.exports = {
+    index:{
+        name:'内容管理'
+    },
+    productMaterial:{
+        index:'investPrefecture.html',
+        name:'产品材料',
+        child:{
+            investPrefecture:'投教专区',
+            contentInvestStrategy:'内容投资策略',
+            activity:'活动'
+        }
+    },
+};

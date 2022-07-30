@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div {
+            padding: 10px 0;
+            text-align: right;
+        }
+
+        .form-inline span {
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--删除提示信息-->
+                            <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">删除提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-info btn-sm" type="button" @click='del'>
+                                                确定
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+                                                取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">{{modifyStatus?'修改':'新增'}}</h4>
+                                        </div>
+                                        <div class="form-horizontal" style="padding-top: 20px;">
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    分类名称:</label>
+                                                <div class="col-sm-5">
+                                                    <input type="text" v-model.trim='operateData.name'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    封面图片:</label>
+                                                <div class="col-sm-8">
+                                                    <upload v-model='operateData.icon' />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    是否启用:</label>
+                                                <div class="col-sm-7">
+                                                    <select v-model='operateData.status'>
+                                                        <option :value="0">禁用</option>
+                                                        <option :value="1">启用</option>
+                                                    </select>
+                                                    <span>未启用的分类不会在话题广场中展示</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="text-center" style="margin-top: 30px">
+                                            <button class="btn btn-info btn-sm" type="button" @click='add'
+                                                style='margin-right: 50px;' v-show='!modifyStatus'>
+                                                确定
+                                            </button>
+                                            <button class="btn btn-info btn-sm" type="button" @click='modify'
+                                                style='margin-right: 50px;' v-show='modifyStatus'>
+                                                修改
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+                                                取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- DIALOG ENDS -->
+                            <div class="form-inline">
+
+                                <div class="form-group ">
+                                    <label style="width: 80px;">分类名称</label>
+                                    <input type="text" v-model='categoryName'>
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">状态</label>
+                                    <select v-model='status' style="width:168px">
+                                        <option value="">全部</option>
+                                        <option value="0">禁用</option>
+                                        <option value="1">启用</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " value="新增" @click="showAdd">
+                                </div>
+                                <div class="form-group pull-right" style="margin-right:30px;">
+                                    <input type="button" class="btn btn-sm btn-primary " value="查询"
+                                        @click="getTableData">
+                                </div>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!--数据表-->
+                            <div style="width: 100%;">
+                                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th class="center">ID</th>
+                                            <th class="center">分类名称</th>
+                                            <th class="center">封面图</th>
+                                            <th class="center">状态</th>
+                                            <th class="center">操作</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template v-if="tableData.length>0">
+                                            <tr v-for="(item,index) in tableData" :key="index">
+                                                <td class="center" v-text='item.id'></td>
+                                                <td class="center" v-text='item.name'></td>
+                                                <td class="center">
+                                                    <img width="200px" :src="getImg(item.icon)" :alt="item.icon">
+                                                </td>
+                                                <td class="center">{{item.status?"启用":"禁用"}}</td>
+                                                <td class="center">
+                                                    <a href="javascript:;" @click='relatedTopic(item)'>查看关联话题&nbsp&nbsp</a>
+                                                    <a href="javascript:;"
+                                                        @click='updateStatus(item)'>{{item.status?"禁用":"启用"}}</a>
+                                                    &nbsp;
+                                                    <a href="javascript:;" @click='showDetail(item)'>修改</a>
+                                                    <% if(canShow||authorityList.includes('U')) { %>
+                                                    &nbsp;
+                                                    <a href="javascript:;" class="red"
+                                                        @click="deleteDialog(item)">删除</a>
+                                                    <% } %>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/messageCenter/socialMgmt/topicClassify.js"></script>
+</body>
+
+</html>

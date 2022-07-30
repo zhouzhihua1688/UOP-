@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+            white-space: normal;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--删除弹窗-->
+                <div class="modal" id="delete" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <p>
+                            <div class="modal-body text-center">
+                                <h4>是否确认删除?</h4>
+                            </div>
+                            </p>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="deleteData">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--新增弹窗-->
+                <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title inline">新增消息分类</h4>
+                            </div>
+                            <div class="modal-body">
+                                <form class="form" style="padding: 0 24px 0 24px;" enctype="multipart/form-data">
+                                    <div class="form-group">
+                                        <label class="control-label">
+                                            <label class="control-label" style="margin-right: 14px;">分类名称:</label>
+                                            <input type="text" placeholder="必选" v-model="diaCategoryName">
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label">
+                                            <label class="control-label" style="margin-right: 14px;">订阅方式:</label>
+                                            <label class="pos-rel">
+                                                <input type="checkbox" id="channelType1" value="1" class="ace"
+                                                       v-model="diaPushType"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="channelType1">App站内信</label>
+                                            <label class="pos-rel">
+                                                <input type="checkbox" id="channelType2" value="2" class="ace"
+                                                       v-model="diaPushType"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="channelType2">App-push</label>
+                                            <label class="pos-rel">
+                                                <input type="checkbox" id="channelType3" value="3" class="ace"
+                                                       v-model="diaPushType"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="channelType3">短信</label>
+                                            <label class="pos-rel">
+                                                <input type="checkbox" id="channelType4" value="4" class="ace"
+                                                       v-model="diaPushType"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="channelType4">微信</label>
+                                            <label class="pos-rel">
+                                                <input type="checkbox" id="channelType5" value="5" class="ace"
+                                                       v-model="diaPushType"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="channelType5">微信高端</label>
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <label class="control-label" style="width: 70px;">订阅时段:</label>
+                                            <input type="text" id="startTime" class="date-timepicker"
+                                                   style="width: 145px;">
+                                            <span style="margin: 0 15px;">至</span>
+                                            <input type="text" id="endTime" class="date-timepicker"
+                                                   style="width: 145px;">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <label class="control-label" style="width: 170px;">是否可设置订阅方式:</label>
+                                            <label class="pos-rel">
+                                                <input type="radio" id="receiveEnable1" value="true" class="ace"
+                                                       v-model="diaReceiveEnable"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="receiveEnable1" style="margin: 0 40px 0 10px;">是</label>
+                                            <label class="pos-rel">
+                                                <input type="radio" id="receiveEnable2" value="false" class="ace"
+                                                       v-model="diaReceiveEnable"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="receiveEnable2" style="margin: 0 40px 0 10px;">否</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <label class="control-label" style="width: 170px;">是否可设置订阅时段:</label>
+                                            <label class="pos-rel">
+                                                <input type="radio" id="timeEnable1" value="true" class="ace"
+                                                       v-model="diaTimeEnable"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="timeEnable1" style="margin: 0 40px 0 10px;">是</label>
+                                            <label class="pos-rel">
+                                                <input type="radio" id="timeEnable2" value="false" class="ace"
+                                                       v-model="diaTimeEnable"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="timeEnable2" style="margin: 0 40px 0 10px;">否</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <label class="control-label" style="width: 170px;">是否支持多设置订阅:</label>
+                                            <label class="pos-rel">
+                                                <input type="radio" id="multiEnable1" value="true" class="ace"
+                                                       v-model="diaMultiEnable"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="multiEnable1" style="margin: 0 40px 0 10px;">是</label>
+                                            <label class="pos-rel">
+                                                <input type="radio" id="multiEnable2" value="false" class="ace"
+                                                       v-model="diaMultiEnable"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="multiEnable2" style="margin: 0 40px 0 10px;">否</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <label class="control-label" style="width: 170px;">是否支持可开关:</label>
+                                            <label class="pos-rel">
+                                                <input type="radio" id="openEnable1" value="true" class="ace"
+                                                       v-model="diaOpenEnable"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="openEnable1" style="margin: 0 40px 0 10px;">是</label>
+                                            <label class="pos-rel">
+                                                <input type="radio" id="openEnable2" value="false" class="ace"
+                                                       v-model="diaOpenEnable"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="openEnable2" style="margin: 0 40px 0 10px;">否</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <label class="control-label" style="width: 170px;">开关状态:</label>
+                                            <label class="pos-rel">
+                                                <input type="radio" id="openStatus1" value="true" class="ace"
+                                                       v-model="diaOpenStatus"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="openStatus1" style="margin: 0 40px 0 10px;">开</label>
+                                            <label class="pos-rel">
+                                                <input type="radio" id="openStatus2" value="false" class="ace"
+                                                       v-model="diaOpenStatus"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="openStatus2" style="margin: 0 40px 0 10px;">关</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <label class="control-label" style="width: 170px;">是否在app内可见:</label>
+                                            <label class="pos-rel">
+                                                <input type="radio" id="showStatus1" value="true" class="ace"
+                                                       v-model="diaShowStatus"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="showStatus1" style="margin: 0 40px 0 10px;">是</label>
+                                            <label class="pos-rel">
+                                                <input type="radio" id="showStatus2" value="false" class="ace"
+                                                       v-model="diaShowStatus"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="showStatus2" style="margin: 0 40px 0 10px;">否</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="margin-right: 14px;">图片地址:</label>
+                                        <input type="text" style="width: 74%;" id="uploadInput" placeholder="请选择"
+                                               disabled/>
+                                        <input type="button" class="btn btn-sm btn-primary" id="uploadBtn" value="上传">
+                                        <input id="uploadFileInput" type="file" name="file" style="display: none"
+                                               class="upload"/>
+                                    </div>
+                                    <div class="form-group" v-show="!updateId">
+                                        <div class="input-group">
+                                            <label class="control-label" style="width: 170px;">是否对外展示:</label>
+                                            <label class="pos-rel">
+                                                <input type="checkbox" class="ace" v-model="diaShowExternal"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </form>
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary" @click="add">保存</button>
+                                    <button class="btn btn-sm btn-primary" data-dismiss="modal">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label">分类ID:</label>
+                        <input type="text" v-model="categoryId">
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="search">
+                        <input type="button" class="btn btn-sm btn-primary" value="新增" @click="showAdd">
+                    </div>
+                </div>
+
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                    <div class="col-xs-6">
+                        <div id="dynamic-table_filter" class="dataTables_filter">
+                            <label>快速查询:</label>
+                            <input type="text" class="input-sm" v-model="condition">
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                       style="margin-bottom: 0;">
+                    <thead>
+                    <tr>
+                        <th class="center">分类ID</th>
+                        <th class="center">分类名称</th>
+                        <th class="center">图片地址</th>
+                        <th class="center">订阅方式</th>
+                        <th class="center">订阅时段</th>
+                        <th class="center">可设置订阅方式</th>
+                        <th class="center">可设置订阅时段</th>
+                        <th class="center">支持多设置订阅</th>
+                        <th class="center">可开关</th>
+                        <th class="center">开关状态</th>
+                        <th class="center">是否在app内可见</th>
+                        <th class="center">创建人</th>
+                        <th class="center">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="viewData.length>0">
+                        <tr v-for="(item,index) in viewData" :key="index">
+                            <td class="center" v-text="item.categoryId"></td>
+                            <td class="center" v-text="item.categoryName"></td>
+                            <td class="center" style="width: 200px;" v-text="item.imageUrl"></td>
+                            <td class="center" v-text="item.showPushType"></td>
+                            <td class="center" v-text="item.pushTime"></td>
+                            <td class="center" v-text="item.showReceiveEnable"></td>
+                            <td class="center" v-text="item.showTimeEnable"></td>
+                            <td class="center" v-text="item.showMultiEnable"></td>
+                            <td class="center" v-text="item.showOpenEnable"></td>
+                            <td class="center" v-text="item.showOpenStatus"></td>
+                            <td class="center" v-text="item.showShowStatus"></td>
+                            <td class="center" v-text="item.creator"></td>
+                            <td class="center">
+                                <a href="javascript:;" @click="showDelete(index)">删除</a>
+                                /
+                                <a href="javascript:;" @click="showUpdate(index)">修改</a>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'没有数据'" colspan="13"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <div v-if="viewData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in middleData.length" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/js/lib/ajaxfileupload.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/messageCenter/classMgmt.js"></script>
+</body>
+</html>

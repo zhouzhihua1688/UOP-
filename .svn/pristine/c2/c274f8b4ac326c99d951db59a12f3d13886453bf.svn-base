@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-multiselect.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/select2.min.css" />
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+
+        .form-inline > div {
+            padding:10px 0;
+            text-align: right;
+            margin-top:20px;
+            clear: both;
+
+        }
+        @media (min-width: 768px) {
+            .modal-dialog {
+                width: 900px;
+                margin: 30px auto;
+            }
+        }
+        input[type=checkbox] {
+            cursor: pointer;
+            font-family: fontAwesome;
+            font-weight: 400;
+            font-size: 12px;
+            color: #FFF;
+            content: "\a0";
+            background-color: #FAFAFA;
+            border: 1px solid #C8C8C8;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            border-radius: 0;
+            display: inline-block;
+            text-align: center;
+            height: 16px;
+            line-height: 14px;
+            min-width: 16px;
+            margin-right: 3px;
+            position: relative;
+            top: 4px;
+            text-align: left;
+        }
+        .chosen-single {
+            height: 30px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+        }
+        .chosen-container-single .chosen-single {
+            text-align: left;
+        }
+        .chosen-container .chosen-results {
+            text-align: left;
+        }
+        .select2-selection.select2-selection--single {
+            height: 30px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+            border: 1px solid #D5D5D5 !important;
+        }
+        .select2-container--default .select2-selection {line-height:20px;}
+        .select2-container--default .select2-selection--multiple .select2-selection__clear {display: none;}
+        .menuList{width:100%;height:20px 0;margin-top:20px;}
+        .menuList div{padding:0px 20px;height:33px;margin-top: 10px;display: inline-block;background:#999;color:#fff;margin-left:10px;text-align:center;line-height: 33px;}
+        .menuList div.bgColor{background:#307ECC}
+        .selectStyle{display:inline-block;width:120px;}
+        .typeList { display: inline-block; }
+        .typeList:nth-of-type(2) { margin-left: 20px}
+        .typeList:nth-of-type(3) { margin-left: 20px}
+        .typeList:nth-of-type(4) { margin-left: 20px}
+        .typeList:nth-of-type(5) { margin-left: 20px}
+        /* 进度条样式 */
+        .g-container { width: 600px;height: 10px;border-radius: 5px;background: #f2f2f2;}
+        .g-progress {width: 0;height: inherit;border-radius: 5px;background: #999;}
+        .cover { position: fixed;left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(9, 10, 10, 0.527); z-index: 999;}
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!-- loading动画 -->
+                <div class="cover" v-show="loadingShow" style="z-index: 1999;display: none;">
+                    <img src="/img/loading.gif" alt="加载数据中" style="position: absolute;top: 50%;left: 50%;">
+                    <div>数据加载中...</div>
+                </div>
+                <!-- loading动画end -->
+                <div id="content">
+                    <!--提示信息弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog" style="width:600px;">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                    </button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--删除操作的提示信息-->
+                    <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog" style="width:600px;">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                    </button>
+                                    <h4 class="modal-title">删除提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4>确定删除此条数据</h4>
+                                </div>
+                                <p class="text-center">
+                                    <button class="btn btn-info btn-sm" type="button" @click="del()">
+                                        确定
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+                                        取消
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--新增、修改弹窗 -->
+                    <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">{{modifyStatus==1?'修改':'新增'}}</h4>
+                                    </div>
+                                    <div class="form-horizontal" style="padding-top: 20px;">
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">*分类:</label> 
+                                            <select class="selectStyle" style="margin-left:10px;width:150px" disabled>
+                                                <option :value="item.categoryId" v-for="(item,index) in classifyList">
+                                                {{item.categoryId}}--{{item.categoryName}}
+                                                </option>        
+                                                <!-- <option value="">运营物料</option> -->
+                                            </select>
+                                            <select class="selectStyle"  style="width:150px" disabled>
+                                                <!-- <template v-for="(item,index) in classifyList[index]"> -->
+                                                    <option :value="itemSecond.categoryId" v-for="(itemSecond,index) in secondClassifyList">
+                                                        {{itemSecond.categoryId}}--{{itemSecond.categoryName}}
+                                                    </option>
+                                                <!-- </template> -->
+                                            </select>
+                                            <select class="selectStyle" style="width:150px" v-model="threeClassifyId" :disabled="modifyStatus==1?true:false">
+                                                <option value="">请选择</option>        
+                                                <option :value="item.categoryId" v-for="(item,index) in menuList">
+                                                    {{item.categoryId}}-{{item.categoryName}}
+                                                </option>
+                                            </select>    
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">*材料属性：</label>
+                                            <div style="display: inline-block;margin:0px 50px 8px 10px" v-for="(item,index) in materialProperty">
+                                                <input type="checkbox" :name="item.name" :id="item.name" :checked='item.checked' @change="chooseSingle(index)">
+                                                <label :for="item.name">{{item.name}}</label>
+                                            </div>
+                                        </div>
+                                        <!-- 现有材料选择内容 -->
+                                        <div class="form-group" v-if="materialProperty[0].checked==true">
+                                            <label class="col-sm-2 control-label">*选择内容：</label>
+                                            <div class="col-sm-7" style="display: flex;" @click="showMaterial()">
+                                                <input type="text" style="width:100%;">
+                                                <button type="button" class="btn spinbox-up btn-sm btn-success">
+                                                    <i class="icon-only  ace-icon ace-icon fa fa-plus bigger-110"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">*标题:</label>
+                                            <!-- <div class="col-sm-7" v-if="modifyStatus!=1">
+                                                <input type="text" style="width:100%;">
+                                            </div> -->
+                                            <div class="col-sm-7">
+                                                <input type="text" style="width:97%;" v-model="title">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">描述:</label>
+                                            <div class="col-sm-7">
+                                                <textarea name="" cols="15" rows="5"style="height:100px; width:500px;" v-model="description"></textarea>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">*材料权限：</label>
+                                            <select class="selectStyle" style="margin-left:10px" v-model="rightType">
+                                                    <option value="00">00-公开</option>        
+                                                    <option value="01">01-内部材料</option>
+                                                    <option value="03">03-一对一材料 </option>
+                                            </select>
+                                            <label class="control-label" style="margin-left:10px">*渠道权限：</label>
+                                            <select class="selectStyle" v-model="sourceType">
+                                                    <option value="00">00-uop</option>        
+                                                    <option value="01">01-微信</option>
+                                                    <option value="02">02-现金宝</option>
+                                            </select>
+                                            <label class="control-label" style="margin-left:10px">*水印：</label>
+                                            <select class="selectStyle" v-model="watermarkFlag">
+                                                    <option value="0">0-不打水印</option>        
+                                                    <option value="1">1-添加水印</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                                <label class="col-sm-2 control-label">*材料时效：</label>
+                                                <select class="selectStyle" style="margin-left:10px" v-model="timelinessType">
+                                                        <option value="0">0-无</option>        
+                                                        <option value="1">1-有</option>
+                                                </select>
+                                                <template v-if="timelinessType!=0">
+                                                    <label class="control-label" style="margin-left:10px">*上架日起共计：</label>
+                                                    <input type="number" style="width:100px" v-model='timelinessCycleValue'>
+                                                    <select class="selectStyle" v-model="timelinessCycleType" style="margin-left:10px">
+                                                            <option value="1">1-日</option>        
+                                                            <option value="2">2-月</option>
+                                                            <option value="3">3-周</option>
+                                                    </select>
+                                                </template>   
+                                        </div>
+
+                                        <div class="form-group">
+                                                <label class="col-sm-2 control-label">*关联标签：
+                                                    <!-- 关联标签的+号 -->
+                                                    <!-- <button type="button" class="btn spinbox-up btn-sm btn-success" @click="addTag()">
+                                                        <i class="icon-only  ace-icon ace-icon fa fa-plus bigger-110"></i>
+                                                    </button> -->
+                                                </label>
+                                                <!-- v-for="(item,index) in tagList"  getTagArrList -->
+
+                                                <template v-for="(item,index) in getTagArrList">
+                                                                                                                                                   
+                                                    <!-- <select class="selectStyle" style="margin-left:10px " v-model="singLableFirst" @change="chooseLableFirst(singLableFirst)"> -->
+                                                    <!-- <select class="selectStyle" style="margin-left:20px;"  @change="getSecondTagList($event,index)">
+                                                            <option value="">请选择</option>
+                                                            <option :value="itemTag.tagCategoryId" v-for="(itemTag,indexTag) in item.tagList">
+                                                                {{itemTag.tagCategoryId}}-{{itemTag.tagCategoryName}}
+                                                            </option> 
+                                                    </select>
+                                                    <select class="selectStyle" @click="getSecondTagId($event)">
+                                                            <option value="">请选择</option>
+                                                            <option :value="itemSecondTag.tagId"  v-for="(itemSecondTag,index) in getArr">
+                                                                {{itemSecondTag.tagId}}-{{itemSecondTag.tagName}}
+                                                            </option>        
+                                                    </select>  -->
+                                                   
+                                                    <!-- v-model="tagCategoryId"  @change="getSecondTagList($event,index)" -->
+                                                    <div class="form-group" style="width:300px;margin-left:160px;">
+                                                        <select class="selectStyle" style="margin-top:5px">
+                                                            <option :value="item.tagCategoryId">
+                                                                {{item.tagCategoryId}}-{{item.tagCategoryName}}
+                                                            </option> 
+                                                        </select>
+                                                        <!-- <select class="selectStyle" style="margin-top:5px"> 
+                                                                <option value="">请选择</option>    
+                                                                <option :value="itemSecondTag.tagId"  v-for="(itemSecondTag,secondIndex) in getArr[index]">
+                                                                    {{itemSecondTag.tagId}}-{{itemSecondTag.tagName}}
+                                                                </option>        
+                                                        </select> -->
+                                                        <select multiple="" :id="'dialogTagId'+index" name="state" class="select2" data-placeholder="">
+															<option :value="itemSecondTag.tagId" v-for="(itemSecondTag,secondIndex) in getArr[index]" :key="itemSecondTag.value" >{{itemSecondTag.tagName}}</option>
+														</select>
+                                                    </div>
+                                                   
+                                                </template>
+                                                
+                                                <!-- <select class="selectStyle" style="margin-left:10px; margin-top:10px" v-model="singLableSecond"  @change="chooseLableSecond(singLableSecond)">
+                                                        <option value="0" :disabled="singLableFirst=='0'?true:false">相关产品</option>        
+                                                        <option value="1" :disabled="singLableFirst=='1'?true:false">相关基金经理</option>
+                                                </select>
+                                                <select class="selectStyle">
+                                                        <option value=""></option>        
+                                                        <option value=""></option>
+                                                        <option value=""></option>
+                                                </select> -->
+                                        </div>
+
+                                        <!-- <div class="form-group" style="margin-left:150px">    
+                                            <template v-for="(item,index) in getTagArrList">                                                                                             
+                                                <select class="selectStyle">
+                                                        
+                                                        <option :value="item.tagCategoryId">
+                                                            {{item.tagCategoryId}}-{{item.tagCategoryName}}
+                                                        </option> 
+                                                </select>
+                                                <select class="selectStyle">
+                                                       
+                                                        <option :value="itemSecondTag.tagId"  v-for="(itemSecondTag,index) in getArr">
+                                                            {{itemSecondTag.tagId}}-{{itemSecondTag.tagName}}
+                                                        </option>        
+                                                </select>
+                                            </template>                                                  
+                                        </div> -->
+                                    
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">*类型：</label>
+                                            <div class="col-sm-7" style="margin-top: 7px;">
+                                                <div class="typeList" v-for="(item,index) in typeList" @click="changeTypeList(item,index)">
+                                                    <input type="radio" :value="item.value" :checked="item.checked">
+                                                    <label v-text="item.name"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    <!-- 切换的类型的内容 start-->
+                                        <!-- 文件 -->
+                                        <template v-if="mediaType=='file'">
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">
+                                                    *本地文件:</label>
+                                                <div class="col-sm-8">
+                                                    <label class="btn" for="uploadsFile">上传文件</label>
+                                                    <input v-model="url" style="width:80%" disabled><!-- 只是显示-->
+                                                    <!-- <i v-if='fileUrl'>x</i> -->
+                                                    <input type="file" id="uploadsFile" style="position:absolute; clip:rect(0 0 0 0);"
+                                                     accept="" @change="uploadsFile($event)">
+                                                    <!-- 进度条 -->
+                                                    <div style="display: flex; align-items:end;margin-top :20px;" v-show='uploadingFile.name'>
+                                                        <div style="width:90%">
+                                                            <div style="display: flex;justify-content: space-between;">
+                                                                <span>{{uploadingFile.name}}</span>
+                                                                <span style="display: none">
+                                                                    <i v-if='uploadingFile.progressRate=="100%"' style="padding:0 10px;cursor:pointer;">✓</i>
+                                                                    <i v-if='url' style="padding:0 10px;cursor:pointer;">x</i>
+                                                                </span>
+                                                            </div>
+    
+                                                            <div class="g-container">
+                                                                <div class="g-progress"></div>
+                                                            </div>
+                                                        </div>
+    
+                                                        <div style='color:red;width:10%;display: inline-block;margin-bottom:10px'>
+                                                            <i v-if='uploadingFile.progressRate=="100%"&&url'>上传完成</i>
+                                                            <i v-else>上传中</i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <!--文字-->
+                                        <template v-if="mediaType=='text'||mediaType=='image'"> 
+                                            <div class="form-group" v-if="mediaType!='image'">
+                                                <label class="col-sm-2 control-label">*内容:</label>
+                                                <div class="col-sm-7">
+                                                    <textarea name="" cols="15" rows="5"style="height:100px; width:500px;" v-model="content"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">附加图片:</label>
+                                                <label class="btn" for="uploads3">图片上传</label><span>  *图片类型为PNG/JPG</span>
+                                                <input type="file" style="position:absolute; clip:rect(0 0 0 0);" id="uploads3"
+                                                 accept="image/png,image/jpeg,image/jpg" @change="uploadImg($event)">
+                                                <!-- 预览多张图片 -->
+                                                <div class="col-sm-7" style="margin:10px 0 0 130px"  v-if="imagesUrl.length>0"  v-cloak>
+                                                    <div class="group-coms-pic" style="display:flex;flex-direction: row;background:#f1f1f1">预览
+                                                        <div class="item" v-for="(v,i) in imagesUrl" :key="i">
+                                                            <div class="pic-box" style="overflow: hidden;  position: relative;width:150px;height: 150px;">
+                                                                <img class="img" :src="v" style="margin:1rem;;width:130px;height: 130px;object-fit: contain">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <!-- 链接 -->
+                                        <template v-if="mediaType=='link'">
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">*跳转URL:</label>
+                                                <div class="col-sm-7">
+                                                    <input type="text" style="width:100%;">
+                                                </div>
+                                            </div>
+                                        </template>
+                                    <!-- 切换的类型的内容 end   @click="changeAddStatus()"-->           
+                                        <div class="form-group"  @click="changeAddStatus">
+                                            <label class="col-sm-2 control-label">*上架状态:</label>
+                                            <input type="checkbox" :checked="pushStatus=='1'?true:false" name="stock"  role="checkbox"
+                                                 class="editable inline-edit-cell ace ace-switch ace-switch-4 btn-flat">
+                                            <span class="lbl"></span>
+                                        </div>
+                                        <!-- <div class="form-group" v-if="modifyStatus==1">
+                                            <label class="col-sm-2 control-label">*最近更新人:</label>
+                                            <div class="col-sm-3">
+                                                <input type="text" v-model="modifyBy?modifyBy:createBy" disabled>
+                                            </div>
+                    
+                                            <label class="col-sm-2 control-label">
+                                                    *最近更新时间:</label>
+                                            <div class="col-sm-3">
+                                                <date-picker id="posterDate" :config="{placeholder:'',format: 'YYYY-MM-DD'}" disabled>
+                                                    <span class="input-group-addon" slot='right'>
+                                                        <i class="fa fa-calendar bigger-110"></i>
+                                                    </span>
+                                                </date-picker>
+                                            </div>
+                                        </div> -->
+                                        
+                                        <p class="text-center">
+                                            <button class="btn btn-info btn-sm" type="button" @click="add()">
+                                                确定
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+                                                取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+
+                    <!-- 现有材料-点击选择内容弹窗 -->
+                    <div class="modal" id="materialShow" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                            <div class="modal-dialog" style="width:850px;">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                        </button>
+                                        <h4 class="modal-title">内容数据</h4>
+                                    </div>
+                                    <div class="form-group" style="padding:10px 0">
+                                        <label class="control-label" style="margin-left:50px">资源路径：</label>
+                                        <select class="selectStyle" v-model="materialId" style="margin-left:10px;width:150px" @change="firstMaterialId(materialId,0)">
+                                            <option :value="item.categoryId" v-for="(item,index) in materialList">
+                                            {{item.categoryId}}--{{item.categoryName}}
+                                            </option>        
+                                        </select>
+                                        <select class="selectStyle" v-model="secondMaterial"  style="width:150px" @change=secondMaterialId(secondMaterial,1)>
+                                            <!-- <template v-for="(item,index) in classifyList"> -->
+                                                <option :value="itemSecond.categoryId" v-for="(itemSecond,index) in categoryConfigList">
+                                                    {{itemSecond.categoryId}}--{{itemSecond.categoryName}}
+                                                </option>
+                                            <!-- </template> -->
+                                        </select>
+                                        <select class="selectStyle" v-model="threeMaterial">
+                                            <option value="">请选择</option>        
+                                            <option :value="itemThree.categoryId" v-for="(itemThree,index) in threeMaterialIdList">
+                                                {{itemThree.categoryId}}-{{itemThree.categoryName}}
+                                            </option>
+                                        </select> 
+                                        <input type="text" placeholder="请输入资源名称">
+                                        <input type="button" value="查询" class="btn btn-sm btn-default" @click="searchMaterial()">
+                                    </div>
+                                    <div class="modal-body">
+                                       <!--  <div class="form-group  pull-left">
+                                            <input type="button" value="查询" class="btn btn-sm btn-default "
+                                                   @click="searchInvitationData">
+                                        </div> -->
+                                        <!--搜索:<input type="text" style="width:155px;" v-model="keywords"/>-->
+                                        <div>
+                                            <!--数据表-->
+                                            <table class="table table-striped table-bordered table-hover dataTable" style="margin-bottom: 0;">
+                                                <thead>
+                                                <tr>
+                                                   <!--  <th class="center" style="width:210px">ID
+                                                    </th> -->
+                                                    <th class="center" style="width:210px">材料名称</th>
+                                                    <th class="center" style="width:210px">材料主题</th>
+                                                    <!-- <th class="center" style="width:210px">封面图片</th> -->
+                                                    <th class="center" style="width:210px">内容描述</th>
+                                                    <th class="center" style="width:210px">材料权限</th>
+                                                    <th class="center" style="width:210px">材料时效</th>
+                                                    <th class="center" style="width:210px">操作</th>
+                                                </tr>
+    
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="searchMaterialList.length>0">
+                                                    <tr v-for="(item,index) in searchMaterialList" :key="index">
+                                                     <!--    <td class="center" style="width:210px" v-text="item.unionId"></td> -->
+                                                        <td class="center" style="width:210px">{{item.title}}</td>
+                                                        <td class="center" style="width:210px">{{item.themeName}}</td>
+                                                        <td class="center" style="width:210px">{{item.description}}</td>
+                                                        <td class="center" style="width:210px">{{item.rightType}}</td>
+                                                        <td class="center" style="width:210px">{{item.timelinessType}}</td>
+                                                        <td class="center" style="width:210px"><a href="javascript:;" @click="checkMaterial(item)">确认</a></td>
+                                                    </tr>
+                                                </template>
+                                                <template>
+                                                    <tr>
+                                                        <td class="center" colspan="11"></td>
+                                                    </tr>
+                                                </template>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div v-if="viewData.length>0"  class="row"
+                                            style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                           <div class="col-xs-2">
+                                               <div class="dataTables_info" v-text="'共 '+middleData.length+'页'"></div>
+                                           </div>
+                                           <div class="col-xs-10">
+                                               <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                                   <ul class="pagination">
+                                                       <li :class="currentIndex2==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                           @click="prev2">
+                                                           <a href="javascript:;" v-text="'上一页'"></a>
+                                                       </li>
+                                                       <li :class="value==currentIndex2+1?'paginate_button active':'paginate_button'"
+                                                           v-for="value in middleData.length" @click="changeIndex2(value)">
+                                                           <a href="javascript:;" v-text="value"></a>
+                                                       </li>
+                                                       <li :class="currentIndex2==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                           @click="next2">
+                                                           <a href="javascript:;" v-text="'下一页'"></a>
+                                                       </li>
+                                                   </ul>
+                                               </div>
+                                           </div>
+                                       </div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+
+                    <!-- 展示主页面 -->
+                    <div class="menuList" v-if="menuList.length>0">
+                        <div :class="allChecked.checked?'bgColor':''" @click="checkAll($event)">全部</div>
+                        <div  v-for="(item,index) in menuList" :key="index" :class="item.checked?'bgColor':''"  @click="checkSingle($event,item,index)" v-text="item.categoryName">
+                              <i class="ace-icon fa fa-check"></i>
+                        </div>
+                        <!-- <button v-for="(item,index) in menuList" :key="index" :class="{'btn-info':bgIndex==index}" @click="changeColor(index)" style="margin-right:20px;height:33px;padding:0 10px">
+                        </button> -->
+                    </div>
+                    
+                    <div class="form-inline">
+                        <div class="form-group">
+                            <!-- <input type="text" class="width-100" placeholder="请输入产品名称/代码"> -->
+                            <!-- <label class="control-label">产品名称/代码:</label> -->
+                            <!-- <select style="display:inline-block;width:120px">
+                                <option value="">请选择</option>        
+                                <option >
+                                </option>
+                            </select> -->
+                            <label class="control-label">产品代码:</label>
+                            <select id="fundNameList" class="chosen-select form-control" data-placeholder="请选择">
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-left:10px">
+                            <label class="control-label">基金经理:</label>
+                            <!-- <select style="display:inline-block;width:120px">
+                                <option value="">请选择</option>
+                                <option>
+                                </option>
+                            </select> -->
+                            <select id="managerList" class="chosen-select form-control" data-placeholder="请选择">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-left:10px">
+                            <label class="control-label">材料权限:</label>
+                            <select style="display:inline-block;width:150px" v-model="searchRightType">
+                                <option value="">请选择</option>
+                                <option value="00">00-公开</option>        
+                                <option value="01">01-内部材料</option>
+                                <option value="03">03-一对一材料 </option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-left:10px">
+                            <label class="control-label">标题:</label>
+                            <input type="text" style="width:150px" v-model="keyword">
+                        </div>
+                        <div class="form-group pull-right" style="margin-left: 20px;">
+                            <input type="button" value="查询" class="btn btn-primary btn-sm "
+                                   @click="getTableData(0)">
+                            <button class="btn btn-primary btn-sm" @click="showAdd()">添加</button>
+                        </div>
+                    </div>
+                    <div class="table-header">
+                        <%= cpage %>--表格数据
+                    </div>
+                    <!--分页器和快速查询-->
+                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length" id="dynamic-table_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="500">500</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!--数据表-->
+                    <div style="width: 100%;">
+                        <table id="simple-table" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">标题</th>
+                                <!-- <th class="center col-sm-1 col-md-1 col-lg-1">材料主题</th> -->
+                                <th class="center col-sm-1 col-md-1 col-lg-1">摘要</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">最新更新时间</th>
+                                <th class="center col-sm-2 col-md-2 col-lg-3">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="viewData.length>0">
+                                <tr v-for="(item,index) in viewData" :key="index">
+                                    <td class="center">{{item.title}}</td>
+                                    <!-- <td class="center">{{item.themeName}}</td> -->
+                                    <td class="center">{{item.description}}</td>
+                                    <td class="center" v-text="item.modifyTime?item.modifyTime.substr(0,15):''"></td>
+                                    <td class="center">
+                                        <i class="ace-icon glyphicon glyphicon-file" style="font-size:16px"
+                                           @click="showUpdate(item)"></i>&nbsp&nbsp&nbsp
+                                           <i class="ace-icon glyphicon glyphicon-trash" style="font-size:16px"
+                                           @click="showDelete(item)"></i>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'暂无数据'" colspan="11"></td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!--底部页码-->
+                    <div v-if="viewData.length>0"  class="row"
+                        style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                       <div class="col-xs-2">
+                           <div class="dataTables_info" v-text="'共 '+middleData.length+'页'"></div>
+                       </div>
+                       <div class="col-xs-10">
+                           <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                               <ul class="pagination">
+                                   <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                       @click="prev">
+                                       <a href="javascript:;" v-text="'上一页'"></a>
+                                   </li>
+                                   <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                       v-for="value in middleData.length" @click="changeIndex(value)">
+                                       <a href="javascript:;" v-text="value"></a>
+                                   </li>
+                                   <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                       @click="next">
+                                       <a href="javascript:;" v-text="'下一页'"></a>
+                                   </li>
+                               </ul>
+                           </div>
+                       </div>
+                   </div>
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/ace/assets/js/bootstrap-multiselect.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/ace/assets/js/v-datetimepicker.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script> 
+<script src="/ace/assets/js/select2.min.js"></script>
+<script src="/js/contentMgmt/operationMaterial/addRichSign.js"></script>
+</body>
+</html>

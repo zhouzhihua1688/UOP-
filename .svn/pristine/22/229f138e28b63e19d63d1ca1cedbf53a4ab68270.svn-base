@@ -1,0 +1,274 @@
+const request = require('./../../../local_data/requestWrapper');
+const original_request = require('request');
+const apiUrlList = require('../apiConfig').investmentInformationDisclosure.monthlyReport;
+const request_obs = require('../../../local_data/request_obs');
+const formidable = require('formidable');
+const apiFileUrl = require('../apiConfig')
+const filePathExternal = apiFileUrl.filePathExternal + '/investmentStrategy';
+const filePathExternal_url = apiFileUrl.filePafilePathExternalthUrl + '/investmentStrategy';
+const fs = require('fs');
+const path = require('path');
+const investTableName = 'uop_log_invest';
+module.exports = function (app) {
+    //查询详情
+    app.post('/investmentMgmt/investmentInformationDisclosure/monthlyReport/getDetail.ajax', (req, res, next) => {
+        let params = req.body
+        let option = {
+            pageUrl: '/investmentMgmt/investmentInformationDisclosure/monthlyReport/getDetail.ajax',
+            req,
+            qs: params,
+            url: apiUrlList.getDetail,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                return res.send({
+                    error: 0,
+                    msg: '查询成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg,
+                    data: null
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败',
+                    data: null
+                });
+            }
+        });
+    });
+    // 获取列表数据
+    app.post('/investmentMgmt/investmentInformationDisclosure/monthlyReport/getTableData.ajax', (req, res, next) => {
+        try {
+            let params = req.body
+            let option = {
+                pageUrl: '/investmentMgmt/investmentInformationDisclosure/monthlyReport/getTableData.ajax',
+                req,
+                qs: params,
+                url: apiUrlList.getTableData,
+                timeout: 15000,
+                json: true
+            };
+            console.log('获取列表数据option', option.url)
+
+            request(option, (error, response, body) => {
+
+                if (error) {
+                    console.log('查询失败error',error)
+                    return res.send({
+                        error: 1,
+                        msg: '查询失败'
+                    });
+                    
+                }
+                let result = typeof body === 'string' ? JSON.parse(body) : body;
+                console.log('查询获取列表数据',result.body)
+                if (result && result.returnCode == 0) {
+                    return res.send({
+                        error: 0,
+                        msg: '查询成功',
+                        data: result.body
+                    });
+                } else if (result && result.returnCode != 9999) {
+                    return res.send({
+                        error: 1,
+                        msg: result.returnMsg,
+                        data: null
+                    });
+                } else {
+                    return res.send({
+                        error: 1,
+                        msg: '查询失败',
+                        data: null
+                    });
+                }
+            });
+        } catch (error) {
+            console.log('获取列表数据error', error)
+        }
+    });
+    // 编辑信息
+    app.post('/investmentMgmt/investmentInformationDisclosure/monthlyReport/upData.ajax', (req, res, next) => {
+        let params = req.body
+        let option = {
+            pageUrl: '/investmentMgmt/investmentInformationDisclosure/monthlyReport/upData.ajax',
+            operateType: 2, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码,
+            req,
+            url: apiUrlList.upData,
+            body: req.body,
+            timeout: 15000,
+            json: true,
+
+        };
+        request.post(option, (error, response, body) => {
+
+            if (error) {
+                return res.send({ error: 1, msg: '修改失败' });
+            }
+            if (body.returnCode == 0) {
+                return res.send({ error: 0, msg: '修改成功', data: null });
+            } else if (body.returnCode != 9999) {
+                return res.send({ error: 1, msg: body.returnMsg, data: null });
+            } else {
+                return res.send({ error: 1, msg: '修改失败', data: null });
+            }
+        });
+
+    });
+
+    //新增
+    app.post('/investmentMgmt/investmentInformationDisclosure/monthlyReport/addParam.ajax', (req, res, next) => {
+        let params = req.body
+        params.creator  = req.session.loginInfo.userid;  
+       let test={
+            "bottomImagePath": "str/ing/123",
+            "creator": "string",
+            "groupImagePaths": {},
+            "reportAbstract": "123",
+            "reportDate": "202203",
+            "reportName": "string13",
+            "reportUrl": "string/12/345",
+            "topImagePath": "str/ing/2"
+        }
+        let option = {
+            pageUrl: '/investmentMgmt/investmentInformationDisclosure/reportMgmt/addParam.ajax',
+            req,
+            operateType: 1, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrlList.addParam,
+            // body: params,
+            body: test,
+            timeout: 15000,
+            json: true,
+        };
+        console.log('月报日期',params.reportDate)
+        request.post(option, (error, response, body) => {
+
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '新增失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                return res.send({
+                    error: 0,
+                    msg: '新增成功',
+                    data: null
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg,
+                    data: null
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg,
+                    data: null
+                });
+            }
+        });
+
+    });
+    // 删除
+    app.post('/investmentMgmt/investmentInformationDisclosure/monthlyReport/deleteParam.ajax', (req, res, next) => {
+        let params = req.body
+        let option = {
+            pageUrl: '/investmentMgmt/investmentInformationDisclosure/monthlyReport/deleteParam.ajax',
+            req,
+            operateType: 3, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrlList.deleteParam,
+            qs: params,
+            timeout: 15000,
+            json: true,
+
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '删除失败',
+                    data: null
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                return res.send({
+                    error: 0,
+                    msg: '删除成功',
+                    data: null
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '删除失败',
+                    data: null
+                });
+            }
+        });
+
+    });
+
+    //图片上传
+    app.post('/investmentMgmt/investmentInformationDisclosure/monthlyReport/uploadPostPicFile.ajax', (req, res, next) => {
+        console.log('1filePathExternal_url', filePathExternal_url)
+        console.log('2filePathExternal', filePathExternal)
+
+        console.log("上传文件携带的参数", typeName, groupName)
+        // try {
+
+        !fs.existsSync(apiConfig.filePathExternal) && fs.mkdirSync(apiConfig.filePathExternal);
+        !fs.existsSync(filePathExternal) && fs.mkdirSync(filePathExternal);
+        const postPicFilePath = filePathExternal + '/monthlyReport';
+        !fs.existsSync(postPicFilePath) && fs.mkdirSync(postPicFilePath);
+        let form = new formidable.IncomingForm();
+        form.uploadDir = postPicFilePath;
+        form.keepExtensions = true;
+        form.parse(req, (err, fields, files) => {
+            console.log('数据接收完毕:', fields);
+            console.log('文件接收完毕:', files);
+            let url_prefix = fields.typeName + fields.groupName
+            console.log("上传文件携带的参数", url_prefix)
+
+            let originFilePath = path.resolve(files.file.path);
+            fs.createReadStream(originFilePath).pipe(fs.createWriteStream(`${postPicFilePath}/${files.file.name}`));
+            fs.unlinkSync(originFilePath);
+            res.send({
+                error: 0,
+                msg: '上传成功',
+                data: {
+                    filePath: `${filePathExternal_url}/monthlyReport/${files.file.name}`
+                }
+            });
+        }
+        );
+        // } catch (error) {
+        //     res.send({
+        //         error: 0,
+        //         msg: '上传失败',
+        //         data: null
+        //     });
+        // }
+    });
+
+};

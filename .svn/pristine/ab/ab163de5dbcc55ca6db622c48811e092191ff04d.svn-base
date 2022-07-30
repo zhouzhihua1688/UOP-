@@ -1,0 +1,6 @@
+const request = require('./../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').businessParamConfig.productAdditionInfo;
+
+module.exports = function(app) {
+	
+}

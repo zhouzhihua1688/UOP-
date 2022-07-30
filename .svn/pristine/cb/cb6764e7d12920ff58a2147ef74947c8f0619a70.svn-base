@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div {
+            padding: 10px 0;
+            text-align: right;
+        }
+
+        .form-inline span {
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- DIALOG ENDS -->
+                            <div class="form-inline">
+
+                                <div class="form-group ">
+                                    <label style="width: 80px;">分类名称</label>
+                                    <input type="text" v-model='categoryName'>
+                                </div>
+
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " value="新增" @click="showAdd">
+                                </div>
+                                <div class="form-group pull-right" style="margin-right:30px;">
+                                    <input type="button" class="btn btn-sm btn-primary " value="查询"
+                                        @click="getTableData">
+                                </div>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!--数据表-->
+                            <div style="width: 100%;">
+                                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th class="center">ID</th>
+                                            <th class="center">分类名称</th>
+                                            <th class="center">封面图</th>
+                                            <th class="center">状态</th>
+                                            <th class="center">操作</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template v-if="tableData.length>0">
+                                            <tr v-for="(item,index) in tableData" :key="index">
+                                                <td class="center" v-text='item.id'></td>
+                                                <td class="center" v-text='item.name'></td>
+                                                <td class="center" v-text='item.icon'></td>
+                                                <td class="center">{{item.status?"启用":"禁用"}}</td>
+                                                <td class="center">
+                                                    <a href="javascript:;"
+                                                        @click='updateStatus(item)'>{{item.status?"禁用":"启用"}}</a>
+                                                    &nbsp;
+                                                    <a href="javascript:;" @click='showDetail(item)'>修改</a>
+                                                    <% if(canShow||authorityList.includes('U')) { %>
+                                                    &nbsp;
+                                                    <a href="javascript:;" class="red"
+                                                        @click="deleteDialog(item)">删除</a>
+                                                    <% } %>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/operationMgmt/usedLink/linkQuery.js"></script>
+</body>
+
+</html>

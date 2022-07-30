@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <link rel="stylesheet" href="/ace/assets/css/select2.min.css" />
+    <link rel="stylesheet" href="/ace/assets/css/vue-multiselect.min.css">
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+        .input-group{
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content" id="content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <!-- loading动画 -->
+                    <div class="cover" v-show="loadingShow" style="z-index: 1999;display: none;">
+                        <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                    </div>
+                    <!-- loading动画end -->
+                    <!--编辑弹窗-->
+                    <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog" style="width: 800px;">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"
+                                       >
+                                        &times;
+                                    </button>
+                                    <h4 class="modal-title" style="display: inline">内容配置</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form clearfix" style="padding: 0 50px 0 24px;">
+                                        <div class="form-group">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                任务名称:</label>
+                                            <input type="text" style="width: 60%;" v-model.trim="diajobName" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label"
+                                                style="width: 150px;text-align: right">任务处理器:</label>
+                                            <select name="" id="" v-model="diajobHandler">
+                                                <option v-for= "(value,name) in handlerList" :value="name" v-text="value">CDN缓存刷新任务管理器</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label"
+                                                style="width: 150px;text-align: right">触发频次:</label>
+                                                <input type="radio" id="radio1" v-model="diajobTriggerFrequency" value="1">
+                                                <label for="radio1">单次</label>
+                                                <input type="radio" id="radio2" v-model="diajobTriggerFrequency" value="2">
+                                                <label for="radio2">周期</label>
+                                                <input type="radio" id="radio3" v-model="diajobTriggerFrequency" value="3">
+                                                <label for="radio3">自定义</label>
+                                                <a href="javascript:;" class="btn btn-minier btn-success" style="line-height: 22px;margin-left: 10px;" @click="addTimeCron" v-show="!isUpdate">新建任务</a>
+                                        </div>
+                                        <template v-if="diajobTriggerFrequency=='1'">
+                                            
+                                            <div class="form-group" v-for="(item,index) in timeInfo" :key="index" style="clear:both;margin-bottom: 20px;" >
+                                                <label class="control-label"
+                                                style="width: 150px;text-align: right"></label>
+                                                触发时间&nbsp;在
+                                                    <date-picker :config="{format:'YYYY-MM-DD HH:mm'}" v-model="item.timingTime" :key="'a'+index">
+                                                        <span class="input-group-addon" >
+                                                            <span class="glyphicon glyphicon-calendar"></span>
+                                                        </span>
+                                                    </date-picker>
+                                                <a href="javascript:;" class="btn btn-minier btn-danger" style="line-height: 22px;"
+                                                @click="delTimeCron(index)" v-show="!isUpdate">-</a>
+                                            </div>
+                                        </template>
+                                        <template v-else-if="diajobTriggerFrequency=='2'">
+                                            <div class="form-group" v-for="(item,index) in timeInfo2" :key="index" style="clear:both;margin-bottom: 20px;" >
+                                                <div class="col-xs-12 col-sm-5 " style="display: inline-block;vertical-align: middle;text-align: right;margin-left: 6px;">
+                                                    触发时间
+                                                    <select name="" id="" v-model="item.cycle">
+                                                        <option value="day">每天</option>
+                                                        <option value="week">每周</option>
+                                                        <option value="month">每月</option>
+                                                    </select>
+                                                </div>
+                                                <div v-show="item.cycle=='week'" style="margin-right: 15px;position: relative;
+                                                z-index: 99999999999999999999999;" class="col-xs-12 col-sm-3">
+                                                    <multiselect 
+                                                        v-model="item.weekTime" 
+                                                        :options="weekList"
+                                                        :multiple="true"
+                                                        :taggable="true"
+                                                        :searchable="true"
+                                                        track-by="name"
+                                                        label="name"
+                                                        :tabindex=index
+                                                        placeholder="请选择"
+                                                        :limit=2
+                                                        maxHeight:200
+                                                        >
+                                                    </multiselect>
+                                                </div>
+                                                <div  v-show="item.cycle=='month'" style="margin-right: 15px;position: relative;
+                                                z-index: 99999999999999999999999;" class="col-xs-12 col-sm-3" >
+                                                    <multiselect 
+                                                        v-model="item.monthday" 
+                                                        :options="monthList"
+                                                        :multiple="true"
+                                                        :taggable="true"
+                                                        :searchable="true"
+                                                        track-by="name"
+                                                        label="name"
+                                                        :tabindex=index
+                                                        placeholder="请选择"
+                                                        :limit=2
+                                                        maxHeight:200
+                                                        >
+                                                    </multiselect>
+                                                </div>
+                                                    <date-picker :config="{format:'HH:mm'}" v-model="item.timingTime" class="col-xs-12 col-sm-2" :key="'b'+index" >
+                                                        <span class="input-group-addon" >
+                                                            <span class="glyphicon glyphicon-calendar"></span>
+                                                        </span>
+                                                    </date-picker>
+                                                <a href="javascript:;" class="btn btn-minier btn-danger" style="line-height: 22px;"
+                                                @click="delTimeCron2(index)" v-show="!isUpdate">-</a>
+                                            </div>
+                                        </template>
+                                        <template v-else>
+                                            <div class="form-group" v-for="(item,index) in timeInfo3" :key="index" style="clear:both;margin-bottom: 20px;" >
+                                                <label class="control-label"
+                                                style="width: 150px;text-align: right">自定义cron表达式</label>
+                                                    <input type="text" v-model="timeInfo3[index]"/>
+                                                <a href="javascript:;" class="btn btn-minier btn-danger" style="line-height: 22px;"
+                                                @click="delTimeCron3(index)" v-show="!isUpdate">-</a>
+                                            </div>
+                                        </template>
+                                        <div class="form-group" style="float: left;">
+                                            <label class="control-label"
+                                                style="width: 150px;text-align: right">任务过期时间:</label>
+                                                <date-picker :config="{format:'YYYY-MM-DD HH:mm:ss'}" v-model="diajobValidDate" >
+                                                    <span class="input-group-addon" >
+                                                        <span class="glyphicon glyphicon-calendar"></span>
+                                                    </span>
+                                                </date-picker>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary" @click="add">保存</button>
+                                    <button class="btn btn-default btn-sm" data-dismiss="modal"
+                                        >取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--信息提示弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                        data-dismiss="modal">确定</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--删除弹窗1-->
+                    <div class="modal" id="delete1" tabindex="-1" role="dialog" aria-hidden="true"
+                        data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title">删除</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4>是否确认删除?</h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                        @click="deleteConfirm">确定</button>
+                                    <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-inline" style="padding: 10px 0;">
+                        <div class="form-group">
+                            <label class="control-label">任务来源:</label>
+                            <input type="text" v-model.trim="jobFrom">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">任务名称:</label>
+                            <input type="text" v-model.trim="jobName">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">触发频次:</label>
+                            <input type="text" v-model.trim="jobTriggerFrequency">
+                        </div>
+
+                        <div class="form-group pull-right">
+                            <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                            <% if(canShow||authorityList.includes('C')) { %>
+                            <input type="button" class="btn btn-sm btn-primary" value="新增内容" @click="showAdd">
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="table-header">
+                        <%= cpage %>--表格数据
+                    </div>
+                    <!--分页器和快速查询-->
+                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length" id="dynamic-table_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="500">500</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!--数据表-->
+                    <table id="simple-table" class="table table-bordered table-hover dataTable">
+                        <thead>
+                            <tr>
+                                <th class="center">任务ID</th>
+                                <th class="center">任务名称</th>
+                                <th class="center">任务触发频次</th>
+                                <th class="center">任务状态</th>
+                                <th class="center">任务来源</th>
+                                <th class="center">修改人</th>
+                                <th class="center">修改时间</th>
+                                <th class="center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-if="tableData.length>0">
+                                <tr v-for="(item,index) in tableData" :key="index">
+                                    <td class="center" v-text='item.jobId'></td>
+                                    <td class="center" v-text='item.jobName'></td>
+                                    <td class="center" v-text='item.jobTriggerFrequency==1?"单次":"周期"'></td>
+                                    <td class="center" v-text='item.jobStatus=="0"?"监控中":"结束"' ></td>
+                                    <td class="center" v-text='item.jobFrom'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" v-text='item.modifyTime'></td>
+                                    <td class="center">
+                                        <% if(canShow||authorityList.includes('U')) { %>
+                                        <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                                        <% } %>
+                                        <% if(canShow||authorityList.includes('D')) { %>
+                                        &nbsp;
+                                        <a href="javascript:;" class="red" @click="deleteParams(item)">删除</a>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="loadingStatus" colspan="8"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                    <!--底部页码-->
+                    <div v-if="tableData.length>0" class="row"
+                        style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                        <div class="col-xs-2">
+                            <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                        </div>
+                        <div class="col-xs-10">
+                            <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                <ul class="pagination">
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                    </li>
+                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                        @click="prev">
+                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                    </li>
+                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                        v-for="value in pageList" @click="changeIndex(value)">
+                                        <a href="javascript:;" v-text="value"></a>
+                                    </li>
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                    </li>
+                                    <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                        @click="next">
+                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/vue-multiselect.min.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/ace/assets/js/v-datetimepicker.js"></script>
+    <script src="/js/recommendSystem/recommendSystemConfigMgmt/customTimingTaskMgmt.js"></script>
+</body>
+
+</html>

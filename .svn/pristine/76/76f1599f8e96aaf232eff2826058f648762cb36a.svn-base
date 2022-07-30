@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div {
+            padding: 10px 0;
+            text-align: right;
+        }
+
+        .hoverActive {
+            color: #36c;
+            cursor: pointer
+        }
+
+        .hoverActive:hover {
+            color: #f60;
+        }
+
+        .cover {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(9, 10, 10, 0.527);
+            z-index: 999;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="freezeInfo" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                                @click='freeze'>确定
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">
+                                                取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--模板上传文件示例-->
+                            <table id="data-table" border="1" style="display: none;">
+                                <tr>
+                                    <td>证件号码</td>
+                                    <td>是否允许自助解冻:0-不允许，1-允许</td>
+                                </tr>
+                                <td>411117189807141117</td>
+                                <td>1</td>
+                                </tr>
+                            </table>
+                            <div class="cover" v-show="loadingShow" style="z-index: 1999;display: none;">
+                                <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                            </div><!-- loading动画 -->
+                            <!-- 上传文件弹窗 -->
+                            <div class="modal" id="addfile" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="form-horizontal">
+                                            <div class="table-header" style="margin-bottom: 20px;">导入文件</div>
+
+
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    文件路径: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" class="col-sm-6" placeholder="请选择" disabled
+                                                        v-model.trim='filePath' />
+                                                    <input type="button" class="btn btn-sm btn-primary" id="uploadBtn"
+                                                        value="选择" @click='select'>
+
+                                                    <form id="updateForm" enctype="multipart/form-data">
+                                                        <input id="uploadFileInput" @change='showFileName' type="file"
+                                                            name="file" style="display: none" />
+                                                    </form>
+
+                                                </div>
+                                            </div>
+
+                                            <div class="modal-footer">
+                                                <div class=" col-md-12">
+                                                    <input type="button" class="btn btn-sm btn-danger pull-left"
+                                                        @click="downloadFile" value="下载模板文件">
+                                                    <button type="button" class="btn btn-sm btn-success"
+                                                        @click='fileUpload'>
+                                                        上传
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                        data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- DIALOG ENDS -->
+                            <div class="form-inline">
+                                <% if(canShow||authorityList.includes('C')) { %>
+                                <div class="form-group  ">
+                                    <input type="button" class="btn btn-sm btn-danger " value="批量导入"
+                                        @click="showDialog('', 'addfile', false)">
+                                </div>
+                                <% } %>
+                                <% if(canShow||authorityList.includes('U')) { %>
+                                <div class="form-group  pull-right" v-if="viewData.length>0" v-cloak>
+                                    <input type="button" v-cloak class="btn btn-sm btn-primary  " value="批量冻结"
+                                        @click="freezeList">
+                                </div>
+                                <% } %>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <div v-if="viewData.length>0" v-cloak>
+                                <!--分页器和快速查询-->
+                                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                    <div class="col-xs-6">
+                                        <div class="dataTables_length" id="dynamic-table_length">
+                                            <label>每页显示</label>
+                                            <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                                <option value="10">10</option>
+                                                <option value="50">50</option>
+                                                <option value="100">100</option>
+                                                <option value="500">500</option>
+                                            </select>
+                                            <label>条</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--数据表-->
+                                <table id="simple-table"
+                                    class="table table-striped table-bordered table-hover dataTable"
+                                    style="margin-bottom: 0;">
+                                    <thead>
+                                        <tr>
+                                            <th class="center">
+                                                <label class="pos-rel">
+                                                    <input type="checkbox" class="ace" :checked='selectAllState'
+                                                        @click='selectAll' />
+                                                    <span class="lbl"></span>
+                                                </label>
+                                            </th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">账户状态</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">姓名</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">是否允许自助解冻*</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">现金宝余额</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">证件号码</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">手机号码</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">邮箱</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">cosDeviceId</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">注册IP</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">注册时间</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template v-if="viewData.length>0">
+                                            <tr v-for="(item,index) in viewData" :key="index">
+                                                <th class="center">
+                                                    <label class="pos-rel">
+                                                        <input type="checkbox" v-model='item.checked' class="ace" />
+                                                        <span class="lbl"></span>
+                                                    </label>
+                                                </th>
+                                                <td class="center" v-text='item.logonallowed'></td>
+                                                <td class="center" v-text='item.invnm'></td>
+                                                <td class="center" v-text='item.allowUnfreezeSelf'></td>
+                                                <td class="center" v-text='item.asset'></td>
+                                                <td class="center" v-text='item.idno'></td>
+                                                <td class="center" v-text='item.mobileno'></td>
+                                                <td class="center" v-text='item.email'></td>
+                                                <td class="center" v-text='item.deviceid'></td>
+                                                <td class="center" v-text='item.registerip'></td>
+                                                <td class="center" v-text='item.regDateStr'></td>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                                <!--底部页码-->
+                                <div v-if="viewData.length>0" class="row"
+                                    style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                    <div class="col-xs-2">
+                                        <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                                    </div>
+                                    <div class="col-xs-10">
+                                        <div class="dataTables_paginate paging_simple_numbers"
+                                            id="dynamic-table_paginate">
+                                            <ul class="pagination">
+                                                <li class="paginate_button"
+                                                    v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                                </li>
+                                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                    @click="prev">
+                                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                                </li>
+                                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                    v-for="value in pageList" @click="changeIndex(value)">
+                                                    <a href="javascript:;" v-text="value"></a>
+                                                </li>
+                                                <li class="paginate_button"
+                                                    v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                                    <a href="javascript:;" v-text="'...'+middleData.length"
+                                                        @click="toLast"></a>
+                                                </li>
+                                                <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                    @click="next">
+                                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/lib/xlsx.core.min.js"></script>
+    <script src="/js/customerService/accountQuery/blackListInspect.js"></script>
+</body>
+
+</html>

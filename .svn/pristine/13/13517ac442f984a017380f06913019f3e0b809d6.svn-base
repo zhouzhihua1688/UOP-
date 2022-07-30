@@ -1,0 +1,1843 @@
+[{
+    "menuId": "1",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "type": "2",
+    "name": "三方营运",
+    "url": "/thirdPartyOperation"
+  },
+  {
+    "menuId": "1-1",
+    "parentMenuId": "1",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "渠道维护",
+    "url": "/thirdPartyOperation/channelMaintain"
+  },
+  {
+    "menuId": "1-1-1",
+    "parentMenuId": "1-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "直销三方上架(二期)",
+    "url": "/thirdPartyOperation/channelMaintain/directSelling.html"
+  },
+  {
+    "menuId": "1-1-2",
+    "parentMenuId": "1-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "代销三方上架(二期)",
+    "url": "/thirdPartyOperation/channelMaintain/proxySelling.html"
+  },
+  {
+    "menuId": "1-1-3",
+    "parentMenuId": "1-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "联系人维护(二期)",
+    "url": "/thirdPartyOperation/channelMaintain/contactMaintain.html"
+  },
+  {
+    "menuId": "1-1-4",
+    "parentMenuId": "1-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "三方文件交互",
+    "url": "/thirdPartyOperation/channelMaintain/fileInteraction.html"
+  },
+  {
+    "menuId": "1-1-5",
+    "parentMenuId": "1-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "合作方上架",
+    "url": "/thirdPartyOperation/channelMaintain/partnerSelling.html"
+  },
+  {
+    "menuId": "1-1-6",
+    "parentMenuId": "1-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "三方收市检查",
+    "url": "/thirdPartyOperation/channelMaintain/closeCheck.html"
+  },
+  {
+    "menuId": "1-1-7",
+    "parentMenuId": "1-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "合作方订单管理",
+    "url": "/thirdPartyOperation/channelMaintain/partnerTradeAssist.html"
+  },
+  {
+    "menuId": "1-2",
+    "parentMenuId": "1",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "产品管理",
+    "url": "/thirdPartyOperation/products"
+  },
+  {
+    "menuId": "1-2-1",
+    "parentMenuId": "1-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "产品开放",
+    "url": "/thirdPartyOperation/products/open.html"
+  },
+  {
+    "menuId": "1-2-2",
+    "parentMenuId": "1-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "参数表管理",
+    "url": "/thirdPartyOperation/products/paramsMgmt.html"
+  },
+  {
+    "menuId": "1-2-3",
+    "parentMenuId": "1-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "产品库及净值管理",
+    "url": "/thirdPartyOperation/products/library.html"
+  },
+  {
+    "menuId": "1-2-4",
+    "parentMenuId": "1-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "产品上架管理（PSP）",
+    "url": "/thirdPartyOperation/products/pspfund.html"
+  },
+  {
+    "menuId": "1-3",
+    "parentMenuId": "1",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "费用管理",
+    "url": "/thirdPartyOperation/expenseMgmt"
+  },
+  {
+    "menuId": "1-3-1",
+    "parentMenuId": "1-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "三方手续费",
+    "url": "/thirdPartyOperation/expenseMgmt/procedureSum.html"
+  },
+  {
+    "menuId": "1-3-2",
+    "parentMenuId": "1-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "三方交易费",
+    "url": "/thirdPartyOperation/expenseMgmt/transactionSum.html"
+  },
+  {
+    "menuId": "1-3-3",
+    "parentMenuId": "1-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "三方代销尾佣",
+    "url": "/thirdPartyOperation/expenseMgmt/trailingSum.html"
+  },
+  {
+    "menuId": "1-3-4",
+    "parentMenuId": "1-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "三方反馈",
+    "url": "/thirdPartyOperation/expenseMgmt/feedbackSum.html"
+  },
+  {
+    "menuId": "1-3-5",
+    "parentMenuId": "1-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "报表参数设置",
+    "url": "/thirdPartyOperation/expenseMgmt/paramSetting.html"
+  },
+  {
+    "menuId": "1-3-6",
+    "parentMenuId": "1-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "报表导出",
+    "url": "/thirdPartyOperation/expenseMgmt/export.html"
+  },
+  {
+    "menuId": "1-4",
+    "parentMenuId": "1",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "邮件工具",
+    "url": "/thirdPartyOperation/mails"
+  },
+  {
+    "menuId": "1-4-1",
+    "parentMenuId": "1-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "新建邮件",
+    "url": "/thirdPartyOperation/mails/new.html"
+  },
+  {
+    "menuId": "1-4-2",
+    "parentMenuId": "1-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "已发邮件",
+    "url": "/thirdPartyOperation/mails/sent.html"
+  },
+  {
+    "menuId": "2",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "type": "2",
+    "name": "消息中心",
+    "url": "/messageCenter"
+  },
+  {
+    "menuId": "2-1",
+    "parentMenuId": "2",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "消息模板管理",
+    "url": "/messageCenter/templateMgmt"
+  },
+  {
+    "menuId": "2-1-1",
+    "parentMenuId": "2-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "消息模板管理",
+    "url": "/messageCenter/templateMgmt/templateMgmt.html"
+  },
+  {
+    "menuId": "2-2",
+    "parentMenuId": "2",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "消息分类管理",
+    "url": "/messageCenter/classMgmt"
+  },
+  {
+    "menuId": "2-2-1",
+    "parentMenuId": "2-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "消息分类管理",
+    "url": "/messageCenter/classMgmt/classMgmt.html"
+  },
+  {
+    "menuId": "2-3",
+    "parentMenuId": "2",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "消息规则管理",
+    "url": "/messageCenter/ruleMgmt"
+  },
+  {
+    "menuId": "2-3-1",
+    "parentMenuId": "2-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "消息规则管理",
+    "url": "/messageCenter/ruleMgmt/ruleMgmt.html"
+  },
+  {
+    "menuId": "2-4",
+    "parentMenuId": "2",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "人工发送管理",
+    "url": "/messageCenter/manualMgmt"
+  },
+  {
+    "menuId": "2-4-1",
+    "parentMenuId": "2-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "人工发送管理",
+    "url": "/messageCenter/manualMgmt/manualMgmt.html"
+  },
+  {
+    "menuId": "2-4-2",
+    "parentMenuId": "2-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "删除历史站内信",
+    "url": "/messageCenter/manualMgmt/deleteMsg.html"
+  },
+  {
+    "menuId": "2-5",
+    "parentMenuId": "2",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "场景发送管理",
+    "url": "/messageCenter/scenceMgmt"
+  },
+  {
+    "menuId": "2-5-1",
+    "parentMenuId": "2-5",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "场景规则列表",
+    "url": "/messageCenter/scenceMgmt/scenceList.html"
+  },
+  {
+    "menuId": "2-5-2",
+    "parentMenuId": "2-5",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "场景规则新增",
+    "url": "/messageCenter/scenceMgmt/scenceAdd.html"
+  },
+  {
+    "menuId": "2-6",
+    "parentMenuId": "2",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "消息统计查询",
+    "url": "/messageCenter/sendCount"
+  },
+  {
+    "menuId": "2-6-1",
+    "parentMenuId": "2-6",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "App推送查询",
+    "url": "/messageCenter/sendCount/sendCount.html"
+  },
+  {
+    "menuId": "2-6-2",
+    "parentMenuId": "2-6",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "短信详情查询",
+    "url": "/messageCenter/sendCount/msgSearch.html"
+  },
+  {
+    "menuId": "2-6-3",
+    "parentMenuId": "2-6",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "微信详情查询",
+    "url": "/messageCenter/sendCount/WXSearch.html"
+  },
+  {
+    "menuId": "2-6-4",
+    "parentMenuId": "2-6",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "单次推送查询",
+    "url": "/messageCenter/sendCount/singlePush.html"
+  },
+  {
+    "menuId": "2-7",
+    "parentMenuId": "2",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "推送token查询",
+    "url": "/messageCenter/tokenSearch"
+  },
+  {
+    "menuId": "2-7-1",
+    "parentMenuId": "2-7",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "推送token查询",
+    "url": "/messageCenter/tokenSearch/tokenSearch.html"
+  },
+  {
+    "menuId": "3",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "type": "2",
+    "name": "权限管理",
+    "url": "/authorityMgmt"
+  },
+  {
+    "menuId": "3-1",
+    "parentMenuId": "3",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "所有频道",
+    "url": "/authorityMgmt/allChannels"
+  },
+  {
+    "menuId": "3-1-1",
+    "parentMenuId": "3-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "用户管理",
+    "url": "/authorityMgmt/allChannels/users.html"
+  },
+  {
+    "menuId": "3-1-2",
+    "parentMenuId": "3-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "角色管理",
+    "url": "/authorityMgmt/allChannels/roles.html"
+  },
+  {
+    "menuId": "3-1-3",
+    "parentMenuId": "3-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "菜单管理",
+    "url": "/authorityMgmt/allChannels/menus.html"
+  },
+  {
+    "menuId": "3-2",
+    "parentMenuId": "3",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "三方营运",
+    "url": "/authorityMgmt/thirdPartyOperation"
+  },
+  {
+    "menuId": "3-2-1",
+    "parentMenuId": "3-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "用户管理",
+    "url": "/authorityMgmt/thirdPartyOperation/users.html"
+  },
+  {
+    "menuId": "3-2-2",
+    "parentMenuId": "3-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "角色管理",
+    "url": "/authorityMgmt/thirdPartyOperation/roles.html"
+  },
+  {
+    "menuId": "3-3",
+    "parentMenuId": "3",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "消息中心",
+    "url": "/authorityMgmt/messageCenter"
+  },
+  {
+    "menuId": "3-3-1",
+    "parentMenuId": "3-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "用户管理",
+    "url": "/authorityMgmt/messageCenter/users.html"
+  },
+  {
+    "menuId": "3-3-2",
+    "parentMenuId": "3-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "角色管理",
+    "url": "/authorityMgmt/messageCenter/roles.html"
+  },
+  {
+    "menuId": "3-4",
+    "parentMenuId": "3",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "公共配置",
+    "url": "/authorityMgmt/publicConfig"
+  },
+  {
+    "menuId": "3-4-1",
+    "parentMenuId": "3-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "用户管理",
+    "url": "/authorityMgmt/publicConfig/users.html"
+  },
+  {
+    "menuId": "3-4-2",
+    "parentMenuId": "3-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "角色管理",
+    "url": "/authorityMgmt/publicConfig/roles.html"
+  },
+  {
+    "menuId": "4",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "type": "2",
+    "name": "公共配置",
+    "url": "/publicConfig"
+  },
+  {
+    "menuId": "4-1",
+    "parentMenuId": "4",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "短链接管理",
+    "url": "/publicConfig/shortLink"
+  },
+  {
+    "menuId": "4-1-1",
+    "parentMenuId": "4-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "短链接配置",
+    "url": "/publicConfig/shortLink/linkConfig.html"
+  },
+  {
+    "menuId": "4-2",
+    "parentMenuId": "4",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "自动化工具",
+    "url": "/publicConfig/automatedTool"
+  },
+  {
+    "menuId": "4-2-1",
+    "parentMenuId": "4-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "自动化切片工具",
+    "url": "/publicConfig/automatedTool/sliceTool.html"
+  },
+  {
+    "menuId": "4-2-2",
+    "parentMenuId": "4-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "近期产品列表",
+    "url": "/publicConfig/automatedTool/recentProductList.html"
+  },
+  {
+    "menuId": "4-3",
+    "parentMenuId": "4",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "支付宝相关配置",
+    "url": "/publicConfig/alipayConfig"
+  },
+  {
+    "menuId": "4-3-1",
+    "parentMenuId": "4-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "小程序配置",
+    "url": "/publicConfig/alipayConfig/miniConfig.html"
+  },
+  {
+    "menuId": "5",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "type": "2",
+    "name": "现金管理",
+    "url": "/cashMgmt"
+  },
+  {
+    "menuId": "5-1",
+    "parentMenuId": "5",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "生活缴费",
+    "url": "/cashMgmt/livingPay"
+  },
+  {
+    "menuId": "5-1-1",
+    "parentMenuId": "5-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "机构管理",
+    "url": "/cashMgmt/livingPay/companyMgmt.html"
+  },
+  {
+    "menuId": "5-1-2",
+    "parentMenuId": "5-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "机构生效",
+    "url": "/cashMgmt/livingPay/companyActive.html"
+  },
+  {
+    "menuId": "5-1-3",
+    "parentMenuId": "5-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "地区管理",
+    "url": "/cashMgmt/livingPay/districtMgmt.html"
+  },
+  {
+    "menuId": "5-1-4",
+    "parentMenuId": "5-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "机构停运",
+    "url": "/cashMgmt/livingPay/companyPause.html"
+  },
+  {
+    "menuId": "5-1-5",
+    "parentMenuId": "5-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "机构公告",
+    "url": "/cashMgmt/livingPay/companyNotice.html"
+  },
+  {
+    "menuId": "6",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "type": "2",
+    "name": "运维管理",
+    "url": "/operationMgmt"
+  },
+  {
+    "menuId": "6-1",
+    "parentMenuId": "6",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "用户管理",
+    "url": "/operationMgmt/userMgmt"
+  },
+  {
+    "menuId": "6-1-1",
+    "parentMenuId": "6-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "用户",
+    "url": "/operationMgmt/userMgmt/user.html"
+  },
+  {
+    "menuId": "6-1-2",
+    "parentMenuId": "6-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "用户角色",
+    "url": "/operationMgmt/userMgmt/role.html"
+  },
+  {
+    "menuId": "6-2",
+    "parentMenuId": "6",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "应用管理",
+    "url": "/operationMgmt/appMgmt"
+  },
+  {
+    "menuId": "6-2-1",
+    "parentMenuId": "6-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": false,
+    "name": "客户端",
+    "url": "/operationMgmt/appMgmt/client.html"
+  },
+  {
+    "menuId": "6-2-2",
+    "parentMenuId": "6-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": false,
+    "name": "应用",
+    "url": "/operationMgmt/appMgmt/app.html"
+  },
+  {
+    "menuId": "6-3",
+    "parentMenuId": "6",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "资源管理",
+    "url": "/operationMgmt/resourceMgmt"
+  },
+  {
+    "menuId": "6-3-1",
+    "parentMenuId": "6-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": false,
+    "name": "资源",
+    "url": "/operationMgmt/resourceMgmt/resource.html"
+  },
+  {
+    "menuId": "6-4",
+    "parentMenuId": "6",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "角色管理",
+    "url": "/operationMgmt/roleMgmt"
+  },
+  {
+    "menuId": "6-4-1",
+    "parentMenuId": "6-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": false,
+    "name": "角色",
+    "url": "/operationMgmt/roleMgmt/role.html"
+  },
+  {
+    "menuId": "7",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "page": false,
+    "type": "2",
+    "name": "营销活动",
+    "url": "/marketingActive"
+  },
+  {
+    "menuId": "7-1",
+    "parentMenuId": "7",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "活动基础管理",
+    "url": "/marketingActive/activeBasics"
+  },
+  {
+    "menuId": "7-1-1",
+    "parentMenuId": "7-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动基础规则配置",
+    "url": "/marketingActive/activeBasics/marketingRule.html"
+  },
+  {
+    "menuId": "7-1-2",
+    "parentMenuId": "7-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动表字段释义配置",
+    "url": "/marketingActive/activeBasics/wordFieldNotes.html"
+  },
+  {
+    "menuId": "7-2",
+    "parentMenuId": "7",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "大数据对接管理",
+    "url": "/marketingActive/largeData"
+  },
+  {
+    "menuId": "7-2-1",
+    "parentMenuId": "7-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "大数据对接文件配置",
+    "url": "/marketingActive/largeData/largeDataFile.html"
+  },
+  {
+    "menuId": "7-3",
+    "parentMenuId": "7",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "活动模型管理",
+    "url": "/marketingActive/activeTemplateMgmt"
+  },
+  {
+    "menuId": "7-3-1",
+    "parentMenuId": "7-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动模型配置",
+    "url": "/marketingActive/activeTemplateMgmt/activeTemplate.html"
+  },
+  {
+    "menuId": "7-3-2",
+    "parentMenuId": "7-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动切点配置",
+    "url": "/marketingActive/activeTemplateMgmt/activeCut.html"
+  },
+  {
+    "menuId": "7-3-3",
+    "parentMenuId": "7-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动组件配置",
+    "url": "/marketingActive/activeTemplateMgmt/activeComponent.html"
+  },
+  {
+    "menuId": "7-3-4",
+    "parentMenuId": "7-3",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "模型接口配置",
+    "url": "/marketingActive/activeTemplateMgmt/templatePort.html"
+  },
+  {
+    "menuId": "7-4",
+    "parentMenuId": "7",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "活动运营配置管理",
+    "url": "/marketingActive/activeRun"
+  },
+  {
+    "menuId": "7-4-1",
+    "parentMenuId": "7-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动投放渠道配置",
+    "url": "/marketingActive/activeRun/activeRoad.html"
+  },
+  {
+    "menuId": "7-4-2",
+    "parentMenuId": "7-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动配置",
+    "url": "/marketingActive/activeRun/activeSetting.html"
+  },
+  {
+    "menuId": "7-4-3",
+    "parentMenuId": "7-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动规则配置",
+    "url": "/marketingActive/activeRun/activeRuleSetting.html"
+  },
+  {
+    "menuId": "7-4-4",
+    "parentMenuId": "7-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动模板页面上传",
+    "url": "/marketingActive/activeRun/activeSettingTemplatePage.html"
+  },
+  {
+    "menuId": "7-4-5",
+    "parentMenuId": "7-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "基础奖励配置表",
+    "url": "/marketingActive/activeRun/awardBase.html"
+  },
+  {
+    "menuId": "7-4-6",
+    "parentMenuId": "7-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动奖励包配置表",
+    "url": "/marketingActive/activeRun/activeAward.html"
+  },
+  {
+    "menuId": "7-4-7",
+    "parentMenuId": "7-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动分享配置",
+    "url": "/marketingActive/activeRun/shareSetting.html"
+  },
+  {
+    "menuId": "7-4-8",
+    "parentMenuId": "7-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动异步任务管理配置",
+    "url": "/marketingActive/activeRun/asyncWorkSetting.html"
+  },
+  {
+    "menuId": "7-4-9",
+    "parentMenuId": "7-4",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "异步节点-任务管理配置",
+    "url": "/marketingActive/activeRun/asyncNodeSetting.html"
+  },
+  {
+    "menuId": "7-5",
+    "parentMenuId": "7",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "营销活动数据查询",
+    "url": "/marketingActive/activeDataQuery"
+  },
+  {
+    "menuId": "7-5-1",
+    "parentMenuId": "7-5",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动参与数据查询",
+    "url": "/marketingActive/activeDataQuery/activeJoinQuery.html"
+  },
+  {
+    "menuId": "7-5-2",
+    "parentMenuId": "7-5",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动奖励数据查询",
+    "url": "/marketingActive/activeDataQuery/activeAwardQuery.html"
+  },
+  {
+    "menuId": "7-5-3",
+    "parentMenuId": "7-5",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动邀请记录数据查询",
+    "url": "/marketingActive/activeDataQuery/inviteLog.html"
+  },
+  {
+    "menuId": "7-5-4",
+    "parentMenuId": "7-5",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动邀请码数据查询",
+    "url": "/marketingActive/activeDataQuery/inviteCode.html"
+  },
+  {
+    "menuId": "7-5-5",
+    "parentMenuId": "7-5",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "活动用户参与机会数据查询",
+    "url": "/marketingActive/activeDataQuery/userJoin.html"
+  },
+  {
+    "menuId": "7-5-6",
+    "parentMenuId": "7-5",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "用户发奖明细记录查询",
+    "url": "/marketingActive/activeDataQuery/prizeDetailLog.html"
+  },
+  {
+    "menuId": "7-5-7",
+    "parentMenuId": "7-5",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true, 
+    "name": "用户活动参与明细查询",
+    "url": "/marketingActive/activeDataQuery/joinDetail.html"
+  },
+  {
+    "menuId": "7-5-8",
+    "parentMenuId": "7-5",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true, 
+    "name": "用户信息采集查询",
+    "url": "/marketingActive/activeDataQuery/userInfoSearch.html"
+  },
+  {
+    "menuId": "7-6",
+    "parentMenuId": "7",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "任务管理",
+    "url": "/marketingActive/taskManage"
+  },
+  {
+    "menuId": "7-6-1",
+    "parentMenuId": "7-6",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "任务分类管理",
+    "url": "/marketingActive/taskManage/taskClassify.html"
+  },
+  {
+    "menuId": "7-6-2",
+    "parentMenuId": "7-6",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "任务管理",
+    "url": "/marketingActive/taskManage/manage.html"
+  },
+  {
+    "menuId": "7-6-3",
+    "parentMenuId": "7-6",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "任务规则管理",
+    "url": "/marketingActive/taskManage/taskRule.html"
+  },
+  {
+    "menuId": "7-6-4",
+    "parentMenuId": "7-6",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "用户任务记录",
+    "url": "/marketingActive/taskManage/userTaskLog.html"
+  },
+  {
+    "menuId": "7-6-5",
+    "parentMenuId": "7-6",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "用户任务进度记录",
+    "url": "/marketingActive/taskManage/userTaskProgress.html"
+  },
+  {
+    "menuId": "7-6-6",
+    "parentMenuId": "7-6",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "任务-规则模型配置",
+    "url": "/marketingActive/taskManage/taskRuleTemplate.html"
+  },
+  {
+    "menuId": "7-6-7",
+    "parentMenuId": "7-6",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "规则占位符的释义配置",
+    "url": "/marketingActive/taskManage/rulePlaceholders.html"
+  },
+  {
+    "menuId": "7-6-8",
+    "parentMenuId": "7-6",
+    "hasSubmenu": false,
+    "type": "2", 
+    "page": true,
+    "name": "任务与异步消息匹配表",
+    "url": "/marketingActive/taskManage/taskMessage.html"
+  },
+  {
+    "menuId": "8",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "page": false,
+    "type": "2",
+    "name": "奖励系统",
+    "url": "/awardMgmt"
+  },
+  {
+    "menuId": "8-1",
+    "parentMenuId": "8",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "奖励配置管理",
+    "url": "/awardMgmt/awardSetting"
+  },
+  {
+    "menuId": "8-1-1",
+    "parentMenuId": "8-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "奖励类型配置",
+    "url": "/awardMgmt/awardSetting/typeSetting.html"
+  },
+  {
+    "menuId": "8-1-2",
+    "parentMenuId": "8-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "奖励对接渠道配置",
+    "url": "/awardMgmt/awardSetting/portSetting.html"
+  },
+  {
+    "menuId": "8-1-3",
+    "parentMenuId": "8-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "奖励卡种配置",
+    "url": "/awardMgmt/awardSetting/cardSetting.html"
+  },
+  {
+    "menuId": "8-1-4",
+    "parentMenuId": "8-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "奖励卡信息配置",
+    "url": "/awardMgmt/awardSetting/infoSetting.html"
+  },
+  {
+    "menuId": "8-1-5",
+    "parentMenuId": "8-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "批量生成奖励卡",
+    "url": "/awardMgmt/awardSetting/batchCard.html"
+  },
+  {
+    "menuId": "8-1-6",
+    "parentMenuId": "8-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "三方手机充值配置",
+    "url": "/awardMgmt/awardSetting/phoneSetting.html"
+  },
+  {
+    "menuId": "8-1-7",
+    "parentMenuId": "8-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "手机号运营商号段",
+    "url": "/awardMgmt/awardSetting/phoneNumRun.html"
+  },
+  {
+    "menuId": "8-1-8",
+    "parentMenuId": "8-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "奖励包配置",
+    "url": "/awardMgmt/awardSetting/awardTable.html"
+  },
+  {
+    "menuId": "8-2",
+    "parentMenuId": "8",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "用户奖励领取查询",
+    "url": "/awardMgmt/awardSearch"
+  },
+  {
+    "menuId": "8-2-1",
+    "parentMenuId": "8-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "奖励卡/兑换领取记录",
+    "url": "/awardMgmt/awardSearch/awardRecord.html"
+  },
+  {
+    "menuId": "8-2-2",
+    "parentMenuId": "8-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "用户奖励包明细表",
+    "url": "/awardMgmt/awardSearch/userDetail.html"
+  },
+  {
+    "menuId": "8-2-3",
+    "parentMenuId": "8-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "用户奖励包总记录表",
+    "url": "/awardMgmt/awardSearch/awardLogAll.html"
+  },
+  {
+    "menuId": "9",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "page": false,
+    "type": "2",
+    "name": "业务管理",
+    "url": "/businessMgmt"
+  },
+
+  {
+    "menuId": "9-0",
+    "parentMenuId": "9",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "业务参数配置",
+    "url": "/businessMgmt/businessParamConfig"
+  },
+
+  {
+    "menuId": "9-0-1",
+    "parentMenuId": "9-0",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "折扣经办",
+    "url": "/businessMgmt/businessParamConfig/discountHandle.html"
+  },
+
+  {
+    "menuId": "9-0-2",
+    "parentMenuId": "9-0",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "折扣复核",
+    "url": "/businessMgmt/businessParamConfig/discountReview.html"
+  },
+
+  {
+    "menuId": "9-0-3",
+    "parentMenuId": "9-0",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "限额经办",
+    "url": "/businessMgmt/businessParamConfig/quotaHandle.html"
+  },
+  {
+    "menuId": "9-0-4",
+    "parentMenuId": "9-0",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "限额复核",
+    "url": "/businessMgmt/businessParamConfig/quotaReview.html"
+  },
+  {
+    "menuId": "9-0-5",
+    "parentMenuId": "9-0",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "支付经办",
+    "url": "/businessMgmt/businessParamConfig/paymentHandle.html"
+  },
+  {
+    "menuId": "9-0-6",
+    "parentMenuId": "9-0",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "支付复核",
+    "url": "/businessMgmt/businessParamConfig/paymentReview.html"
+  },
+
+  {
+    "menuId": "9-1",
+    "parentMenuId": "9",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "IPO管理_营运",
+    "url": "/businessMgmt/IPOMgmtOC"
+  },
+  {
+    "menuId": "9-1-1",
+    "parentMenuId": "9-1",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "IPO设置",
+    "url": "/businessMgmt/IPOMgmtOC/IPOSetting.html"
+  },
+   {
+    "menuId": "9-1-2",
+    "parentMenuId": "9-1",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "IPO设置复核",
+    "url": "/businessMgmt/IPOMgmtOC/IPOSetReview.html"
+  },
+  {
+    "menuId": "9-1-3",
+    "parentMenuId": "9-1",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "基准费率经办",
+    "url": "/businessMgmt/IPOMgmtOC/datumRateHandle.html"
+  },
+  {
+    "menuId": "9-1-4",
+    "parentMenuId": "9-1",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "基准费率复核",
+    "url": "/businessMgmt/IPOMgmtOC/datumRateReview.html"
+  },
+
+
+  {
+    "menuId": "9-2",
+    "parentMenuId": "9",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "IPO管理_电商",
+    "url": "/businessMgmt/IPOMgmtEC"
+  },
+
+  {
+    "menuId": "9-2-1",
+    "parentMenuId": "9-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "IPO管理",
+    "url": "/businessMgmt/IPOMgmtEC/IPOMgmt.html"
+  },
+  {
+    "menuId": "9-2-2",
+    "parentMenuId": "9-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "IPO管理复核",
+    "url": "/businessMgmt/IPOMgmtEC/IPOMgmtReview.html"
+  },
+  {
+    "menuId": "9-2-3",
+    "parentMenuId": "9-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "高端理财系列IPO",
+    "url": "/businessMgmt/IPOMgmtEC/highFinancialIPO.html"
+  },
+   {
+    "menuId": "9-2-4",
+    "parentMenuId": "9-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "基金转换经办",
+    "url": "/businessMgmt/IPOMgmtEC/fundChangeHandle.html"
+  },
+   {
+    "menuId": "9-2-5",
+    "parentMenuId": "9-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "基金转换复核",
+    "url": "/businessMgmt/IPOMgmtEC/fundChangeReview.html"
+  },
+
+  {
+    "menuId": "9-2-6",
+    "parentMenuId": "9-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "基金意向认购配置",
+    "url": "/businessMgmt/IPOMgmtEC/fundBuySetting.html"
+  },
+  {
+    "menuId": "9-2-7",
+    "parentMenuId": "9-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "基金经理配置",
+    "url": "/businessMgmt/IPOMgmtEC/fundManagerSetting.html"
+  },
+  {
+    "menuId": "9-2-8",
+    "parentMenuId": "9-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "基金标签配置",
+    "url": "/businessMgmt/IPOMgmtEC/fundTagSetting.html"
+  },
+  {
+    "menuId": "9-2-9",
+    "parentMenuId": "9-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "基金标签管理",
+    "url": "/businessMgmt/IPOMgmtEC/fundTagMgmt.html"
+  },
+
+  {
+    "menuId": "9-2-10",
+    "parentMenuId": "9-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "基金标签分类管理",
+    "url": "/businessMgmt/IPOMgmtEC/fundTagClassify.html"
+  },
+  {
+    "menuId": "9-2-11",
+    "parentMenuId": "9-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "折扣服务",
+    "url": "/businessMgmt/IPOMgmtEC/discountService.html"
+  },
+  {
+    "menuId": "9-2-12",
+    "parentMenuId": "9-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "限额服务",
+    "url": "/businessMgmt/IPOMgmtEC/quotaService.html"
+  },
+  {
+    "menuId": "9-2-12",
+    "parentMenuId": "9-2",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "三宝限额白名单配置管理",
+    "url": "/businessMgmt/IPOMgmtEC/whiteList.html"
+  },
+
+  {
+    "menuId": "9-3",
+    "parentMenuId": "9",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "高端理财",
+    "url": "/businessMgmt/highFinancialMgmt"
+  },
+  {
+    "menuId": "9-3-0",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "电子合同管理",
+    "url": "/businessMgmt/highFinancialMgmt/electronicContractMgmt.html"
+  },
+  {
+    "menuId": "9-3-1",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "额度管理",
+    "url": "/businessMgmt/highFinancialMgmt/quotaMgmt.html"
+  },
+  {
+    "menuId": "9-3-2",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "流水号管理",
+    "url": "/businessMgmt/highFinancialMgmt/bookingCodeMgmt.html"
+  },
+  {
+    "menuId": "9-3-3",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "净值查询权限管理",
+    "url": "/businessMgmt/highFinancialMgmt/netQueryPrivilegeMgmt.html"
+  },
+  {
+    "menuId": "9-3-4",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "观察日管理",
+    "url": "/businessMgmt/highFinancialMgmt/observationDaysMgmt.html"
+  },
+  {
+    "menuId": "9-3-5",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "产品专区管理",
+    "url": "/businessMgmt/highFinancialMgmt/productAreaMgmt.html"
+  },
+  {
+    "menuId": "9-3-6",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "基础参数维护",
+    "url": "/businessMgmt/highFinancialMgmt/basicsParamMaintain.html"
+  },
+  {
+    "menuId": "9-3-7",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "产品附加额度管理",
+    "url": "/businessMgmt/highFinancialMgmt/extraQuotaMgmt.html"
+  },
+  {
+    "menuId": "9-3-8",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "产品关注查询",
+    "url": "/businessMgmt/highFinancialMgmt/custCareQry.html"
+  },
+  {
+    "menuId": "9-3-9",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "产品类别管理",
+    "url": "/businessMgmt/highFinancialMgmt/classificationGroup.html"
+  },
+  {
+    "menuId": "9-3-10",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "产品到期推荐管理",
+    "url": "/businessMgmt/highFinancialMgmt/recommendOtherFund.html"
+  },
+  {
+    "menuId": "9-3-11",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "产品面向的特殊客户管理",
+    "url": "/businessMgmt/highFinancialMgmt/fundSpecificPopulationList.html"
+  },
+  {
+    "menuId": "9-3-12",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "客群创建",
+    "url": "/businessMgmt/highFinancialMgmt/custGroupInfo.html"
+  },
+  {
+    "menuId": "9-3-13",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "名单管理",
+    "url": "/businessMgmt/highFinancialMgmt/custInfo.html"
+  },
+  {
+    "menuId": "9-3-14",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "补充协议配置",
+    "url": "/businessMgmt/highFinancialMgmt/custGroupMapping.html"
+  },
+  {
+    "menuId": "9-3-15",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "补充协议签署",
+    "url": "/businessMgmt/highFinancialMgmt/custGroupSign.html"
+  },
+  {
+    "menuId": "9-3-16",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "开放日管理",
+    "url": "/businessMgmt/highFinancialMgmt/openMgmt.html"
+  },
+  {
+    "menuId": "9-3-17",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "预期收益率维护",
+    "url": "/businessMgmt/highFinancialMgmt/expectYieldService.html"
+  },
+  {
+    "menuId": "9-3-18",
+    "parentMenuId": "9-3",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "合格投资者认定审核",
+    "url": "/businessMgmt/highFinancialMgmt/investAudit.html"
+  },
+  {
+    "menuId": "9-4",
+    "parentMenuId": "9",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "高端理财企业版",
+    "url": "/businessMgmt/highFinancialCompany"
+  },
+  {
+    "menuId": "9-4-0",
+    "parentMenuId": "9-4",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "企业版额度管理",
+    "url": "/businessMgmt/highFinancialCompany/enterpriseQuotaMgmt.html"
+  },
+  {
+    "menuId": "9-5",
+    "parentMenuId": "9",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "暂停交易管理",
+    "url": "/businessMgmt/pauseTradeMgmt"
+  },
+  {
+    "menuId": "9-5-1",
+    "parentMenuId": "9-5",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "暂停交易经办",
+    "url": "/businessMgmt/pauseTradeMgmt/pauseTradeHandle.html"
+  },
+   {
+    "menuId": "9-5-2",
+    "parentMenuId": "9-5",
+    "hasSubmenu":false,
+    "type": "2",
+    "page":true,
+    "name": "暂停交易复核",
+    "url": "/businessMgmt/pauseTradeMgmt/pauseTradeReview.html"
+  },
+  {"menuId": "9-6",
+    "parentMenuId": "9",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "大额限购管理",
+    "url": "/businessMgmt/largeLimitMgmt"
+  },
+  {
+    "menuId": "9-6-1",
+    "parentMenuId": "9-6",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name":"大额限购经办",
+    "url":"/businessMgmt/largeLimitMgmt/largeLimitHandle.html"
+  },
+  {
+    "menuId": "9-6-2",
+    "parentMenuId": "9-6",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name":"大额限购复核",
+    "url":"/businessMgmt/largeLimitMgmt/largeLimitReview.html"
+  },
+  {
+    "menuId": "9-7",
+    "parentMenuId": "9",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "质押借款管理",
+    "url": "/businessMgmt/pledgeBorrowMgmt"
+  },
+  {
+    "menuId": "9-8",
+    "parentMenuId": "9",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "银行通道配置",
+    "url": "/businessMgmt/bankChannelSetting"
+  },
+  {
+    "menuId": "9-9",
+    "parentMenuId": "9",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "热词参数配置",
+    "url": "/businessMgmt/hotWordSetting"
+  },
+  {
+    "menuId": "9-10",
+    "parentMenuId": "9",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "预约交易管理",
+    "url": "/businessMgmt/appointmentDealMgmt"
+  },
+  {
+    "menuId": "9-11",
+    "parentMenuId": "9",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "坐席查询",
+    "url": "/businessMgmt/attendQuery"
+  },
+  {
+    "menuId": "9-11-1",
+    "parentMenuId": "9-11",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "客户资料查询",
+    "url": "/businessMgmt/attendQuery/customerDataQuery.html"
+  },
+  {
+    "menuId": "10",
+    "parentMenuId": "",
+    "hasSubmenu": true,
+    "page": false,
+    "type": "2",
+    "name": "客户管理",
+    "url": "/clientMgmt"
+  },
+  {
+    "menuId": "10-1",
+    "parentMenuId": "10",
+    "hasSubmenu": true,
+    "type": "2",
+    "page": false,
+    "name": "会员等级",
+    "url": "/clientMgmt/vipGrade"
+  },
+  {
+    "menuId": "10-1-1",
+    "parentMenuId": "10-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "会员等级管理",
+    "url": "/clientMgmt/vipGrade/member.html"
+  },
+
+  {
+    "menuId": "10-1-3",
+    "parentMenuId": "10-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "等级特权管理",
+    "url": "/clientMgmt/vipGrade/privilege.html"
+  },
+  {
+    "menuId": "10-1-4",
+    "parentMenuId": "10-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "特权手动发放",
+    "url": "/clientMgmt/vipGrade/privilegeHand.html"
+  },
+  {
+    "menuId": "10-1-5",
+    "parentMenuId": "10-1",
+    "hasSubmenu": false,
+    "type": "2",
+    "page": true,
+    "name": "特权来源管理",
+    "url": "/clientMgmt/vipGrade/source.html"
+  }
+
+]

@@ -1,0 +1,219 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').integralSettingMgmt.integralExchange;
+module.exports = function (app) {
+    // 获取初始数据和查询
+    app.post('/awardMgmt/integralSettingMgmt/integralExchange/getTableData.ajax', (req, res, next) => {
+        // let params = {};
+        // req.body.pageNo && (params.pageNo = req.body.pageNo);
+        // req.body.pageSize && (params.pageSize = req.body.pageSize);
+        let option = {
+            session: req.session,
+            url: apiUrlList.getTableData,
+            // qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/awardMgmt/integralSettingMgmt/integralExchange/getTableData.ajax option:', option);
+        request.get(option, (error, response, body) => {
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/getTableData.ajax error:', error);
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/getTableData.ajax statusCode:', response && response.statusCode);
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/getTableData.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode == 0 && Array.isArray(result.body)) {
+                let resultData = {};
+                // resultData.pageNo = result.body.pageNo; //页数
+                // resultData.pageNum = result.body.pageNum; //页数
+                // resultData.totalSize = Math.ceil(result.body.total / req.body.pageSize);//总页数
+                resultData.tableData = result.body;
+                return res.send({error: 0, msg: '查询成功', data: resultData});
+            }
+            else if (result && result.returnCode != 9999) {
+                return res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                return res.send({error: 1, msg: '查询失败'});
+            }
+        });
+
+    });
+    //根据ID查询
+    app.post('/awardMgmt/integralSettingMgmt/integralExchange/search.ajax', (req, res, next) => {
+        let params = {};
+        req.body.productId && (params.productId = req.body.productId);
+        req.body.productName && (params.productName = req.body.productName);
+        let option = {
+            session: req.session,
+            url: apiUrlList.search,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/awardMgmt/integralSettingMgmt/integralExchange/search.ajax option:', option);
+        request.get(option, (error, response, body) => {
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/search.ajax error:', error);
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/search.ajax statusCode:', response && response.statusCode);
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/search.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode==0 ) {
+                let resultData = {};
+                resultData.tableData =result.body;
+                return res.send({error: 0, msg: '查询成功', data: resultData});
+            }
+            else if (result && result.returnCode != 9999) {
+                return res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                return res.send({error: 1, msg: '查询失败'});
+            }
+        });
+
+    });
+    //新增数据
+    app.post('/awardMgmt/integralSettingMgmt/integralExchange/saveParam.ajax', (req, res, next) => {
+        let params = {};
+        params.productName = req.body.productName;
+        params.productDesc = req.body.productDesc;
+        params.productType = req.body.productType;
+        params.exchangeType = req.body.exchangeType;
+        params.onSale = req.body.onSale;
+        params.productTotalCount = req.body.productTotalCount;
+        params.hadExchangeCount = req.body.hadExchangeCount;
+        params.productImg = req.body.productImg;
+        params.productUrl = req.body.productUrl;
+        params.supportUserType = req.body.supportUserType;
+        params.productValue = req.body.productValue;
+        params.productBeWorth = req.body.productBeWorth;
+        params.exchangePoints = req.body.exchangePoints;
+        params.maxExchangeCount = req.body.maxExchangeCount;
+        params.minExchargeCount = req.body.minExchargeCount;
+        params.groupId = req.body.groupId;    //客群 add 20200212
+        params.messageRemark = req.body.messageRemark;
+        let option = {
+            session: req.session,
+            url: apiUrlList.saveParam,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/awardMgmt/integralSettingMgmt/integralExchange/saveParam.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/saveParam.ajax error:', error);
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/saveParam.ajax statusCode:', response && response.statusCode);
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/saveParam.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '保存失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            console.log("***",result)
+            if (result && result.returnCode == 0) {
+                return res.send({error: 0, msg: '保存成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                return res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                return res.send({error: 1, msg: '保存失败'});
+            }
+        });
+    });
+    //修改数据
+    app.post('/awardMgmt/integralSettingMgmt/integralExchange/update.ajax', (req, res, next) => {
+        let params = {};
+        params.productId = req.body.productId;
+        params.productName = req.body.productName;
+        params.productDesc = req.body.productDesc;
+        params.productType = req.body.productType;
+        params.exchangeType = req.body.exchangeType;
+        params.onSale = req.body.onSale;
+        params.productTotalCount = req.body.productTotalCount;
+        params.hadExchangeCount = req.body.hadExchangeCount;
+        params.productImg = req.body.productImg;
+        params.productUrl = req.body.productUrl;
+        params.supportUserType = req.body.supportUserType;
+        params.productValue = req.body.productValue;
+        params.productBeWorth = req.body.productBeWorth;
+        params.exchangePoints = req.body.exchangePoints;
+        params.maxExchangeCount = req.body.maxExchangeCount;
+        params.minExchargeCount = req.body.minExchargeCount;
+        params.groupId = req.body.groupId;    //客群 add 20200212
+        params.messageRemark = req.body.messageRemark;
+        let option = {
+            session: req.session,
+            url: apiUrlList.update,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/awardMgmt/integralSettingMgmt/integralExchange/update.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/update.ajax error:', error);
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/update.ajax statusCode:', response && response.statusCode);
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/update.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '修改失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                return res.send({error: 0, msg: '修改成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                return res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                return res.send({error: 1, msg: '修改失败'});
+            }
+        });
+    });
+    //下拉列表数据(新增、修改dialog，客群)
+    app.post('/awardMgmt/integralSettingMgmt/integralExchange/getUserGroupList.ajax', (req, res, next) => {
+        // let params = {};
+        let option = {
+            session: req.session,
+            url: apiUrlList.getUserGroupList,
+            // body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/awardMgmt/integralSettingMgmt/integralExchange/getUserGroupList.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/getUserGroupList.ajax error:', error);
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/getUserGroupList.ajax statusCode:', response && response.statusCode);
+            console.log('/awardMgmt/integralSettingMgmt/integralExchange/getUserGroupList.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                return res.send({error: 0, msg: '查询成功', data:body});
+            }
+            else if (result && result.returnCode != 9999) {
+                return res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                return res.send({error: 1, msg: '查询失败'});
+            }
+        });
+    });
+};
+

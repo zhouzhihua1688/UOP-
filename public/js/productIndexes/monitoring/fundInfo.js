@@ -1,0 +1,552 @@
+Vue.component('selectChosen1', {
+    template: `<select class="chosen-select form-control" ref="sele1">
+            <option value="">全部</option>
+            <option :value="item.labelId" v-for='item in list' >
+                {{item.labelContent}}
+            </option>
+        </select>`,
+    model: {
+        prop: "value",
+        event: "change",
+    },
+    props: {
+        value: {
+            validator: () => true,
+        },
+        list: {
+            type: [Object, Array],
+            default: () => {
+                return []
+            },
+        }
+    },
+    watch: {
+        value: function () {
+            $(this.$refs.sele1).val(this.value);
+            $(this.$refs.sele1).trigger("chosen:updated");
+        }
+    },
+    mounted() {
+        $(this.$refs.sele1).chosen({
+            search_contains: true,
+            no_results_text: '未找到',
+            disable_search_threshold: 6,
+            width: '140px'
+        });
+        $(this.$refs.sele1).on('change', function (e, params) {
+            this.$emit('change', params ? params.selected : '')
+        }.bind(this));
+
+    },
+    updated() {
+        $(this.$refs.sele1).val(this.value);
+        $(this.$refs.sele1).trigger("chosen:updated");
+    },
+})
+
+Vue.component('selectChosen2', {
+    template: `
+        <select class="chosen-select form-control" ref="sele">
+            <option value="">请选择</option>
+            <option v-if="modeType=='1'" :value="item[keyList[0]]+','+item[keyList[1]]" v-for="item in list">{{'一级:'+item[keyList[0]]+'&nbsp;/&nbsp;二级:'+item[keyList[1]]}}</option>
+        </select>
+        `,
+    model: {
+        prop: "value",
+        event: "change",
+    },
+    props: {
+        value: {
+            validator: () => true,
+        },
+        list: {
+            type: [Object, Array],
+            default: () => [],
+        },
+        width: String,
+        keyList:{
+            type:Array,
+            default: () => [],
+        },
+        modeType:{
+            type:String,
+            default:'1'
+        }
+    },
+    watch: {
+        value: function () {
+            $(this.$refs.sele).val(this.value);
+            $(this.$refs.sele).trigger("chosen:updated");
+        }
+    },
+    mounted() {
+        console.log(this.list);
+        $(this.$refs.sele).chosen({
+            search_contains: true,
+            no_results_text: '未找到',
+            disable_search_threshold: 6,
+            width: this.width || '138px'
+        });
+        $(this.$refs.sele).on('change', function (e, params) {
+            this.$emit('change', params ? params.selected : '')
+        }.bind(this));
+    },
+    updated() {
+        $(this.$refs.sele).trigger("chosen:updated");
+    },
+})
+
+new Vue({
+    el: '#content',
+    data: {
+        // 主页面相关数据
+        tableData: [],
+        diaMsg: '',
+
+        //主表格分页数据
+        currentIndex: 0,
+        maxSpace: 5,
+        totalPage: 0,
+        pageMaxNum: 10,
+        // 查询
+        label:{
+            parentPlatform:'',//一级
+            salePlatform:'',//二级
+            salePosition:'',//专区
+            investArea:'',//赛道
+            productId:''//产品id
+        },
+        parentPlatformList: [],
+        platformList: [],
+        positionList: [],
+        investAreaList: [],
+        productList: [],
+        evalInvestAreaList: [],
+        operateData: {
+            fundid: '',
+            fundName: '测试',
+            supplier: '',
+            remark: '',
+            parentPlatform : '',
+            salePlatform: '',
+            salePosition: '',
+            platForm:'',
+            investArea:'',
+            offlineDate:'',
+            onlineDate:'',
+            onlineState: '', //上线状态
+            evalInvestArea: '' //考核赛道 
+        },
+        channelAll:[],
+        currentPositionList:[],//当前平台下已有的专区
+        currentInvestAreaList:[],//当前平台下已有的赛道
+        salePositionFlag:false,
+        investAreaFlag:false,
+        delSerialno: '',
+        isAdd: true
+    },
+    created: function () {
+        $.post({ //查询上架平台和渠道码
+            url: '/productIndexes/monitoring/fundInfo/channelAll.ajax',
+            success: function (result) {
+                if (result.error === 0) {
+                    this.channelAll = result.data;
+                } else {
+                    this.showDialog("", "info", false, result.msg)
+                }
+            }.bind(this)
+        });
+    },
+    mounted: function () {
+        var dialogs = ['info', 'addAndModify', 'del'];
+        var _this = this;
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        this.getTableData(0);
+
+    },
+    computed: {
+        
+        pageList: function () {
+            var arr = [];
+            if (this.totalPage <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex <= this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex <= this.maxSpace) {
+                var space = this.totalPage - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            } else {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        }
+    },
+    watch: {
+        // salePlatform: function (newcal) {
+        //     if (newcal !== '') {
+        //         this.fundid = ''
+        //         $("#select2Fundid").val('').trigger('change');
+        //     }
+        // },
+        // salePosition: function (newcal) {
+        //     if (newcal !== '') {
+        //         this.fundid = ''
+        //         $("#select2Fundid").val('').trigger('change');
+        //     }
+        // },
+        pageMaxNum: function () {
+            this.getTableData(0);
+        },
+        'operateData.platForm':{
+            handler:function(newval,oldval){
+                if(newval){
+                    this.getHasData(newval,1)
+                    this.getHasData(newval,2)
+                    this.getEvalInvestAreaList(newval);
+                }
+            }
+        },
+        'operateData.salePosition':{
+            handler:function(newval){
+                if(!this.currentPositionList.some(function(item){return item.includes(newval)},this)){
+                    this.salePositionFlag = false
+                }
+                if(newval==''){
+                    this.salePositionFlag = true
+                }
+            }
+        },
+        'operateData.investArea':{
+            handler:function(newval){
+                if(!this.currentInvestAreaList.some(function(item){return item.includes(newval)},this)){
+                    this.investAreaFlag = false
+                }
+                if(newval==''){
+                    this.investAreaFlag = true
+                }
+            }
+        }
+    },
+    methods: {
+        getHasData:function(value,type){
+            var data = {};
+            if(value){
+                data.parentPlatform = value.split(',')[0]?value.split(',')[0]:''
+                data.salePlatform = value.split(',')[1]?value.split(',')[1]:''
+                data.type = type;
+            }else{
+                return false;
+            }
+            $.post({
+                url: '/productIndexes/monitoring/fundInfo/getHasData.ajax',
+                data,
+                success: function (result) {
+                    if (result.error === 0) {
+                        if(type=='1'){
+                            // 专区
+                            this.currentPositionList = result.data;
+                        }else{
+                            // 赛道
+                            this.currentInvestAreaList = result.data;
+                        }
+                    } else {
+                        this.showDialog("", "info", false, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+       
+        getEvalInvestAreaList:function(value){
+            var data = {};
+            if(value){
+                data.parentPlatform = value.split(',')[0]?value.split(',')[0]:''
+                data.salePlatform = value.split(',')[1]?value.split(',')[1]:''
+            }else{
+                return false;
+            }
+            $.post({
+                url: '/productIndexes/monitoring/fundInfo/getEvalInvestAreaList.ajax',
+                data,
+                success: function (result) {
+                    if (result.error === 0) {
+                        this.evalInvestAreaList = result.data;
+                    } else {
+                        this.evalInvestAreaList = [];
+                        this.showDialog("", "info", false, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+
+        labelQuery:function(labelEnum){
+            var data = {
+                strategyType:'1',
+                labelEnum
+            }
+            
+            this.label.parentPlatform&&(data.parentPlatform = this.label.parentPlatform)
+            this.label.salePlatform&&(data.salePlatform = this.label.salePlatform)
+            this.label.salePosition&&(data.salePosition = this.label.salePosition)
+            this.label.investArea&&(data.investArea = this.label.investArea)
+            this.label.productId&&(data.productId = this.label.productId)
+            $.post({
+                url: '/productIndexes/monitoring/fundInfo/labels.ajax',
+                data,
+                success: function (result) {
+                    if (result.error === 0) {
+                        // console.log('labelEnum',labelEnum);
+                        // console.log('result',result);
+                        (labelEnum=='ParentPlatform')&&(this.parentPlatformList = result.data);
+                        (labelEnum=='SalePlatform')&&(this.platformList = result.data);
+                        (labelEnum=='SalePosition')&&(this.positionList = result.data);
+                        (labelEnum=='InvestArea')&&(this.investAreaList = result.data);
+                        (labelEnum=='ProductId')&&(this.productList = result.data);
+                    } else {
+                        this.showDialog("", "info", false, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+        getTableData: function (currentIndex) {
+            var params = {
+                pageNo: currentIndex + 1,
+                pageSize: this.pageMaxNum
+            };
+            this.label.productId !== '' && (params.fundid = this.label.productId);
+            this.label.parentPlatform !== '' && (params.parentPlatform = this.label.parentPlatform);
+            this.label.salePlatform !== '' && (params.salePlatform = this.label.salePlatform);
+            this.label.salePosition !== '' && (params.salePosition = this.label.salePosition);
+            this.label.investArea !== '' && (params.investArea = this.label.investArea);
+            $.post({
+                url: '/productIndexes/monitoring/fundInfo/fundList.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        this.currentIndex = result.data.pageNo - 1;
+                        this.totalPage = Math.ceil(result.data.resultTotalNum / params.pageSize);;
+                        this.tableData = result.data.pageResult;
+                    } else {
+                        this.tableData = [];
+                        this.currentIndex = 0;
+                        this.totalPage = 0;
+                        this.showDialog("", "info", false, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+        queryDetail: function () {
+            if (!this.operateData.fundid) {
+                return this.showDialog("addAndModify", "info", true, '请输入基金ID');
+            }
+            var params = {
+                fundId: this.operateData.fundid
+            };
+            $.post({
+                url: '/productIndexes/monitoring/fundInfo/queryDetail.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        if (!result.data) {
+                            this.showDialog("addAndModify", "info", true, '未查询到数据')
+                        } else {
+                            this.operateData.fundName = result.data.chinameabbr;
+                            this.operateData.supplier = result.data.investadvisorname;
+                        }
+                    } else {
+                        this.showDialog("addAndModify", "info", true, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+        addOrModify: function (item) {
+            if (item) {
+                this.isAdd = false;
+                for (var keys in this.operateData) {
+                    this.operateData[keys] = item[keys]
+                }
+                this.operateData.platForm = item.parentPlatform+','+item.salePlatform;
+                this.operateData.serialno = item.serialno;
+            } else {
+                this.isAdd = true;
+                delete this.operateData.serialno;
+                for (var keys in this.operateData) {
+                    this.operateData[keys] = ''
+                }
+               
+                this.currentInvestAreaList = [];
+                this.currentPositionList = [];
+            }
+            this.showDialog('', 'addAndModify')
+        },
+        addAndModify: function () {
+            if (!this.operateData.fundid) {
+                return this.showDialog("addAndModify", "info", true, '请输入基金ID并查询');
+            }
+            if (!this.operateData.platForm) {
+                return this.showDialog("addAndModify", "info", true, '请选择一/二级平台');
+            }
+            if (!this.operateData.fundName) {
+                return this.showDialog("addAndModify", "info", true, '请点击弹窗中的按钮查询');
+            }
+            if (!this.operateData.onlineDate) {
+                return this.showDialog("addAndModify", "info", true, '请填写上线时间');
+            }
+            if (!this.operateData.offlineDate) {
+                return this.showDialog("addAndModify", "info", true, '请填写下线时间');
+            }
+            if(this.operateData.platForm){
+                this.operateData.parentPlatform = this.operateData.platForm.split(',')[0];
+                this.operateData.salePlatform = this.operateData.platForm.split(',')[1];
+            }
+            if(this.operateData.offlineDate){
+                this.operateData.offlineDate = this.operateData.offlineDate.replace(/-/g,'')
+            }
+            if(this.operateData.onlineDate){
+                this.operateData.onlineDate = this.operateData.onlineDate.replace(/-/g,'')
+            }
+            var params = Object.assign({}, this.operateData);
+            if(params.hasOwnProperty('platForm')){
+                delete params.platForm
+            }
+            var url = '/productIndexes/monitoring/fundInfo/add.ajax';
+            if (params.serialno) {
+                url = '/productIndexes/monitoring/fundInfo/modify.ajax';
+            }
+            $.post({
+                url: url,
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        this.getTableData(0)
+                        this.showDialog("addAndModify", "info", false, result.msg)
+                    } else {
+                        this.showDialog("addAndModify", "info", true, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+        deleteDialog: function (item) {
+            this.showDialog("", "del", false, '确定删除' + item.fundid + '吗？');
+            this.delSerialno = item.serialno;
+        },
+        setDatePicker: function (value, item) {
+            let str;
+            str = item.offlineDate;
+            if(str!==''){
+                if (value === 'now') {
+                    str = str.replace(/(\d{4})-(\d{2})-(\d{2})/g, this.getNowTime());
+                } else{
+                    str = str.replace(/(\d{4})-(\d{2})-(\d{2})/g, '2099-12-31');
+                }
+            }else{
+                if (value == 'now') {
+                    str = this.getNowTime()
+                }else{
+                    str = '2099-12-31'
+                }
+            }
+            item.offlineDate = str;
+        },
+        getNowTime: function () {
+            var d = new Date();
+            var fixZero = function (num) {
+                return num < 10 ? '0' + num : num;
+            };
+            return [d.getFullYear(), d.getMonth() + 1, d.getDate()].map(function (value) {
+                return fixZero(value)
+            }).join('-');
+        },
+        del: function () {
+            $.post({
+                url: '/productIndexes/monitoring/fundInfo/del.ajax',
+                data: {
+                    serialno: this.delSerialno
+                },
+                success: function (result) {
+                    if (result.error === 0) {
+                        this.getTableData(0)
+                        this.showDialog("del", "info", false, result.msg)
+                    } else {
+                        this.showDialog("del", "info", false, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            } else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            } else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            } else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            } else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        //主表格分页方法
+        prev: function () {
+            if (this.currentIndex <= 0) {
+                return;
+            }
+            this.getTableData(this.currentIndex - 1);
+        },
+        next: function () {
+            if (this.currentIndex >= this.totalPage - 1) {
+                return;
+            }
+            this.getTableData(this.currentIndex + 1);
+        },
+        changeIndex: function (index) {
+            this.getTableData(index - 1);
+        },
+        toFirst: function () {
+            this.getTableData(0);
+        },
+        toLast: function () {
+            this.getTableData(this.totalPage - 1);
+        }
+    },
+    components: {
+        'date-picker': VueBootstrapDatetimePicker
+    }
+});

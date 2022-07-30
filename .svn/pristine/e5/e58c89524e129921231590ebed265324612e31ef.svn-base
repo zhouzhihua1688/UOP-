@@ -1,0 +1,47 @@
+const request = require('./../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').selfFundManage.batchStaticFund;
+module.exports = function (app) {
+
+
+    //
+    app.post('/customerService/selfFundManage/batchStaticFund/batchModify.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.batchModify,
+            headers: {
+                operator: req.session.loginInfo.userid
+            },
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/customerService/selfFundManage/batchStaticFund/batchModify.ajax option:', option);
+        request.put(option, (error, response, body) => {
+            console.log('/customerService/selfFundManage/batchStaticFund/batchModify.ajax error:', error);
+            console.log('/customerService/selfFundManage/batchStaticFund/batchModify.ajax statusCode:', response && response.statusCode);
+            console.log('/customerService/selfFundManage/batchStaticFund/batchModify.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '提交失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+
+                res.send({
+                    error: 0,
+                    msg: '提交成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '提交失败'
+                });
+            }
+        });
+    });
+
+};

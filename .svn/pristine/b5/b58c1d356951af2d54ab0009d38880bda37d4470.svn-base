@@ -1,0 +1,80 @@
+<div id="fundInfo" class="tab-pane in active">
+        <table id="simple-table" class="table table-bordered table-hover dataTable">
+        <tbody>
+            <tr>
+                <td class="text-right">基金代码</td>
+                <td class="text-left" v-html='fundInfo.fundid'></td>
+                <td class="text-right">基金中文全称</td>
+                <td class="text-left" v-html='fundExtension.fundchinesenm'></td>
+                <td class="text-right">基金简称</td>
+                <td class="text-left" v-html='fundInfo.fundnm'></td>
+            </tr>
+            <tr>
+                <td class="text-right">注册登记代码</td>
+                <td class="text-left" v-html='fundInfo.tano'></td>
+                <td class="text-right">货币类型</td>
+                <td class="text-left" v-html='fundInfo.currencytype'></td>
+                <td class="text-right">收费方式</td>
+                <td class="text-left" v-html='fundInfo.sharetype'></td>
+            </tr>
+            <tr>
+                <td class="text-right">基金等级</td>
+                <td class="text-left" v-html='fundInfo.shareclass'></td>
+                <td class="text-right">基金风险等级</td>
+                <td class="text-left" v-html='fundExtension.fundrisklevel'></td>
+                <td class="text-right">基金类别</td>
+                <td class="text-left" v-html='fundExtension.fundtp'></td>
+            </tr>
+            <tr>
+                <td class="text-right">公募基金展示类别</td>
+                <td class="text-left" v-html='fundExtension.displayfundtp'></td>
+                <td class="text-right">基金面值</td>
+                <td class="text-left" v-html='fundExtension.facevalue'></td>
+                <td class="text-right">发行价格</td>
+                <td class="text-left" v-html='fundExtension.issueprice'></td>
+            </tr>
+            <tr>
+                <td class="text-right">基金净值小数位数</td>
+                <td class="text-left" v-html='fundExtension.navfracnum'></td>
+                <td class="text-right">基金净值小数处理方式</td>
+                <td class="text-left" v-html='fundExtension.navfracmode'></td>
+                <td class="text-right">注册登记机构名称</td>
+                <td class="text-left" v-html='fundExtension.tanm'></td>
+            </tr>
+            <tr>
+                <td class="text-right">投资区域</td>
+                <td class="text-left" v-html='fundExtension.investarea'></td>
+                <td class="text-right">申购确认日期</td>
+                <td class="text-left" v-html='fundExtension.ackbidday'></td>
+                <td class="text-right">赎回确认日期</td>
+                <td class="text-left" v-html='fundExtension.ackredday'></td>
+            </tr>
+           
+            <tr>
+                <td class="text-right">产品类型</td>
+                <td class="text-left" v-html='fundExtension.producttype'></td>
+                <td class="text-right">分红方式</td>
+                <td class="text-left" v-html='fundExtension.melonmd'></td>
+                <td class="text-right">是否在直销发行</td>
+                <td class="text-left" v-html='fundExtension.directsellingsign'></td>
+            </tr>
+            <tr>
+                <td class="text-right">资金到账日期</td>
+                <td class="text-left" v-html='fundExtension.transferdays'></td>
+                <td class="text-right">资金交付日期</td>
+                <td class="text-left" v-html='fundExtension.deliverydays'></td>
+            </tr>
+            <% if (page=='IPOMgmtFund' || page=='IPOMgmtFundReview') {%>
+            <tr>
+                <td class="text-right">分红划款日期</td>
+                <td class="text-left" v-html='fundExtension.melonmddays'></td>
+                <td class="text-right">申购划款日期</td>
+                <td class="text-left" v-html='fundExtension.biddays'></td>
+            </tr>
+            <% } %>
+        </tbody>
+
+    </table>
+
+
+    </div>

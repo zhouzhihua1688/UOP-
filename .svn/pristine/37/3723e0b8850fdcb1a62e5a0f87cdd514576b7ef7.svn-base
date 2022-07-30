@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        #fundDetail table tr td:nth-child(odd),
+        #add table tr td:nth-child(odd) {
+            background-color: #eee;
+        }
+        #fundInfo table tr td:nth-child(odd),
+        #add table tr td:nth-child(odd) {
+            background-color: #eee;
+        }
+        #fundExtension table tr td:nth-child(odd),
+        #add table tr td:nth-child(odd) {
+            background-color: #eee;
+        }
+        .tab-content p {
+            display: inline-block
+        }
+
+        span.modify {
+            color: blue;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tabbable">
+                                <ul class="nav nav-tabs padding-12 tab-color-blue background-blue" id="myTab4">
+                                    <li class="active">
+                                        <a data-toggle="tab" href="#fundInfo">基本信息</a>
+                                    </li>
+
+                                    <li>
+                                        <a data-toggle="tab" href="#circleList">发行设置</a>
+                                    </li>
+                                    <li>
+                                        <a data-toggle="tab" href="#fundExtension">交易限额</a>
+                                    </li>
+                                    <li>
+                                        <a data-toggle="tab" href="#fundDetail">电商信息</a>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content">
+                                    <% include ./../IPOMgmtEC/fundInfo.ejs %>
+                                    <% include ./../IPOMgmtEC/fundCircleList.ejs %>
+                                    <% include ./../IPOMgmtEC/fundExtension.ejs %>
+                                    <% include ./../IPOMgmtEC/fundDetail.ejs %>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-sm " style="left: 45%" @click='goBack'>返回</button>
+
+                        </div>
+
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/businessMgmt/IPOMgmtFD/IPOMgmtFundDetail.js"></script>
+
+</body>
+
+</html>

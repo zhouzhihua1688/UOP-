@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        #operate .form-group > label {
+            width: 80px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!--信息提示弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 新增和修改弹窗 -->
+                        <div class="modal" id="operate" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title inline">数据操作</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form" style="padding-left: 50px;">
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">红包名称:</label>
+                                                <input type="text" v-model.trim="dialog_envelopName" style="width: 70%;">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">红包描述:</label>
+                                                <input type="text" v-model.trim="dialog_envelopDesc" style="width: 70%;">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label dia-label"
+                                                       style="width: 90px;margin-left: -9px;">红包金额类型:</label>
+                                                <select style="width: 169px;" v-model.trim="dialog_envelopType" >
+                                                    <option value="00">固定金额</option>
+                                                    <option value="01">随机金额</option>
+                                                    <option value="02">外部传入</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group" v-show="dialog_envelopType=='00'">
+                                                <label class="control-label dia-label">红包金额:</label>
+                                                <input type="text" v-model.trim="dialog_envelopValue" >
+                                            </div>
+                                            <div class="form-group" v-show="dialog_envelopType=='01'">
+                                                <label class="control-label dia-label">金额范围:</label>
+                                                <input type="text" v-model.trim="dialog_value_min" style="width: 100px;" >
+                                                <span>-</span>
+                                                <input type="text" v-model.trim="dialog_value_max" style="width: 100px;" >
+                                            </div>
+                                        </div>
+                                        <div class="text-center" style="padding-top: 10px;">
+                                            <button class="btn btn-sm btn-primary" @click="operate">确定</button>
+                                            <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                    aria-hidden="true">取消
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--删除弹窗-->
+                        <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">删除</h4>
+                                    </div>
+                                    <p>
+                                    <div class="modal-body text-center">
+                                        <h4>是否确认删除?</h4>
+                                    </div>
+                                    </p>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" @click="deleteData">确定
+                                        </button>
+                                        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group pull-right">
+                                <% if(canShow||authorityList.includes('C')) { %>
+                                <input type="button" class="btn btn-sm btn-primary" @click="showAdd" value="新增">
+                                <% } %>
+                            </div>
+                            <div style="clear: both;"></div>
+                        </div>
+
+                        <div class="table-header">
+                            <%= cpage %>--表格数据
+                        </div>
+
+                        <!--分页器和快速查询-->
+                        <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                            <div class="col-xs-6">
+                                <div class="dataTables_length">
+                                    <label>每页显示</label>
+                                    <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                        <option value="10">10</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="500">500</option>
+                                    </select>
+                                    <label>条</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!--数据表-->
+                        <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                               style="margin-bottom: 0;">
+                            <thead>
+                            <tr>
+                                <th class="center">红包编号</th>
+                                <th class="center">红包名称</th>
+                                <th class="center">红包描述</th>
+                                <th class="center">红包类型</th>
+                                <th class="center">红包金额</th>
+                                <th class="center">更改时间</th>
+                                <th class="center">修改人</th>
+                                <th class="center">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="tableData.length>0">
+                                <tr v-for="(item,index) in tableData" :key="index">
+                                    <td class="center" v-text="item.envelopNo"></td>
+                                    <td class="center" v-text="item.envelopName.slice(0,30)"></td>
+                                    <td class="center" v-text="item.envelopDesc.slice(0,30)"></td>
+                                    <td class="center" v-text="item.envelopType_show"></td>
+                                    <td class="center" v-text="item.value_show"></td>
+                                    <td class="center" v-text="item.updateTime"></td>
+                                    <td class="center" v-text="item.modifyBy"></td>
+                                    <td class="center">
+                                        <% if(canShow||authorityList.includes('U')) { %>
+                                        <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                                        <% } %>
+                                        <!-- &nbsp; -->
+                                        <!-- <% if(canShow||authorityList.includes('D')) { %>
+                                        <a href="javascript:;" class="red" @click="showDelete(item)">删除</a>
+                                        <% } %> -->
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'没有数据'" colspan="8"></td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                        <!--底部页码-->
+                        <div v-if="tableData.length>0||total>0" class="row"
+                             style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                            <div class="col-xs-2">
+                                <div class="dataTables_info" v-text="'共 '+pages+' 页'"></div>
+                            </div>
+                            <div class="col-xs-10">
+                                <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                    <ul class="pagination">
+                                        <li class="paginate_button"
+                                            v-show="pageList.length<pages&&currentIndex>maxSpace">
+                                            <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                        </li>
+                                        <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                            @click="prev">
+                                            <a href="javascript:;" v-text="'上一页'"></a>
+                                        </li>
+                                        <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                            v-for="value in pageList" @click="changeIndex(value)">
+                                            <a href="javascript:;" v-text="value"></a>
+                                        </li>
+                                        <li class="paginate_button"
+                                            v-show="pageList.length<pages&&pages-currentIndex>maxSpace">
+                                            <a href="javascript:;" v-text="'...'+pages" @click="toLast"></a>
+                                        </li>
+                                        <li :class="currentIndex==pages-1?'paginate_button next disabled':'paginate_button next'"
+                                            @click="next">
+                                            <a href="javascript:;" v-text="'下一页'"></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/awardMgmt/daoLeWechatRedPackeMgmt/redPacketType.js"></script>
+</body>
+</html>

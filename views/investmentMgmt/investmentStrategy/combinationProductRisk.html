@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-multiselect.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+
+        .cover {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(9, 10, 10, 0.527);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!-- loading动画 -->
+                <div class="cover" v-show="loadingShow" style="z-index: 1999;display: none;">
+                    <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                </div><!-- loading动画 -->
+                <!-- 风控编辑弹窗 -->
+                <div class="modal" id="riskDialog" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:60%;">
+                        <div class="modal-content" style="margin-top:100px;">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title inline">风控操作</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding-left: 40px;">
+                                    <div>
+                                        <div class="form-group" >
+                                            <label class="control-label" style="width:350px;text-align: right;">单个策略组合持有单只基金的市值不高于组合资产净值:</label>
+                                            <input type="text"
+                                                   placeholder="最多两位小数点" v-model.trim="noPushServerWords"/>%
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="width: 350px;text-align: right;">大额赎回在全平台的比例:</label>
+                                            <input type="text"
+                                                   placeholder="最多两位小数点" v-model.trim="largeRedemptionPercent"/>%
+                                        </div>
+                                        
+                                        <div class="form-group" >
+                                            <label class="control-label" style="width: 350px;text-align: right;">账户换手率:</label>
+                                            <input type="text"
+                                                   placeholder="最多两位小数点" v-model.trim="turnoverRatePerc"/>%
+                                            <!--<span style="color:red">*必填</span>-->
+                                        </div>
+                                        <div class="form-group" >
+                                            <label class="control-label" style="width:350px;text-align: right;">单只基金市值不得超过客户账户资产净值:</label>
+                                            <input type="text"
+                                                   placeholder="最多两位小数点" v-model.trim="singlevalueCustmaxPerc"/>%
+                                            <!--<span style="color:red">*必填</span>-->
+                                        </div>
+                                        <div class="form-group" >
+                                            <label class="control-label" style="width:350px;text-align: right;">同策略持有基金份额不得超过该基金总份额占比:</label>
+                                            <input type="text"
+                                                   placeholder="最多两位小数点" v-model.trim="categoryunitGroupmaxPerc"/>%
+                                            <!--<span style="color:red">*必填</span>-->
+                                        </div>
+                                        <div class="form-group" >
+                                            <label class="control-label" style="width:350px;text-align: right;">持有单只指数基金的份额总和不得超过该基金总份额的:</label>
+                                            <input type="text"
+                                                   placeholder="最多两位小数点" v-model.trim="singleunitGroupmaxPerc"/>%
+                                            <!--<span style="color:red">*必填</span>-->
+                                        </div>
+                                       
+                                        <div class="form-group" >
+                                            <label class="control-label" style="width: 350px;text-align: right;">权益类基金定义:</label>
+                                            <input type="text"
+                                                   placeholder="最多两位小数点" v-model.trim="rightLimit"/>%
+                                                   <i style="color:red;font-style: normal;">*   必填</i>
+                                        </div>
+                                        <!--20210601添加-->
+                                        <div class="form-group">
+                                            <label class="control-label" style="width: 350px;text-align: right;">权益类基金占比不超过:</label>
+                                            <input type="text" placeholder="最多两位小数点" v-model.trim="rightMaxratePerc"/>%
+                                        </div>
+                                        <div class="form-group" >
+                                            <label class="control-label" style="width:350px;text-align: right;">权益类基金占净值比不低于:</label>
+                                            <input type="text"
+                                                   placeholder="最多两位小数点" v-model.trim="rightMinratePerc"/>%
+                                        </div>
+                                        <div class="form-group" >
+                                            <label class="control-label" style="width:350px;text-align: right;">债券基金占净值比不低于:</label>
+                                            <input type="text"
+                                                   placeholder="最多两位小数点" v-model.trim="valueMinratePerc"/>%
+                                        </div>
+                                        <div class="form-group" >
+                                            <label class="control-label" style="width:350px;text-align: right;">债券基金占净值比不超过:</label>
+                                            <input type="text"
+                                                   placeholder="最多两位小数点" v-model.trim="valueMaxratePerc"/>%
+                                        </div>
+                                        <div class="form-group" >
+                                            <label class="control-label" style="width:350px;text-align: right;">是否禁投公司黑名单内基金:</label>
+                                            <select name="" v-model.trim="isBlacklist">
+                                                <option value=""></option>
+                                                <option value="Y">是</option>
+                                                <option value="N">否</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" >
+                                            <label class="control-label" style="width:350px;text-align: right;">是否禁投流通受限基金:</label>
+                                            <select name="" v-model.trim="isTradeLimit">
+                                                <option value=""></option>
+                                                <option value="Y">是</option>
+                                                <option value="N">否</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" @click="saveRisk()">确定
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                aria-hidden="true">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--提示信息弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content" style="width:650px">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- <div class="tabbable">
+                    <ul class="nav nav-tabs padding-12 tab-color-blue background-blue" id="myTab4"
+                        style="position:relative">
+                        <li class="active" style="z-index:99">
+                            <a data-toggle="tab" href="#handle" @click="select2">经办数据</a>
+                        </li>
+                        <li style="z-index: 99">
+                            <a data-toggle="tab" href="#discount" @click="select">已生效数据</a>
+                        </li>
+                        <label class="pos-rel" style="margin-left:20px;position:absolute;top:0px;left:20px;">
+                            <input type="radio" name="num" class="ace" value="0" v-model.trim="type"
+                                   @click="getTableData(0,0)" id="type0"/>
+
+                            <span class="lbl" style="display:none"></span>
+                            <span style="margin-left:10px"></span>
+                        </label>
+                        <label class="pos-rel" style="margin-left:20px;position:absolute;top:0px;left:20px;">
+                            <input type="radio" name="num" class="ace" value="1" v-model.trim="type"
+                                   @click="getTableData(0,1)" id="type1"/>
+
+                            <span class="lbl" style="display:none"></span>
+                            <span style="margin-left:10px"></span>
+                        </label>
+                    </ul>
+                </div> -->
+                <!-- <div class="form-inline" style="padding:10px 0px">
+                    <label class="control-label" style="margin-left:20px;">组合类型:</label>
+                    <select style="width:175px" v-model.trim="fundgroupTypes">
+                        <option value="">请选择</option>
+                        <option :value="item.pmco" v-for="(item,index) in fundGroupType">
+                            {{item.pmco}}-{{item.pmnm}}
+                        </option>
+                    </select>
+
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" v-show="isUpdate"
+                               @click="getTableData(0,0)">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" v-show="showMysql"
+                               @click="getTableData(0,1)">
+                        <% if(canShow||authorityList.includes('C')) { %>
+                        <input type="button" class="btn btn-sm btn-primary" value="新增" @click="showAdd"
+                               v-show="showMysql">
+                        <% } %>
+                    </div>
+                </div> -->
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table class="table table-striped table-bordered table-hover dataTable" style="margin-bottom: 0;">
+                    <thead>
+                    <tr>
+                        <!--<th class="center"></th>-->
+                        <th class="center">组合代码</th>
+                        <th class="center">组合名称</th>
+                        <th class="center">风险类型</th>
+                        <th class="center">组合类型</th>
+                        <th class="center">权益类基金占比(%)</th>
+                        <th class="center">固收类基金占比(%)</th>
+                        <th class="center">货币类基金占比(%)</th>
+                        <th class="center">其它基金占比(%)</th>
+                        <th class="center">创建时间</th>
+                        <th class="center">成立时间</th>
+                        <th class="center">创建人</th>
+                        <th class="center">状态</th>
+                        <!-- <th class="center">复核状态</th> -->
+
+                        <th class="center">复核人</th>
+                        <th class="center">复核时间</th>
+                        <th class="center">复核备注</th>
+                        <th class="center">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    
+                    <template v-if="viewData.length>0">
+                        <tr v-for="(item,index) in viewData" :key="index"
+                            :style="index%2==0?'background-color: #f9f9f9;':''">
+                           
+                            <td class="center" v-text="item.groupid"></td>
+                            <td class="center" v-text="item.groupname"></td>
+                            <!-- <td class="center">{{item.grouptype | chineseGrouptype}}</td> -->
+                            <td class="center">{{item | riskLevelTransfer}}</td>
+                            <td class="center">{{item.fundgroupType | chineseFundgroupType}}</td>
+                            <td class="center" v-text="item.rightPercent"></td>
+                            <td class="center" v-text="item.fixPercent"></td>
+                            <td class="center" v-text="item.vaPercent"></td>
+                            <td class="center" v-text="item.otherPercent"></td>
+                            <td class="center" >{{item.stringEstablishDate|badTimeFormat}}</td>
+                            <td class="center" >{{item.onlinedate|badTimeFormat}}</td>
+                            <td class="center" v-text="item.operator"></td>
+                            <td class="center">
+                                <template v-if="item.operate==1">
+                                    <span href="javascript:;" v-text="'新增'" style="color:#69AA46"></span>
+                                </template>
+                                <template v-else-if="item.operate==2">
+                                    <span href="javascript:;" v-text="'修改'" style="color:#FF892A"></span>
+                                </template>
+                                <template v-else-if="item.operate==3">
+                                    <span href="javascript:;" v-text="'删除'" style="color:red"></span>
+                                </template>
+                            </td>
+                            <!-- <td class="center" >
+                                <template v-if="item.mysqlStatus=='0'">
+                                    <span href="javascript:;" v-text="'复核通过'" style="color:#69AA46"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='1'">
+                                    <span href="javascript:;" v-text="'待风控'" style="color:red"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='2'">
+                                    <span href="javascript:;" v-text="'待复核'" style="color:red"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='3'">
+                                    <span href="javascript:;" v-text="'待风控复核'" style="color:red"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='4'">
+                                    <span href="javascript:;" v-text="'待风控检查'" style="color:red"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='7'">
+                                    <span href="javascript:;" v-text="'风控复核驳回'" style="color:red"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='8'">
+                                    <span href="javascript:;" v-text="'风控检查驳回'" style="color:red"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='9'">
+                                    <span href="javascript:;" v-text="'复核驳回'" style="color:red"></span>
+                                </template>
+                            </td> -->
+
+                            <td class="center" v-text="item.reviewer"></td>
+                            <td class="center" v-text="item.review_time"></td>
+                            <td class="center" v-text="item.revise_remark"></td>
+                            <td class="center">
+                                <% if(canShow||authorityList.includes('U')) { %>
+                                    <template v-if="item.mysqlStatus==1||item.mysqlStatus==2||item.mysqlStatus==3||item.mysqlStatus==4||item.mysqlStatus==7||item.mysqlStatus==8">
+                                        <a href="javascript:;" @click="showRisk(item)">风控配置</a>/
+                                        <a href="javascript:;" @click="submit(item)">提交</a>
+                                    </template>
+                                    <!-- <template v-else-if="item.mysqlStatus==7||item.mysqlStatus==8">
+                                        <a href="javascript:;" @click="showRisk(item)">重提风控配置</a>
+                                    </template> -->
+                                    <template v-else>--</template>
+                                <% } %>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="loadingStatus" colspan="26"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部假分页页码-->
+                <div v-if="viewData.length>0" class="row" 
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+middleData.length" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-multiselect.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datepicker.min.js"></script>
+<script src="/ace/assets/js/daterangepicker.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/ace/assets/js/v-datetimepicker.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/investmentMgmt/investmentStrategy/combinationProductRisk.js"></script>
+</body>
+</html>

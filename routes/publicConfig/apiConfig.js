@@ -1,0 +1,355 @@
+// 接口总配置
+let shortLink = '';
+let alipayConfig = '';
+let ats_ng = global.envConfig.ATS_NG ? global.envConfig.ATS_NG : global.envConfig.inner_gateway;
+ats_ng += '/ats-ng/v1';
+
+if (global.envConfig.publicConfig) {
+    shortLink = global.envConfig.publicConfig.shortLink;
+    alipayConfig = global.envConfig.publicConfig.alipayConfig;
+} else {
+    shortLink = global.envConfig.inner_gateway;
+    alipayConfig = global.envConfig.inner_gateway;
+}
+let paramsMaintain = '';
+if (global.envConfig.paramsMaintain) {
+    paramsMaintain = global.envConfig.paramsMaintain;
+} else {
+    paramsMaintain = global.envConfig.inner_gateway;
+}
+let marketingActive = '';
+if (global.envConfig.marketingActive) {
+    marketingActive = global.envConfig.marketingActive;
+} else {
+    marketingActive = global.envConfig.inner_gateway;
+}
+marketingActive += `/activity-center/admin/v1`;
+let wtk = '';
+if (global.envConfig.wtk) {
+	wtk = global.envConfig.wtk;
+} else {
+	wtk = global.envConfig.inner_gateway;
+	// wtk='http://10.50.17.59:8091'
+}
+wtk+='/wtk/v1';
+let mobileBff = global.envConfig.mobileBff ? global.envConfig.mobileBff : global.envConfig.inner_gateway;
+mobileBff += '/mobile-bff/v1';
+let ess = global.envConfig.mobileBff ? global.envConfig.mobileBff : global.envConfig.inner_gateway;
+ess += '/ess/v1';
+let Ess = global.envConfig.ESS ? global.envConfig.ESS : global.envConfig.inner_gateway;
+Ess += '/ess/v1';
+let productcenter = global.envConfig.IPO ? global.envConfig.IPO : global.envConfig.inner_gateway;
+productcenter += '/productcenter/v1';
+const devFilePath = global.envConfig.devFilePath;
+const uopStaticFilePath = global.envConfig.uopStaticFilePath;
+const pagePreviewImgurl = global.envConfig.pagePreviewImgurl;
+const uopStaticFilePath_url = global.envConfig.uopStaticFilePath_url;
+
+//亲情账户配置
+let sfs = '';
+
+if (global.envConfig.scp) {
+    sfs = global.envConfig.scp;
+} else {
+    sfs = global.envConfig.inner_gateway;
+}
+//工资宝
+let salaryApi = '';
+
+if (global.envConfig.salary) {
+    salaryApi = global.envConfig.salary;
+} else {
+    salaryApi = global.envConfig.inner_gateway;
+}
+
+//底层账户smac
+let smac = '';
+if (global.envConfig.smac) {
+    smac = global.envConfig.smac;
+} else {
+    smac = global.envConfig.inner_gateway;
+}
+
+let IPO = '';
+if (global.envConfig.IPO) {
+    IPO = global.envConfig.IPO;
+} else {
+    IPO = global.envConfig.inner_gateway;
+}
+
+// 微信公众平台管理
+let wechatPlatformMgmt = '';
+if (global.envConfig.wechatPlatformMgmt) {
+    wechatPlatformMgmt = global.envConfig.wechatPlatformMgmt;
+} else {
+    wechatPlatformMgmt = global.envConfig.inner_gateway;
+}
+// 微信关注用户标签管理
+let wechatUserMgmt = '';
+if (global.envConfig.wechatUserMgmt) {
+    wechatUserMgmt = global.envConfig.wechatUserMgmt;
+} else {
+    wechatUserMgmt = global.envConfig.inner_gateway;
+}
+
+let CS = '';
+if (global.envConfig.CS) {
+    CS = global.envConfig.CS;
+} else {
+    CS = global.envConfig.inner_gateway;
+}
+let caa = '';
+if (global.envConfig.caa) {
+    caa = global.envConfig.caa;
+} else {
+    caa = global.envConfig.inner_gateway;
+}
+
+let icif;
+if (global.envConfig.icif) {
+    icif = global.envConfig.icif;
+} else {
+    icif = global.envConfig.inner_gateway;
+}
+
+let {userGroup = global.envConfig.inner_gateway} = global.envConfig;
+userGroup += '/user-group/v1';
+let {activityCenter = global.envConfig.inner_gateway} = global.envConfig;
+activityCenter += '/activity-center';
+let {messageCenter = global.envConfig.inner_gateway} = global.envConfig;
+messageCenter += '/message-center/v1';
+
+module.exports = {
+    filePathExternal: uopStaticFilePath ? (uopStaticFilePath + '/publicConfig') : (devFilePath + '/publicConfig'),
+    filePafilePathExternalthUrl: uopStaticFilePath ? (uopStaticFilePath_url + '/publicConfig') : (devFilePath + '/publicConfig'),
+    shortLink: {
+        linkConfig: {
+            search: shortLink + '/common-services/v1/short-link-mappings',
+            del: shortLink + '/common-services/v1/short-link-mappings',
+            add: shortLink + '/common-services/v1/short-link-mappings',
+            update: shortLink + '/common-services/v1/short-link-mappings'
+        }
+    },
+    alipayConfig: {
+        miniConfig: {
+            inputData: alipayConfig + '/mini-alipay/v1/jokes'
+        }
+    },
+    paramsMaintain: {
+        maintain: {
+            initSelect: `${paramsMaintain}/common-services/v1/param/keys`,
+            tableList: `${paramsMaintain}/common-services/v1/param/params`,
+            modify: `${paramsMaintain}/common-services/v1/param/update`,
+            delete: `${paramsMaintain}/common-services/v1/param/delete`,
+            add: `${paramsMaintain}/common-services/v1/param/add`,
+        }
+    },
+    mobileMgmt: {
+        systemRefresh: {
+            refresh: `${mobileBff}/config/reddots`
+        }
+    },
+    AIPstrategyMgmt: {
+        planSetting: {
+            query: `${ats_ng}/standard/contract-query/contract-all`,
+            add: `${ats_ng}/standard/contract-operation/apply`,
+            update: `${ats_ng}/standard/contract-operation/target-modify`,
+            del: `${ats_ng}/standard/contract-operation/delete`
+        }
+    },
+    appSearchConfig: {
+        polyphoneConfig: {
+            query: `${ess}/manger/std-pinyin`,
+            add: `${ess}/manger/std-pinyin`,
+            del: `${ess}/manger/std-pinyin`
+        },
+        searchConfig: {
+            query: `${ess}/manger/app-function`,
+            add: `${ess}/manger/app-function`,
+            del: `${ess}/manger/app-function`
+        },
+        searchHotWordsConfig: {
+            query: `${Ess}/fund/hotword`,
+            queryList: `${paramsMaintain}/common-services/v1/param/params`,
+            add: `${Ess}/fund/hotword`
+        },
+        synonymConfig: {
+            query: `${Ess}/manger/synonym`,
+            operate: `${Ess}/manger/synonym`,
+            del: `${Ess}/manger/synonym`
+        },
+        directionalSearchConfig: {
+            query: `${Ess}/manger/orientationConfig`,
+            operate: `${Ess}/manger/orientationConfig`,
+            del: `${Ess}/manger/orientationConfig`
+        }
+    },
+    assetAllocationMgmt: {
+        assetAllocationHandle: {
+            getServiceList: `${productcenter}/new/uop/portfolio/all/info/collections`,
+            getFundList: `${productcenter}/new/uop/funds/all/info/base/query/collections`,
+            getGroupList: `${productcenter}/new/uop/standard/fundgroup/query/base/all-valid/collections`
+        },
+        assetAllocationReview: {
+            getFundList: `${productcenter}/new/uop/funds/all/info/base/query/collections`,
+            getGroupList: `${productcenter}/new/uop/standard/fundgroup/query/base/all-valid/collections`,
+            getServiceList: `${productcenter}/new/uop/portfolio/all/info/collections`,
+            queryFolioDetail: `${productcenter}/new/uop/portfolio/single/info`,
+            addService: `${productcenter}/new/uop/portfolio/info/create`,
+            updateService: `${productcenter}/new/uop/portfolio/info/update`
+        },
+    },
+    promptContentConfig: {
+        businessPromptContent: {
+            query: `${mobileBff}/unification/query`,
+            add: `${mobileBff}/unification/insert`,
+            update: `${mobileBff}/unification/update`,
+            del: `${mobileBff}/unification/delete`
+        },
+        staticTextContent: {
+            query: `${mobileBff}/static/allStatic`,
+            add: `${mobileBff}/static/createStatic`,
+            update: `${mobileBff}/static/modifyStatic`
+        }
+    },
+    familyAffectionAccount: {
+        sceneName: {
+            queryScene: `${sfs}/sfs/v1/accounts/admin/types`,
+            add: `${sfs}/sfs/v1/accounts/admin/plan-type`,
+            modifyData: `${sfs}/sfs/v1/accounts/admin/plan-type`,
+            tableData: `${sfs}/sfs/v1/accounts/admin/plan-types`
+
+        },
+        recommendProduct: {
+            risk: `${CS}/common-services/v1/param/params`,
+            groupList: `${IPO}/productcenter/v1/new/uop/standard/fundgroup/query/base/all-valid/collections`,
+            productList: `${IPO}/productcenter/v1/new/uop/funds/all/info/base/query/collections`,
+            queryScene: `${sfs}/sfs/v1/accounts/admin/types`,
+            add: `${sfs}/sfs/v1/accounts/admin/recommend/product`,
+            modifyAndDel: `${sfs}/sfs/v1/accounts/admin/recommend/product`,
+            tableData: `${sfs}/sfs/v1/accounts/admin/recommend/product-type-id`
+        }
+    },
+    salary: {
+        productConfig: {
+            groupList: `${IPO}/productcenter/v1/new/uop/standard/fundgroup/query/base/all-valid/collections`,
+            productList: `${IPO}/productcenter/v1/new/uop/funds/all/info/base/query/collections`,
+            tableData1: `${mobileBff}/static/allStatic`,
+            tableData2: `${salaryApi}/ats-ng/v1/agreement-fund/query/info`,
+            queryTableData: `${salaryApi}/ats-ng/v1/agreement-fund/query/info-by-productId`,
+            add1: `${mobileBff}/static/createStatic`,
+            add2: `${salaryApi}/ats-ng/v1/agreement-fund/operation/apply`,
+            update1: `${mobileBff}/static/modifyStatic`,
+            update2: `${salaryApi}/ats-ng/v1/agreement-fund/operation/modify`,
+            del: `${salaryApi}/ats-ng/v1/agreement-fund/operation/delete`,
+        }
+    },
+    monetary: {
+        changeConfig: {
+            tableData: `${smac}/smac/v1/config/base-account/upgrade/info/list`,
+            add: `${smac}/smac/v1/config/base-account/upgrade/info/add`,
+            modify: `${smac}/smac/v1/config/base-account/upgrade/info/modify`,
+            del: `${smac}/smac/v1/config/base-account/upgrade/info/delete`,
+            disable: `${smac}/smac/v1/config/base-account/upgrade/info/disable`,
+            enable: `${smac}/smac/v1/config/base-account/upgrade/info/enable`
+        }
+    },
+    wechatPublicMgmt: {
+        systemConfigMgmt: {
+            getTableData: `${wechatPlatformMgmt}/weixin/v1/env-config/query-env-config`,
+            saveParam: `${wechatPlatformMgmt}/weixin/v1/env-config/add-env-config`,
+            update: `${wechatPlatformMgmt}/weixin/v1/env-config/update-env-config`,
+            deleteParam: `${wechatPlatformMgmt}/weixin/v1/env-config/delete-env-config`,
+            refresh: `${wechatPlatformMgmt}/weixin/v1/env-config/init-env-config`,
+        },
+        replyMessageTemplateMgmt: {
+            getTableData: `${wechatPlatformMgmt}/weixin/v1/reply-msg-template/query-reply-msg`,
+            saveParam: `${wechatPlatformMgmt}/weixin/v1/reply-msg-template/add-reply-msg`,
+            update: `${wechatPlatformMgmt}/weixin/v1/reply-msg-template/update-reply-msg`,
+            deleteParam: `${wechatPlatformMgmt}/weixin/v1/reply-msg-template/delete-reply-msg`,
+            refresh: `${wechatPlatformMgmt}/weixin/v1/reply-msg-template/init-reply-msg-template`,
+            uploadImage: `${wechatPlatformMgmt}/weixin/v1/material/addMaterial`,
+        },
+        wechatUserLabelMgmt: {
+            getTableData: `${wechatPlatformMgmt}/weixin/v1/user-tags/get-user-tags`,
+            saveParam: `${wechatPlatformMgmt}/weixin/v1/user-tags/lable-user`,
+            ExcelUpload: `${wechatPlatformMgmt}/weixin/v1/user-tags/lable-users`,
+        },
+        customMenuMgmt: {
+            getTableData: `${wechatPlatformMgmt}/weixin/v1/menu/queryWeixinMenu`,
+            update: `${wechatPlatformMgmt}/weixin/v1/menu/resetWxMenu`,
+        },
+        publicAccountUserQuery: {
+            getTableData: `${wechatPlatformMgmt}/weixin/v1/user/subscribe-info/select-sub-info`,
+        },
+    },
+    questionnaire: {
+        configuration: {
+            tableData: `${caa}/caa/v1/survey/config/survey/list`,
+            answerList: `${caa}/caa/v1/survey/config/answer`,
+            exportAnswerList: `${caa}/caa/v1/survey/config/answer/export`,
+            add: `${caa}/caa/v1/survey/config/add`,
+            singleSurvey: `${caa}/caa/v1/survey/config/survey`,
+            issue: `${caa}/caa/v1/survey/config/issue`,
+            stop: `${caa}/caa/v1/survey/config/stop`,
+            modify: `${caa}/caa/v1/survey/config/modify`,
+        },
+        feedback: {
+            tableData: `${caa}/caa/v1/survey/config/survey/list`,
+            answerList: `${caa}/caa/v1/survey/config/feedback`,
+            exportAnswerList: `${caa}/caa/v1/survey/config/feedback/export`,
+            add: `${caa}/caa/v1/survey/config/add`,
+            singleSurvey: `${caa}/caa/v1/survey/config/survey`,
+            issue: `${caa}/caa/v1/survey/config/issue`,
+            stop: `${caa}/caa/v1/survey/config/stop`,
+            modify: `${caa}/caa/v1/survey/config/modify`,
+        }
+    },
+    appointment: {
+        appointmentMgmt: {
+            getFundManagerList: `${productcenter}/fundquery/fundmanager/allfundmanager`,
+            query: `${activityCenter}/admin/v1/mcp-preorder-act-config/query-mcp-preorder-act-config`,
+            changeStatus: `${activityCenter}/admin/v1/mcp-preorder-act-config/delete-mcp-preorder-act-config`,
+            del: `${activityCenter}/admin/v1/mcp-preorder-act-config/delete-proder-act`,
+            add: `${activityCenter}/admin/v1/mcp-preorder-act-config/insert-mcp-preorder-act-config`,
+            update: `${activityCenter}/admin/v1/mcp-preorder-act-config/update-mcp-preorder-act-config`,
+            getGroupList: `${userGroup}/etrade-user-group/qry-user-group`,
+            // getRuleList: `${messageCenter}/messageRule/get`,
+            getRuleList: `${activityCenter}/admin/v1/mcp-activity-rule-config/get-all-msg`,
+            getTagList: `${activityCenter}/api/v1/preorder/query/all-tags`,
+            uploadImage: `${activityCenter}/admin/v1/up-or-download/common-upload-image`,
+            queryListForDetail: `${activityCenter}/admin/api/v1/preorder/get-preorder-takepart-list`,
+            confirmTakepartTtime: `${activityCenter}/admin/api/v1/preorder/update-confirm-time`,
+            confirmTakepartTtimeSend: `${activityCenter}/admin/api/v1/preorder/privilege-send-message`,
+            batchSendMessage: `${activityCenter}/admin/api/v1/preorder/batch-privilege-send-message`
+        },
+        applyMgmt: {
+            query: `${activityCenter}/admin/v1/mcp-preorder-act-config/query-mcp-preorder-act-config`,
+            changeStatus: `${activityCenter}/admin/v1/mcp-preorder-act-config/delete-mcp-preorder-act-config`,
+            del: `${activityCenter}/admin/v1/mcp-preorder-act-config/delete-proder-act`,
+            add: `${activityCenter}/admin/v1/mcp-preorder-act-config/insert-mcp-preorder-act-config`,
+            update: `${activityCenter}/admin/v1/mcp-preorder-act-config/update-mcp-preorder-act-config`,
+            getGroupList: `${userGroup}/etrade-user-group/qry-user-group`,
+            // getRuleList: `${messageCenter}/messageRule/get`,
+            getRuleList: `${activityCenter}/admin/v1/mcp-activity-rule-config/get-all-msg`,
+            getTagList: `${activityCenter}/api/v1/preorder/query/all-tags`,
+            uploadImage: `${activityCenter}/admin/v1/up-or-download/common-upload-image`,
+            queryListForDetail: `${activityCenter}/admin/api/v1/preorder/get-preorder-takepart-list`,
+            batchSendMessage: `${activityCenter}/admin/api/v1/preorder/batch-privilege-send-message`,
+            isRN: `${icif}/icif/v1/custs/get-simple-by-cust-no`,
+            getUserName: `${activityCenter}/api/v1/preorder/query/userinfo`
+        }
+    },
+		automatedTool:{
+			webPicGenerator:{
+				dataList: `${wtk}/image/records`,//get
+				dataAdd: `${wtk}/image/html2Image`,//get
+				dataDelete: `${wtk}/image/record`, //请求方式delete
+				deleteZipData:`${marketingActive}/up-or-download/del-file`,
+				upload: `${marketingActive}/up-or-download/zip-file/upload-by-resource-tp`,
+				downloadFile: `${marketingActive}/up-or-download/zip-file/download-by-resource-tp`,
+				checkFile: `${marketingActive}/up-or-download/zip-file/verify-upload-file`,
+				pagePreviewImgurl
+			}
+	  }
+};

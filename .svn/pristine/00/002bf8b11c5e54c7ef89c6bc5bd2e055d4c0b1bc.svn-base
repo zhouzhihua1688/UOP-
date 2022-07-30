@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <!-- DIALOG BEGINS -->
+                        <!--编辑弹窗-->
+                        <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title" style="display: inline">新建客户端</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form " style="padding: 0 50px 0 24px;">
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">客户端编号:</label>
+                                                <input type="text" style="width: 60%;" v-model="diaClientId"
+                                                       placeholder="必填"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label"
+                                                       style="width: 150px;text-align: right">资源:</label>
+                                                <input type="text" style="width: 60%;" v-model="diaResourceIds"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">客户端密钥:</label>
+                                                <input type="text" style="width: 60%;" v-model="diaClientSecret"
+                                                       placeholder="必填"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label"
+                                                       style="width: 150px;text-align: right">范围:</label>
+                                                <input type="text" style="width: 60%;" v-model="diaScope"
+                                                       placeholder="必填"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">权限授予类型:</label>
+                                                <input type="text" style="width: 60%;" v-model="diaAuthorizedGrantTypes"
+                                                       placeholder="必填"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">服务跳转链接:</label>
+                                                <input type="text" style="width: 60%;"
+                                                       v-model="diaWebServiceRedirectUri"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label"
+                                                       style="width: 150px;text-align: right">权限:</label>
+                                                <input type="text" style="width: 60%;" v-model="diaAuthorities"
+                                                       placeholder="必填"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">accessToken过期时间:</label>
+                                                <input type="text" style="width: 60%;"
+                                                       v-model="diaAccessTokenValidity"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">refreshToken过期时间:</label>
+                                                <input type="text" style="width: 60%;"
+                                                       v-model="diaRefreshTokenValidity"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">自动审批:</label>
+                                                <input type="text" style="width: 60%;" v-model="diaAutoapprove"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">占有者编号:</label>
+                                                <input type="text" style="width: 60%;" v-model="diaTenantId"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label"
+                                                       style="width: 150px;text-align: right">状态:</label>
+                                                <input type="text" style="width: 60%;" v-model="diaStatus"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label"
+                                                       style="width: 150px;text-align: right">备注:</label>
+                                                <input type="text" style="width: 60%;" v-model="diaPurpose"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label"
+                                                       style="width: 150px;text-align: right">附加信息(JSON):</label>
+                                                <input type="text" style="width: 60%;"
+                                                       v-model="diaAdditionalInformation"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" @click="add">保存</button>
+                                        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--删除弹窗-->
+                        <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">删除客户端</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确认删除该客户端?</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" @click="deleteUser">确定
+                                        </button>
+                                        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--提示信息弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--查看应用弹窗-->
+                        <div class="modal" id="checkApp" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">应用列表</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <div class="widget-container-col ui-sortable">
+                                            <div class="widget-box widget-color-blue">
+                                                <div class="widget-body">
+                                                    <div class="widget-main no-padding"
+                                                         style="max-height: 400px;overflow-y:auto;">
+                                                        <table class="table table-striped table-bordered table-hover">
+                                                            <thead class="thin-border-bottom">
+                                                            <tr>
+                                                                <th class="center col-sm-4">应用ID</th>
+                                                                <th class="center col-sm-4">应用名称</th>
+                                                                <th class="center col-sm-4">应用代码</th>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            <template v-if="clientApp.length>0">
+                                                                <tr v-for="(item, index) in clientApp" :key="index">
+                                                                    <td class="center" v-text="item.id"></td>
+                                                                    <td class="center" v-text="item.appName"></td>
+                                                                    <td class="center" v-text="item.appCode"></td>
+                                                                </tr>
+                                                            </template>
+                                                            <template v-else>
+                                                                <tr>
+                                                                    <td class="center" v-text="'没有数据'" colspan="3"></td>
+                                                                </tr>
+                                                            </template>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--关联应用弹窗-->
+                        <div class="modal" id="relevantApp" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                        </button>
+                                        <h4 class="modal-title">关联应用</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form">
+                                            <div class="form-group col-sm-12">
+                                                <label class="control-label" style="width: 60px;">客户端:</label>
+                                                <input type="text" v-model="relevantClientId" disabled>
+                                            </div>
+                                            <div class="form-group col-sm-12">
+                                                <label class="control-label" style="width: 60px;">应用:</label>
+                                                <div class="tags"
+                                                     style="width: 70%;min-height: 34px;vertical-align:top;padding: 2px 2px 0 2px;">
+                                            <span v-for="(item, index) in selectedAppList" style="margin: 0 2px 2px 0;"
+                                                  class="tag" :key="index">
+                                                {{item.appName}}
+                                                <button type="button" class="close"
+                                                        @click="removeSelectedApp(index)">×</button>
+                                            </span>
+                                                </div>
+                                                <input type="button" class="btn btn-sm btn-primary" @click="showAllApp" value="选择">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-center" style="padding: 10px 0;">
+                                        <button class="btn btn-sm btn-primary" @click="relevantClientApp">关联</button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal">取消</button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--所有应用弹窗-->
+                        <div class="modal" id="allAppList" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">应用列表</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <div class="widget-container-col ui-sortable">
+                                            <div class="widget-box widget-color-blue">
+                                                <div class="widget-body">
+                                                    <div class="widget-main no-padding"
+                                                         style="max-height: 400px;overflow-y:auto;">
+                                                        <table class="table table-striped table-bordered table-hover">
+                                                            <thead class="thin-border-bottom">
+                                                            <tr>
+                                                                <th class="center col-sm-4">选择</th>
+                                                                <th class="center col-sm-4">应用名称</th>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            <template v-if="allAppList.length>0">
+                                                                <tr v-for="(item, index) in allAppList" :key="index">
+                                                                    <td>
+                                                                        <label class="pos-rel">
+                                                                            <input type="checkbox" class="ace" :checked="item.check"
+                                                                                   @click="appAdd(item)" />
+                                                                            <span class="lbl"></span>
+                                                                        </label>
+                                                                    </td>
+                                                                    <td class="center" v-text="item.appName"></td>
+                                                                </tr>
+                                                            </template>
+                                                            <template v-else>
+                                                                <tr>
+                                                                    <td class="center" v-text="'没有数据'" colspan="2"></td>
+                                                                </tr>
+                                                            </template>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" @click="saveApp">确定</button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- DIALOG ENDS -->
+                        <div class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group">
+                                <label class="control-label">客户端编号:</label>
+                                <input v-model="searchField" type="text" placeholder="请输入客户端编号"/>
+                            </div>
+                            <div class="form-group pull-right">
+                                <input type="button" class="btn btn-sm btn-primary" @click="getTableData(0)" value="查询">
+                                <% if(canShow||authorityList.includes('C')) { %>
+                                <input type="button" class="btn btn-sm btn-primary" @click="showAdd" value="新建">
+                                <% } %>
+                            </div>
+                        </div>
+                        <div class="table-header">
+                            <%= cpage %>--表格数据
+                        </div>
+                        <!--分页器和快速查询-->
+                        <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                            <div class="col-xs-6">
+                                <div class="dataTables_length" id="dynamic-table_length">
+                                    <label>每页显示</label>
+                                    <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                        <option value="10">10</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="500">500</option>
+                                    </select>
+                                    <label>条</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!--数据表-->
+                        <table id="simple-table" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1">序号</th>
+                                <th class="center col-sm-1">客户端编号</th>
+                                <th class="center col-sm-2">资源</th>
+                                <th class="center col-sm-2">权限类型</th>
+                                <th class="center col-sm-1">权限</th>
+                                <th class="center col-sm-1">accessToken过期时间</th>
+                                <th class="center col-sm-1">refreshToken过期时间</th>
+                                <th class="center col-sm-3">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="tableData.length>0">
+                                <tr v-for="(item,index) in tableData" :key="index"
+                                    :style="index%2==0?'background-color: #f9f9f9;':''">
+                                    <td class="center" v-text="index+1"></td>
+                                    <td class="center" v-text="item.clientId"></td>
+                                    <td class="center" v-text="item.resourceIds"></td>
+                                    <td class="center" v-text="item.authorizedGrantTypes"></td>
+                                    <td class="center" v-text="item.authorities"></td>
+                                    <td class="center" v-text="item.accessTokenValidity"></td>
+                                    <td class="center" v-text="item.refreshTokenValidity"></td>
+                                    <td class="center">
+                                        <a href="javascript:;" @click="checkApp(item.clientId)">查看</a>
+                                        <% if(canShow||authorityList.includes('U')) { %>
+                                        &nbsp;
+                                        <a href="javascript:;" @click="relevantApp(item.clientId)">关联</a>
+                                        <% } %>
+                                        <% if(canShow||authorityList.includes('U')) { %>
+                                        &nbsp;
+                                        <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                                        <% } %>
+                                        <!--/-->
+                                        <!--<a class="red" href="javascript:;" @click="showDelete(item.clientId)">删除</a>-->
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'没有数据'" colspan="8"></td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                        <!--底部页码-->
+                        <div v-if="tableData.length>0" class="row"
+                             style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                            <div class="col-xs-2">
+                                <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                            </div>
+                            <div class="col-xs-10">
+                                <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                    <ul class="pagination">
+                                        <li class="paginate_button"
+                                            v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                            <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                        </li>
+                                        <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                            @click="prev">
+                                            <a href="javascript:;" v-text="'上一页'"></a>
+                                        </li>
+                                        <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                            v-for="value in pageList" @click="changeIndex(value)">
+                                            <a href="javascript:;" v-text="value"></a>
+                                        </li>
+                                        <li class="paginate_button"
+                                            v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                            <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                        </li>
+                                        <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                            @click="next">
+                                            <a href="javascript:;" v-text="'下一页'"></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- PAGE CONTENT ENDS -->
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div>
+            <!-- /.page-content -->
+        </div>
+    </div>
+    <!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div>
+<!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<script src="/js/lib/vue.js"></script>
+<script src="/js/operationMgmt/appMgmt/client.js"></script>
+</body>
+</html>

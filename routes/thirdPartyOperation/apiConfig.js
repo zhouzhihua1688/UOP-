@@ -1,0 +1,239 @@
+//三方运营平台接口总配置
+let thirdPartyOperation = '';
+
+if (global.envConfig.thirdPartyOperation) {
+    thirdPartyOperation = global.envConfig.thirdPartyOperation;
+} else {
+    thirdPartyOperation = global.envConfig.inner_gateway;
+}
+
+module.exports = {
+    mails: {
+        new: {
+            getContact: thirdPartyOperation + '/poms/v1/email/queryDetEmp',
+            channelAndPerson: thirdPartyOperation + '/poms/v1/email/queryConChan',
+            theme: thirdPartyOperation + '/poms/v1/email/replace',
+            sendEmail: thirdPartyOperation + '/poms/v1/send/send',
+            saveEmail: thirdPartyOperation + '/poms/v1/send/save',
+            contacts: thirdPartyOperation + '/poms/v1/email/contacts',
+            uploadTest: thirdPartyOperation + '/poms/v1/email/uploadTest',
+            upload: thirdPartyOperation + '/poms/v1/email/upload',
+            deleteFile: thirdPartyOperation + '/poms/v1/email/delete'
+        },
+        sent: {
+            searchCondition: thirdPartyOperation + '/poms/v1/email/condition',
+            sendEmail: thirdPartyOperation + '/poms/v1/send/send',
+            saveEmail: thirdPartyOperation + '/poms/v1/send/save',
+            search: thirdPartyOperation + '/poms/v1/email/history'
+        }
+    },
+    channelMaintain:{
+        contactMaintain:{
+            search: thirdPartyOperation + '/poms/v1/contact/queryContacts',
+            delete: thirdPartyOperation + '/poms/v1/contact/delete',
+            add: thirdPartyOperation + '/poms/v1/contact/add',
+            queryShortnm: thirdPartyOperation + '/poms/v1/contact/queryShortnm',
+            update: thirdPartyOperation + '/poms/v1/contact/update'
+        },
+        fileInteraction:{
+            search: thirdPartyOperation + '/poms/v1/hop/file/query-file-checks',
+            implement: thirdPartyOperation + '/poms/v1/hop/file/force-do-check',
+            implements: thirdPartyOperation + '/poms/v1/hop/file/reset-check-st',
+            resetTask: thirdPartyOperation + '/poms/v1/hop/file/create-today-task',
+            record: thirdPartyOperation + '/poms/v1/hop/file/query-all-logs',
+            reset: thirdPartyOperation + '/poms/v1/hop/file/reset-job-list',
+            qryBranchInfo: thirdPartyOperation + '/poms/v1/hop/file/query-branch-code-nm',
+            pauseExport: thirdPartyOperation + '/poms/v1/hop/file/pause-export',
+            pauseUpload: thirdPartyOperation + '/poms/v1/hop/file/pause-upload',
+        },
+        partnerSelling:{
+            search: thirdPartyOperation + '/poms/v1/partner/query-partner-infos',
+            delete: thirdPartyOperation + '/poms/v1/partner/del-partner-info',
+            crm: thirdPartyOperation + '/poms/v1/partner/query-partner-by-crm',
+            add: thirdPartyOperation + '/poms/v1/partner/add-partner-info',
+            update: thirdPartyOperation + '/poms/v1/partner/update-partner-info'
+        },
+        closeCheck:{
+            search: thirdPartyOperation + '/poms/v1/close-check/query',
+            tradeClose: thirdPartyOperation + '/poms/v1//close-check/close',
+            tradeCheck: thirdPartyOperation + '/poms/v1//close-check/trade/update',
+            fileCheck: thirdPartyOperation + '/poms/v1/close-check/file/update',
+        },
+        partnerTradeAssist:{
+            search: thirdPartyOperation + '/poms/v1/psp/qry-trade',
+            tradeinfos: thirdPartyOperation + '/poms/v1/psp/qry-trade-infos',
+            redeem: thirdPartyOperation + '/poms/v1/psp/redeem',
+            cancel: thirdPartyOperation + '/poms/v1/psp/cancel-trade',
+        },
+    },
+    products: {
+        paramsMgmt: {
+            search: thirdPartyOperation + '/poms/v1/parameter/query',
+            upload: thirdPartyOperation + '/poms/v1/parameter/upload',
+            download: thirdPartyOperation + '/poms/v1/parameter/download',
+            deleteData: thirdPartyOperation + '/poms/v1/parameter/delete',
+            update: thirdPartyOperation + '/poms/v1/parameter/update',
+            filter: thirdPartyOperation + '/poms/v1/product/fundidQuery',
+            //邮件部分接口
+            getContact: thirdPartyOperation + '/poms/v1/email/queryDetEmp',
+            channelAndPerson: thirdPartyOperation + '/poms/v1/email/queryConChan',
+            theme: thirdPartyOperation + '/poms/v1/email/replace',
+            sendEmail: thirdPartyOperation + '/poms/v1/send/send',
+            saveEmail: thirdPartyOperation + '/poms/v1/send/save',
+            contacts: thirdPartyOperation + '/poms/v1/email/contacts',
+            uploadTest: thirdPartyOperation + '/poms/v1/email/uploadTest',
+            deleteFile: thirdPartyOperation + '/poms/v1/email/delete'
+        },
+        open: {
+            search: thirdPartyOperation + '/poms/v1/product/query',
+            download: thirdPartyOperation + '/poms/v1/product/download',
+            result: thirdPartyOperation + '/poms/v1/product/result',
+            save: thirdPartyOperation + '/poms/v1/product/save',
+            saveAndEmail: thirdPartyOperation + '/poms/v1/product/saveAndEmail',
+            channel: thirdPartyOperation + '/poms/v1/product/queryChannel',
+            getChannelPerson: thirdPartyOperation + '/poms/v1/product/queryChannelContacts',
+            getTypeList: thirdPartyOperation + '/poms/v1/product/fundParam',
+            getApkinds: thirdPartyOperation + '/poms/v1/product/fundAPKINDS',
+            update: thirdPartyOperation + '/poms/v1/product/update',
+            //邮件部分接口
+            filter: thirdPartyOperation + '/poms/v1/product/fundidQuery',
+            getContact: thirdPartyOperation + '/poms/v1/email/queryDetEmp',
+            channelAndPerson: thirdPartyOperation + '/poms/v1/email/queryConChan',
+            theme: thirdPartyOperation + '/poms/v1/email/replace',
+            sendEmail: thirdPartyOperation + '/poms/v1/send/send',
+            saveEmail: thirdPartyOperation + '/poms/v1/send/save',
+            contacts: thirdPartyOperation + '/poms/v1/email/contacts',
+            uploadTest: thirdPartyOperation + '/poms/v1/email/uploadTest',
+            deleteFile: thirdPartyOperation + '/poms/v1/email/delete'
+        },
+        library:{
+            search: thirdPartyOperation + '/poms/v1/hop/query-fundinfo',
+            refreshProduct: thirdPartyOperation + '/poms/v1/hop/update-fundinfo',
+            refreshValue: thirdPartyOperation + '/poms/v1/hop/import-nav',
+        },
+        pspfund: {
+            getPspPartnerList:thirdPartyOperation+'/poms/v1/partnerFund/getPspPartnerList',
+            searchPsp: thirdPartyOperation + '/poms/v1/partnerFund/query',
+            addPsp:thirdPartyOperation + '/poms/v1/partnerFund/add',
+            updatePsp:thirdPartyOperation + '/poms/v1/partnerFund/update',
+            deletePsp: thirdPartyOperation + '/poms/v1/partnerFund/delete',
+            getHopPartnerList:thirdPartyOperation+'/poms/v1/hop/partnerfunds/getHopPartnerList',
+            searchHop:thirdPartyOperation+'/poms/v1/hop/partnerfunds/list',
+            addHop:thirdPartyOperation+'/poms/v1/hop/partnerfunds/add',
+            updateHop:thirdPartyOperation + '/poms/v1/hop/partnerfunds/update',
+            deleteHop:thirdPartyOperation + '/poms/v1/hop/partnerfunds/delete',
+            searchIao:thirdPartyOperation+'/poms/v1/iao/config/iaostrategy/list',
+            addIao:thirdPartyOperation+'/poms/v1/iao/config/iaostrategy/add',
+            updateIao:thirdPartyOperation + '/poms/v1/iao/config/iaostrategy/update',
+            deleteIao:thirdPartyOperation + '/poms/v1/iao/config/iaostrategy/delete',
+            searchFisp:thirdPartyOperation+'/poms/v1/config/fispProduct/list',
+            addFisp:thirdPartyOperation+'/poms/v1/config/fispProduct/add',
+            updateFisp:thirdPartyOperation + '/poms/v1/config/fispProduct/update',
+            deleteFisp:thirdPartyOperation + '/poms/v1/config/fispProduct/delete'
+        },
+        pspdiscount: {
+            qryBranchs: thirdPartyOperation + '/poms/v1/psp/qry-branchs',
+            qryBranchBaseInfo: thirdPartyOperation + '/poms/v1/psp/qry-branch-info',
+            qryFunds: thirdPartyOperation + '/poms/v1/psp/qry-funds',
+            search: thirdPartyOperation + '/poms/v1/psp/qry-discount',
+            save: thirdPartyOperation + '/poms/v1/psp/save-discount',
+            validateDis: thirdPartyOperation + '/poms/v1/psp/validate',
+            delete: thirdPartyOperation + '/poms/v1/psp/del-discount',
+            update: thirdPartyOperation + '/poms/v1/psp/up-discount',
+            calc: thirdPartyOperation + '/poms/v1/psp/calc-discount',
+            download: thirdPartyOperation + '/poms/v1/psp/download-mould',
+            importDis: thirdPartyOperation + '/poms/v1/psp/batch-import',
+            batchValidate: thirdPartyOperation + '/poms/v1/psp/batch-validate',
+            importFile: thirdPartyOperation + '/poms/v1/psp/import-file',
+            searchDft: thirdPartyOperation + '/poms/v1/psp/query-dft',
+        },
+        profileinformation: {
+            export: thirdPartyOperation + '/poms/v1/productProfile/export',
+        },
+    },
+    expenseMgmt: {
+        feedbackSum: {
+            list: thirdPartyOperation + '/poms/v1/feedback/queryFeedbackSummary'
+        },
+        feedbackDetails: {
+            list: thirdPartyOperation + '/poms/v1/feedback/queryFeedback',
+            sendMailConfirm: thirdPartyOperation + '/poms/v1/feedback/updatefeedback',
+            feedbackDayDialog: thirdPartyOperation + '/poms/v1/feedback/queryFeedbackDays',
+            sendMailRemind:thirdPartyOperation+'/poms/v1/feedback/remind'
+        },
+        feedbackDayDialog: {
+            list: 'http://10.50.115.48/mock_data/expenseMgmt/feedBackDayDialog.json'
+        },
+        trailingDetails: {
+            list: thirdPartyOperation + '/poms/v1/tail/queryDetailList',
+            downloads: thirdPartyOperation + '/poms/v1/tail/tailDownload',
+            checkData:thirdPartyOperation+'/poms/v1/tail/checkData'
+        },
+        trailingSum: {
+            list: thirdPartyOperation + '/poms/v1/tail/querySummaryList',
+            upload: thirdPartyOperation + '/poms/v1/tail/upload',
+            download: thirdPartyOperation + '/poms/v1/tail/download'
+        },
+
+        procedureSum: {
+            search: thirdPartyOperation + '/poms/v1/sale/saleSummar',
+            download: thirdPartyOperation + '/poms/v1/sale/export',
+            recalculation: thirdPartyOperation + '/poms/v1/cost/calCostAndCheck'
+        },
+        procedureReview: {
+            search: thirdPartyOperation + '/poms/v1/sale/querySaleMonth',
+            keepSave: thirdPartyOperation + '/poms/v1/sale/save',
+            reviewPass: thirdPartyOperation + '/poms/v1/sale/pass',
+            review: thirdPartyOperation + '/poms/v1/sale/queryMonths',
+            versionSearch: thirdPartyOperation + '/poms/v1/sale/saleMonthHis',
+            balance: thirdPartyOperation + '/poms/v1/feedback/createSalefeedback',
+            exportAll: thirdPartyOperation + '/poms/v1/sale/export',
+            feedbackExport:thirdPartyOperation+'/poms/v1/sale/exportFB'
+
+        },
+        procedureDetails: {
+            adjust: thirdPartyOperation + '/poms/v1/sale/queryDays',
+            versionDialog: thirdPartyOperation + '/poms/v1/sale/querySaleDayHis',
+            breakRatio: thirdPartyOperation + '/poms/v1/sale/ratio',
+            keepSave: thirdPartyOperation + '/poms/v1/sale/checkSave',
+            checkDown: thirdPartyOperation + '/poms/v1/sale/checkDone'
+        },
+        transactionSum: {
+            list: thirdPartyOperation + '/poms/v1/trade/queryTradeSummary',
+            exportDays: thirdPartyOperation + '/poms/v1/trade/exportTradeDays',
+            recalculation: thirdPartyOperation + '/poms/v1/cost/calCostAndCheck'
+        },
+        transactionReview: {
+            reviewList: thirdPartyOperation + '/poms/v1/trade/queryTradeMonth',
+            reviewOrKeep: thirdPartyOperation + '/poms/v1/trade/checkTradeMonth',
+            reviewQueryHis: thirdPartyOperation + '/poms/v1/trade/queryTradeMonthHis',
+            reviewCheck: thirdPartyOperation + '/poms/v1/feedback/createSalefeedback',
+            reviewExportMonth: thirdPartyOperation + '/poms/v1/trade/exportTradeMonth',
+            reviewExportDays: thirdPartyOperation + '/poms/v1/trade/exportTradeDays',
+
+        },
+        transactionDetails: {
+            daysList: thirdPartyOperation + '/poms/v1/trade/queryTradeDays',
+            daysKeepOrReview: thirdPartyOperation + '/poms/v1/trade/checkTradeDays',
+            daysUpdate: thirdPartyOperation + '/poms/v1/trade/flushRate',
+            daysHis:thirdPartyOperation + '/poms/v1/trade/queryTradeDaysHis'
+        },
+        export: {
+            search: thirdPartyOperation + '/poms/v1/export/query',
+            qryGroupDetail:thirdPartyOperation + '/poms/v1/export/query-groups-details',
+            saveGroup:thirdPartyOperation + '/poms/v1/export/save-group',
+            deleteGroup:thirdPartyOperation + '/poms/v1/export/delete-group',
+            qryAllBranch:thirdPartyOperation + '/poms/v1/export/query-branch',
+            exportAll:thirdPartyOperation + '/poms/v1/export/cost-export',
+            expByBranch:thirdPartyOperation + '/poms/v1/export/cost-export-no-group',
+            updateGroup:thirdPartyOperation + '/poms/v1/export/update-group',
+            exportCheck:thirdPartyOperation + '/poms/v1/export/export-check'
+        },
+        manager: {
+            importData: thirdPartyOperation + '/poms/v1/base/import-data-by-details',
+            queryFileDesc: thirdPartyOperation + '/poms/v1/base/config/list-all-types',
+            calCost: thirdPartyOperation + '/poms/v1/cost/calCostAndCheck',
+            getLastRecord: thirdPartyOperation+ '/poms/v1/common-req/get-last'
+        }
+    }
+};

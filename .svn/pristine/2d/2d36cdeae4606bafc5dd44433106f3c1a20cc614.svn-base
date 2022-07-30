@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap24.css">
+    <link rel="stylesheet" href="/css/cronGen.css">
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        .cronValue {
+            width: 53%;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+                        <div class="col-xs-12">
+                            <!-- PAGE CONTENT BEGINS -->
+                            <!-- DIALOG BEGINS -->
+                            <!--编辑弹窗-->
+                            <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                                &times;
+                                            </button>
+                                            <h4 class="modal-title" style="display: inline">新建异步任务管理配置</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="form " style="padding: 0 50px 0 24px;">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 150px;text-align: right">任务描述:</label>
+                                                    <input type="text" style="width: 60%;" v-model.trim="diaJobDesc"
+                                                        placeholder="必填" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 150px;text-align: right">子任务:</label>
+                                                    <select class="form-control" style="width: 60%;display: inline;"
+                                                        v-model.trim="diaChildJobId">
+                                                        <option value="">请选择</option>
+                                                        <option v-for="(item,index) in diaChildJobIdList" :value="item.jobId"
+                                                            v-text="item.jobDesc"></option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 150px;text-align: right">关联活动:</label>
+                                                    <select class="form-control" style="width: 60%;display: inline;"
+                                                        v-model.trim="diaActId">
+                                                        <option value="">请选择</option>
+                                                        <option v-for="(item,index) in diaActIdList" :value="item.actId"
+                                                            v-text="item.actName"></option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 150px;text-align: right">执行的切点:</label>
+                                                    <select class="form-control" style="width: 60%;display: inline;"
+                                                        v-model.trim="diaActModuleCutinId">
+                                                        <option value="">请选择</option>
+                                                        <option v-for="(item,index) in diaActModuleCutinIdList" :value="item.cutinPointId"
+                                                            v-text="item.cutinPointName"></option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 150px;text-align: right">处理器:</label>
+                                                    <!-- <input type="text" disabled style="width: 60%;"
+                                                       v-model.trim="diaJobHandler"/> -->
+                                                    <select v-model.trim="handler"  style="width: 60%;display: inline;">
+                                                        <option :value="item.jobHandler" v-for="(item,index) in diaJobHandler">{{item.jobHandler}}</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 150px;text-align: right">是否启用:</label>
+                                                    <select class="form-control" style="width: 60%;display: inline;"
+                                                        v-model.trim="diaIsEnable">
+                                                        <option value="0">禁用</option>
+                                                        <option value="1">启用</option>
+                                                    </select>
+                                                </div>
+                                                <label id="cronLabel" class="control-label" style="width: 150px;text-align: right">任务定时器:</label>
+                                                <input id="cron" />
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-sm btn-primary" @click="add">保存</button>
+                                            <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--删除弹窗-->
+                            <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">删除异步任务管理配置</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4>确认删除该异步任务管理配置?</h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" @click="deleteData">删除
+                                            </button>
+                                            <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- DIALOG ENDS -->
+                            <div class="form-inline" style="padding: 10px 0;">
+                                <div class="form-group">
+                                    <label class="control-label">活动ID:</label>
+                                    <input v-model.trim="actId" type="text" />
+                                </div>
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary" @click="getTableData(0)" value="查询">
+                                    <input type="button" class="btn btn-sm btn-primary" @click="showAdd" value="新建">
+                                </div>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!--分页器和快速查询-->
+                            <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                <div class="col-xs-6">
+                                    <div class="dataTables_length" id="dynamic-table_length">
+                                        <label>每页显示</label>
+                                        <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                            <option value="10">10</option>
+                                            <option value="20">20</option>
+                                            <option value="50">50</option>
+                                        </select>
+                                        <label>条</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-1">任务ID</th>
+                                        <th class="center col-2">任务描述</th>
+                                        <th class="center col-2">任务定时器</th>
+                                        <th class="center col-2">job处理器</th>
+                                        <th class="center col-2">任务入参</th>
+                                        <th class="center col-2">xxljob返回任务ID</th>
+                                        <th class="center col-1">活动ID</th>
+                                        <th class="center col-1">切点ID</th>
+                                        <th class="center col-1">子任务ID</th>
+                                        <th class="center col-2">任务警告邮箱</th>
+                                        <th class="center col-2">任务添加时间</th>
+                                        <th class="center col-2">修改人</th>
+                                        <th class="center col-2">修改时间</th>
+                                        <th class="center col-2">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="tableData.length>0">
+                                        <tr v-for="(item,index) in tableData" :key="index" :style="index%2==0?'background-color: #f9f9f9;':''">
+                                            <td class="center" v-text="item.jobId"></td>
+                                            <td class="center" v-text="item.jobDesc"></td>
+                                            <td class="center" v-text="item.jobCron"></td>
+                                            <td class="center" v-text="item.jobHandler"></td>
+                                            <td class="center" v-text="item.jobParam"></td>
+                                            <td class="center" v-text="item.xxlJodId"></td>
+                                            <td class="center" v-text="item.actId"></td>
+                                            <td class="center" v-text="item.actModuleCutinId"></td>
+                                            <td class="center" v-text="item.childJobId"></td>
+                                            <td class="center" v-text="item.jobAlarmEmail"></td>
+                                            <td class="center" v-text="item.addTime"></td>
+                                            <td class="center" v-text="item.modifyBy"></td>
+                                            <td class="center" v-text="item.updateTime"></td>
+                                            <td class="center">
+                                                <a href="javascript:;" @click="enable(item)" v-text="item.isEnable==0?'启用':'禁用'"></a>
+                                                /
+                                                <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                                                /
+                                                <a class="red" href="javascript:;" @click="showDelete(item.jobId)">删除</a>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="14"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <!--底部页码-->
+                            <div v-if="tableData.length>0" class="row" style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                        <ul class="pagination">
+                                            <li class="paginate_button" v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                            </li>
+                                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in pageList" @click="changeIndex(value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li class="paginate_button" v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                            </li>
+                                            <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- PAGE CONTENT ENDS -->
+                        </div><!-- /.col -->
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/lib/cronGen.min.js"></script>
+    <script src="/js/marketingActive/activeRun/asyncWorkSetting.js"></script>
+</body>
+
+</html>

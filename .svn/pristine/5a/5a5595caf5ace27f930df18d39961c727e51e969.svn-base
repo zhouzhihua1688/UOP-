@@ -1,0 +1,95 @@
+<!-- basic scripts -->
+
+<!--[if !IE]> -->
+<!-- <script src="/ace/assets/js/jquery-2.1.4.min.js"></script> -->
+<script src="/js/lib/jquery-2.2.4.min.js"></script>
+
+<!-- <![endif]-->
+
+<!--[if IE]>
+<script src="/ace/assets/js/jquery-1.11.3.min.js"></script>
+<![endif]-->
+<script type="text/javascript">
+    if ('ontouchstart' in document.documentElement) document.write("<script src='/ace/assets/js/jquery.mobile.custom.min.js'>" + "<" + "/script>");
+    window.resizeTimer = null;
+    window.onresize = function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () {
+            var channelSidebar = $('.channel-sidebar').eq(0);
+            var channelWidth = $('.channel-nav').eq(0).width();
+            var sidebarWidth = channelSidebar.width();
+            if (sidebarWidth <= channelWidth) {
+                $('#prevChannel').hide();
+                $('#nextChannel').hide();
+            }
+            else {
+                $('#prevChannel').show();
+                $('#nextChannel').show();
+            }
+            var selectedIndex = -1;
+            var sidebarLis = $('.channel .channel-nav .channel-sidebar li');
+            var liWidth = sidebarLis.eq(0).width();
+            var startLeft = $('#prevChannel')[0].offsetWidth;
+            for (var i = 0; i < sidebarLis.length; i++) {
+                if (sidebarLis.eq(i).hasClass('selected')) {
+                    selectedIndex = i;
+                    break;
+                }
+            }
+            if (selectedIndex > -1) {
+                var selectedLiLeft = sidebarLis.eq(selectedIndex).offset().left;
+                var selectedLiWidth = 0;
+                if (selectedLiLeft + liWidth <= channelWidth) {
+                    channelSidebar.offset({left: startLeft});
+                }
+                else {
+                    var ulLeft = -((selectedIndex + 2) * liWidth - channelWidth) + startLeft;
+                    if (-ulLeft >= sidebarWidth - channelWidth + startLeft) {
+                        ulLeft = -sidebarWidth + channelWidth - startLeft;
+                    }
+                    channelSidebar.offset({left: ulLeft});
+                }
+            }
+            else {
+                channelSidebar.offset({left: startLeft});
+            }
+        }, 200);
+
+    };
+    $(function () {
+        var liWidth = $('.channel .channel-nav .channel-sidebar li').eq(0).width();
+        var channelStep = liWidth * 5; // 每次跳的距离
+        $('#prevChannel').click(function () {
+            var channelSidebar = $('.channel-sidebar').eq(0);
+            var startLeft = $(this)[0].offsetWidth;
+            var left = channelSidebar.offset().left;
+            if (left >= startLeft - channelStep) {
+                channelSidebar.offset({left: startLeft});
+                return;
+            }
+            channelSidebar.offset({left: left + channelStep});
+        });
+        $('#nextChannel').click(function () {
+            var channelSidebar = $('.channel-sidebar').eq(0);
+            var startLeft = $(this)[0].offsetWidth;
+            var channelWidth = $('.channel-nav').eq(0).width();
+            var sidebarWidth = channelSidebar.width();
+            var left = channelSidebar.offset().left;
+            if (sidebarWidth <= channelWidth) {
+                return;
+            }
+            if (-left >= sidebarWidth - channelWidth - 2 * channelStep + startLeft) {
+                channelSidebar.offset({left: -(sidebarWidth - channelWidth) + startLeft});
+                return;
+            }
+            channelSidebar.offset({left: left - channelStep});
+        });
+    });
+</script>
+<script src="/ace/assets/js/bootstrap.min.js"></script>
+
+<!-- page specific plugin scripts -->
+
+<!-- ace scripts -->
+<script src="/ace/assets/js/ace-elements.min.js"></script>
+<script src="/ace/assets/js/ace.min.js"></script>

@@ -1,0 +1,388 @@
+new Vue({
+    el: '#content',
+    data: {
+        diaMsg: '',
+
+        approve: {},
+        onLine: {},
+
+        showChinese: { //选项
+            investareaList: [{
+                    pmco: '1',
+                    pmnm: '境内'
+                },
+                {
+                    pmco: '2',
+                    pmnm: '境外'
+                },
+                {
+                    pmco: '3',
+                    pmnm: '境内和境外'
+                }
+            ],
+            sharetypeList: [{
+                    pmco: 'A',
+                    pmnm: '前收费'
+                },
+                {
+                    pmco: 'B',
+                    pmnm: '后收费'
+                },
+                {
+                    pmco: '*',
+                    pmnm: '前后端收费都支持'
+                }
+            ],
+            directsellingsignList: [{
+                    pmco: 'Y',
+                    pmnm: '是'
+                },
+                {
+                    pmco: 'N',
+                    pmnm: '否'
+                }
+            ],
+            tanoList: [],
+            displayfundtpList: [],
+            currencytypeList: [],
+            fundrisklevelList: [],
+            navfracmodeList: [],
+            melonmdList: [],
+            producttypeList: [],
+            fundtpList: []
+        },
+        fundId: '',
+        status: ''
+    },
+    watch: {
+
+    },
+    created: function () {
+
+        $.post({ //注册登记代码
+            url: '/businessMgmt/IPOMgmtOCReview/IPOBaseInfo/detailShowChinese.ajax',
+            data: {
+                pmst: 'SYSTEM',
+                pmkey: 'TANO'
+            },
+            success: function (result) {
+                if (result.error === 0) {
+                    this.showChinese.tanoList = result.data.map(function (item) {
+                        return {
+                            pmco: item.pmco,
+                            pmnm: item.pmnm
+                        }
+                    })
+                } else {
+                    this.showDialog('', 'info', false, result.msg);
+                }
+            }.bind(this)
+        });
+        $.post({ //公募基金展示类别
+            url: '/businessMgmt/IPOMgmtOCReview/IPOBaseInfo/detailShowChinese.ajax',
+            data: {
+                pmst: 'SYSTEM',
+                pmkey: 'DISPLAYFUNDTP'
+            },
+            success: function (result) {
+                if (result.error === 0) {
+                    this.showChinese.displayfundtpList = result.data.map(function (item) {
+                        return {
+                            pmco: item.pmco,
+                            pmnm: item.pmnm
+                        }
+                    })
+
+                } else {
+                    this.showDialog('', 'info', false, result.msg);
+                }
+            }.bind(this)
+        });
+        $.post({ //产品类型
+            url: '/businessMgmt/IPOMgmtOCReview/IPOBaseInfo/detailShowChinese.ajax',
+            data: {
+                pmst: 'SYSTEM',
+                pmkey: 'PRODUCTTYPE'
+            },
+            success: function (result) {
+                if (result.error === 0) {
+                    this.showChinese.producttypeList = result.data.map(function (item) {
+                        return {
+                            pmco: item.pmco,
+                            pmnm: item.pmnm
+                        }
+                    })
+
+                } else {
+                    this.showDialog('', 'info', false, result.msg);
+                }
+            }.bind(this)
+        });
+        $.post({ //货币类型
+            url: '/businessMgmt/IPOMgmtOCReview/IPOBaseInfo/detailShowChinese.ajax',
+            data: {
+                pmst: 'SYSTEM',
+                pmkey: 'CURRENCYTYPE'
+            },
+            success: function (result) {
+                if (result.error === 0) {
+                    this.showChinese.currencytypeList = result.data.map(function (item) {
+                        return {
+                            pmco: item.pmco,
+                            pmnm: item.pmnm
+                        }
+                    })
+
+                } else {
+                    this.showDialog('', 'info', false, result.msg);
+                }
+            }.bind(this)
+        });
+        $.post({ //基金风险等级
+            url: '/businessMgmt/IPOMgmtOCReview/IPOBaseInfo/detailShowChinese.ajax',
+            data: {
+                pmst: 'SYSTEM',
+                pmkey: 'FUNDRISKLEVEL'
+            },
+            success: function (result) {
+                if (result.error === 0) {
+                    this.showChinese.fundrisklevelList = result.data.map(function (item) {
+                        return {
+                            pmco: item.pmco,
+                            pmnm: item.pmnm
+                        }
+                    })
+
+                } else {
+                    this.showDialog('', 'info', false, result.msg);
+                }
+            }.bind(this)
+        });
+        $.post({ //基金净值小数处理方式
+            url: '/businessMgmt/IPOMgmtOCReview/IPOBaseInfo/detailShowChinese.ajax',
+            data: {
+                pmst: 'SYSTEM',
+                pmkey: 'NAVFRACMODE'
+            },
+            success: function (result) {
+                if (result.error === 0) {
+                    this.showChinese.navfracmodeList = result.data.map(function (item) {
+                        return {
+                            pmco: item.pmco,
+                            pmnm: item.pmnm
+                        }
+                    })
+
+                } else {
+                    this.showDialog('', 'info', false, result.msg);
+                }
+            }.bind(this)
+        });
+        $.post({ //分红方式
+            url: '/businessMgmt/IPOMgmtOCReview/IPOBaseInfo/detailShowChinese.ajax',
+            data: {
+                pmst: 'SYSTEM',
+                pmkey: 'MELONMD'
+            },
+            success: function (result) {
+                if (result.error === 0) {
+                    this.showChinese.melonmdList = result.data.map(function (item) {
+                        return {
+                            pmco: item.pmco,
+                            pmnm: item.pmnm
+                        }
+                    })
+
+                } else {
+                    this.showDialog('', 'info', false, result.msg);
+                }
+            }.bind(this)
+        });
+        $.post({ //基金类别
+            url: '/businessMgmt/IPOMgmtOCReview/IPOBaseInfo/detailShowChinese.ajax',
+            data: {
+                pmst: 'SYSTEM',
+                pmkey: 'FUNDTP'
+            },
+            success: function (result) {
+                if (result.error === 0) {
+                    this.showChinese.fundtpList = result.data.map(function (item) {
+                        return {
+                            pmco: item.pmco,
+                            pmnm: item.pmnm
+                        }
+                    })
+
+                } else {
+                    this.showDialog('', 'info', false, result.msg);
+                }
+            }.bind(this)
+        });
+        $.post({ //产品类型
+            url: '/businessMgmt/IPOMgmtOCReview/IPOBaseInfo/detailShowChinese.ajax',
+            data: {
+                pmst: 'SYSTEM',
+                pmkey: 'INVESTTYPE'
+            },
+            success: function (result) {
+                if (result.error === 0) {
+                    this.showChinese.investtypeList = result.data.map(function (item) {
+                        return {
+                            pmco: item.pmco,
+                            pmnm: item.pmnm
+                        }
+                    })
+
+                } else {
+                    this.showDialog('', 'info', false, result.msg);
+                }
+            }.bind(this)
+        });
+        this.fundId = this.getUrlParam('fundId')
+        this.status = this.getUrlParam('fundStatus')
+        this.getTableData()
+
+    },
+    mounted: function () {
+        var dialogs = ['info', 'reviewInfo', 'goBackInfo'];
+        var _this = this;
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+
+    },
+    methods: {
+        getUrlParam: function (name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+            var r = window.location.search.substr(1).match(reg); //匹配目标参数
+            if (r != null) return unescape(r[2]);
+            return ''; //返回参数值
+        },
+        getTableData: function () {
+            var params = {
+                fundId: this.fundId,
+                approveStatus: this.status
+            };
+            $.post({
+                url: '/businessMgmt/IPOMgmtOCReview/IPOBaseInfo/detailTableData.ajax ',
+                data: params,
+                success: function (result) {
+                    if (result.error == 0) {
+                        this.onLine = result.data[0].onLine
+                        this.approve = result.data[0].approve
+                    } else {
+                        this.showDialog('', 'info', false, result.msg);
+                    }
+                }.bind(this)
+            });
+        },
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            } else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            } else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            } else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            } else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        goBack: function () {
+            window.history.back()
+        },
+        showReviewDialog: function (status, text) {
+            if (this.fundId === '') {
+                this.showDialog('', 'info', false, '基金为空');
+                return;
+            }
+            this.status = status;
+            this.showDialog('', 'reviewInfo', false, '确定' + text + '基金' + this.fundId + '吗？');
+
+        },
+        review: function () {
+            var params = {
+                fundId: this.fundId,
+                approveStatus: this.status
+            };
+            $.post({
+                url: '/businessMgmt/IPOMgmtOCReview/IPOBaseInfo/detailReview.ajax ',
+                data: params,
+                success: function (result) {
+                    if (result.error == 0) {
+                        if (result.data) {
+                            this.showDialog('reviewInfo', 'goBackInfo', false, '复核成功');
+                        } else {
+                            this.showDialog('reviewInfo', 'info', false, '复核失败');
+                        }
+                    } else {
+                        this.showDialog('reviewInfo', 'info', false, result.msg);
+                    }
+                }.bind(this)
+            });
+        },
+        contrast: function (newVal, oldVal) {
+            if (this.getUrlParam('fundStatus') !== 'N') {
+                return oldVal
+            }
+            if (newVal !== oldVal) {
+                if (newVal === null || newVal === undefined) {
+                    if (oldVal !== null && oldVal !== undefined) {
+                        return oldVal;
+                    } else {
+                        return '-'
+                    }
+
+                } else {
+                    if (oldVal !== null && oldVal !== undefined) {
+                        return `<del style='color:red;display: block'>${oldVal}</del><p style='color:green'>${newVal}</p>`;
+                    } else {
+                        return `<p style='color:green'>${newVal}</p>`;
+                    }
+
+                }
+            } else {
+                return newVal
+            }
+        },
+        chinese: function (val, arr) {
+            var str = val;
+            if (Array.isArray(arr)) {
+                arr.some(function (item) {
+                    if (item.pmco == str) {
+                        str = item.pmnm;
+                        return true;
+                    }
+                })
+            }
+            // if (!str) {
+            //     str = '-'
+            // }
+            return str;
+        }
+    },
+
+});

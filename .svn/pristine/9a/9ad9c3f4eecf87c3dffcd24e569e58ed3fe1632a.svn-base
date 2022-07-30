@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        .chosen-single {
+            height: 30px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!-- 提示信息弹窗 -->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 查看弹窗 -->
+                        <div class="modal" id="checkItem" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title inline">数据操作</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form">
+                                            <div style="float:left">
+                                                <div class="form-group" :style="needShowOriginData?'margin-bottom: 0;':''">
+                                                    <label class="control-label">产品代码:</label>
+                                                    <input type="text" v-model="dialog_product" disabled/>
+                                                </div>
+                                                <div v-show="needShowOriginData">
+                                                    <a href="javascript:;">已生效数据:</a>
+                                                    <a href="javascript:;" v-text="origin_product"></a>
+                                                </div>
+                                                <div class="form-group" :style="needShowOriginData?'margin-bottom: 0;':''">
+                                                    <label class="control-label">客户类型:</label>
+                                                    <input type="text" :value="printCustType(dialog_custType)" disabled/>
+                                                </div>
+                                                <div v-show="needShowOriginData">
+                                                    <a href="javascript:;">已生效数据:</a>
+                                                    <a href="javascript:;" v-text="origin_custType"></a>
+                                                </div>
+                                                <div class="form-group" :style="needShowOriginData?'margin-bottom: 0;':''">
+                                                    <label class="control-label">交易类型:</label>
+                                                    <input type="text" v-model="dialog_tradeType" disabled/>
+                                                </div>
+                                                <div v-show="needShowOriginData">
+                                                    <a href="javascript:;">已生效数据:</a>
+                                                    <a href="javascript:;" v-text="origin_tradeType"></a>
+                                                </div>
+                                                <div class="form-group" :style="needShowOriginData?'margin-bottom: 0;':''">
+                                                    <label class="control-label" style="width: 60px;">网点:</label>
+                                                    <input type="text" v-model="dialog_branchCode" disabled/>
+                                                </div>
+                                                <div v-show="needShowOriginData">
+                                                    <a href="javascript:;">已生效数据:</a>
+                                                    <a href="javascript:;" v-text="origin_branchCode"></a>
+                                                </div>
+                                                <div class="form-group" :style="needShowOriginData?'margin-bottom: 0;':''">
+                                                    <label class="control-label" style="width: 60px;">渠道:</label>
+                                                    <input type="text" v-model="dialog_channel" disabled/>
+                                                </div>
+                                                <div v-show="needShowOriginData">
+                                                    <a href="javascript:;">已生效数据:</a>
+                                                    <a href="javascript:;" v-text="origin_channel"></a>
+                                                </div>
+                                                <div class="form-group" :style="needShowOriginData?'margin-bottom: 0;':''">
+                                                    <label class="control-label">银行编号:</label>
+                                                    <input type="text" v-model="dialog_bankNo" disabled/>
+                                                </div>
+                                                <div v-show="needShowOriginData">
+                                                    <a href="javascript:;">已生效数据:</a>
+                                                    <a href="javascript:;" v-text="origin_bankNo"></a>
+                                                </div>
+                                                <div class="form-group" :style="needShowOriginData?'margin-bottom: 0;':''">
+                                                    <label class="control-label">目标产品:</label>
+                                                    <input type="text" v-model="dialog_oproduct" disabled/>
+                                                </div>
+                                                <div v-show="needShowOriginData">
+                                                    <a href="javascript:;">已生效数据:</a>
+                                                    <a href="javascript:;" v-text="origin_oproduct"></a>
+                                                </div>
+                                            </div>
+                                            <div style="float:right;">
+                                                <div class="form-group" :style="needShowOriginData?'margin-bottom: 0;':''">
+                                                    <label class="control-label">展示折扣:</label>
+                                                    <input type="text" v-model="dialog_displayDiscount" disabled/>
+                                                </div>
+                                                <div v-show="needShowOriginData">
+                                                    <a href="javascript:;">已生效数据:</a>
+                                                    <a href="javascript:;" v-text="origin_displayDiscount"></a>
+                                                </div>
+                                                <div class="form-group" :style="needShowOriginData?'margin-bottom: 0;':''">
+                                                    <label class="control-label">交易折扣:</label>
+                                                    <input type="text" v-model="dialog_tradeDiscount" disabled/>
+                                                </div>
+                                                <div v-show="needShowOriginData">
+                                                    <a href="javascript:;">已生效数据:</a>
+                                                    <a href="javascript:;" v-text="origin_tradeDiscount"></a>
+                                                </div>
+                                                <div class="form-group" :style="needShowOriginData?'margin-bottom: 0;':''">
+                                                    <div class="input-group">
+                                                        <label class="control-label">开始时间:</label>
+                                                        <input type="text" id="startTime" class="date-timepicker" disabled>
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                                    </div>
+                                                </div>
+                                                <div v-show="needShowOriginData">
+                                                    <a href="javascript:;">已生效数据:</a>
+                                                    <a href="javascript:;" v-text="origin_startTime"></a>
+                                                </div>
+                                                <div class="form-group" :style="needShowOriginData?'margin-bottom: 0;':''">
+                                                    <div class="input-group">
+                                                        <label class="control-label">结束时间:</label>
+                                                        <input type="text" id="endTime" class="date-timepicker" disabled>
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                                    </div>
+                                                </div>
+                                                <div v-show="needShowOriginData">
+                                                    <a href="javascript:;">已生效数据:</a>
+                                                    <a href="javascript:;" v-text="origin_endTime"></a>
+                                                </div>
+                                                <div class="form-group" :style="needShowOriginData?'margin-bottom: 0;':''">
+                                                    <label class="control-label">起始金额:</label>
+                                                    <input type="text" v-model="dialog_startAmount" disabled/>
+                                                </div>
+                                                <div v-show="needShowOriginData">
+                                                    <a href="javascript:;">已生效数据:</a>
+                                                    <a href="javascript:;" v-text="origin_startAmount"></a>
+                                                </div>
+                                                <div class="form-group" :style="needShowOriginData?'margin-bottom: 0;':''">
+                                                    <label class="control-label">结束金额:</label>
+                                                    <input type="text" v-model="dialog_endAmount" disabled/>
+                                                </div>
+                                                <div v-show="needShowOriginData">
+                                                    <a href="javascript:;">已生效数据:</a>
+                                                    <a href="javascript:;" v-text="origin_endAmount"></a>
+                                                </div>
+                                                <div class="form-group" :style="needShowOriginData?'margin-bottom: 0;':''">
+                                                    <label class="control-label" style="width: 60px;">备注:</label>
+                                                    <input type="text" v-model="dialog_remark" disabled/>
+                                                </div>
+                                                <div v-show="needShowOriginData">
+                                                    <a href="javascript:;">已生效数据:</a>
+                                                    <a href="javascript:;" v-text="origin_remark"></a>
+                                                </div>
+                                            </div>
+                                            <div style="clear: both"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 备注弹窗 -->
+                        <div class="modal" id="reviewReject" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">请填写驳回原因</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <textarea cols="75" rows="10" v-model="remark" style="resize:none;"></textarea>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" @click="reviewReject">确定
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 复核通过弹窗 -->
+                        <div class="modal" id="reviewAccept" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确认批准该申请？</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" @click="reviewAccept">确定
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- DIALOG ENDS -->
+                        <div class="tabbable">
+                            <ul class="nav nav-tabs padding-12 tab-color-blue background-blue">
+                                <li class="active">
+                                    <a data-toggle="tab" href="#local">经办数据</a>
+                                </li>
+                                <li>
+                                    <a data-toggle="tab" href="#service">已生效数据</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div id="local" class="tab-pane in active">
+                                    <div class="form-inline" style="padding-bottom: 10px;">
+                                        <div class="form-group">
+                                            <label class="control-label">产品代码:</label>
+                                            <select id="fundList_local"
+                                                    class="chosen-select form-control"
+                                                    data-placeholder="全部">
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">交易类型:</label>
+                                            <select style="width:170px" v-model="tradeType">
+                                                <option value="">全部</option>
+                                                <option :value="item.key" v-for="(item,index) in tradeTypeList"
+                                                        v-text="item.value"></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">渠道:</label>
+                                            <select style="width:170px" v-model="channel">
+                                                <option value="">全部</option>
+                                                <option :value="item.key" v-for="(item,index) in channelList"
+                                                        v-text="item.value">
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">操作类型:</label>
+                                            <select style="width: 169px;" v-model="operate">
+                                                <option value="">全部</option>
+                                                <option value="1">新增</option>
+                                                <option value="2">修改</option>
+                                                <option value="3">删除</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">复核状态:</label>
+                                            <select style="width: 169px;" v-model="status">
+                                                <option value="">全部</option>
+                                                <option value="2">待复核</option>
+                                                <option value="0">复核通过</option>
+                                                <option value="9">复核驳回</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group pull-right">
+                                            <input type="button" class="btn btn-sm btn-primary" value="查询"
+                                                   @click="search">
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                    </div>
+
+                                    <div class="table-header">
+                                        <%= cpage %>--表格数据
+                                    </div>
+                                    <!--分页器和快速查询-->
+                                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                        <div class="col-xs-6">
+                                            <div class="dataTables_length" id="dynamic-table_length">
+                                                <label>每页显示</label>
+                                                <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                                    <option value="10">10</option>
+                                                    <option value="20">20</option>
+                                                    <option value="50">50</option>
+                                                </select>
+                                                <label>条</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--数据表-->
+                                    <table class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center">产品代码</th>
+                                            <th class="center">交易类型</th>
+                                            <th class="center">渠道</th>
+                                            <th class="center">展示折扣</th>
+                                            <th class="center">交易折扣</th>
+                                            <th class="center">创建人</th>
+                                            <th class="center">创建时间</th>
+                                            <th class="center">优先级</th>
+                                            <th class="center">操作类型</th>
+                                            <th class="center">复核状态</th>
+                                            <th class="center">复核人</th>
+                                            <th class="center">复核时间</th>
+                                            <th class="center">复核备注</th>
+                                            <th class="center">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="viewData.length>0">
+                                            <tr v-for="(item,index) in viewData" :key="index">
+                                                <template v-if="item.operate==1">
+                                                    <td class="center green" v-text="item.product"></td>
+                                                    <td class="center green" v-text="item.showTradeType"></td>
+                                                    <td class="center green" v-text="item.showChannel"></td>
+                                                    <td class="center green" v-text="item.displayDiscount"></td>
+                                                    <td class="center green" v-text="item.tradeDiscount"></td>
+                                                </template>
+                                                <template v-else-if="item.operate==2">
+                                                    <td class="center">
+                                                        <span v-text="item.product"></span>
+                                                        <template v-if="item.originData">
+                                                            <br>
+                                                            <span class="blue" v-text="item.originData.product"></span>
+                                                        </template>
+                                                    </td>
+                                                    <td class="center">
+                                                        <span v-text="item.showTradeType"></span>
+                                                        <template v-if="item.originData">
+                                                            <br>
+                                                            <span class="blue" v-text="item.originData.showTradeType"></span>
+                                                        </template>
+                                                    </td>
+                                                    <td class="center">
+                                                        <span v-text="item.showChannel"></span>
+                                                        <template v-if="item.originData">
+                                                            <br>
+                                                            <span class="blue" v-text="item.originData.showChannel"></span>
+                                                        </template>
+                                                    </td>
+                                                    <td class="center">
+                                                        <span v-text="item.displayDiscount"></span>
+                                                        <template v-if="item.originData">
+                                                            <br>
+                                                            <span class="blue" v-text="item.originData.displayDiscount"></span>
+                                                        </template>
+                                                    </td>
+                                                    <td class="center">
+                                                        <span v-text="item.tradeDiscount"></span>
+                                                        <template v-if="item.originData">
+                                                            <br>
+                                                            <span class="blue" v-text="item.originData.tradeDiscount"></span>
+                                                        </template>
+                                                    </td>
+                                                </template>
+                                                <template v-else-if="item.operate==3">
+                                                    <td class="center red"><s v-text="item.product"></s></td>
+                                                    <td class="center red"><s v-text="item.showTradeType"></s></td>
+                                                    <td class="center red"><s v-text="item.showChannel"></s></td>
+                                                    <td class="center red"><s v-text="item.displayDiscount"></s></td>
+                                                    <td class="center red"><s v-text="item.tradeDiscount"></s></td>
+                                                </template>
+                                                <td class="center" v-text="item.creator"></td>
+                                                <td class="center" v-text="item.createTime"></td>
+                                                <td class="center" v-text="item.priority"></td>
+                                                <td :class="{center:true,green:item.operate==1,orange:item.operate==2,red:item.operate==3}"
+                                                    v-text="item.showOperate"></td>
+                                                <td :class="{center:true,
+                                        green:item.status==0,
+                                        black:item.status==1,
+                                        blue:item.status==2,
+                                        red:item.status==9}"
+                                                    v-text="item.showStatus"></td>
+                                                <td class="center" v-text="item.reviewer"></td>
+                                                <td class="center" v-text="item.reviewTime"></td>
+                                                <td class="center" v-text="item.remark"></td>
+                                                <td class="center">
+                                                    <a href="javascript:;" @click="checkDialog(item)">查看</a>
+                                                    <template v-if="item.status==2">
+                                                        <span>/</span>
+                                                        <a href="javascript:;" @click="showReviewAccept(item)">通过</a>
+                                                        <span>/</span>
+                                                        <a href="javascript:;" class="red" @click="showReviewReject(item)">驳回</a>
+                                                    </template>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'暂无数据'" colspan="16"></td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                    <div v-if="viewData.length>0" class="row"
+                                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                        <div class="col-xs-2">
+                                            <div class="dataTables_info"
+                                                 v-text="'共 '+middleData.length+' 页'"></div>
+                                        </div>
+                                        <div class="col-xs-10">
+                                            <div class="dataTables_paginate paging_simple_numbers">
+                                                <ul class="pagination">
+                                                    <li class="paginate_button"
+                                                        v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                                        <a href="javascript:;" v-text="'1...'" @click="toFirst()"></a>
+                                                    </li>
+                                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                        @click="prev()">
+                                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                                    </li>
+                                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                        v-for="value in pageList" @click="changeIndex(value)">
+                                                        <a href="javascript:;" v-text="value"></a>
+                                                    </li>
+                                                    <li class="paginate_button"
+                                                        v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                                        <a href="javascript:;" v-text="'...'+middleData.length"
+                                                           @click="toLast()"></a>
+                                                    </li>
+                                                    <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                        @click="next()">
+                                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="service" class="tab-pane">
+                                    <!-- 服务端数据查询条件 -->
+                                    <div class="form-inline" style="padding-bottom: 10px;">
+                                        <div class="form-group">
+                                            <label class="control-label">产品代码:</label>
+                                            <select id="fundList_service"
+                                                    class="chosen-select form-control"
+                                                    data-placeholder="全部">
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">交易类型:</label>
+                                            <select style="width:170px" v-model="service.tradeType">
+                                                <option value="">全部</option>
+                                                <option :value="item.key" v-for="(item,index) in service.tradeTypeList"
+                                                        v-text="item.value"></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">渠道:</label>
+                                            <select style="width:170px" v-model="service.channel">
+                                                <option value="">全部</option>
+                                                <option :value="item.key" v-for="(item,index) in service.channelList"
+                                                        v-text="item.value">
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group pull-right">
+                                            <input type="button" class="btn btn-sm btn-primary" @click="searchService"
+                                                   value="查询">
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                    </div>
+                                    <div class="table-header">
+                                        服务端表格数据
+                                    </div>
+                                    <!--分页器和快速查询-->
+                                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                        <div class="col-xs-6">
+                                            <div class="dataTables_length">
+                                                <label>每页显示</label>
+                                                <select class="input-sm" name="pageMaxNum" v-model="service.pageMaxNum">
+                                                    <option value="10">10</option>
+                                                    <option value="20">20</option>
+                                                    <option value="50">50</option>
+                                                </select>
+                                                <label>条</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--数据表-->
+                                    <table class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center ">产品代码</th>
+                                            <th class="center">交易类型</th>
+                                            <th class="center ">渠道</th>
+                                            <th class="center ">展示折扣</th>
+                                            <th class="center ">交易折扣</th>
+                                            <th class="center ">客户类型</th>
+                                            <th class="center ">网点</th>
+                                            <th class="center ">起始金额</th>
+                                            <th class="center ">结束金额</th>
+                                            <th class="center ">优先级</th>
+                                            <th class="center ">开始时间</th>
+                                            <th class="center ">结束时间</th>
+                                            <th class="center ">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="viewData_service.length>0">
+                                            <tr v-for="(item,index) in viewData_service" :key="index">
+                                                <td class="center" v-text="item.product"></td>
+                                                <td class="center" v-text="item.showTradeType"></td>
+                                                <td class="center" v-text="item.showChannel"></td>
+                                                <td class="center" v-text="item.displayDiscount"></td>
+                                                <td class="center" v-text="item.tradeDiscount"></td>
+                                                <td class="center" v-text="item.showCustType"></td>
+                                                <td class="center" v-text="item.showBranchCode"></td>
+                                                <td class="center" v-text="item.startAmount"></td>
+                                                <td class="center" v-text="item.endAmount"></td>
+                                                <td class="center" v-text="item.priority"></td>
+                                                <td class="center" v-text="item.startTime"></td>
+                                                <td class="center" v-text="item.endTime"></td>
+                                                <td class="center">
+                                                    <a href="javascript:;" @click="checkDialog(item)">查看</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'暂无数据'" colspan="16"></td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                    <!--底部页码-->
+                                    <div v-if="viewData_service.length>0" class="row"
+                                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                        <div class="col-xs-2">
+                                            <div class="dataTables_info"
+                                                 v-text="'共 '+middleData_service.length+' 页'"></div>
+                                        </div>
+                                        <div class="col-xs-10">
+                                            <div class="dataTables_paginate paging_simple_numbers">
+                                                <ul class="pagination">
+                                                    <li class="paginate_button"
+                                                        v-show="pageList_service.length<middleData_service.length&&service.currentIndex>service.maxSpace">
+                                                        <a href="javascript:;" v-text="'1...'" @click="toFirst(1)"></a>
+                                                    </li>
+                                                    <li :class="service.currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                        @click="prev(1)">
+                                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                                    </li>
+                                                    <li :class="value==service.currentIndex+1?'paginate_button active':'paginate_button'"
+                                                        v-for="value in pageList_service" @click="changeIndex(value,1)">
+                                                        <a href="javascript:;" v-text="value"></a>
+                                                    </li>
+                                                    <li class="paginate_button"
+                                                        v-show="pageList_service.length<middleData_service.length&&middleData_service.length-service.currentIndex>service.maxSpace">
+                                                        <a href="javascript:;" v-text="'...'+middleData_service.length"
+                                                           @click="toLast(1)"></a>
+                                                    </li>
+                                                    <li :class="service.currentIndex==middleData_service.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                        @click="next(1)">
+                                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/businessMgmt/businessParamConfig/discountReview.js"></script>
+</body>
+</html>

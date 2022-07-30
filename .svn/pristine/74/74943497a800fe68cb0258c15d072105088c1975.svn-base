@@ -1,0 +1,1707 @@
+new Vue({
+    el: '#content',
+    data: {
+        // 主页面相关数据
+        // 规则编号
+        id: '',
+        // 产品
+        product: "",
+        // 保存弹窗产品
+        saveproduct: "",
+        // 业务类型
+        serialno: '',
+        actionType: "",
+        endDate: "",
+        endTime: "",
+        groupid: "",
+        startDate: "",
+        startTime: "",
+
+        remark: "",
+        status: "",
+        // 查询
+        groupids: '',
+        groupidList: "",
+
+
+        isUpdate: false,
+        //隐藏假分页节点元素
+        showMysql: false,
+        updateId: '',
+        tableData: [],
+        diaMsg: '',
+        checkData: [],
+
+        //主表格分页数据
+        currentIndex: 0,
+        maxSpace: 5,
+        pageMaxNum: '10',
+        condition: '',
+        currentIndex2: 0,
+        // 全选
+        allCheck: false,
+        // 复核状态
+        reviewStatus: "",
+        // 数据库id
+        mysqlId: "",
+        // 数据类型(0:业务,1:Mysql数据库)
+        type: "1",
+        mysqlStatus: '',
+        // mysql传产品值
+        mysqlProduct: "",
+        // 获取数据库产品所有ID
+        arrId: [],
+        oneId: '',
+        operator: "",
+        // 判断Mysql数据状态
+        delete_flag: "",
+        operate: '',
+        // 自动获取规则编号Id
+        ruleId: "",
+        // type:1,
+        // 新增弹窗下拉列表数据
+        fundGroupType:[],// 组合类型
+        branchCodeList:[], // 网点号
+        ageRangeList:[],   //年龄段
+        grouptypeList:[],  //组合风险类型
+        risklevelList:[],  //组合风险等级
+        // 组合查询相关参数
+        // 所有组合
+        groupId: '',
+        fundGroups: [],//查询
+        fundGroupList: [],//组合多选
+        subGroupArr: [],
+        // 新增弹窗相关参数
+        fundgroupType: "",  //组合类型
+        groupid: '',         //组合ID
+        groupname: "",     //组合名称
+        fundgroupDesc: "", //组合建议
+        fundgroupAdvise: "", // 智投建议
+        onlinedate: "",      //上线日期
+        sofarYield: "",       //年华收益率
+        proPageurl: "",     // 专业版宣传页
+        normalPageurl: "",   // 小白版宣传页
+        ageRange: "",        //年龄段
+        branchCode: "",         //网点
+        acceptMode: 0,         //渠道
+        cooPreationMode: 2,   //合作模式
+        stopStatus: "0",   // 交易状态
+        stopStartTime: '',  //暂停开始时间
+        stopEndTime: "",   //暂停结束时间
+        // 暂停交易显示时间按钮
+        isTime: false,
+        // 组合成分的参数
+        grouptype: "",    //风险类型
+        risklevel: "",   // 风险等级
+        initamount: "",   //起投金额
+        commro: "",     // 费率折扣
+        minRedeemAmount: "",   // 最低赎回金额
+        minChangeAmount: "",   // 最低调仓金额
+        minReserveAmount: "",  // 最低持有金额
+        // 新增按钮调取所有基金
+        diaSearchFundId:'',
+        fundId: '',  //查询用
+        fundList: [],    //组合所有基金
+        fundHistoryList: [],  //历史调仓所有基金
+        muchFundHistoryList: [], //历史调仓多个按钮添加所有基金
+        htmlFundList:[],
+        // 添加基金到页面
+        fundListAll: [],
+        fundHistory: [],
+        muchHistoryList: [],
+        // 基金计算添加个数
+        size: '',
+        size2: '',
+        muchSize: '',
+        // 添加节点
+        htmlList: [],
+        addtext: "",
+    },
+    // 获取本地Mysql所有Id
+    created: function () {
+        // this.getlocalList()
+        // this.getTableData(0,this.type);
+        this.userName();
+        this.fundGroup();
+        self = this;
+        window.deleHtmlList = self.deleHtmlList;
+        window.muchFundHistory = self.muchFundHistory;
+        // window.historyTime=self.historyTime;
+    },
+    mounted: function () {
+        var dialogs = ["add", 'info', 'del', 'del2', 'add', "update", "revise", 'subMit', 'delAgain', "addFund", 'addFundHistory', 'muchFundHistory'];
+        var _this = this;
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        // 时间插件
+        $('.date-timepicker').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm:ss',//use this option to display seconds
+            icons: {
+                time: 'fa fa-clock-o',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-arrows ',
+                clear: 'fa fa-trash',
+                close: 'fa fa-times'
+            }
+        }).next().on(ace.click_event, function () {
+            $(this).prev().focus();
+        });
+        // 网点号
+        $.post({
+            url: '/businessMgmt/combinationProductConfig/combinationProductHandle/branchCodeList.ajax',
+            data:{
+                pmst:"SYSTEM",
+                pmkey:"BRANCHCODE"
+            },
+            success: function (result) {
+                if (result.error === 0) {
+                    _this.branchCodeList = result.data.body
+                }
+                // _this.showDialog('', 'info', false, result.msg);
+            }
+        });
+        this.getTableData(0, this.type);
+    },
+
+    computed: {
+        //主表格分页
+        middleData: function () {
+            var middleData = [];
+            var filterData = [];
+            var pageMaxNum = parseInt(this.pageMaxNum);
+            var _this = this;
+            this.tableData.forEach(function (jsonObj) {
+                var valueArr = [];
+                for (var prop in jsonObj) {
+                    valueArr.push(jsonObj[prop]);
+                }
+                for (var i = 0, len = valueArr.length; i < len; i++) {
+                    if (valueArr[i]) {
+                        if (valueArr[i].toString().indexOf(_this.condition) != -1) {
+                            filterData.push(jsonObj);
+                            break;
+                        }
+                    }
+                }
+            });
+            if (filterData.length <= pageMaxNum) {
+                middleData.push(filterData);
+                return middleData;
+            }
+            else {
+                var i = 0;
+                while ((i + 1) * pageMaxNum < filterData.length) {
+                    middleData.push(filterData.slice(i * pageMaxNum, (i + 1) * pageMaxNum));
+                    i++;
+                }
+                middleData.push(filterData.slice(i * pageMaxNum, filterData.length));
+                return middleData;
+            }
+        },
+        viewData: function () {
+            var currentIndex = parseInt(this.currentIndex);
+            return this.middleData[currentIndex];
+        },
+        pageList: function () {
+            var arr = [];
+            if (this.middleData.length <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            else if (this.currentIndex <= this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            }
+            else if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex <= this.maxSpace) {
+                var space = this.middleData.length - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            else {
+                for (var i = 0; i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        },
+        //选择用户过滤
+        filterFundList: function () {
+            var filterData = [];
+            var _this = this;
+            this.fundList.forEach(function (item) {
+                if (item.fundId.indexOf(_this.diaSearchFundId) > -1) {
+                    filterData.push(item);
+                }
+            });
+            return filterData;
+        },
+        filterFundList2: function () {
+            var filterData = [];
+            var _this = this;
+            this.fundHistoryList.forEach(function (item) {
+                if (item.fundId.indexOf(_this.diaSearchFundId) > -1) {
+                    filterData.push(item);
+                }
+            });
+            return filterData;
+        },
+        filterFundList3: function () {
+            var filterData = [];
+            var _this = this;
+            this.muchFundHistoryList.forEach(function (item) {
+                if (item.fundId.indexOf(_this.diaSearchFundId) > -1) {
+                    filterData.push(item);
+                }
+            });
+            return filterData;
+        },
+    },
+    watch: {
+        pageMaxNum: function () {
+            this.getTableData(0, this.type);
+        },
+        // 假分页
+        watch: {
+            pageMaxNum: function () {
+                this.currentIndex = 0;
+                this.getTableData(0, this.type)
+            },
+            condition: function () {
+                this.currentIndex = 0;
+            }
+        },
+
+    },
+    methods: {
+        // 获取信息
+        userName: function () {
+            var _this = this;
+            var operator;
+            $.post({
+                url: '/businessMgmt/combinationProductConfig/combinationProductHandle/userName.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        operator = result.data
+                    }
+                    _this.operator = operator
+                }
+            });
+        },
+        // 获取基金所有组合-查询
+        fundGroup: function () {
+            var _this = this;
+            $.post({
+                url: '/businessMgmt/combinationProductConfig/combinationProductHandle/fundGroups.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        // _this.fundGroupAll = result.data.body;
+                        //  过滤组合
+                        _this.fundGroupList = result.data.body.filter((x, index, self) => {
+                            var arrids = []
+                            result.data.body.forEach((item, i) => {
+                                arrids.push(item.fundgroupType)
+                            })
+                            return arrids.indexOf(x.fundgroupType) === index
+                        })
+                    }
+                }
+            });
+        },
+        GroupList: function (item) {
+            var _this = this
+            $.post({
+                url: '/businessMgmt/combinationProductConfig/combinationProductHandle/fundGroups.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.subGroupList = result.data.body
+                        let subGroupArrList = []
+                        for (let subGroupItem of _this.subGroupList) {
+
+                            if (item === subGroupItem.fundgroupType) {
+                                subGroupArrList.push(subGroupItem)
+                            }
+                        }
+                        _this.subGroupArr = subGroupArrList
+                    }
+                    else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+
+        // 获取表格数据
+        getTableData: function (currentIndex, type) {
+            var _this = this;
+            var params = {};
+            //传过去的状态参数
+            params.type = type;
+            console.log(params)
+            // 获取业务数据
+            if (type == 0) {
+                this.isUpdate = true;  //显示业务端分页
+                this.showMysql = false//显示假分页
+                this.currentIndex = 0;
+                params.fundgroupType = this.fundgroupType;
+                $.post({
+                    url: '/businessMgmt/combinationProductConfig/combinationProductHandle/getTableData.ajax',
+                    data: params,
+                    success: function (result) {
+                        if (result.error === 0) {
+                            this.pageMaxNum = 1;
+                            _this.tableData = result.data.tableData.filter(function (item) {
+                                return item.groupid.indexOf(params.fundgroupType) > -1
+                            })
+                        }
+                        else {
+                            _this.tableData = [];
+                            _this.showDialog('', 'info', false, result.msg);
+                        }
+                    }
+                });
+            }
+            // 获取本地数据
+            if (type == 1) {
+                var _this = this;
+                // 真假分页切换
+                this.isUpdate = false;
+                this.showMysql = true;
+                this.currentIndex = 0;
+                params.reviewStatus = this.reviewStatus; //复核状态
+                params.fundgroupType = this.fundgroupType;
+                $.post({
+                    url: '/businessMgmt/combinationProductConfig/combinationProductHandle/getTableData.ajax',
+                    data: params,
+                    success: function (result) {
+                        if (result.error === 0) {
+                            _this.tableData = result.data
+                        }
+                        else {
+                            _this.showDialog('', 'info', false, result.msg);
+
+                        }
+                    }
+                });
+            }
+        },
+        // 模拟点击
+        select: function () {
+            document.getElementById("type0").click();
+        },
+        select2: function () {
+            document.getElementById("type1").click();
+        },
+        // 添加按钮弹窗
+        showAdd: function () {
+            var _this = this;
+            $(".addHtml").empty();
+            this.fundListAll = [];
+            this.fundHistory = [];
+            this.htmlList = [];
+            this.size = 0;
+            this.size2 = 0;
+            this.id = "";
+
+            this.fundgroupType = "";//组合类型
+            this.groupname = "";//组合名称
+            this.groupid = '';
+            this.fundgroupDesc = "";//组合建议
+            this.fundgroupAdvise = ""; // 智投建议
+            this.onlinedate = "";     // 上线日期
+            this.proPageurl = "";   // 专业版宣传页
+            this.normalPageurl = "";  // 小白版宣传页
+            this.ageRange = "";      //年龄段
+            this.sofarYield = "";    //收益率
+            this.branchCode = "";       //网点
+            this.acceptMode = "0";       //渠道
+            this.cooPreationMode = "2";       //合作模式;
+            this.stopStartTime = "";         //暂停开始时间
+            this.stopEndTime = "";           //暂停结束时间
+            this.stopStatus = "0";  // 交易状态
+            // 组合成分的参数
+            this.grouptype = "";   //风险类型
+            this.risklevel = "";  // 风险等级
+            this.initamount = "";    //起投金额
+            this.commro = "";     // 费率折扣
+            this.minRedeemAmount = "";  // 最低赎回金额
+            this.minChangeAmount = "";  // 最低调仓金额
+            this.minReserveAmount = "";   // 最低持有金额
+
+            this.endTime = "";
+
+            // 添加弹窗里面获取组合类型数据
+            $.post({
+                url: '/businessMgmt/combinationProductConfig/combinationProductHandle/fundGroupType.ajax',
+                data:{
+                    pmst:"SYSTEM",
+                    pmkey:"FUNDGROUP_TYPE"
+                },
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.fundGroupType = result.data.body
+                    }else{
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+            this.showDialog('', 'add');
+        },
+        // 当为三方的时候-下拉框级联
+        changeAccept: function (fundgroupType) {
+            var _this = this;
+            if (fundgroupType == "04") {
+                this.acceptMode = "6";
+            } else {
+                this.acceptMode = "0";
+            }
+            // 当组合类型为养老组合-获取适合年龄段信息
+            if(fundgroupType=="02"){
+                $.post({
+                    url: '/businessMgmt/combinationProductConfig/combinationProductHandle/ageRangeList.ajax',
+                    data:{
+                        pmst:"SYSTEM",
+                        pmkey:"GROUP_AGERANGE"
+                    },
+                    success: function (result) {
+                        if (result.error === 0) {
+                            _this.ageRangeList = result.data.body
+                        }else{
+                            _this.showDialog('', 'info', false, result.msg);
+                        }
+                    }
+                });
+            }
+        },
+        changeBranch:function(cooPreationMode){
+            var _this = this;
+            if (cooPreationMode == "2") {
+                this.branchCode = "";
+            } else {
+                this.branchCode = "";
+            }
+        },
+        // 获取风险类型
+        groupTypeList:function(){
+            var _this = this
+            $.post({
+                url: '/businessMgmt/combinationProductConfig/combinationProductHandle/grouptypeList.ajax',
+                data:{
+                    pmst:"SYSTEM",
+                    pmkey:"GROUPRISKTYPE"
+                },
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.grouptypeList = result.data.body
+                    }else{
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            })
+        },
+        // 获取风险等级
+        riskLevelList:function(){
+            var _this = this
+            $.post({
+                url: '/businessMgmt/combinationProductConfig/combinationProductHandle/risklevelList.ajax',
+                data:{
+                    pmst:"SYSTEM",
+                    pmkey:"GROUPRISKLEVEL"
+                },
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.risklevelList = result.data.body
+                    }else{
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            })
+        },
+        //点击交易状态,当为暂停交易
+        showTimes: function (stopStatus) {
+            var _this = this;
+            if (stopStatus != 0) {
+                this.isTime = true;
+            } else {
+                this.isTime = false;
+            }
+        },
+        // 组合成分添加调仓基金
+        showAddFund: function () {
+            var _this = this;
+            var fundDetails = this.fundListAll.map(function (item) {
+                return {
+                    fundId: item.fundId,
+                    fundPercent: item.fundPercent
+                };
+            });
+            console.log("fundDetails", fundDetails)
+            if (_this.fundList.length === 0) {
+                $.post({
+                    url: '/businessMgmt/combinationProductConfig/combinationProductHandle/fundList.ajax',
+                    success: function (result) {
+                        if (result.error === 0) {
+                            // _this.fundList = result.data.body;
+                            _this.fundList = result.data.body;
+                            _this.setListCheckStatus(fundDetails, _this.fundList);
+                            _this.showDialog('add', 'addFund', false);
+                        }
+                        else {
+                            _this.fundList = [];
+                            _this.showDialog('add', 'addFund', true, result.msg);
+
+                        }
+                    }
+                });
+            } else {
+                _this.setListCheckStatus(fundDetails, _this.fundList);
+                _this.showDialog('add', 'addFund', false);
+            }
+            if (this.fundListAll == null) {
+                return
+            } else {
+                this.fundListAll.forEach(function (item) {
+                    for (var i = 0; i < _this.fundList.length; i++) {
+                        if (item.fundId === _this.fundList[i].fundId) {
+                            _this.fundList[i].check = true;
+                            break;
+                        }
+                    }
+                });
+            }
+        },
+        setListCheckStatus: function (fundDetails, list) {
+            list.forEach(function (item) {
+                item.fundPercent = '',
+                    item.check = false;
+            });
+            fundDetails.forEach(function (item) {
+                for (var i = 0; i < list.length; i++) {
+                    if (item.fundId === list[i].fundId) {
+                        list[i].check = true;
+                        list[i].fundPercent = item.fundPercent;
+                        break;
+                    }
+                }
+            });
+            if (this.fundListAll == null) {
+                return
+            } else {
+                this.fundListAll.forEach(function (item) {
+                    for (var i = 0; i < list.length; i++) {
+                        if (item.fundId === list[i].fundId) {
+                            list[i].check = true;
+                            break;
+                        }
+                    }
+                });
+            }
+        },
+        // 提交
+        checkList: function () {
+            var _this = this;
+            this.fundListAll = this.fundList.filter(function (item) {
+                return item.check;
+            }).map(function (item) {
+                return {
+                    fundId: item.fundId,
+                    fundName: item.fundName,
+                    fundTypeForFundgroup: item.fundTypeForFundgroup,
+                    fundPercent: item.fundPercent
+                };
+            });
+            if (this.fundListAll.length === 0) {
+                this.showDialog('addFund', 'info', true, '未选择任何数据');
+                return;
+            }
+            this.size = this.fundListAll.length;
+            this.showDialog('addFund', 'add', false);
+        },
+        // 删除添加的基金数据
+        delList: function (index) {
+            this.fundListAll.splice(index, 1)
+            this.size--;
+        },
+
+        // 历史调仓添加调仓基金
+        addFundHistory: function () {
+            var _this = this;
+            var fundDetails = this.fundHistory.map(function (item) {
+                return {
+                    fundId: item.fundId,
+                    fundPercent: item.fundPercent
+                };
+            });
+            if (_this.fundHistoryList.length === 0) {
+                $.post({
+                    url: '/businessMgmt/combinationProductConfig/combinationProductHandle/fundList.ajax',
+                    success: function (result) {
+                        if (result.error === 0) {
+                            _this.fundHistoryList = result.data.body;
+                            _this.historyListCheckStatus(fundDetails, _this.fundHistoryList);
+                            _this.showDialog('add', 'addFundHistory', false);
+                        } else {
+                            _this.fundHistoryList = [];
+                            _this.showDialog('add', 'addFundHistory', true, result.msg);
+
+                        }
+                    }
+                });
+            } else {
+                _this.historyListCheckStatus(fundDetails, _this.fundHistoryList);
+                _this.showDialog('add', 'addFundHistory', false);
+            }
+            if (this.fundHistory == null) {
+                return
+            } else {
+                this.fundHistory.forEach(function (item) {
+                    for (var i = 0; i < _this.fundHistoryList.length; i++) {
+                        if (item.fundId === _this.fundHistoryList[i].fundId) {
+                            _this.fundHistoryList[i].check = true;
+                            break;
+                        }
+                    }
+                });
+            }
+        },
+        historyListCheckStatus: function (fundDetails, list) {
+            list.forEach(function (item) {
+                item.fundPercent = '',
+                    item.check = false;
+            });
+            fundDetails.forEach(function (item) {
+                for (var i = 0; i < list.length; i++) {
+                    if (item.fundId === list[i].fundId) {
+                        list[i].check = true;
+                        list[i].fundPercent = item.fundPercent;
+                        break;
+                    }
+                }
+            });
+            if (this.fundHistory == null) {
+                return
+            } else {
+                this.fundHistory.forEach(function (item) {
+                    for (var i = 0; i < list.length; i++) {
+                        if (item.fundId === list[i].fundId) {
+                            list[i].check = true;
+                            break;
+                        }
+                    }
+                });
+            }
+        },
+        // 提交
+        checkList2: function () {
+            var _this = this;
+            this.fundHistory = this.fundHistoryList.filter(function (item) {
+                return item.check;
+            }).map(function (item) {
+                return {
+                    fundId: item.fundId,
+                    fundName: item.fundName,
+                    fundTypeForFundgroup: item.fundTypeForFundgroup,
+                    fundPercent: item.fundPercent
+                };
+            });
+            if (this.fundHistory.length === 0) {
+                this.showDialog('addFundHistory', 'info', true, '未选择任何数据');
+                return;
+            }
+            this.size2 = this.fundHistory.length;
+            this.showDialog('addFundHistory', 'add', false);
+        },
+        // 删除添加的基金数据
+        delList2: function (index) {
+            this.fundHistory.splice(index, 1)
+            this.size2--;
+        },
+
+
+        // 添加历史调仓-多个历史调仓
+        addAdjustment: function () {
+            var _this = this;
+            this.muchSize = 0;
+            this.htmlList.push({
+                list:[],
+            });
+        },
+
+        // 多个历史调仓按钮的添加
+        muchFundHistory: function (index) {
+
+            var _this = this;
+            $.post({
+                url: '/businessMgmt/combinationProductConfig/combinationProductHandle/fundList.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.muchFundHistoryList = result.data.body;
+                        _this.muchFundHistoryList.forEach(function (item) {
+                            item.numIndex = index;
+                        })
+                        _this.muchFundHistoryIndex=index;
+                        _this.showDialog('add', 'muchFundHistory', false);
+                    }
+                    else {
+                        _this.muchFundHistoryList = [];
+                        _this.showDialog('add', 'muchFundHistory', true, result.msg);
+
+                    }
+                }
+            });
+        },
+        // 提交
+        muchCheckList: function () {
+            var _this = this;
+            var arrList=[]
+            arrList= this.muchFundHistoryList.filter(function (item) {
+                return item.check;
+            }).map(function (item) {
+                return {
+                    fundId: item.fundId,
+                    fundName: item.fundName,
+                    fundTypeForFundgroup: item.fundTypeForFundgroup,
+                    fundPercent: item.fundPercent,
+                    numIndex:item.numIndex
+                };
+            });
+            if (arrList.length === 0) {
+                this.showDialog('muchFundHistory', 'info', true, '未选择任何数据');
+                return;
+            }
+            this.htmlList[this.muchFundHistoryIndex].list=arrList
+            // _this.htmlFundList=arrList;
+            // console.log("===",this.htmlFundList)
+            // this.muchSize =this.htmlList[this.muchFundHistoryIndex].list.length;
+
+            this.showDialog('muchFundHistory', 'add', false);
+        },
+
+
+        // 删除添加的基金数据
+        muchDelList: function (index) {
+            this.htmlList[this.muchFundHistoryIndex].list.splice(index, 1)
+            this.muchSize--;
+            // this.muchHistoryList = [];
+        },
+        // 添加按钮-调仓时间
+        historyTime: function () {
+            $('.date-timepicker').datetimepicker({
+                format: 'YYYY-MM-DD HH:mm:ss',
+                icons: {
+                    time: 'fa fa-clock-o',
+                    date: 'fa fa-calendar',
+                    up: 'fa fa-chevron-up',
+                    down: 'fa fa-chevron-down',
+                    previous: 'fa fa-chevron-left',
+                    next: 'fa fa-chevron-right',
+                    today: 'fa fa-arrows ',
+                    clear: 'fa fa-trash',
+                    close: 'fa fa-times'
+                }
+            }).on(ace.click_event, function () {
+                $(this).focus();
+            }).next().on(ace.click_event, function () {
+                $(this).prev().focus();
+            });
+        },
+        // 重置所有调仓按钮
+        deleHtmlAll: function () {
+            // $(".addHtml").empty()
+            var _this = this;
+            this.htmlList.splice(this.htmlList);
+            this.muchHistoryList = [];
+            this.muchSize = '0';
+
+        },
+
+        // 删除某个历史调仓元素按钮
+        deleHtmlList: function (index) {
+            var _this = this;
+            // $(".deleHtml").on("click", function() {
+            //     $(this).parents(".textHtml").empty();
+            // })
+            this.htmlList.splice(index, 1);
+            this.muchHistoryList = [];
+            this.muchSize = '0';
+        },
+        searchFundHistory: function () {
+            var _this = this;
+            var params = {};
+            params.fundId = this.fundId;
+            $.post({
+                url: '/businessMgmt/combinationProductConfig/combinationProductHandle/fundList.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        // _this.fundList = result.data.body;
+                        if (params.fundId == "") {
+                            _this.fundHistoryList = result.data.body;
+                        } else {
+                            _this.fundHistoryList = result.data.body.filter(function (item) {
+                                return item.fundId.indexOf(params.fundId) > -1;
+                            });
+                        }
+                        // _this.showDialog('add', 'addFundHistory', false);
+                    }
+                    else {
+                        _this.fundList = [];
+                        // _this.showDialog('add', 'addFundHistory', true, result.msg);
+                    }
+                }
+            });
+        },
+
+
+        // 新增必填弹框
+        diaInfoCheck: function () {
+            var _this = this;
+            if (!this.fundgroupType) {
+                this.showDialog('add', 'info', true, '组合类型不能为空');
+                return false;
+            }
+            if (!this.groupid) {
+                this.showDialog('add', 'info', true, '组合ID不能为空');
+                return false;
+            }
+            if (!this.groupname) {
+                this.showDialog('add', 'info', true, '组合名称不能为空');
+                return false;
+            }
+            if (!this.fundgroupDesc) {
+                this.showDialog('add', 'info', true, '组合建议不能为空');
+                return false;
+            }
+            if (!$("#onlinedates").val()) {
+                this.showDialog('add', 'info', true, '上线日期不能为空');
+                return false;
+            }
+           if(this.fundgroupType=="02") {
+               if (!this.ageRange) {
+                   this.showDialog('add', 'info', true, '年龄段不能为空');
+                   return false;
+               }
+           }
+
+            if (!this.acceptMode) {
+                this.showDialog('add', 'info', true, '开放渠道不能为空');
+                return false;
+            }
+            if (!this.stopStatus) {
+                this.showDialog('add', 'info', true, '交易状态不能为空');
+                return false;
+            }
+            if(this.stopStatus!="0") {
+                if (!$("#stopStartTime").val()&&!$("#stopEndTime").val()) {
+                    this.showDialog('add', 'info', true, '暂停起止时间不能为空');
+                    return false;
+                }
+            }
+            if (!this.grouptype) {
+                this.showDialog('add', 'info', true, '风险类型不能为空');
+                return false;
+            }
+            if (!this.risklevel) {
+                this.showDialog('add', 'info', true, '风险等级不能为空');
+                return false;
+            }
+            if (!this.initamount) {
+                this.showDialog('add', 'info', true, '起投金额不能为空');
+                return false;
+            }
+            if (!this.commro) {
+                this.showDialog('add', 'info', true, '费率折扣不能为空');
+                return false;
+            }
+            if (!this.minRedeemAmount) {
+                this.showDialog('add', 'info', true, '最低赎回金额不能为空');
+                return false;
+            }
+            if (!this.minChangeAmount) {
+                this.showDialog('add', 'info', true, '最低调仓金额不能为空');
+                return false;
+            }
+            if (!this.minReserveAmount) {
+                this.showDialog('add', 'info', true, '最低持有金额不能为空');
+                return false;
+            }
+            // if (!$("#startDate").val()) {
+            //     this.showDialog('add', 'info', true, '开始时间不能为空');
+            //     return false;
+            // }
+            // if (!$("#endDate").val()) {
+            //     this.showDialog('add', 'info', true, '结束时间不能为空');
+            //     return false;
+            // }
+            // console.log($("#endDate").val())
+            return true;
+        },
+        // 保存添加数据按钮
+        saveParam: function () {
+            var _this = this;
+            if (this.diaInfoCheck()) {
+                var params = {};
+                var testBody = "";
+                params.type = this.type;//状态参数
+                // params.id = this.ruleId;
+
+                // params.serialno = this.serialno;
+                // params.groupid = this.groupid;
+                // params.actionType = this.actionType;
+                // params.startDate = moment($('#startDate').val()).format("YYYYMMDD");
+                // params.startTime = moment($('#startDate').val()).format("HHmmss");
+                // params.endDate = moment($('#endDate').val()).format("YYYYMMDD");
+                // params.endTime = moment($('#endDate').val()).format("HHmmss");
+
+                params.fundgroupType = this.fundgroupType;
+                params.groupname = this.groupname;
+                params.groupid = this.groupid;
+                params.fundgroupDesc = this.fundgroupDesc;
+                params.fundgroupAdvise = this.fundgroupAdvise;
+                params.proPageurl = this.proPageurl;
+                params.normalPageurl = this.normalPageurl;
+                params.stopStatus = this.stopStatus;
+                params.ageRange = this.ageRange;      //年龄段
+                params.sofarYield = this.sofarYield;    //收益率
+                params.acceptMode = this.acceptMode;       //渠道
+                if(params.fundgroupType=="04"){
+                    params.cooPreationMode = this.cooPreationMode;       //合作模式;
+                }else{
+                    params.cooPreationMode ="";
+                }
+                if(params.cooPreationMode=="2"){
+                    params.branchCode ="";
+                }else{
+                    params.branchCode = this.branchCode;       //网点
+                }
+                var onlinedate = this.$refs.onlinedate.value;
+                params.onlinedate = onlinedate.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1$2$3000000');
+                var stopStartTime = this.$refs.stopStartTime.value;
+                params.stopStartTime = stopStartTime.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1$2$3000000');
+                var stopEndTime = this.$refs.stopEndTime.value;
+                params.stopEndTime = stopEndTime.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1$2$3000000');
+
+                params.grouptype = this.grouptype;
+                params.risklevel = this.risklevel;
+                params.initamount = this.initamount;
+                params.commro = this.commro;
+                params.minRedeemAmount = this.minRedeemAmount;
+                params.minChangeAmount = this.minChangeAmount;
+                params.minReserveAmount = this.minReserveAmount;
+
+                params.operator = this.operator;
+                console.log("params", params)
+                $.post({
+                    url: '/businessMgmt/combinationProductConfig/combinationProductHandle/saveParam.ajax',
+                    data: params,
+                    success: function (result) {
+                        if (result.error === 0) {
+                            _this.getTableData(0, params.type);
+                        }
+                        _this.showDialog('add', 'info', false, result.msg);
+                    }
+                });
+
+            }
+        },
+        // 修改必填弹框
+        reviseCheck: function () {
+            var _this = this;
+            // if (!this.id) {
+            //     this.showDialog('revise', 'info', true, '规则编号不能为空');
+            //     return false;
+            // }
+            if (!this.maxQuota) {
+                this.showDialog('revise', 'info', true, '最大交易额不能为空');
+                return false;
+            }
+            if (this.maxQuota < 0) {
+                this.showDialog('revise', 'info', true, '最大交易额不能为负数');
+                return false;
+            }
+            if (!this.minQuota) {
+                this.showDialog('revise', 'info', true, '最小交易额不能为空');
+                return false;
+            }
+            if (this.minQuota < 0) {
+                this.showDialog('revise', 'info', true, '最小交易额不能为负数');
+                return false;
+            }
+            if (!$(".startTime").val()) {
+                this.showDialog('revise', 'info', true, '开始时间不能为空');
+                return false;
+            }
+            if (!$(".endTime").val()) {
+                this.showDialog('revise', 'info', true, '结束时间不能为空');
+                return false;
+            }
+            return true;
+        },
+        //点击修改业务数据按钮保存到本地
+        serviceUpdate: function (item) {
+            var _this = this;
+            this.operate = item.operate;
+            // 判断业务接口数据与数据库有没有相同数据
+            // if (this.type == 0) {
+            //     if (this.arrId.indexOf(item.id.toString()) != -1) {
+            //         _this.oneId = item.id
+            //     } else {
+            //         _this.oneId = ''
+            //     }
+            // }
+
+            this.serialno = item.serialno;
+            this.groupid = item.groupid;
+            this.actionType = item.actionType;
+            this.startDate = $("#startDates").val(item.startDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') + ' ' + item.startTime.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3'));
+            this.startTime = item.startTime;
+            this.endDate = $("#endDates").val(item.endDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') + ' ' + item.endTime.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3'));
+            this.endTime = item.endTime;
+
+            this.operate = item.operate
+            this.delete_flag = item.delete_flag
+            this.showDialog('', 'revise');
+
+        },
+        serviceSave: function () {
+            var _this = this;
+            var params = {};
+            params.type = this.type;
+            params.oneId = _this.oneId; //根据id插入或者修改数据
+            // params.product = this.mysqlProduct;
+            params.serialno = this.serialno;
+            params.groupid = this.groupid;
+            params.actionType = this.actionType;
+            params.startDate = moment(this.$refs.startDates.value).format('YYYYMMDD');
+            params.startTime = moment(this.$refs.startDates.value).format("HHmmss");
+            params.endDate = moment(this.$refs.endDates.value).format('YYYYMMDD');
+            params.endTime = moment(this.$refs.endDates.value).format("HHmmss");
+
+            params.operate = this.operate
+            params.updateTime = moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss");
+
+            params.arrId = _this.arrId
+
+            params.delete_flag = this.delete_flag
+            console.log(params)
+
+            $.post({
+                url: '/businessMgmt/combinationProductConfig/combinationProductHandle/serviceSave.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.getTableData(0, params.type);
+                    }
+                    _this.showDialog('revise', 'info', false, result.msg);
+                }
+            });
+        },
+
+        // 点击修改本地数据按钮
+        localUpdate: function (item) {
+            var _this = this;
+            this.operate = item.operate;
+            // 判断业务接口数据与数据库有没有相同数据
+            // if (this.type == 0) {
+            //     if (this.arrId.indexOf(item.id.toString()) != -1 && item.status == '0') {
+            //         _this.oneId = item.id
+            //     } else {
+            //         _this.oneId = ''
+            //     }
+            // }
+            this.mysqlId = item.mySQLId  //获取数据库表字段ID
+
+            // this.serialno = item.serialno;
+            // this.groupid = item.groupid;
+            // this.actionType = item.actionType;
+            // this.startDate = $("#startDates").val(item.startDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') + ' ' + item.startTime.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3'));
+            // this.startTime = item.startTime;
+            // this.endDate = $("#endDates").val(item.endDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') + ' ' + item.endTime.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3'));
+            // this.endTime = item.endTime;
+
+            this.fundgroupType = item.fundgroupType;
+            this.groupname = item.groupname;
+            this.fundgroupDesc = item.fundgroupDesc;
+            this.fundgroupAdvise = item.fundgroupAdvise;
+            this.proPageurl = item.proPageurl;
+            this.normalPageurl = item.normalPageurl;
+            this.stopStatus = item.stopStatus;
+            this.grouptype = item.grouptype;
+            this.risklevel = item.risklevel;
+            this.initamount = item.initamount;
+            this.commro = item.commro;
+            this.minRedeemAmount = item.minRedeemAmount;
+            this.minChangeAmount = item.minChangeAmount;
+            this.minReserveAmount = item.minReserveAmount;
+            this.onlinedate = item.onlinedate;
+
+            this.operate = item.operate
+            this.delete_flag = item.delete_flag
+
+            this.showDialog('', 'revise');
+
+        },
+        localRevise: function () {
+            var _this = this;
+
+            var params = {};
+            params.type = this.type;
+            params.myqsql = this.mysqlId; //数据表字段id
+            params.oneId = _this.oneId; //根据id插入或者修改数据
+            params.product = this.mysqlProduct;
+
+            // params.serialno = this.serialno;
+            // params.groupid = this.groupid;
+            // params.actionType = this.actionType;
+            // params.startDate = moment(this.$refs.startDates.value).format('YYYYMMDD');
+            // params.startTime = moment(this.$refs.startDates.value).format("HHmmss");
+            // params.endDate = moment(this.$refs.endDates.value).format('YYYYMMDD');
+            // params.endTime = moment(this.$refs.endDates.value).format("HHmmss");
+
+            params.fundgroupType = this.fundgroupType;
+            params.groupname = this.groupname;
+            params.fundgroupDesc = this.fundgroupDesc;
+            params.fundgroupAdvise = this.fundgroupAdvise;
+            params.proPageurl = this.proPageurl;
+            params.normalPageurl = this.normalPageurl;
+            params.stopStatus = this.stopStatus;
+            params.grouptype = this.grouptype;
+            params.risklevel = this.risklevel;
+            params.initamount = this.initamount;
+            params.commro = this.commro;
+            params.minRedeemAmount = this.minRedeemAmount;
+            params.minChangeAmount = this.minChangeAmount;
+            params.minReserveAmount = this.minReserveAmount;
+            params.onlinedate = this.$refs.onlineDate.value
+
+
+            params.operator = this.operator
+            params.operate = this.operate
+            params.updateTime = moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss");
+
+            // params.arrId = _this.arrId
+            params.delete_flag = this.delete_flag
+            console.log(params)
+            $.post({
+                url: '/businessMgmt/combinationProductConfig/combinationProductHandle/localRevise.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.getTableData(0, params.type);
+                    }
+                    _this.showDialog('revise', 'info', false, result.msg);
+                }
+            });
+        },
+
+        // 提交操作
+        showSubmit: function (item) {
+            var _this = this;
+            this.mysqlId = item.mySQLId  //获取数据库表字段ID
+
+            this.id = item.id;
+            this.product = "";
+            this.mysqlProduct = item.product; //为mysql执行修改传值
+            this.apkind = item.apkind;
+            this.subApkind = item.subApkind;
+            this.bankNo = item.bankNo;
+            this.branchCode = item.branchCode;
+            this.channel = item.channel;
+            this.custType = item.custType;
+            this.tradeType = item.tradeType;
+            this.maxQuota = item.maxQuota;
+            this.minQuota = item.minQuota;
+            this.startTime = item.startTime;
+            this.endTime = item.endTime;
+            this.remark = item.remark;
+            this.quotaType = item.quotaType;
+
+            this.operate = item.operate
+            this.delete_flag = item.delete_flag
+
+            this.operate = item.operate
+            this.showDialog('', 'subMit');
+        },
+        submitCheck: function () {
+            var _this = this;
+            var params = {};
+            params.type = this.type;
+            params.myqsql = this.mysqlId; //数据表字段id
+            params.oneId = this.oneId; //根据id插入或者修改数据
+            params.operator = this.operator
+
+            params.id = this.id;
+            params.product = this.mysqlProduct;
+            params.tradeType = this.tradeType;
+            params.apkind = this.apkind;
+            params.bankNo = this.bankNo;
+            params.branchCode = this.branchCode;
+            params.channel = this.channel;
+            params.custType = this.custType;
+            params.remark = this.remark;
+            params.subApkind = this.subApkind;
+            params.quotaType = this.quotaType;
+            params.maxQuota = this.maxQuota;
+            params.minQuota = this.minQuota;
+            params.startTime = this.$refs.startTime2.value
+            params.endTime = this.$refs.endTime2.value
+
+            params.operate = this.operate
+            params.updateTime = moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss");
+            params.arrId = _this.arrId
+            params.delete_flag = this.delete_flag
+            $.post({
+                url: '/businessMgmt/businessParamConfig/combinationProductHandle/submitCheck.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.getlocalList()
+                        _this.getTableData(0, params.type);
+                        _this.product = "";
+                    }
+                    _this.showDialog('subMit', 'info', false, result.msg);
+                }
+            });
+        },
+
+        //删除业务数据保存到本地
+        showDelete: function (item) {
+            var _this = this
+            // var hasCheck = false;
+            // 判断业务接口数据与数据库有没有相同数据
+            // if (this.type == 0) {
+            //     if (this.arrId.indexOf(item.id.toString()) != -1 && item.status == '0') {
+            //         _this.oneId = item.id
+            //     } else {
+            //         _this.oneId = ''
+            //     }
+            // }
+
+            // this.id = item.id; //后端接口id
+            // this.mysqlId = item.mySQLId  //获取数据库表字段ID
+            // this.mysqlProduct = item.product; //为mysql执行修改传值
+
+            this.serialno = item.serialno;
+            this.groupid = item.groupid;
+            this.actionType = item.actionType;
+            this.startDate = $("#startDates").val(item.startDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') + ' ' + item.startTime.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3'));
+            this.startTime = item.startTime;
+            this.endDate = $("#endDates").val(item.endDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') + ' ' + item.endTime.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3'));
+            this.endTime = item.endTime;
+            this.operate = item.operate
+            this.delete_flag = item.delete_flag
+
+            this.showDialog('', 'del');
+        },
+        deleteUser: function () {
+            var _this = this;
+            // var ids= [];
+            // for (var i = 0; i < this.tableData.length; i++) {
+            //     if (this.tableData[i].check) {
+            //         ids.push(this.tableData[i].id);
+            //     }
+            // }
+            var params = {};
+            params.type = this.type;//状态参数
+            // params.myqsql = this.mysqlId; //数据表字段id
+            // params.oneId =_this.oneId; //根据id插入或者修改数据
+
+
+            params.serialno = this.serialno;
+            params.product = this.mysqlProduct;
+            params.groupid = this.groupid;
+            params.actionType = this.actionType;
+            params.startDate = moment(this.$refs.startDates.value).format('YYYYMMDD');
+            params.startTime = moment(this.$refs.startDates.value).format("HHmmss");
+            params.endDate = moment(this.$refs.endDates.value).format('YYYYMMDD');
+            params.endTime = moment(this.$refs.endDates.value).format("HHmmss");
+
+            params.operate = this.operate
+            console.log(params)
+            $.post({
+                url: '/businessMgmt/combinationProductConfig/combinationProductHandle/deleteParam.ajax',
+
+                data: params,
+                traditional: true,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.getTableData(0, params.type);
+                    }
+                    _this.showDialog('del', 'info', false, result.msg);
+                }
+            });
+        },
+
+        //本地数据撤销操作
+        showRevoke: function (item) {
+            var _this = this
+            // var hasCheck = false;
+            // 判断业务接口数据与数据库有没有相同数据
+            // if (this.type == 0) {
+            //     if (this.arrId.indexOf(item.id.toString()) != -1 && item.status == '0') {
+            //         _this.oneId = item.id
+            //     } else {
+            //         _this.oneId = ''
+            //     }
+            // }
+            this.id = item.id; //后端接口id
+            this.mysqlId = item.mySQLId  //获取数据库表字段ID
+
+            // this.serialno = item.serialno;
+            // this.groupid = item.groupid;
+            // this.actionType = item.actionType;
+            // this.startDate = $("#startDates").val(item.startDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') + ' ' + item.startTime.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3'));
+            // this.startTime = item.startTime;
+            // this.endDate = $("#endDates").val(item.endDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') + ' ' + item.endTime.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3'));
+            // this.endTime = item.endTime;
+
+            this.fundgroupType = item.fundgroupType;
+            this.groupname = item.groupname;
+            this.fundgroupDesc = item.fundgroupDesc;
+            this.fundgroupAdvise = item.fundgroupAdvise;
+            this.proPageurl = item.proPageurl;
+            this.normalPageurl = item.normalPageurl;
+            this.stopStatus = item.stopStatus;
+            this.grouptype = item.grouptype;
+            this.risklevel = item.risklevel;
+            this.initamount = item.initamount;
+            this.commro = item.commro;
+            this.minRedeemAmount = item.minRedeemAmount;
+            this.minChangeAmount = item.minChangeAmount;
+            this.minReserveAmount = item.minReserveAmount;
+            this.onlinedate = item.onlinedate;
+
+            this.operate = item.operate
+
+            this.showDialog('', 'del2');
+
+        },
+        deleteUser2: function () {
+            var _this = this;
+            var params = {};
+            params.type = this.type;//状态参数
+            params.myqsql = this.mysqlId; //数据表字段id
+            params.oneId = this.oneId; //根据id插入或者修改数据
+            params.operator = this.operator
+
+            // params.serialno = this.serialno;
+            // params.product = this.mysqlProduct;
+            // params.groupid = this.groupid;
+            // params.actionType = this.actionType;
+            // params.startDate = moment(this.$refs.startDates.value).format('YYYYMMDD');
+            // params.startTime = moment(this.$refs.startDates.value).format("HHmmss");
+            // params.endDate = moment(this.$refs.endDates.value).format('YYYYMMDD');
+            // params.endTime = moment(this.$refs.endDates.value).format("HHmmss");
+
+            params.fundgroupType = this.fundgroupType;
+            params.groupname = this.groupname;
+            params.fundgroupDesc = this.fundgroupDesc;
+            params.fundgroupAdvise = this.fundgroupAdvise;
+            params.proPageurl = this.proPageurl;
+            params.normalPageurl = this.normalPageurl;
+            params.stopStatus = this.stopStatus;
+            params.grouptype = this.grouptype;
+            params.risklevel = this.risklevel;
+            params.initamount = this.initamount;
+            params.commro = this.commro;
+            params.minRedeemAmount = this.minRedeemAmount;
+            params.minChangeAmount = this.minChangeAmount;
+            params.minReserveAmount = this.minReserveAmount;
+            params.onlinedate = this.onlinedate;
+
+            params.operate = this.operate
+            console.log(params)
+            $.post({
+                url: '/businessMgmt/combinationProductConfig/combinationProductHandle/deleteLocal.ajax',
+                data: params,
+                traditional: true,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.getTableData(0, params.type);
+                    }
+                    _this.showDialog('del2', 'info', false, result.msg);
+                }
+            });
+        },
+
+        // 重新提交
+        showSubmitAgain: function (item) {
+            var _this = this;
+            // var hasCheck = false;
+            this.operate = item.operate;
+            // 判断业务接口数据与数据库有没有相同数据
+            if (this.type == 0) {
+                if (this.arrId.indexOf(item.id.toString()) != -1 && item.status == '0') {
+                    _this.oneId = item.id
+                    // this.showDialog('', 'info', true, '数据库已有此条数据,请在本地数据里做修改操作');
+                    // return;
+                } else {
+                    _this.oneId = ''
+                }
+            }
+            this.mysqlId = item.mySQLId  //获取数据库表字段ID
+            this.id = item.id;
+
+            // this.mysqlProduct = item.product; //为mysql执行修改传值
+
+            this.serialno = item.serialno;
+            this.groupid = item.groupid;
+            this.actionType = item.actionType;
+            this.startDate = $("#startDates").val(item.startDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') + ' ' + item.startTime.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3'));
+            this.startTime = item.startTime;
+            this.endDate = $("#endDates").val(item.endDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') + ' ' + item.endTime.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3'));
+            this.endTime = item.endTime;
+            this.operate = item.operate
+            this.delete_flag = item.delete_flag
+            if (this.operate == 3) {
+                this.showDialog('', 'delAgain');
+
+            } else if ((this.operate != 3)) {
+                this.showDialog('', 'revise');
+            }
+        },
+        deleteAgain: function () {
+            var _this = this;
+            var params = {};
+            params.type = this.type;//状态参数
+            params.myqsql = this.mysqlId; //数据表字段id
+            params.oneId = this.oneId; //根据id插入或者修改数据
+            params.operator = this.operator
+
+            params.id = this.id//后端产品id
+            params.serialno = this.serialno;
+            params.product = this.mysqlProduct;
+            params.groupid = this.groupid;
+            params.actionType = this.actionType;
+            params.startDate = moment(this.$refs.startDates.value).format('YYYYMMDD');
+            params.startTime = moment(this.$refs.startDates.value).format("HHmmss");
+            params.endDate = moment(this.$refs.endDates.value).format('YYYYMMDD');
+            params.endTime = moment(this.$refs.endDates.value).format("HHmmss");
+            params.operate = this.operate
+            $.post({
+                url: '/businessMgmt/combinationProductConfig/combinationProductHandle/deleteAgain.ajax',
+                data: params,
+                traditional: true,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.getTableData(0, params.type);
+                    }
+                    _this.showDialog('delAgain', 'info', false, result.msg);
+                }
+            });
+        },
+        // 时间选择
+        setStartTime: function (value, type) {
+            var str = $('#startTime_' + type).val();
+            if (value === 'now') {
+                str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, this.getNowTime() + ' $4:$5:$6');
+            }
+            else if (value === 'future') {
+                str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '2099-12-31 $4:$5:$6' + '');
+            }
+            else if (value == 0) {
+                str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1-$2-$3 00:00:00');
+            }
+            else if (value == 9) {
+                str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1-$2-$3 09:00:00');
+            }
+            else if (value == 15) {
+                str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1-$2-$3 15:00:00');
+            }
+            $('#startTime_' + type).val(str);
+        },
+        setEndTime: function (value, type) {
+            var str = $('#endTime_' + type).val();
+            if (value === 'now') {
+                str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, this.getNowTime() + ' $4:$5:$6');
+            }
+            else if (value === 'future') {
+                str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '2099-12-31 $4:$5:$6' + '');
+            }
+            else if (value == 0) {
+                str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1-$2-$3 00:00:00');
+            }
+            else if (value == 9) {
+                str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1-$2-$3 09:00:00');
+            }
+            else if (value == 15) {
+                str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1-$2-$3 15:00:00');
+            }
+            $('#endTime_' + type).val(str);
+        },
+        getNowTime: function () {
+            var d = new Date();
+            var fixZero = function (num) {
+                return num < 10 ? '0' + num : num;
+            };
+            return [d.getFullYear(), d.getMonth() + 1, d.getDate()].map(function (value) {
+                return fixZero(value)
+            }).join('-');
+        },
+
+        //公共方法
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            }
+            else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            }
+            else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            }
+            else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+            else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+
+        // 单选
+        single: function (index) {
+            index.check = !index.check;
+        },
+        // check: function (index) {
+        //     index.check = !index.check;
+        // },
+        // // 用户全选
+        // selectAll: function (allCheck) {
+        //     var _this = this;
+        //     //如果父级被选中，那么子集循环，全被给checked=true
+        //     if (!allCheck) {
+        //         _this.tableData.forEach(function (item) {
+        //             item.check = true;
+        //         });
+        //     } else {
+        //         //相反，如果没有被选中，子集应该全部checked=false
+        //         _this.tableData.forEach(function (item) {
+        //             item.check = false;
+        //         });
+        //     }
+        // },
+        // //选择添加基金过滤
+        // filterList: function () {
+        //     var filterData = [];
+        //     var _this = this;
+        //     this.filterFundList.forEach(function (item) {
+        //         if (item.fundId.indexOf(_this.fundCode) > -1) {
+        //             filterData.push(item);
+        //         }
+        //     });
+        //     return filterData;
+        // },
+        //主表格分页方法
+        prev: function () {
+            this.currentIndex <= 0 ? 0 : this.currentIndex--;
+        },
+        next: function () {
+            this.currentIndex >= this.middleData.length - 1 ? this.middleData.length - 1 : this.currentIndex++;
+        },
+        changeIndex: function (index) {
+            this.currentIndex = index - 1;
+        },
+        toFirst: function () {
+            this.currentIndex = 0;
+        },
+        toLast: function () {
+            this.currentIndex = this.middleData.length - 1;
+        },
+
+        prev1: function () {
+            this.currentIndex <= 0 ? 0 : this.currentIndex--;
+        },
+        next1: function () {
+            this.currentIndex >= this.middleData.length - 1 ? this.middleData.length - 1 : this.currentIndex++;
+        },
+        changeIndex1: function (index) {
+            this.currentIndex = index - 1;
+        },
+        toFirst1: function () {
+            this.currentIndex = 0;
+        },
+        toLast1: function () {
+            this.currentIndex = this.middleData.length - 1;
+        },
+    },
+    // 类型状态
+    filters: {
+        // actionType: function (item) {
+        //     if (item) {
+        //         return item.replace(/01/g, '申购').replace(/02/g, '赎回').replace(/03/g, '定投').replace(/04/g, '调仓').replace(/05/g, '解散');
+        //     }
+        // },
+        // startTime: function (item) {
+        //     if (item) {
+        //         return item.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3')
+        //     }
+        // },
+        // endTime: function (item) {
+        //     if (item) {
+        //         return item.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3')
+        //     }
+        // },
+        chineseGrouptype: function (value) {
+            var obj = {
+                "1": "保守型",
+                "2": "稳健型",
+                "3": "平衡型",
+                "4": "进取型",
+                "5": "积极型",
+            }
+            if (obj[value]) {
+                return obj[value];
+            }
+            return value;
+        },
+        // 类型状态
+        fundTypeForFundgroup: function (value) {
+            var obj = {
+                "V": "货币类",
+                "R": "权益类",
+                "F": "固收类",
+                "O": "其他",
+            }
+            if (obj[value]) {
+                return obj[value];
+            }
+            return value;
+        },
+    }
+});
+
+

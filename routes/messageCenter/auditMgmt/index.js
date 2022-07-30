@@ -1,0 +1,10 @@
+
+module.exports = function (app) {
+    require('./leaveWordMgmt')(app);
+    require('./headToReview')(app);
+    require('./nicknameToReview')(app);
+    require('./idCardHandle')(app);
+    require('./idCardReview')(app);
+    require('./communityDynamic')(app);
+    require('./comment')(app);
+};

@@ -1,0 +1,250 @@
+module.exports = {
+    index: {
+        name: '业务管理'
+    },
+    IPOMgmtEC: {
+        index: 'IPOMgmt.html',
+        name: 'IPO管理_电商',
+        child: {
+            IPOMgmt: 'IPO管理',
+            IPOMgmtModify: 'IPO管理修改',
+            IPOMgmtReview: 'IPO管理复核',
+            IPOUpload: 'IPO文件上传',
+            IPOMgmtReviewDetail: 'IPO管理复核详情页',
+            fundChangeHandle: '基金转换经办',
+            fundChangeReview: '基金转换复核',
+            discountService: '折扣服务',
+            quotaService: '限额服务',
+            whiteList: '三宝限额白名单配置管理',
+        }
+    },
+    highFinancialMgmt: {
+        index: '',
+        name: '高端理财',
+        child: {
+            // electronicContractMgmt: '电子合同管理',
+            quotaMgmt: '额度管理',
+            bookingCodeMgmt: '流水号管理',
+            netQueryPrivilegeMgmt: '净值查询权限管理',
+            observationDaysMgmt: '观察日管理',
+            productAreaMgmt: '产品专区管理',
+            basicsParamMaintain: '基础参数维护',
+            // extraQuotaMgmt: '产品附加额度管理',
+            custCareQry: '产品关注查询',
+            // classificationGroup: '产品类别管理',
+            recommendOtherFund: '产品到期推荐管理',
+            fundSpecificPopulationList: '产品面向的特殊客户管理',
+            custGroupInfo: '客群创建',
+            custInfo: '名单管理',
+            custGroupMapping: '补充协议配置',
+            custGroupSign: '补充协议签署',
+            // openMgmt: '开放日管理',
+            // expectYieldService: '预期收益率维护',
+            investAudit: '合格投资者认定审核',
+            quotaMgmt: '额度管理',
+            bookingCodeMgmt: '流水号管理',
+            openDay: '开放日管理复核',
+            expectYieldService: '预期收益率维护',
+            investAudit: '合格投资者认定审核',
+            vipCancelHandle: '高端理财认购撤单经办',
+            vipCancelReview: '高端理财认购撤单复核'
+        }
+    },
+    highFinancialCompany: {
+        index: '',
+        name: '高端理财企业版',
+        child: {
+            enterpriseQuotaMgmt: '企业版额度管理',
+        }
+    },
+    pledgeBorrowMgmt: {
+        index: '',
+        name: '质押借款管理',
+        child: {}
+    },
+    bankChannelSetting: {
+        index: '',
+        name: '银行通道配置',
+        child: {}
+    },
+    hotWordSetting: {
+        index: '',
+        name: '热词参数配置',
+        child: {}
+    },
+    appointmentDealMgmt: {
+        index: '',
+        name: '预约交易管理',
+        child: {}
+    },
+
+    businessParamConfig: {
+        index: '',
+        name: '业务参数配置',
+        child: {
+            discountHandle: '折扣经办',
+            discountReview: '折扣复核',
+            discountTrial: '折扣试算',
+            quotaHandle: '限额经办',
+            quotaReview: '限额复核',
+            quotaTrial: '限额试算',
+            paymentHandle: '支付经办',
+            paymentReview: '支付复核',
+            productOpenDayMgmt: '产品预计开放日配置',
+            productInfoType: '产品信息类型配置',
+            nonsupport: '不支持特权折扣基金',
+            productAdditionInfo: '产品附加信息配置',
+            IPOPatternSetting: 'IPO模式配置',
+            IPOPreheatSetting: 'IPO预热配置'
+        }
+
+    },
+    businessParamConfigOC: {
+        index: '',
+        name: '业务参数配置_营运',
+        child: {
+            discountHandle: '折扣经办',
+            discountReview: '折扣复核',
+            quotaHandle: '限额经办',
+            quotaReview: '限额复核'
+        }
+
+    },
+    IPOMgmtOC: {
+        index: '',
+        name: 'IPO管理_营运',
+        child: {
+            IPOSetting: 'IPO设置',
+            IPOSettingModify: 'IPO设置操作',
+            IPOSettingDetail: 'IPO设置详情',
+            IPOSetReview: 'IPO设置复核',
+            datumRateHandle: '基准费率经办',
+            datumRateReview: '基准费率复核'
+        }
+    },
+    pauseTradeMgmt: {
+        index: '',
+        name: '暂停交易管理',
+        child: {
+            pauseTradeHandle: '暂停交易经办',
+            pauseTradeReview: '暂停交易复核',
+            pauseTradeStatus: '暂停交易状态',
+        }
+    },
+    largeLimitMgmt: {
+        index: '',
+        name: '大额限购管理',
+        child: {
+            largeLimitHandle: '大额限购经办',
+            largeLimitReview: '大额限购复核',
+        }
+    },
+    attendQuery: {
+        index: '',
+        name: '坐席查询',
+        child: {
+            customerDataQuery: '客户资料查询'
+        }
+    },
+    tradeInfoQuery: {
+        index: '',
+        name: '交易信息查询',
+        child: {
+            tradeApplyForQuery: '交易信息查询'
+        }
+    },
+    closingMgmt: {
+        index: '',
+        name: '收市管理',
+        child: {
+            closingMgmt: '收市管理'
+        }
+    },
+    IPOMgmtFD: {
+        index: '',
+        name: 'IPO管理_资金',
+        child: {
+            IPOMgmtFund: 'IPO管理_资金',
+            IPOMgmtFundReview: 'IPO管理_资金复核',
+            IPOMgmtFundModify: '设置资金相关处理日期'
+        }
+    },
+    switchMgmt: {
+        index: '',
+        name: '开关管理',
+        child: {
+            switchCategoryMgmt: '开关类别管理',
+            fundSwitchMgmt: '基金开关管理'
+        }
+    },
+    fundTag: {
+        index: '',
+        name: '基金标签',
+        child: {
+            fundTagSetting: '基金标签设置',
+            fundTagMgmt: '基金标签管理',
+            filterMgmt: '筛选条件管理',
+            fundTagSettingNew: '基金标签设置(新)',
+            fundTagMgmtNew: '基金标签管理(新)'
+        }
+    },
+    combinationProductConfig: {
+        index: '',
+        name: '组合产品配置',
+        child: {
+            combinationProductHandle: '组合产品经办',
+            combinationProductReview: '组合产品复核',
+            reportMgmt: '定期报告管理',
+            investmentRisk: '投顾风控监控',
+            productPoolMgmt: '组合产品池管理',
+            productParamsAdd: '组合产品补充参数',
+            productOperationRecord:'组合发车运作记录',
+            serialInformation: '发车系列信息设定',
+            productTradeHandle: '组合产品交易经办',
+            productTradeReview: '组合产品交易复核',
+            triple: '三方组合明细配置',
+            productTargetProfitPlanSetting: '组合目标盈计划设置',
+            groupDetails: '组合详情页配置',
+            investmentAdviser: '配置投顾费率'
+        }
+    },
+    fundComparison: {
+        index: '',
+        name: '基金比对规则',
+        child: {
+            basicInformation: '基金基础信息',
+            rateHandle: '基准费率经办',
+            highFinancialOpen: '高端理财开放日'
+        }
+    },
+    IPOMgmtOCReview: {
+        index: '',
+        name: 'IPO管理_营运(复核)',
+        child: {
+            IPOBaseInfo: 'IPO设置复核-基本信息',
+            IPOBaseInfoDetail: 'IPO设置复核-基本信息',
+            IPOLimitDetail: 'IPO设置复核-交易限额',
+            IPOLimit: 'IPO设置复核-交易限额',
+            datumRate: '基准费率复核',
+            fundTransform: '基金转换列表查询',
+            paramsCheck: '基金转换参数审核',
+            transferBlacklist: '基金转换关系黑名单',
+            transferWhitelist: '基金转换关系白名单',
+            largePurchaseLimit: '大额限购复核',
+            pauseTradeDataReview:'暂停交易数据复核',
+            publishHandle: 'IPO设置经办-发行设置',
+            publishReview: 'IPO设置复核-发行设置',
+            financialOpenDayReview: '高端理财开放日复核'
+        }
+    },
+	productInfoConfig: {
+		index: '',
+		name: '产品信息配置',
+		child: {
+		    productExpandType:'产品扩展信息类型',
+		    productExpandContent:'产品扩展信息内容',
+		    productExpandContentOperate:'产品扩展信息内容',
+            freeRideProductConfig:'顺风车产品配置'
+		}
+	}
+};

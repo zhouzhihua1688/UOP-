@@ -1,0 +1,425 @@
+new Vue({
+    el: '#content',
+    data: {
+        s_partnerid: "",
+        s_fundid: "",
+        s_status: "",
+        d_partnerid: "",
+        d_fundid: "",
+        partnerid: "",
+        fundid: "",
+        fundname: "",
+        status: "",
+        tano: "",
+        melonmd: "",
+        nonuniformity: "",
+        uniformity: "",
+        unfeedback: "",
+        feedbacktime: "",
+        diaMsg: "",
+        tableData: [],
+        //   表格分页
+        currentIndex: 0,
+        pageMaxNum: '20',
+        condition: "",
+        fbStatus: "",
+        branchcode: "",
+        shortnm: "",
+        userid: "",
+        username: "",
+        email: "",
+        mobile: "",
+        userpw: ""
+    },
+    computed: {
+        middleData: function () {
+            var middleData = [];
+            var filterData = [];
+            var pageMaxNum = parseInt(this.pageMaxNum);
+            var _this = this;
+            this.tableData.forEach(function (jsonObj) {
+                var valueArr = [];
+                for (var prop in jsonObj) {
+                    valueArr.push(jsonObj[prop]);
+                }
+                for (var i = 0, len = valueArr.length; i < len; i++) {
+                    if (valueArr[i]) {
+                        if (valueArr[i].toString().indexOf(_this.condition) != -1) {
+                            filterData.push(jsonObj);
+                            break;
+                        }
+                    }
+                }
+            });
+            if (filterData.length <= pageMaxNum) {
+                middleData.push(filterData);
+                return middleData;
+            } else {
+                var i = 0;
+                while ((i + 1) * pageMaxNum < filterData.length) {
+                    middleData.push(filterData.slice(i * pageMaxNum, (i + 1) * pageMaxNum));
+                    i++;
+                }
+                middleData.push(filterData.slice(i * pageMaxNum, filterData.length));
+                return middleData;
+            }
+        },
+        viewData: function () {
+            var currentIndex = parseInt(this.currentIndex);
+            return this.middleData[currentIndex];
+        }
+    },
+    watch: {
+        pageMaxNum: {
+            handler: function (val, oldval) {
+                this.currentIndex = 0;
+            }
+        },
+        condition: {
+            handler: function (val, oldval) {
+                this.currentIndex = 0;
+            }
+        }
+    },
+    mounted: function () {
+        var _this = this;
+        var dialogs = ['', '', '', 'info'];
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        _this.validAddForm();
+        _this.validUpdateForm();
+        //初始化数据
+        $.get({
+            url: '/thirdPartyOperation/products/pspfund/search.ajax',
+            success: function (result) {
+                console.log(result)
+                if (result.error == 0) {
+
+                    _this.tableData = result.data;
+
+                } else {
+                    _this.showDialog('', 'info', false, '数据获取失败');
+                }
+            },
+            error: function () {
+                _this.showDialog('', 'info', false, '数据获取失败');
+            }
+        });
+
+    },
+    methods: {
+
+        search: function () {
+            var _this = this;
+            var params = {};
+            params.partnerid = _this.s_partnerid;
+            params.fundid = _this.s_fundid;
+            if (_this.s_status != "") {
+                params.status = _this.s_status;
+            }
+            console.log(params);
+            $.get({
+                url: '/thirdPartyOperation/products/pspfund/search.ajax',
+                data: params,
+                success: function (result) {
+                    console.log(params)
+                    console.log(result)
+                    if (result.error == 0) {
+
+                        _this.tableData = result.data;
+                    } else {
+                        _this.showDialog('', 'info', false, '数据获取失败');
+                    }
+                },
+                error: function () {
+                    _this.showDialog('', 'info', false, '数据获取失败');
+                }
+            });
+        },
+
+
+        // dialog表格校验
+        validAddForm: function () {
+            //绑定验证器
+            return $("#addForm").validate({
+                rules: {
+                    partnerid: {
+                        required: true,
+                        rangelength:[10,10],
+                        number:true,
+                    },
+                    fundid:{
+                        required:true,
+                        rangelength:[6,6],
+                        number:true,
+                    },
+                    fundname:{
+                        required:true,
+                    },
+                    tano:{
+                        required:true,
+                        maxlength:4,
+                    },
+                    status:{
+                        required:true,
+                    },
+                    melonmd:{
+                        maxlength:4,
+                    }
+                },
+                messages: {
+                    partnerid: {
+                        required: "渠道编号不能为空!",
+                        rangelength: "必须为10位的数字！",
+                        number: "必须为数字类型！",
+                    },
+                    fundid: {
+                        required: "产品ID不能为空!",
+                        rangelength: "必须为6位的数字！",
+                        number: "必须为数字类型！",
+                    },
+                    fundname:{
+                        required:"产品名称不能为空！",
+                    },
+                    tano:{
+                        required:"tano不能为空！",
+                        maxlength:"不得超过4位",
+                    },
+                    status:{
+                        required:"状态值不能为空！",
+                    },
+                    melonmd:{
+                        maxlength:"不得超过4位",
+                    }
+                },
+
+                submitHandler:function() {
+                    return false;
+                },
+            });
+
+        },
+
+        validUpdateForm:function(){
+            //绑定验证器
+            return $("#updateForm").validate({
+                rules: {
+
+                    fundname:{
+                        required:true,
+                    },
+                    tano:{
+                        required:true,
+                        maxlength:4,
+                    },
+                    status:{
+                        required:true,
+                    },
+                    melonmd:{
+                        maxlength:4,
+                    }
+                },
+                messages: {
+                    fundname:{
+                        required:"产品名称不能为空！",
+                    },
+                    tano:{
+                        required:"tano不能为空！",
+                        maxlength:"不得超过4位",
+                    },
+                    status:{
+                        required:"状态值不能为空！",
+                    },
+                    melonmd:{
+                        maxlength:"不得超过4位",
+                    }
+                },
+
+                submitHandler:function() {
+                    return false;
+                },
+            });
+        },
+
+        showAdd: function () {
+            this.partnerid = "";
+            this.fundid = "";
+            this.fundname = "";
+            this.status = "1";
+            this.tano = "";
+            this.melonmd = "";
+            this.showDialog('', 'showAdd');
+        },
+
+        add: function () {
+            var _this = this;
+            if (!_this.validAddForm().form()) return;
+            var params = {};
+            params.partnerid = _this.partnerid;
+            params.fundid = _this.fundid;
+            params.fundname = _this.fundname;
+            params.status = _this.status;
+            params.tano = _this.tano;
+            params.melonmd = _this.melonmd;
+            console.log(params);
+
+            $.post({
+                url: '/thirdPartyOperation/products/pspfund/add.ajax',
+                data: params,
+                success: function (result) {
+                    console.log(params);
+                    console.log(result);
+                    if (result.error == 0) {
+                        _this.showDialog('showAdd', '');
+                        if (result.data.isSuccess) {
+                            _this.showDialog('', 'info', false, '保存成功！');
+                            _this.search();
+                        } else {
+                            _this.showDialog('', 'info', false, result.data.errMsg);
+                        }
+                    } else {
+                        _this.showDialog('', 'info', false, '数据获取失败');
+                    };
+                },
+                error: function () {
+                    _this.showDialog('', 'info', false, '数据获取失败');
+                }
+            });
+
+
+        },
+        //去更新
+        showUpdate: function (item) {
+            _this = this;
+            _this.partnerid = item.partnerid;
+            _this.fundid = item.fundid;
+            _this.fundname = item.fundname;
+            _this.tano = item.tano;
+            _this.melonmd = item.melonmd;
+            _this.status = item.status;
+            _this.showDialog('', 'showUpdate');
+        },
+
+        update: function () {
+            _this=this;
+            if (!_this.validUpdateForm().form()) return;
+            var params = {};
+            params.partnerid = _this.partnerid;
+            params.fundid = _this.fundid;
+            params.fundname = _this.fundname;
+            params.status = _this.status;
+            params.tano = _this.tano;
+            params.melonmd = _this.melonmd;
+            console.log(params);
+
+            $.post({
+                url: '/thirdPartyOperation/products/pspfund/update.ajax',
+                data: params,
+                success: function (result) {
+                    console.log(params);
+                    console.log(result);
+                    if (result.error == 0) {
+                        _this.showDialog('showUpdate', '');
+                        if (result.data.isSuccess) {
+                            _this.showDialog('', 'info', false, '修改成功！')
+                            _this.search();
+                        } else {
+                            _this.showDialog('', 'info', false, '修改异常！')
+                        }
+                    } else {
+                        _this.showDialog('', 'info', false, '数据获取失败');
+                    }
+                },
+                error: function () {
+                    _this.showDialog('', 'info', false, '数据获取失败');
+                }
+            });
+
+        },
+
+        todel: function (partnerid, fundid) {
+            _this = this;
+            _this.d_partnerid = partnerid;
+            _this.d_fundid = fundid;
+            _this.showDialog('', 'showDelete');
+        },
+        del: function () {
+            _this = this;
+            var params = {};
+            params.partnerid = this.d_partnerid;
+            params.fundid = this.d_fundid;
+            console.log(params);
+
+            $.get({
+                url: '/thirdPartyOperation/products/pspfund/delete.ajax',
+                data: params,
+                success: function (result) {
+                    console.log(params);
+                    console.log(result);
+                    if (result.error == 0) {
+                        if (result.data.isSuccess) {
+                            _this.showDialog('', 'info', false, '删除成功！')
+                            _this.search();
+                        } else {
+                            _this.showDialog('', 'info', false, '删除异常！')
+                        }
+                    } else {
+                        _this.showDialog('', 'info', false, '数据获取失败');
+                    }
+                },
+                error: function () {
+                    _this.showDialog('', 'info', false, '数据获取失败');
+                }
+
+            });
+        },
+        // 主表格分页方法
+        prev: function () {
+            this.currentIndex <= 0 ? 0 : this.currentIndex--;
+        },
+        next: function () {
+            this.currentIndex >= this.middleData.length - 1 ? this.middleData.length - 1 : this.currentIndex++;
+        },
+        changeIndex: function (index) {
+            this.currentIndex = index - 1;
+        },
+
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            } else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            } else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            } else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            } else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        }
+    }
+
+});

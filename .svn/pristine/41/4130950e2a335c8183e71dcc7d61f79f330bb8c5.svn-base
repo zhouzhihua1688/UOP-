@@ -1,0 +1,97 @@
+//客服操作接口总配置
+let customerService;
+if (global.envConfig.customerService) {
+    customerService = global.envConfig.customerService;
+} else {
+    customerService = global.envConfig.inner_gateway;
+}
+let icif;
+if (global.envConfig.icif) {
+    icif = global.envConfig.icif;
+} else {
+    icif = global.envConfig.inner_gateway;
+}
+
+module.exports = {
+    accountQuery: {//账户查询
+        custInfo: {//客户信息查询
+            getInfo: `${customerService}/cos/v1/user/composite-info`,
+            userTiedCard: `${customerService}/cos/v1/config/monitor/cards-with-avail`,//客户绑卡信息
+            userHistory: `${customerService}/cos/v1/config/monitor/frozen-records`,//客户历史冻结记录
+            userTradeRecords: `${customerService}/cos/v1/config/monitor/trade-records`,//客户交易流水
+            unfreezeList: `${customerService}/cos/v1/user/unfreeze-branches`,//非冻结状态列表
+            freezeList: `${customerService}/cos/v1/user/frozen-branches`,//冻结列表
+            frozenReason: `${customerService}/cos/v1/config/dictionary/frozen-reason`,//冻结列表
+            frozen: `${customerService}/cos/v1/config/monitor/freeze`,//冻结
+            unfreeze: `${customerService}/cos/v1/config/monitor/unfreeze`,
+            getCustNo: `${icif}/icif/v1/custs/base/qry`,
+            custNoByBank: `${icif}/icif/v1/bank-cards/query-bank-cust-trade-acct`
+        }
+    },
+    bankCardAudit: {//变更银行卡审核
+        changeCard: {//银行卡变更
+            getList: `${customerService}/cos/v1/config/monitor/bankcard-change/composite-bankcard-info`,
+            upload: `${customerService}/cos/v1/config/monitor/bankcard-change/upload`,
+            submitModify: `${customerService}/cos/v1/config/monitor/bankcard-change`,
+
+        },
+        businessHandle: {//业务经办
+            getList: `${customerService}/cos/v1/config/monitor/bankcard-change/query-by-page`,
+
+        },
+        businessReview: {//业务复核
+            getList: `${customerService}/cos/v1/config/monitor/bankcard-change/query-by-page`,
+
+        },
+        applyRecord: {//申请记录
+            getList: `${customerService}/cos/v1/config/monitor/bankcard-change/query-by-page`,
+        },
+        review: {//内嵌页
+            getList: `${customerService}/cos/v1/config/monitor/bankcard-change/detail`,
+            img: `${customerService}/cos/v1/config/monitor/bankcard-change/download`,
+            auditHandle: `${customerService}/cos/v1/config/monitor/bankcard-change/audit`,
+            auditReview: `${customerService}/cos/v1/config/monitor/bankcard-change/reaudit`,
+            sendSms: `${customerService}/cos/v1/config/monitor/bankcard-change/send-sms`,
+
+        }
+    },
+    assetTestify: {//资产证明
+        applyQuery: {//申请查询
+            getList: `${customerService}/cos/v1/config/monitor/offline-asset-certifications`,
+            update: `${customerService}/cos/v1/config/monitor/offline-asset-certifications`,
+
+        },
+        doneQuery: {//已处理查询
+            getList: `${customerService}/cos/v1/config/monitor/offline-asset-certifications/handled`,
+        }
+    },
+    modifyPhoneNum: {//修改手机号审核
+        businessHandle: {//业务经办
+            getList: `${customerService}/cos/v1/config/monitor/mobile-change/query-by-page`,
+
+        },
+        businessReview: {//业务复核
+            getList: `${customerService}/cos/v1/config/monitor/mobile-change/query-by-page`,
+        },
+        applyRecord: {//申请记录
+            getList: `${customerService}/cos/v1/config/monitor/mobile-change/query-by-page`,
+        },
+        review: {//内嵌页
+            getList: `${customerService}/cos/v1/config/monitor/mobile-change/detail`,
+            img: `${customerService}/cos/v1/config/monitor/bankcard-change/download`,
+            auditHandle: `${customerService}/cos/v1/config/monitor/mobile-change/audit`,
+            auditReview: `${customerService}/cos/v1/config/monitor/mobile-change/reaudit`,
+            sendSms: `${customerService}/cos/v1/config/monitor/mobile-change/send-sms`,
+
+        }
+    },
+    selfFundManage: {//本金处理
+        staticFund: {
+            getList: `${customerService}/cos/v1/bankcards/principal-for-monitor`,
+            submitData: `${customerService}/cos/v1/bankcards/principal`,
+        },
+        batchStaticFund: {
+            batchModify: `${customerService}/cos/v1/bankcards/principal/modify-by-day`
+        }
+    }
+}

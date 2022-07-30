@@ -1,0 +1,375 @@
+<div id="fundDetail" class="tab-pane " style="overflow: hidden;">
+    <table class="table table-bordered table-hover ">
+        <thead>
+            <tr>
+                <th class="center table_title_modify" colspan="6">上架管理</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-right">是否上架</td>
+                <td class="text-left" v-html="fundDetail.onsaleflag"></td>
+                <td class="text-right">上架时间</td>
+                <td class="text-left" v-html="fundDetail.onsaledate+fundDetail.onsaletime"></td>
+                <td class="text-right">募集结束时间</td>
+                <td class="text-left" v-html="fundDetail.onsaleenddate"> </td>
+            </tr>
+            <tr>
+                <td class="text-right">是否展示募集结束时间</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.isShowOnsaleEnddate"></td>
+            </tr>
+        </tbody>
+        <thead>
+            <tr>
+                <th class="center table_title_modify" colspan="6"> 基本信息配置 </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-right">产品简称</td>
+                <td class="text-left" v-html="fundInfo.fundnm"></td>
+                <td class="text-right">显示顺序</td>
+                <td class="text-left" v-html="fundInfo.displayorder"></td>
+                <td class="text-right">投资方向</td>
+                <td class="text-left" v-html="fundExtension.investtype"></td>
+            </tr>
+            <tr>
+                <td class="text-right">产品期限</td>
+                <td class="text-left">
+                    <p v-html="fundDetail.fundperiod"></p>
+                    <p v-html="fundDetail.fundperiodunit"></p>
+                </td>
+                <td class="text-right">收益类型</td>
+                <td class="text-left" v-html="fundDetail.expectincomedesc"></td>
+                <td class="text-right">预期收益</td>
+                <td class="text-left" v-html="fundInfo.yield"></td>
+            </tr>
+            <tr>
+                <td class="text-right">期限拆分</td>
+                <td class="text-left" v-html="fundDetail.fundperiodsplit"></td>
+                <td class="text-right">是否支持转场内</td>
+                <td class="text-left" v-html="fundExtension.trancustodyFlg"> </td>
+                <td class="text-right">基金支持定投类型配置</td>
+                <td class="text-left" v-html="fundDetail.mipType"> </td>
+            </tr>
+            <tr>
+                <td class="text-right">是否推荐</td>
+                <td class="text-left" v-html="fundDetail.isrecommend"></td>
+                <td class="text-right">推荐标签</td>
+                <td class="text-left" v-html="fundDetail.recommendtype"></td>
+                <td class="text-right">是否支持续约</td>
+                <td class="text-left" v-html="fundDetail.renewtag"></td>
+            </tr>
+            <tr>
+                <td class="text-right">申购开放日期</td>
+                <td class="text-left" v-html="fundDetail.purchaseOpendDate"></td>
+                <td class="text-right">赎回开放日期</td>
+                <td class="text-left" colspan="3" v-html="fundDetail.redeemOpendDate"></td>
+
+            </tr>
+            <tr>
+                <td class="text-right">营销信息 </td>
+                <td class="text-left" colspan="3" v-html="fundDetail.recommendintro"></td>
+                <td class="text-right">预约赎回功能提前开放</td>
+                <td class="text-left" v-html="fundDetail.reservedtahead4opendt">
+                </td>
+            </tr>
+            <tr>
+                <td class="text-right">净值公布类型 </td>
+                <td class="text-left" v-html="fundDetail.navpubtype"></td>
+                <td class="text-right">信息披露对象</td>
+                <td class="text-left" v-html="fundDetail.openflag"></td>
+                <td class="text-right">是否允许申购撤单</td>
+                <td class="text-left" v-html="fundDetail.allowbidcancel"></td>
+            </tr>
+            <tr>
+                <td class="text-right">产品大类</td>
+                <td class="text-left" v-html="fundDetail.fundtypeBig"></td>
+                <td class="text-right">备案日</td>
+                <td class="text-left" v-html="fundDetail.recordday"></td>
+            </tr>
+        </tbody>
+        <thead>
+            <tr>
+                <th class="center  table_title_modify" colspan="6">产品详情</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-right">详情模板</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.detailtemplate"></td>
+            </tr>
+            <tr>
+                <td class="text-right">杠杆分级</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.capitallevel">
+                </td>
+            </tr>
+            <tr>
+                <td class="text-right">适合人群</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.targetcustomer"></td>
+            </tr>
+            <tr>
+                <td class="text-right">购买限制</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.quotaDesc">
+                </td>
+            </tr>
+            <tr>
+                <td class="text-right">参与退出规则</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.fundopenruledesc"></td>
+            </tr>
+            <tr>
+                <td class="text-right">托管人</td>
+                <td class="text-left" v-html="fundExtension.trusteename"> </td>
+                <td class="text-right">认购费</td>
+                <td class="text-left" v-html="fundExtension.subrate"> </td>
+                <td class="text-right">申购费</td>
+                <td class="text-left" v-html="fundExtension.currentrate"></td>
+            </tr>
+            <tr>
+                <td class="text-right">违约退出费率</td>
+                <td class="text-left" v-html="fundExtension.breakcontractratio"></td>
+                <td class="text-right">固定管理费</td>
+                <td class="text-left" v-html="fundExtension.managerratio"></td>
+                <td class="text-right">托管费</td>
+                <td class="text-left" v-html="fundExtension.trusteeratio"></td>
+            </tr>
+            <tr>
+                <td class="text-right">客户服务费</td>
+                <td class="text-left" v-html="fundExtension.custserviceratio"></td>
+                <td class="text-right">投资经理</td>
+                <td class="text-left" v-html="fundExtension.investbroker"></td>
+                <td class="text-right">退出费</td>
+                <td class="text-left" v-html="fundExtension.quitrate"></td>
+            </tr>
+            <tr>
+                <td class="text-right">业绩提成</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.achievementdata"></td>
+            </tr>
+            <tr>
+                <td class="text-right">风险准备金</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.riskreserveamt"></td>
+            </tr>
+            <tr>
+                <td class="text-right">收益分配</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.incomedistbute"></td>
+            </tr>
+            <tr>
+                <td class="text-right">投资目标</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.investtarget">
+                </td>
+            </tr>
+            <tr>
+                <td class="text-right">投资范围</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.investscope">
+                </td>
+            </tr>
+            <tr>
+                <td class="text-right">产品在线签约的风险提示</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.onsignriskinfo"></td>
+            </tr>
+            <tr>
+                <td class="text-right">协议风险配置</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.contract"></td>
+            </tr>
+            <tr>
+                <td class="text-right">文案配置</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.tips"></td>
+            </tr>
+            <tr>
+                <td class="text-right">止损要求</td>
+                <td class="text-left" v-html="fundDetail.stoplossdes"></td>
+                <td class="text-right">保有量归属电商</td>
+                <td class="text-left" v-html="fundDetail.ecflag"></td>
+                <td class="text-right">份额详细模板</td>
+                <td class="text-left" v-html="fundDetail.balancedetailtemplate">
+                </td>
+            </tr>
+            <tr>
+                <td class="text-right">客户手工输入风险揭示</td>
+                <td class="text-left" v-html="fundDetail.onsignriskinputtag"></td>
+                <td class="text-right">CRM推送的产品到期日</td>
+                <td class="text-left" v-html="fundDetail.crmenddate"></td>
+                <td class="text-right">修改到期日 </td>
+                <td class="text-left" v-html="fundDetail.crmenddatedesc"></td>
+            </tr>
+            <tr>
+                <td class="text-right">产品合同</td>
+                <td class="text-left" colspan="2" v-html="fundDetail.attachcontract"></td>
+                <td class="text-right">投资说明书</td>
+                <td class="text-left" colspan="2" v-html="fundDetail.attachinvestexp"></td>
+            </tr>
+            <tr>
+                <td class="text-right">认购风险申明书</td>
+                <td class="text-left" colspan="2" v-html="fundDetail.attachriskexp"></td>
+                <td class="text-right">产品宣传册</td>
+                <td class="text-left" colspan="2" v-html="fundDetail.attachpdtprom"></td>
+            </tr>
+            <tr>
+                <td class="text-right">保证金协议</td>
+                <td class="text-left" colspan="2" v-html="fundDetail.deposit"></td>
+                <td class="text-right">承诺函</td>
+                <td class="text-left" colspan="2" v-html="fundDetail.commitment"></td>
+            </tr>
+            <tr>
+                <td class="text-right">补充协议</td>
+                <td class="text-left" colspan="2" v-html="fundDetail.attachaddendum"></td>
+                <td class="text-right">质押借款协议</td>
+                <td class="text-left" colspan="2" v-html="fundDetail.attachpledge"></td>
+            </tr>
+
+            <tr>
+                <td class="text-right">Banner</td>
+                <td class="text-left" colspan="2" v-html="fundDetail.attachbanner"></td>
+                <td class="text-right">Banner(手机)</td>
+                <td class="text-left" colspan="2" v-html="fundDetail.attachbannermob"></td>
+            </tr>
+            <tr>
+                <td class="text-right">上传自定义详情(仅支持zip格式)</td>
+                <td class="text-left" colspan="2" v-html="fundDetail.attachcustomdetail"></td>
+                <td class="text-right">上传手机自定义详情(仅支持zip格式)</td>
+                <td class="text-left" colspan="2" v-html="fundDetail.attachcustomdetailm"></td>
+            </tr>
+            <tr>
+                <td class="text-right">一页通</td>
+                <td class="text-left" colspan="2" v-html="fundDetail.onepage"></td>
+            </tr>
+        </tbody>
+        <thead>
+            <tr>
+                <th class="center  table_title_modify" colspan="6">公募基金信息</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-right">产品链接</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.url"></td>
+            </tr>
+            <tr>
+                <td class="text-right">投资建议 </td>
+                <td class="text-left" colspan="6" v-html="fundDetail.suggestion"></td>
+            </tr>
+        </tbody>
+        <thead>
+            <tr>
+                <th class="center  table_title_modify" colspan="6">质押信息配置</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-right">质押类型</td>
+                <td class="text-left" v-html="fundDetail.pledgetype"></td>
+                <td class="text-right">质押可贷比例</td>
+                <td class="text-left" v-html="fundDetail.pledgeratio"></td>
+                <td class="text-right">最长借款期限（天）</td>
+                <td class="text-left" v-html="fundDetail.lendingperiod"></td>
+            </tr>
+            <tr>
+                <td class="text-right">禁止质押开始时间</td>
+                <td class="text-left" v-html="fundDetail.pssbanbegindate+fundDetail.pssbanbegintime"></td>
+                <td class="text-right">禁止质押截止时间</td>
+                <td class="text-left" v-html="fundDetail.pssbanenddate+fundDetail.pssbanendtime"></td>
+                <td class="text-right">贷款日利率</td>
+                <td class="text-left" v-html="fundDetail.lenddayrate"></td>
+            </tr>
+            <tr>
+                <td class="text-right">参考年利率</td>
+                <td class="text-left" v-html="fundDetail.refyearrate"></td>
+                <td class="text-right">预警线</td>
+                <td class="text-left" v-html="fundDetail.psswarnposition"></td>
+                <td class="text-right">平仓线</td>
+                <td class="text-left" v-html="fundDetail.psscloseposition"></td>
+            </tr>
+            <tr>
+                <td class="text-right">罚息日利率</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.penaltydayrate"></td>
+
+            </tr>
+        </tbody>
+        <thead>
+            <tr>
+                <th class="center  table_title_modify" colspan="6">活动信息配置</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-right">活动类型</td>
+                <td class="text-left" v-html="fundDetail.activitytype"></td>
+                <td class="text-right">活动开始时间</td>
+                <td class="text-left" v-html="fundDetail.activitybegindate"></td>
+                <td class="text-right">活动结束时间</td>
+                <td class="text-left" v-html="fundDetail.activityenddate"></td>
+            </tr>
+        </tbody>
+        <thead>
+            <tr>
+                <th class="center  table_title_modify" colspan="6">高端理财产品信息配置</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-right">产品购买状态</td>
+                <td class="text-left" v-html="fundDetail.onsalestatus"></td>
+                <td class="text-right">可购买客户</td>
+                <td class="text-left" v-html="fundDetail.salecusttype"></td>
+                <td class="text-right">倒计时显示配置</td>
+                <td class="text-left" v-html="fundDetail.countdownflag"> </td>
+            </tr>
+            <tr>
+                <td class="text-right">轮播显示配置</td>
+                <td class="text-left" v-html="fundDetail.ispaly"> </td>
+                <td class="text-right">倒计时文案</td>
+                <td class="text-left" v-html="fundDetail.countdowndesc"></td>
+                <td class="text-right">倒计时结束时间</td>
+                <td class="text-left" v-html="fundDetail.countdownenddate+fundDetail.countdownendtime"> </td>
+            </tr>
+            <tr>
+                <td class="text-right">剩余额度显示</td>
+                <td class="text-left" v-html="fundDetail.remainamttag"> </td>
+                <td class="text-right">流水号通道显示</td>
+                <td class="text-left" v-html="fundDetail.reservecodetag"> </td>
+                <td class="text-right">开抢标志</td>
+                <td class="text-left" v-html="fundDetail.rushbuytag"> </td>
+            </tr>
+            <tr>
+                <td class="text-right">开抢文案</td>
+                <td class="text-left" v-html="fundDetail.rushbuydesc"> </td>
+                <td class="text-right">开抢时间</td>
+                <td class="text-left" v-html="fundDetail.rushbuydate+fundDetail.rushbuytime"></td>
+                <td class="text-right">预期收益率（营销信息）</td>
+                <td class="text-left" v-html="fundDetail.expectyield"> </td>
+            </tr>
+            <tr>
+                <td class="text-right">份额起息日</td>
+                <td class="text-left" v-html="fundDetail.sharecarrydate"> </td>
+                <td class="text-right">份额到期日</td>
+                <td class="text-left" v-html="fundDetail.sharenextcarrydate"></td>
+                <td class="text-right">购买人数限制</td>
+                <td class="text-left" v-html="fundDetail.buyerlimitnum"></td>
+            </tr>
+            <tr>
+                <td class="text-right">赎回极差控制开关</td>
+                <td class="text-left" v-html="fundDetail.needredeemrangetag"> </td>
+                <td class="text-right">赎回极差</td>
+                <td class="text-left" v-html="fundDetail.redeemrangeamt"> </td>
+                <td class="text-right">适合人群</td>
+                <td class="text-left" v-html="fundDetail.targetcustomerselect"></td>
+            </tr>
+            <tr>
+                <td class="text-right">份额明细中的预期收益率</td>
+                <td class="text-left" v-html="fundDetail.balancerefyielddesc"></td>
+                <td class="text-right">产品期数类型</td>
+                <td class="text-left" v-html="fundDetail.singletermtag"></td>
+                <td class="text-right">产品到期TA操作</td>
+                <td class="text-left" v-html="fundDetail.actionwhenmatured"></td>
+            </tr>
+
+            <tr>
+                <td class="text-right">客户持有份额的备注说明</td>
+                <td class="text-left" colspan="6" v-html="fundDetail.sharedetailremark"> </td>
+            </tr>
+
+        </tbody>
+    </table>
+
+
+</div>

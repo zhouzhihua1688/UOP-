@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <style>
+        #info {
+            z-index: 9999;
+        }
+
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div>label {
+            padding: 10px 0;
+            text-align: right;
+        }
+
+        .form-inline span {
+            text-align: left;
+        }
+
+        .chosen-single {
+            height: 34px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+        }
+
+        @media (min-width: 768px) {
+            .modal-dialog {
+                width: 700px;
+                margin: 30px auto;
+            }
+        }
+        .custom_productList {
+            display: flex;
+            justify-content:space-around;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--删除提示信息弹窗-->
+                            <div class="modal" id="delDialog" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">删除信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm"
+                                                style="margin-right: 60px;" @click='del'>确定
+                                            </button>
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="addFund" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">添加基金</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <true-page ref="child" @func="getFundFormSon" />
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm"
+                                                @click='$refs.child.sendMsg()' data-dismiss="modal">确定
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                style="margin-left: 100px;" data-dismiss="modal">
+                                                取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!--同步组合提示信息弹窗-->
+                            <div class="modal" id="syncGroup" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">同步组合提示</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4>确定同步自有平台所有组合吗？</h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" @click='syncGroup'>确定
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                style="margin-left: 100px;" data-dismiss="modal">
+                                                取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 业绩基准 -->
+                            <div class="modal" id="standard" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                        </div>
+                                        <div class="form-horizontal" style="padding:10px 0 30px 0;">
+                                            <div style="text-align: right;">
+                                                <button @click='cmpDetailDOList.push({index:"",indexPercent:0})'
+                                                    style="margin-right: 50px;">添加</button>
+                                                <button @click='cmpDetailDOList.pop()'
+                                                    style="margin-right: 20px;">删除</button>
+                                            </div>
+                                            <template v-for='(item,index) of cmpDetailDOList'>
+                                                <p style="text-align: center;">{{index===0?"":"+"}}</p>
+                                                <div style="text-align: center;">
+                                                    <input type="number" style="width: 60px;"
+                                                        v-model.number='item.indexPercent'>%*
+                                                    <select v-model='item.index' style="width: 160px;">
+                                                        <option value="">请选择</option>
+                                                        <option :value="inIndex"
+                                                            v-for='(fund,inIndex) of indexStandardList'>
+                                                            {{fund.indexName}}</option>
+                                                    </select>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-info btn-sm" type="button" @click='saveTo()'>
+                                                确定
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm" @click='goBack'>
+                                                取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- 新增 -->
+                            <div class="modal" id="addAndModify" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">新增</h4>
+                                        </div>
+                                        <div class="form-horizontal">
+                                            <div class="form-group" style="margin-top: 15px;">
+                                                <label class="col-sm-2 control-label">
+                                                    一/二级平台:</label>
+                                                <div class="col-sm-3">
+                                                    <!-- <input type="text" style="width: 100%;"
+                                                        v-model='operateData.salePlatform'> -->
+                                                    <select-chosen2 v-model='operateData.platForm' 
+                                                        width='380px'
+                                                        :list='channelAll'
+                                                        :key-list='["parentPlatform","salePlatform"]'>
+                                                    </select-chosen2>
+                                                </div>
+                                                
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">
+                                                    渠道码:</label>
+                                                <div class="col-sm-3 control-label">
+                                                    <p class="text-left">
+                                                        {{channelCode}}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                              
+                                                <label class="col-sm-2 control-label">
+                                                    上架专区:</label>
+                                                <div class="col-sm-3">
+                                                    <input type="text" style="width: 138px;"
+                                                        v-model='operateData.salePosition'>
+                                                </div>
+                                                <label class="col-sm-2 control-label">
+                                                    策略类型:</label>
+                                                <div class="col-sm-3">
+                                                    <input type="text" style="width: 138px;"
+                                                        v-model='operateData.strategyStyle'>
+                                                </div>
+
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">
+                                                    组合ID:</label>
+                                                <div class="col-sm-3">
+                                                    <input type="text" style="width: 138px;"
+                                                        v-model='operateData.groupid'
+                                                        @input="operateData.groupid='B'+operateData.groupid.substr(1)">
+                                                </div>
+                                                <label class="col-sm-2 control-label">
+                                                    组合名称:</label>
+                                                <div class="col-sm-3">
+                                                    <input type="text" style="width: 138px;"
+                                                        v-model='operateData.groupName'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">
+                                                    产品系列:</label>
+                                                <div class="col-sm-3">
+                                                    <input type="text" style="width: 138px;"
+                                                        v-model='operateData.series'>
+                                                </div>
+                                                <label class="col-sm-2 control-label">
+                                                    组合提供方:</label>
+                                                <div class="col-sm-3">
+                                                    <input type="text" style="width: 138px;"
+                                                        v-model='operateData.supplier'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">
+                                                    组合大类:</label>
+                                                <div class="col-sm-3">
+                                                    <select v-model='operateData.fundgroupCategory'>
+                                                        <option value="1">组合-开放式</option>
+                                                        <option value="2">组合-发车制</option>
+                                                        <option value="3">组合-目标盈</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">
+                                                    业绩基准:</label>
+                                                <div class="col-sm-10" style="padding-top:6px;">
+                                                    <template v-for='(item,cmpIndex) of operateData.cmpDetailDOList'>
+                                                        <span>
+                                                            {{cmpIndex===0?"":"+"}}{{item.indexPercent}}%*{{item.indexName}}
+                                                        </span>
+                                                    </template>
+                                                    <button
+                                                        @click='showIndexStandard(operateData.cmpDetailDOList,"operateData")'>编辑</button>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">
+                                                    备注:</label>
+                                                <div class="col-sm-3">
+                                                    <input type="text" style="width: 138px;"
+                                                        v-model='operateData.remark'>
+                                                </div>
+                                                <label class="col-sm-2 control-label">
+                                                    平台开售时间:</label>
+                                                <div class="col-sm-4">
+                                                    <date-picker v-model='operateData.onSaleDatetime'>
+                                                        <span class="input-group-addon" slot='right'>
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </date-picker>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label"></label>
+                                                <div class="col-sm-2">
+                                                    <input type="button" class="btn btn-sm btn-primary " value="添加调仓"
+                                                        @click='pushOperateData()'>
+                                                </div>
+                                                <div class="col-sm-2">
+                                                    <input type="button" class="btn btn-sm btn-primary " value="重置调仓"
+                                                        @click='resetOperateData()'>
+                                                </div>
+                                            </div>
+                                            <div v-for='(item,index) in operateData.fundList' :key="index">
+                                                <hr>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label">
+                                                        成立调仓时间:</label>
+                                                    <div class="col-sm-5">
+                                                        <date-picker v-model='item.prdAllFundgroupChangeDO.changetime'>
+                                                            <span class="input-group-addon" slot='right'>
+                                                                <i class="fa fa-clock-o bigger-110"></i>
+                                                            </span>
+                                                        </date-picker>
+                                                        <span
+                                                            class="red">{{operateData.fundList | warnData(index)}}</span>
+                                                        <p style="margin-top: 10px;">
+                                                            <input style="margin-right: 10px;" type="button"
+                                                                class="btn btn-sm btn-primary " value="添加"
+                                                                @click='addFundtoOperateData(index,"operateData")'>
+                                                            已添加
+                                                            <span class="red"
+                                                                v-text='item.prdAllFundgroupChangeDetailDOList.length'></span>
+                                                            只基金
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-sm-3">
+
+                                                        <input type="button" class="btn btn-sm btn-danger"
+                                                            v-show='operateData.fundList.length>1'
+                                                            @click='operateData.fundList.splice(index,1)' value="删除调仓">
+
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-sm-1 control-label">
+                                                    </label>
+                                                    <div class="col-sm-10">
+                                                        <table id="simple-table"
+                                                            class="table table-bordered table-hover dataTable">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th class="center">产品类型</th>
+                                                                    <th class="center">产品名称</th>
+                                                                    <th class="center">产品代码</th>
+                                                                    <th class="center">调整仓位</th>
+                                                                    <th class="center">是否基准产品</th>
+                                                                    <th class="center">操作</th>
+
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <template
+                                                                    v-if="item.prdAllFundgroupChangeDetailDOList.length>0">
+                                                                    <tr v-for="(item1,index1) in item.prdAllFundgroupChangeDetailDOList"
+                                                                        :key="index1">
+                                                                        <td class="center">
+                                                                            <select v-model='item1.fundApkind'>
+                                                                                <option value="F">固收类</option>
+                                                                                <option value="R">权益类</option>
+                                                                                <option value="V">货币类</option>
+                                                                                <option value="O">其它</option>
+                                                                            </select>
+                                                                        </td>
+                                                                        <td class="center" v-text='item1.fundName'></td>
+                                                                        <td class="center" v-text='item1.fundid'></td>
+                                                                        <td class="center">
+                                                                            <input type="number"
+                                                                                v-model.number='item1.fundPercent'
+                                                                                style="width: 80px;">
+                                                                        </td>
+                                                                        <td class="center">
+                                                                            <select v-model='item1.isBenchmark'>
+                                                                                <option value="Y">是</option>
+                                                                                <option value="N">非</option>
+                                                                            </select>
+                                                                        </td>
+                                                                        <td class="center">
+                                                                            <a href="javascript:;" class="red"
+                                                                                @click="item.prdAllFundgroupChangeDetailDOList.splice(index1,1)">删除</a>
+                                                                        </td>
+                                                                    </tr>
+                                                                </template>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label">
+                                                        调仓说明:</label>
+                                                    <div class="col-sm-4">
+                                                        <textarea cols="30" rows="2"
+                                                            v-model='item.prdAllFundgroupChangeDO.changeAdvise'></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-info btn-sm" type="button" @click='add()'>
+                                                确定
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+                                                取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- 调仓修改 -->
+                            <div class="modal" id="modify2" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">调仓修改</h4>
+                                        </div>
+                                        <div class="form-horizontal">
+                                            <template v-for='(item,index) of newStorageInfo'>
+                                                <hr>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label">
+                                                        本次调仓时间:
+                                                    </label>
+                                                    <div class="col-sm-5">
+                                                        <date-picker v-model='item.prdAllFundgroupChangeDO.changetime'>
+                                                            <span class="input-group-addon" slot='right'>
+                                                                <i class="fa fa-clock-o bigger-110"></i>
+                                                            </span>
+                                                        </date-picker>
+                                                        <!-- <span  class="red">{{operateData.fundList | warnData(index)}}</span> -->
+                                                        <p style="margin-top: 10px;">
+                                                            <input style="margin-right: 10px;" type="button"
+                                                                class="btn btn-sm btn-primary " value="添加"
+                                                                @click='addFundtoOperateData(index,"newStorageInfo")'>
+                                                            已添加
+                                                            <span class="red"
+                                                                v-text='item.prdAllFundgroupChangeDetailDOList.length'></span>
+                                                            只基金
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-sm-4">
+                                                        <input type="button" class="btn btn-sm btn-danger "
+                                                            v-if='newStorageInfo.length>0' value="删除"
+                                                            @click='addNewStorageInfo(false,index)'>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-sm-1 control-label">
+                                                    </label>
+                                                    <div class="col-sm-9">
+                                                        <table id="simple-table"
+                                                            class="table table-bordered table-hover dataTable">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th class="center">产品类型</th>
+                                                                    <th class="center">产品名称</th>
+                                                                    <th class="center">产品代码</th>
+                                                                    <th class="center">调整仓位</th>
+                                                                    <th class="center">是否基准产品</th>
+                                                                    <th class="center">操作</th>
+
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <template
+                                                                    v-if="item.prdAllFundgroupChangeDetailDOList.length>0">
+                                                                    <tr v-for="(item1,index1) in item.prdAllFundgroupChangeDetailDOList"
+                                                                        :key="index1">
+                                                                        <td class="center">
+                                                                            <select v-model='item1.fundApkind'>
+                                                                                <option value="F">固收类</option>
+                                                                                <option value="R">权益类</option>
+                                                                                <option value="V">货币类</option>
+                                                                                <option value="O">其它</option>
+                                                                            </select>
+                                                                        </td>
+                                                                        <td class="center" v-text='item1.fundName'></td>
+                                                                        <td class="center" v-text='item1.fundid'></td>
+                                                                        <td class="center">
+                                                                            <input type="number"
+                                                                                v-model.number='item1.fundPercent'
+                                                                                style="width: 80px;">
+                                                                        </td>
+                                                                        <td class="center">
+                                                                            <select v-model='item1.isBenchmark'>
+                                                                                <option value="Y">是</option>
+                                                                                <option value="N">非</option>
+                                                                            </select>
+                                                                        </td>
+                                                                        <td class="center">
+                                                                            <a href="javascript:;" class="red"
+                                                                                @click="item.prdAllFundgroupChangeDetailDOList.splice(index1,1)">删除</a>
+                                                                        </td>
+                                                                    </tr>
+                                                                </template>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label">
+                                                        调仓说明:</label>
+                                                    <div class="col-sm-4">
+                                                        <textarea cols="30" rows="2"
+                                                            v-model='item.prdAllFundgroupChangeDO.changeAdvise'></textarea>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <div class="form-group" v-if='!storageBtn'>
+                                                <label class="col-sm-9 control-label"> </label>
+                                                <div class="col-sm-3">
+                                                    <input type="button" class="btn btn-sm btn-primary " value="添加调仓"
+                                                        @click='addNewStorageInfo(true)'>
+                                                    <!-- <input type="button" class="btn btn-sm btn-danger "
+                                                        v-if='newStorageInfo.length>0' value="删除调仓"
+                                                        @click='addNewStorageInfo(false)'> -->
+                                                </div>
+                                            </div>
+                                            <template v-for='(item,index) of storageInfo'>
+                                                <div :key='index'>
+                                                    <hr>
+                                                    <div class="form-group">
+                                                        <label class="col-sm-5 control-label">
+                                                            调仓时间:{{item.prdAllFundgroupChangeDO.changetime}}
+                                                        </label>
+                                                        <div class="col-sm-5 text-right">
+                                                            <button class="red" v-if='allowDel'
+                                                                @click='delStorage(item.prdAllFundgroupChangeDO.serialno,index)'>删除</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="col-sm-1 control-label">
+                                                        </label>
+                                                        <div class="col-sm-9">
+                                                            <table id="simple-table"
+                                                                class="table table-bordered table-hover dataTable">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th class="center">产品类型</th>
+                                                                        <th class="center">产品代码</th>
+                                                                        <th class="center">产品名称</th>
+                                                                        <th class="center">调整仓位</th>
+                                                                        <th class="center">是否基准产品</th>
+
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <template
+                                                                        v-if="item.prdAllFundgroupChangeDetailDOList.length>0">
+                                                                        <tr v-for="(item1,index1) in item.prdAllFundgroupChangeDetailDOList"
+                                                                            :key="index1" v-if="item1.fundPercent>0">
+                                                                            <td class="center">
+                                                                                <select v-model='item1.fundApkind'
+                                                                                    :disabled='item.checked'
+                                                                                    @change='onlySelf(index)'
+                                                                                    :style="{backgroundColor: item.checked?'rgb(238, 238, 238)':''}">
+                                                                                    <option value="F">固收类</option>
+                                                                                    <option value="R">权益类</option>
+                                                                                    <option value="V">货币类</option>
+                                                                                    <option value="O">其它</option>
+                                                                                </select>
+                                                                            </td>
+                                                                            <td class="center" v-text='item1.fundid'>
+                                                                            </td>
+                                                                            <td class="center" v-text='item1.fundName'>
+                                                                            </td>
+                                                                            <td class="center"
+                                                                                v-text='item1.fundPercent'></td>
+                                                                            <td class="center">
+                                                                                <select v-model='item1.isBenchmark'
+                                                                                    :disabled='item.checked'
+                                                                                    @input='onlySelf(index)'
+                                                                                    :style="{backgroundColor: item.checked?'rgb(238, 238, 238)':''}">
+                                                                                    <option value="Y">是</option>
+                                                                                    <option value="N">非</option>
+                                                                                </select>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </template>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <label class="col-sm-3 control-label">
+                                                            调仓说明:</label>
+                                                        <div class="col-sm-4">
+                                                            <textarea cols="30" rows="2" :disabled='item.checked'
+                                                                :style="{backgroundColor: item.checked?'rgb(238, 238, 238)':''}"
+                                                                v-model='item.prdAllFundgroupChangeDO.changeAdvise'
+                                                                @input='onlySelf(index)'></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <p class="text-center">
+                                                <button class="btn btn-info btn-sm" v-show='!isDisabled'
+                                                    style="margin-right: 50px;" v-if='delStorageList.length===0'
+                                                    type="button" @click='modify'>
+                                                    确定
+                                                </button>
+                                                <button class="btn btn-info btn-sm" v-show='!isDisabled'
+                                                    style="margin-right: 50px;" v-else type="button"
+                                                    @click='confirmDelStorage'>
+                                                    删除
+                                                </button>
+                                                <button type="button" class="btn btn-danger btn-sm"
+                                                    data-dismiss="modal">
+                                                    取消
+                                                </button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+
+
+                            <div class="modal" id="modify3" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">组合信息修改</h4>
+                                        </div>
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">
+                                                    组合ID:</label>
+                                                <div class="col-sm-3">
+                                                    <input type="text" style="width: 100%;" disabled
+                                                        :value='baseInfo.groupid'>
+                                                </div>
+                                                <label class="col-sm-2 control-label">
+                                                    组合名称:</label>
+                                                <div class="col-sm-3">
+                                                    <input type="text" style="width: 100%;"
+                                                        v-model='baseInfo.groupName'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group" style="margin-top: 15px;">
+                                                <label class="col-sm-2 control-label">
+                                                    一/二级平台:</label>
+                                                <div class="col-sm-3">
+                                                    <!-- <input type="text" style="width: 100%;"
+                                                        v-model='operateData.salePlatform'> -->
+                                                    <select-chosen2 v-model='baseInfo.platForm' 
+                                                        width='380px'
+                                                        :list='channelAll'
+                                                        :key-list='["parentPlatform","salePlatform"]'>
+                                                    </select-chosen2>
+                                                </div>
+                                                
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">
+                                                    渠道码:</label>
+                                                <div class="col-sm-3 control-label">
+                                                    <p class="text-left">
+                                                        {{modifyChannelCode}}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">
+                                                    产品系列:</label>
+                                                <div class="col-sm-3">
+                                                    <input type="text" style="width: 100%;" v-model='baseInfo.series'>
+                                                </div>
+                                                <label class="col-sm-2 control-label">
+                                                    上架专区:</label>
+                                                <div class="col-sm-3">
+                                                    <input type="text" style="width: 100%;"
+                                                        v-model='baseInfo.salePosition'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">
+                                                    策略类型:</label>
+                                                <div class="col-sm-3">
+                                                    <input type="text" style="width: 100%;"
+                                                        v-model='baseInfo.strategyStyle'>
+                                                </div>
+                                                <label class="col-sm-2 control-label">
+                                                    组合提供方:</label>
+                                                <div class="col-sm-3">
+                                                    <input type="text" style="width: 100%;" v-model='baseInfo.supplier'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">
+                                                    备注:</label>
+                                                <div class="col-sm-3">
+                                                    <input type="text" style="width: 100%;" v-model='baseInfo.remark'>
+                                                </div>
+                                                <label class="col-sm-2 control-label">
+                                                    平台开售时间:</label>
+                                                <div class="col-sm-4">
+                                                    <date-picker v-model='baseInfo.onSaleDatetime'>
+                                                        <span class="input-group-addon" slot='right'>
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </date-picker>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">
+                                                    组合大类:</label>
+                                                <div class="col-sm-3">
+                                                    <select v-model='baseInfo.fundgroupCategory'>
+                                                        <option value="1">组合-开放式</option>
+                                                        <option value="2">组合-发车制</option>
+                                                        <option value="3">组合-目标盈</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-2 control-label">
+                                                    业绩基准:</label>
+                                                <div class="col-sm-10" style="padding-top: 6px;">
+                                                    <template v-for='(item,cmpIndex) of baseInfo.cmpDetailDOList'>
+                                                        <span>
+                                                            {{cmpIndex===0?"":"+"}}{{item.indexPercent}}%*{{item.indexName}}
+                                                        </span>
+                                                    </template>
+                                                    <button
+                                                        @click='showIndexStandard(baseInfo.cmpDetailDOList,"baseInfo")'>编辑</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm"
+                                                @click='modifyBaseInfo'>确定
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                style="margin-left: 100px;" data-dismiss="modal">
+                                                取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 组合信息导出 -->
+
+                            <div class="modal" id="custom" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog" style="width: 950px;">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">组合信息导出</h4>
+                                        </div>
+                                        <template v-for='(item,index) in custom_productList' >
+                                            <div class="custom_productList" style="margin-top: 20px;"  :key='item.id'>
+                                                <div>
+                                                    <label>
+                                                        一级平台:</label>
+                                                    <select style="width: 140px;" v-model='item.parentPlatform' @click="exportLabelQuery('ParentPlatform',item)"
+                                                       >
+                                                        <option value="">全部</option>
+                                                        <!-- <option value="ALL">三方组合</option> -->
+                                                        <option :value="val.labelId" v-for='val in item.customParentPlatformList' v-text='val.labelContent'>
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label>
+                                                        二级平台:</label>
+                                                    <select style="width: 140px;" v-model='item.salePlatform' @click="exportLabelQuery('SalePlatform',item)">
+                                                        <option value="">全部</option>
+                                                        <!-- <option value="ALL">三方组合</option> -->
+                                                        <option :value="val.labelId" v-for='val in item.customPlatformList' v-text='val.labelContent'>
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label>
+                                                        专区:</label>
+                                                    <select style="width: 140px;" v-model='item.salePosition'
+                                                    @click="exportLabelQuery('SalePosition',item)">
+                                                        <option value="">全部</option>
+                                                        <option :value="val.labelId" v-for='val in item.customPositionList' v-text='val.labelContent'>
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <div :key='item.id' @click="exportLabelQuery('ProductId',item)">
+                                                    <label>
+                                                        产品:</label>
+                                                    <select-chosen1 :list='item.customProductList' v-model='item.productId' />
+                                                </div>
+                                                <button style="width: 25px;font-weight: 900;" v-if='index==0'
+                                                    @click="custom_productListPushItem">+</button>
+                                                <button style="width: 25px;font-weight: 900;" v-if='index>0'
+                                                    @click='custom_productList.splice(index, 1)'>-</button>
+                                            </div>
+                                        </template>
+                                        <p class="text-center" style="margin-top: 20px;">
+                                            <button type="button" class="btn btn-primary btn-sm" style="margin-right: 20px;" @click='exports(custom_productList)'>导出</button>
+                                            <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+                                                关闭
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- DIALOG ENDS -->
+
+                            <div class="form-inline">
+                                <div class="form-group"  @click="labelQuery('ParentPlatform')">
+                                    <label style="width: 80px;">一级平台：</label>
+                                    <select-chosen1 :list='parentPlatformList' v-model='label.parentPlatform' ></select-chosen1>
+                                </div>
+                                <div class="form-group " @click="labelQuery('SalePlatform')">
+                                    <label style="width: 80px;">二级平台：</label>
+                                    <select-chosen1 :list='platformList' v-model='label.salePlatform' ></select-chosen1>
+                                </div>
+
+                                <div class="form-group " @click="labelQuery('SalePosition')">
+                                    <label style="width: 80px;">专区：</label>
+                                    <select-chosen1 :list='positionList' v-model='label.salePosition' ></select-chosen1>
+                                </div>
+
+                                <div class="form-group " @click="labelQuery('ProductId')" >
+                                    <label style="width: 80px;">产品：</label>
+                                    <select-chosen1 :list='productList' v-model='label.productId' ></select-chosen1>
+                                </div>
+
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " value="同步自有平台组合"
+                                        @click="showDialog('','syncGroup')">
+                                </div>
+                                <div class="form-group pull-right" style="margin-right:30px;">
+                                    <input type="button" class="btn btn-sm btn-primary " value="组合信息导出"
+                                        @click="showCustom">
+                                </div>
+                                <div class="form-group pull-right" style="margin-right:30px;">
+                                    <input type="button" class="btn btn-sm btn-primary " value="新增"
+                                        @click="showDialog('','addAndModify')">
+                                </div>
+                                <div class="form-group pull-right" style="margin-right:30px;">
+                                    <input type="button" class="btn btn-sm btn-primary " value="查询"
+                                        @click="getTableData(0)">
+                                </div>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!--分页器和快速查询-->
+                            <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                <div class="col-xs-6">
+                                    <div class="dataTables_length" id="dynamic-table_length">
+                                        <label>每页显示</label>
+                                        <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                            <option value="10">10</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                            <option value="500">500</option>
+                                        </select>
+                                        <label>条</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <div style="width: 100%;">
+                                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">一级平台</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">二级平台</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">上架专区</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">策略类型</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">组合代码</th>
+                                            <th class="center col-sm-2 col-md-2 col-lg-2">组合名称</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">组合提供方</th>
+                                            <!-- <th class="center col-sm-1 col-md-1 col-lg-1">创建组合日期</th> -->
+                                            <!-- <th class="center col-sm-1 col-md-1 col-lg-1">最新调仓日期</th> -->
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">备注</th>
+                                            <th class="center col-sm-2 col-md-2 col-lg-2">操作</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template v-if="tableData.length>0">
+                                            <tr v-for="(item,index) in tableData" :key="index">
+                                                <td class="center" v-text='item.parentPlatform'></td>
+                                                <td class="center" v-text='item.salePlatform'></td>
+                                                <td class="center" v-text='item.salePosition'></td>
+                                                <td class="center" v-text='item.strategyStyle'></td>
+                                                <td class="center" v-text='item.groupid'></td>
+                                                <td class="center" v-text='item.groupName'></td>
+                                                <td class="center" v-text='item.supplier'></td>
+                                                <!-- <td class="center" v-text='item.createFdDate'></td> -->
+                                                <!-- <td class="center" v-text='item.latestChFdDate'></td> -->
+                                                <td class="center" v-text='item.remark'></td>
+                                                <td class="center">
+                                                    <template v-if='item.calcStatus==="S"'>
+                                                        <a href="javascript:;" @click="showBaseInfo(item)">修改信息</a>
+                                                        /
+                                                        <a href="javascript:;"
+                                                            @click="showStorage(item.groupid,item.source)">修改调仓</a>
+                                                        /
+                                                        <a href="javascript:;" class="red"
+                                                            @click="delDialog(item.groupid)">删除</a>
+                                                        /
+                                                        <a href="javascript:;" class="green"
+                                                            @click="cloneData(item)">复制</a>
+                                                    </template>
+                                                    <template v-else-if='item.calcStatus==="M"'>
+                                                        <a href="javascript:;" @click="showBaseInfo(item)">修改信息</a>
+                                                        /
+                                                        <a href="javascript:;"
+                                                            @click='getProductStatus(item.groupid)'>正在计算指标</a>
+                                                        /
+                                                        <a href="javascript:;" class="red"
+                                                            @click="delDialog(item.groupid)">删除</a>
+                                                    </template>
+                                                    <template v-else>
+                                                        <a href="javascript:;"
+                                                            @click='getProductStatus(item.groupid)'>初始化中</a>
+                                                    </template>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!--底部页码-->
+                            <div v-if="tableData.length>0" class="row"
+                                style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                        <ul class="pagination">
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                            </li>
+                                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in pageList" @click="changeIndex(value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                            </li>
+                                            <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+
+
+    <!-- --------------------------全局组件------------------------ -->
+    <template id="truePage">
+        <div>
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">
+                        基金ID:</label>
+                    <div class="col-sm-3">
+                        <input type="text" style="width: 100%;" v-model='fundId'>
+                    </div>
+                    <label class="col-sm-2 control-label">
+                        基金名称:</label>
+                    <div class="col-sm-3">
+                        <input type="text" style="width: 100%;" v-model='fundName'>
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="button" class="btn btn-sm btn-primary " value="查询" @click="getTableData(0)">
+                    </div>
+                </div>
+            </div>
+            <!--分页器和快速查询-->
+            <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                <div class="col-xs-6">
+                    <div class="dataTables_length" id="dynamic-table_length">
+                        <label>每页显示</label>
+                        <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                            <option value="10">10</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                            <option value="500">500</option>
+                        </select>
+                        <label>条</label>
+                    </div>
+                </div>
+            </div>
+            <!--数据表-->
+            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                <thead>
+                    <tr>
+                        <th class="center col-sm-1 col-md-1 col-lg-1"></th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">产品代码</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">产品名称</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template v-if="tableData&&tableData.length>0">
+                        <tr v-for="(item,index) in tableData" :key="index">
+                            <td class="center">
+                                <label>
+                                    <input name="form-field-checkbox" type="checkbox" v-model='item.checked'
+                                        class="ace" />
+                                    <span class="lbl"></span>
+                                </label>
+                            </td>
+                            <td class="center" v-text='item.fundid'></td>
+                            <td class="center" v-text='item.fundName'></td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+            <!--底部页码-->
+            <div v-if="tableData.length>0" class="row"
+                style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                <div class="col-xs-2">
+                    <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                </div>
+                <div class="col-xs-10">
+                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                        <ul class="pagination">
+                            <li class="paginate_button" v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                            </li>
+                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                @click="prev">
+                                <a href="javascript:;" v-text="'上一页'"></a>
+                            </li>
+                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                v-for="value in pageList" @click="changeIndex(value)">
+                                <a href="javascript:;" v-text="value"></a>
+                            </li>
+                            <li class="paginate_button"
+                                v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                            </li>
+                            <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                @click="next">
+                                <a href="javascript:;" v-text="'下一页'"></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <!-- --------------------------全局组件------------------------ -->
+
+
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/ace/assets/js/v-datetimepicker.js"></script>
+    <script src="/js/lib/math.js"></script>
+    <script src="/ace/assets/js/chosen.jquery.min.js"></script>
+    <script src="/js/productIndexes/monitoring/thirdPartyGroup.js"></script>
+</body>
+
+</html>

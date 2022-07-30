@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div {
+            padding: 10px 0;
+            text-align: right;
+        }
+
+        .cover {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(9, 10, 10, 0.527);
+            z-index: 999;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+
+                        <div class="col-xs-12">
+                            <div class="cover" style="z-index: 1999;display: none;" v-show='loading'>
+                                <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                            </div><!-- loading动画 -->
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- DIALOG ENDS -->
+
+                            <div class="form-inline">
+                                <div class="form-group ">
+                                    <label style="width: 80px;">客户类型：</label>
+                                    <select v-model='invtp'>
+                                        <option value="1">个人</option>
+                                        <option value="0">机构</option>
+                                    </select>
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">客户姓名：</label>
+                                    <input type="text" v-model.trim="invnm" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">证件类型：</label>
+                                    <select v-model='idtp'>
+                                        <option value="0">身份证</option>
+                                        <option value="1">护照</option>
+                                        <option value="2">军官证</option>
+                                        <option value="3">士兵证</option>
+                                        <option value="4">港澳居民来往内地通行证</option>
+                                        <option value="5">户口本</option>
+                                        <option value="6">外籍护照</option>
+                                        <option value="7">其他</option>
+                                        <option value="8">文职证</option>
+                                        <option value="9">警官证</option>
+                                        <option value="A">台胞证</option>
+                                        <option value="M">手机号码</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group ">
+                                    <label style="width: 80px;">证件号码：</label>
+                                    <input type="text" v-model.trim="idno" />
+                                </div>
+
+
+
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " value="查询"
+                                        @click='getTableData'>
+                                </div>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">开户银行</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">银行渠道号</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">银行卡号</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="tableData.length>0">
+                                        <tr v-for="(item,index) in tableData" :key="index">
+                                            <td class="center" v-text='item.banklongname'></td>
+                                            <td class="center" v-text='item.bankno'></td>
+                                            <td class="center" v-text='item.bankaccodisplay'></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <div v-show='tableData.length>0'>
+                                <h4>请上传客户的证件资料：</h4>
+                                <p>1）开户证件复印件（如为二代身份证，则需要正反两面复印）：</p>
+                                <p><input type="file" @change='fileUpload("handIdFacePhoto")' id='handIdFacePhoto'>
+                                    <p v-for="(item,index) in handIdFacePhoto" :key="item" v-text='item'></p>
+                                </p>
+                                <p>2）老银行卡的复印件、或销户证明，或银行的换卡证明，三者选其一：</p>
+                                <p><input type="file" @change='fileUpload("bankcardPhotos")' id='bankcardPhotos'>
+                                    <p v-for="(item,index) in bankcardPhotos" :key="item" v-text='item'></p>
+                                </p>
+                                <p>3）新银行卡复印件（需手抄卡号并签字），且新卡与原卡为同一家银行卡：</p>
+                                <p><input type="file" @change='fileUpload("newBankcardPhotos")' id='newBankcardPhotos'>
+                                    <p v-for="(item,index) in newBankcardPhotos" :key="item" v-text='item'></p>
+                                </p>
+                                <div>
+                                    <h4>变更银行卡：</h4>
+                                    <div class="form-inline">
+                                        <div class="form-group ">
+                                            <label style="width: 100px;">原银行卡：</label>
+                                            <select style="width: 140px;" v-model='oldSerialid'>
+                                                <option value="">请选择</option>
+                                                <option :value="item.serialid" v-for="(item,index) in tableData"
+                                                    v-show='item.serialid!==newSerialid' :key="index">
+                                                    {{item.banklongname}}</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group " style="margin-left: 100px;">
+                                            <label style="width: 120px;">变更前剩余本金：</label>
+                                            <span>{{count(oldSerialid)}}</span>
+                                        </div>
+                                        <div class="form-group " style="margin-left: 100px;">
+                                            <label style="width: 120px;">变更后剩余本金：</label>
+                                            <span>0</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-inline">
+                                        <div class="form-group ">
+                                            <label style="width: 100px;">变更至银行卡：</label>
+                                            <select style="width: 140px;" v-model='newSerialid'>
+                                                <option value="">请选择</option>
+                                                <option :value="item.serialid" v-for="(item,index) in tableData"
+                                                    v-show='item.serialid!==oldSerialid' :key="index">
+                                                    {{item.banklongname}}</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group " style="margin-left: 100px;">
+                                            <label style="width: 120px;">变更前剩余本金：</label>
+                                            <span>{{count(newSerialid)}}</span>
+                                        </div>
+                                        <div class="form-group " style="margin-left: 100px;">
+                                            <label style="width: 120px;">变更后剩余本金：</label>
+                                            <span>{{count(newSerialid)+count(oldSerialid)}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-primary" style="margin-left: 50%" data-dismiss="modal"
+                                    @click='submitModify'>提交
+                                </button>
+                            </div>
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/customerService/bankCardAudit/changeCard.js"></script>
+</body>
+
+</html>

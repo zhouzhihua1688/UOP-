@@ -1,0 +1,164 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').experienceGold.configSetting;
+module.exports = function (app) {
+
+    // 获取  初始数据和查询
+    app.post('/awardMgmt/experienceGold/configSetting/query.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            pageUrl: '/awardMgmt/experienceGold/configSetting/query.ajax',
+            req: req,
+            url: apiUrl.query,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+    // 新增
+    app.post('/awardMgmt/experienceGold/configSetting/saveParam.ajax', (req, res, next) => {
+        let params = req.body;
+        params.modifyBy = req.session.loginInfo.userid;
+        let option = {
+            pageUrl: '/awardMgmt/experienceGold/configSetting/saveParam.ajax',
+            req: req,
+            operateType: 1, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrl.saveParam,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '新增失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                res.send({
+                    error: 0,
+                    msg: '新增成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '新增失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+
+        });
+    });
+    // 修改
+    app.post('/awardMgmt/experienceGold/configSetting/update.ajax', (req, res, next) => {
+        let params = req.body;
+        params.modifyBy = req.session.loginInfo.userid;
+        let option = {
+            pageUrl: '/awardMgmt/experienceGold/configSetting/update.ajax',
+            req: req,
+            operateType: 2, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrl.update,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '调用失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '调用失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+    // 删除
+    app.post('/awardMgmt/experienceGold/configSetting/del.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            pageUrl: '/awardMgmt/experienceGold/configSetting/del.ajax',
+            req: req,
+            operateType: 3, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrl.del,
+            qs: params,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '删除失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                res.send({
+                    error: 0,
+                    msg: '删除成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '删除失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+};

@@ -1,0 +1,50 @@
+module.exports = {
+    index: {
+        name: '客服操作'
+    },
+    accountQuery: {
+        index: 'custInfo.html',
+        name: '账户查询',
+        child: {
+            custInfo: '客户信息查询'
+        }
+    },
+    bankCardAudit: {
+        index: 'changeCard.html',
+        name: '变更银行卡审核',
+        child: {
+            changeCard: '银行卡变更',
+            businessHandle: '业务经办',
+            businessReview: '业务复核',
+            applyRecord: '申请记录',
+            review: '审核操作',
+        }
+    },
+    assetTestify: {
+        index: 'changeCard.html',
+        name: '资产证明业务',
+        child: {
+            applyQuery: '申请查询',
+            doneQuery: '已处理查询',
+        }
+    },
+    modifyPhoneNum: {
+        index: 'modifyPhoneNum.html',
+        name: '修改手机号审核',
+        child: {
+            businessHandle: '业务经办',
+            businessReview: '业务复核',
+            applyRecord: '申请记录',
+            review: '审核操作',
+        }
+    },
+    selfFundManage: {
+        index: 'selfFundManage.html',
+        name: '本金处理',
+        child: {
+            staticFund: '静态本金修改',
+            batchStaticFund: '批量本金重算修正',
+        }
+    }
+
+};

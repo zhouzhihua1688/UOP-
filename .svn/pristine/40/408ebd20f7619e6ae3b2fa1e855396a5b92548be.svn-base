@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .cover {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(9, 10, 10, 0.527);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <!-- loading动画 -->
+                        <div class="cover" style="display:none;">
+                            <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                        </div><!-- loading动画 -->
+                        <form class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group">
+                                <label class="title">文章标题:</label>
+                                <input type="text" name="" value="" id="title">
+                            </div>
+                            <div class="form-group">
+                                <label class="title">编码格式:</label>
+                                <select id="codeStyle">
+                                    <option value="utf8" selected="selected">utf8</option>
+                                    <option value="GBK">GBK</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>分享文案:</label>
+                                <input type="text" name="" value="" id="share">
+                            </div>
+                            <div class="form-group">
+                                <label>分享链接:</label>
+                                <input type="text" name="" value="" id="shareUrl">
+                            </div>
+                            <div class="form-group pull-right">
+                                <input type="button" name="" value="生成代码" class="btn btn-info btn-sm" id="add">
+                            </div>
+                        </form>
+                        <form class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group">
+                                <label style="margin-left:1rem">底部按钮个数:</label>
+                                <select id="select-but">
+                                    <option value="0" selected="selected">0</option>
+                                    <option value="1">1</option>
+                                    <!-- <option value="2">2</option> -->
+                                </select>
+                            </div>
+                            <div class="form-group" style="display:none" id="list-but">
+                                <label>底部文案:</label>
+                                <input type="text" name="" value="" id="bottom"><br>
+                                <label>底部链接:</label>
+                                <input type="text" name="" value="" id="bottomUrl">
+                            </div>
+                            <!-- <div class="list offright" style="display:none" id="list-but1">
+                                <label>底部文案一:</label>
+                                <input type="text" name="" value="" id="bottom2"><br>
+                                <label>底部链接一:</label>
+                                <input type="text" name="" value="" id="bottomUrl2"><br>
+                                <label>底部文案二:</label>
+                                <input type="text" name="" value="" id="bottom3"><br>
+                                <label>底部链接二:</label>
+                                <input type="text" name="" value="" id="bottomUrl3">
+                            </div> -->
+
+                            <!-- <div class="form-group pull-right">
+                                <input type="button" name="" value="图片上传" class="btn btn-info btn-sm" id="upload">
+                            </div>	 -->
+                        </form>
+                        <form class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group">
+                                <label>上传图片个数</label>
+                                <input type="text" name="" value="" placeholder="请输入数字" id="inputNumber">
+                                <input type="button" name="" value="确定" class="btn btn-info btn-sm" id="inputCheck">
+                            </div>
+                            <div class="form-group" id="allFilmes">
+                                <!-- 自定义添加                                 						    -->
+
+                            </div>
+                            <!-- 预览 -->
+                            <div id="imgdiv1">
+                                <img src="" alt="" id="imgShow1">
+                            </div>
+                        </form>
+                        <!-- 嵌入富文本编辑框 -->
+                        <textarea name="description" id="description" htmlEscape="false" style="clear: both"/>
+                        </textarea>
+                        <input type="button" name="" value="上传打包" class="btn btn-info btn-sm" id="submit">
+
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/publicConfig/automatedTool/ckeditor/ckeditor.js"></script>
+<script src="/js/lib/ajaxMultiplyUpload.js"></script>
+<!-- <script src="/js/publicConfig/automatedTool/uploadPreview.js"></script> -->
+<script type="text/javascript">
+    window.onload = function () {
+        // 实例化富文本编辑框
+        CKEDITOR.replace('description');
+        var HtmlUtil = {
+            /*1.用正则表达式实现html转码*/
+            htmlEncodeByRegExp: function (str) {
+                if (str.length == 0) {
+                    return '';
+                }
+                str = str.replace(/&/g, '&amp;');
+                str = str.replace(/</g, '&lt;');
+                str = str.replace(/>/g, '&gt;');
+                str = str.replace(/\'/g, '&#39;');
+                str = str.replace(/\"/g, '&quot;');
+                return str;
+            },
+            /*2.用正则表达式实现html解码*/
+            htmlDecodeByRegExp: function (str) {
+                if (str.length == 0) {
+                    return '';
+                }
+                str = str.replace(/&amp;/g, '&');
+                str = str.replace(/&lt;/g, '<');
+                str = str.replace(/&gt;/g, '>');
+                str = str.replace(/&#39;/g, '\'');
+                str = str.replace(/&quot;/g, '\"');
+                return str;
+            }
+        };
+        // 选择底部按钮个数
+        $('#select-but').click(function () {
+            var select_but = $('#select-but').val();
+            if (select_but === '0') {
+                $('#list-but').hide();
+                $('#list-but1').hide();
+            }
+            else if (select_but === '1') {
+                $('#list-but').show();
+                $('#list-but1').hide();
+                $('#bottom2').val('');
+                $('#bottomUrl2').val('');
+                $('#bottom3').val('');
+                $('#bottomUrl3').val('');
+            }
+            else if (select_but === '2') {
+                $('#list-but1').show();
+                $('#list-but').hide();
+                $('#bottom').val('');
+                $('#bottomUrl').val('');
+            }
+        });
+        $('#share').click(function () {
+            $('#share').html('mashan')
+        });
+        // 生成代码
+        $('#add').click(function () {
+            template()
+        });
+        function template() {
+            var title = $('#title').val();
+            var codeStyle = $('#codeStyle').val();
+            var share = $('#share').val();
+            var shareUrl = $('#shareUrl').val();
+            var bottom = $('#bottom').val();
+            var bottomUrl = $('#bottomUrl').val();
+            var shareStyle = '';
+            var bottomStyle = '';
+            if (share === '') {
+                shareStyle = 'position: fixed; right:0; top:30%; bottom:70%; z-index:999; font-size: .75rem; color:#fff; line-height: 1.5rem; width:4.25rem; height:1.5rem; text-align: center; border-radius: .7rem 0 0 .7rem;text-decoration:none; background: #358aea; display:none;z-index:10'
+            }
+            else {
+                shareStyle = 'position: fixed; right: 0; top:30%; bottom:70%; z-index:999; font-size: .75rem; color:#fff; line-height: 1.5rem; width:4.25rem; height:1.5rem; text-align: center; border-radius: .7rem 0 0 .7rem; background: #358aea;text-decoration:none; display:block;z-index:10'
+            }
+            if (bottom === '') {
+                bottomStyle = ' position: fixed; bottom:0rem; left:0rem; width: 100%; height: 2.5rem; display: block; font-size:0.8rem; line-height: 2.5rem; text-align: center; color: #fff; background: #fe8202; z-index:99; display: none; text-decoration:none'
+            }
+            else {
+                bottomStyle = ' position: fixed; bottom:0rem; left:0rem; width: 100%; height: 2.5rem; display: block; font-size:0.8rem; line-height: 2.5rem; text-align: center; color: #fff; background: #fe8202; z-index:99; display:block;text-decoration:none '
+            }
+            // 获取图片文件
+            var imgDOM = document.getElementById('allFilmes');
+            var imgFileList = imgDOM.getElementsByTagName('input');
+            var imgStr = '';
+            for (var i = 0; i < imgFileList.length; i++) {
+                imgStr += '<img src="img/' + imgFileList[i].files[0].name + '" alt="">';
+            }
+
+            var htmlTag = '<p id="first"><p/>' + '<a href="' + shareUrl + '" style="' + shareStyle + '">' + share + '</a>' + '<a href="' + bottomUrl + '" style="' + bottomStyle + '">' + bottom + '</a>';
+            // 放置内容到编辑框
+            if (imgStr == '') {
+                CKEDITOR.instances.description.setData(htmlTag);
+            } else {
+                CKEDITOR.instances.description.setData(htmlTag + imgStr);
+            }
+        }
+        // 要上传图片的个数
+        $('#inputCheck').click(function () {
+            var inputNumber = parseInt($('#inputNumber').val());
+            var allFilmes = $('#allFilmes');
+            var inputFile = '';
+            for (var i = 0; i < inputNumber; i++) {
+                inputFile += '<input type="file"  name="files' + (i + 1) + '" class="allinput" value="" id="uploadFile' + (i + 1) + '">'
+                // allFilmes.html(inputFile)
+                allFilmes.html(inputFile)
+            }
+
+            // 在外部预览图片
+            // new uploadPreview({ UpBtn: "uploadFile1", DivShow: "imgdiv1", ImgShow: "imgShow1" });
+
+            var imgArr = [];//img图片地址
+            $('.allinput').each(function (index, el) {
+                var id = $(this).attr('id');
+                $(this).change(function (event) {
+                    console.log(window.URL.createObjectURL(this.files[0]))//Base64转blob
+                    file = this.files[0];
+                    var file1 = window.URL.createObjectURL(file);
+                    imgArr[index] = file1;
+                    //var files = document.getElementById('input').files
+                    // $("img").attr("src", window.URL.createObjectURL(files[0]))
+                    Img();
+                })
+            })
+
+            function Img() {
+                var a = new FileReader();//读取图片文件
+                var _this = this;
+                a.onload = function (e) {
+                    // var base64Str= this.result;//获取base64
+                    // alert(base64Str)
+                    // var base64Str=dataURItoBlob(this.result)
+                    var imgDOM = document.getElementById('allFilmes');
+                    var imgFileList = imgDOM.getElementsByTagName('input')
+                    var imgTag = '';
+                    // 生成img标签
+                    for (var i = 0; i < imgFileList.length; i++) {
+                        imgTag += '<img src="' + imgArr[i] + '" alt="" id="showImg' + (i + 1) + '">';
+                    }
+                    CKEDITOR.instances.description.setData(imgTag);
+                    // console.log(dataURItoBlob(base64Str))
+                }
+                a.readAsDataURL(file);
+
+                //     var formData = new FormData()
+                //     formData.append('file',event.target.files[0])
+                //     var request = new XMLHttpRequest();
+                //     request.open("POST", "/publicConfig/automatedTool/sliceTool/upload.ajax");
+                //     request.send(formData)
+                //     var imgTag=""
+                //    request.onreadystatechange = function () {
+
+                // // 这步为判断服务器是否正确响应
+                // if (request.readyState == 4 && request.status == 200) {
+                //     console.log(request.responseText);
+                //          var url=JSON.parse(request.responseText).msg
+                //          console.log(url)
+                //           // for (var i = 0; i <imgFileList.length; i++) {
+                //           //    imgTag += '<img src="'+url+'" alt="" id="showImg'+(i+1)+'">';
+
+                //           // }
+                //           // imgTag= '<img src="'+url+'" alt="" >'
+
+                //           var element = CKEDITOR.dom.element.createFromHtml( '<div id="imgdiv1"><img src="" alt="" id="imgShow1"></div>' );
+                //           // 在外部预览图片
+                //          new uploadPreview({ UpBtn: "uploadFile1", DivShow: "imgdiv1", ImgShow: "imgShow1" });
+                //            CKEDITOR.instances.description.insertElement( element );
+                //           // CKEDITOR.instances.description.setData(imgTag)
+                //          }
+                //     };
+            }
+        });
+        // 提交编辑框数据
+        $('#submit').click(function () {
+            // template()
+            var title = $('#title').val();
+            var codeStyle = $('#codeStyle').val();
+            var data = CKEDITOR.instances.description.getData();
+            // var dataHtml=HtmlUtil.htmlDecodeByRegExp(data)
+            // alert(data)
+            var html = '<!DOCTYPE html>' +
+                '<html lang="en">' +
+                '<head><meta charset="' + codeStyle + '">' +
+                '<title>' + title + '</title>' +
+                '<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">' +
+                '<script>' +
+                'var oHtml = document.documentElement;getFont();window.onresize = function(){getFont()};function getFont() {var screenWidth = oHtml.clientWidth;if (screenWidth <= 320) {oHtml.style.fontSize = "17.06px";} else if (screenWidth >= 750) {oHtml.style.fontSize = "40px";} else {oHtml.style.fontSize = screenWidth / (750 / 40) + "px";}}' +
+                '<' + '/script>' +
+                '<style>' + 'html{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}' +
+                'input{border:none;outline-style:none;}' +
+                'input[type="submit"],input[type="reset"],input[type="button"],input {-webkit-appearance:none;resize:none;}' +
+                'body,div,ul,li,ol,h1,h2,h3,h4,h5,h6,input,textarea,select,p,dl,dt,dd,a,img,button,form,table,th,tr,td,tbody,article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{-webkit-tap-highlight-color:rgba(0,0,0,0);margin:0;padding:0;border:none;}' +
+                'article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block;}' +
+                'img{width:100%;height:auto;-ms-interpolation-mode:bicubic;border:none;}' +
+                'body{color:#666666;background-color:#fff;max-width:750px;min-width:320px;margin:0 auto;}' +
+                '.clearfix:after{content:"";display:block;visibility:hidden;height:0;clear:both;}' +
+                'a{text-decoration:none;color:inherit;}' +
+                'ul,ol{list-style:none;}' +
+                'h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}' +
+                'img{outline:none;vertical-align:top;width:100%;display:block}' +
+                'img:last-of-type{padding-bottom:3.5rem;}' +
+                '</style>' +
+                '</head>' +
+                '<body id="oBody">' + data +
+                '<script>' +
+                'var first = document.getElementById("first");if(first.innerHTML()===""){document.getElementById("oBody").removeChild(first);}' +
+                '<' + '/script>' +
+                '</body>' +
+                '</html>';
+            var encodeHtml = HtmlUtil.htmlEncodeByRegExp(html);
+            console.log(encodeHtml);
+            // 获取所有inputfiles文件ID
+            var arrId = [];
+            $('.allinput').each(function (index, el) {
+                var id = $(this).attr('id');
+                if (typeof(id) !== 'undefined') {
+                    arrId.push(id)
+                }
+            });
+            // console.log(arrId)
+            // $(".cover").show()
+            // 打包上传代码和图片
+
+            if (arrId.length == 0) {
+                $.ajaxFileUpload({
+                    url: '/publicConfig/automatedTool/sliceTool/create.ajax',
+                    type: 'POST',
+                    data: {
+                        HTMLstr: encodeHtml
+                    },
+                    dataType: 'form',
+                    success: function (data) {
+                        console.log('请求数据成功')
+                    },
+                    error: function (data) {
+                        console.log('请求数据失败')
+                    }
+                })
+            }
+            else {
+                $.ajaxFileUpload({
+                    url: '/publicConfig/automatedTool/sliceTool/createZip.ajax',
+                    type: 'POST',
+                    data: {
+                        HTMLstr: encodeHtml
+                    },
+                    dataType: 'json',
+                    fileElementId: arrId,
+                    success: function (result) {
+                        console.log(result)
+                    },
+                    error: function (result) {
+                        console.log('请求数据失败')
+                    }
+                })
+            }
+        })
+    }
+</script>
+</body>
+</html>
+
+
+
+
+

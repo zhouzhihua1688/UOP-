@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content" id="content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <!--消息提示弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title"></h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                        data-dismiss="modal">确定</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 重新上传弹窗 -->
+                    <div class="modal" id="reUpload" tabindex="-1" role="dialog" aria-hidden="true"
+                    data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="form-horizontal">
+                                    <div class="table-header" style="margin-bottom: 20px;">重新上传</div>
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-3">
+                                            文件路径: </label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="col-sm-6" placeholder="请选择" id="uploadInput1" disabled />
+                                            <input type="button" class="btn btn-sm btn-primary" 
+                                                value="选择"  id="selectBtn1">
+                                            <input type="button" value="上传" class="btn btn-sm btn-success" @click="reUpload">
+                                            <input id="uploadFileInput1" type="file" name="file" style="display: none" class="upload" />    
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <div class="col-md-offset-3 col-md-9">
+                                            <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                取消
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 删除弹窗 -->
+                    <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title">删除</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 >确定要删除{{currentFileName}}文件吗？</h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-danger btn-sm"
+                                        data-dismiss="modal" @click="deleteComfirm">确定</button>
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                        data-dismiss="modal">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="font-size: 20px;padding: 10px 0;">本页面所属于上传zip压缩包到服务器,并将文件在static服务器解压缩
+                    </div>
+                    <% if(canShow||authorityList.includes('U')) { %>
+                    <div class="form-inline" style="padding: 10px 0;height: 54px">
+                        <div class="form-group pull-left" >
+                            <label class="control-label">文件名称:</label>
+                            <input type="text" style="width: 175px;" v-model.trim="fileName"/>
+                            <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                        </div>
+                        <div class="form-group pull-right">
+                            <label>上传文件：</label>
+                            <input type="text" style="width: 200px;" id="uploadInput" placeholder="请选择" disabled />
+                            <input type="button" class="btn btn-sm btn-primary" id="selectBtn" value="选择">
+                            <input type="button" class="btn btn-sm btn-primary" @click="uploadFile" value="上传">
+                            <input id="uploadFileInput" type="file" name="file" style="display: none" class="upload" />
+                        </div>
+                        
+                    </div>
+                    <% } %>
+                    <!-- <div style="font-size: 20px;padding: 10px 0;">
+                        <label>文件路径：</label>
+                        <a :href="filePath" v-text="filePath" target="_blank"></a>
+                    </div> -->
+                    <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length" id="dynamic-table_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                    <thead>
+                    <tr>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">文件名称</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">文件上传路径</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">文件可查看路径</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="viewData.length>0">
+                        <tr v-for="(item,index) in viewData" :key="index">
+                            <td class="center" v-text="item.fileName"></td>
+                            <td class="center" v-text="item.uploadFilePath"></td>
+                            <td class="center"><a :href="item.viewablePath">{{item.viewablePath}}</a></td>
+                            <td class="center">
+                                <a href="javascript:;" @click="showReUpload(item.fileName)">重新上传</a>/
+                                <a :href="item.downloadFilePath">下载</a>/
+                                <a href="javascript:;" @click="showDelete(item.fileName)">删除</a>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'没有数据'" colspan="4"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <div v-if="viewData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList"
+                                    @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+middleData.length" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/lib/ajaxfileupload.js"></script>
+    <script src="/js/publicConfig/alipayConfig/cmbMPConfig.js"></script>
+</body>
+
+</html>

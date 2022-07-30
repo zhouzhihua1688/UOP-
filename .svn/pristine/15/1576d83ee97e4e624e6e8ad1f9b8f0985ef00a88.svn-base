@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+
+        .form-inline > div {
+            padding:10px 0;
+            text-align: right;
+            margin-top:20px;
+            clear: both;
+
+        }
+        @media (min-width: 768px) {
+            .modal-dialog {
+                width: 900px;
+                margin: 30px auto;
+            }
+        }
+        .menuList{width:100%;height:20px 0;margin-top:20px;}
+        .menuList div{padding:0px 20px;height:33px;display: inline-block;background:#999;color:#fff;margin-left:10px;text-align:center;line-height: 33px;}
+        .menuList div.bgColor{background:#307ECC}
+        .selectStyle{display:inline-block;width:120px;}
+        .typeList { display: inline-block; }
+        .typeList:nth-of-type(2) { margin-left: 20px}
+        .typeList:nth-of-type(3) { margin-left: 20px}
+        .typeList:nth-of-type(4) { margin-left: 20px}
+        .typeList:nth-of-type(5) { margin-left: 20px}
+        /* 进度条样式 */
+        .g-container { width: 600px;height: 10px;border-radius: 5px;background: #f2f2f2;}
+        .g-progress {width: 0;height: inherit;border-radius: 5px;background: #999;}
+        .cover { position: fixed;left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(9, 10, 10, 0.527); z-index: 999;}
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!-- loading动画 -->
+                <div class="cover" v-show="loadingShow" style="z-index: 1999;display: none;">
+                    <img src="/img/loading.gif" alt="加载数据中" style="position: absolute;top: 50%;left: 50%;">
+                    <div>数据加载中...</div>
+                </div>
+                <!-- loading动画end -->
+                <div id="content">
+                    <!--提示信息弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog" style="width:600px;">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                    </button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--删除操作的提示信息-->
+                    <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog" style="width:600px;">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                    </button>
+                                    <h4 class="modal-title">删除提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4>确定删除此条数据</h4>
+                                </div>
+                                <p class="text-center">
+                                    <button class="btn btn-info btn-sm" type="button" @click="del()">
+                                        确定
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+                                        取消
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--新增、修改弹窗 -->
+                    <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content" style="width:800px"> 
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">{{modifyStatus==1?'修改':'新增'}}</h4>
+                                    </div>
+                                    <div class="form-horizontal" style="padding-top: 20px;">
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">一级分类id:</label>
+                                            <div class="col-sm-7">
+                                                <!-- <input type="text" style="width:100%;" v-model="parentCategoryId" :disabled="parentCategoryId?true:false"> -->
+                                                <select class="selectStyle" v-model="parentCategoryId">
+                                                    <option value="">请选择</option>
+                                                    <option :value="item" v-for="(item,index) in categoryIdList" >{{item}}</option>        
+                                                        <!-- <option value=""></option> -->
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">分类id:</label>
+                                            <div class="col-sm-7">
+                                                <input type="text" style="width:100%;" v-model="categoryId" :disabled="updateId?true:false">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">分类名称:</label>
+                                            <!-- <div class="col-sm-7" v-if="modifyStatus!=1">
+                                                <input type="text" style="width:100%;">
+                                            </div> -->
+                                            <div class="col-sm-7">
+                                                <input type="text" style="width:100%;" v-model="categoryName">
+                                            </div>
+                                        </div>
+                                                                                                              
+                                        <p class="text-center">
+                                            <button class="btn btn-info btn-sm" type="button" @click="add()">
+                                                确定
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+                                                取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+
+                    <div class="form-inline ">
+                        <div class="form-group">
+                            <label class="control-label">一级分类:</label>
+                            <select class="selectStyle" v-model="searchId">
+                                <option value="">请选择</option>
+                                <option :value="item" v-for="(item,index) in categoryIdList" >{{item}}</option>        
+                                <!-- <option value=""></option> -->
+                            </select>
+                        </div>
+                        <div class="form-group pull-right" style="margin-left: 20px;">
+                            <input type="button" value="查询" class="btn btn-sm btn-default "
+                                   @click="getTableData(0)">
+                            <button class="btn btn-primary btn-sm" @click="showAdd()">添加</button>        
+                        </div>
+                    </div>
+                    <div class="table-header" style="clear:both">
+                        <%= cpage %>--表格数据
+                    </div>
+                    <!--分页器和快速查询-->
+                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length" id="dynamic-table_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="500">500</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!--数据表-->
+                    <div style="width: 100%;">
+                        <table id="simple-table" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">一级分类</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">分类ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">分类名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">子分类</th>
+                                <th class="center col-sm-2 col-md-2 col-lg-3">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="viewData.length>0">
+                                <tr v-for="(item,index) in viewData" :key="item.rowId">
+                                    <td class="center">{{item.parentCategoryId}}</td>
+                                    <td class="center">{{item.categoryId}}</td>
+                                    <td class="center">{{item.categoryName}}</td>
+                                    <td class="center">{{item.modifyBy}}</td>
+                                    <td class="center" v-text="item.modifyTime"></td>
+                                    <td class="center"><a href="javascript:;" @click="toThreeLevel(item)">查看子分类</a></td>
+                                    <td class="center">
+                                        <a href="javascript:;" @click="showUpdate(item)">修改/</a><a href="javascript:;" @click="showDelete(item)">删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'暂无数据'" colspan="11"></td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!--底部页码-->
+                    <div v-if="viewData.length>0"  class="row"
+                        style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                       <div class="col-xs-2">
+                           <div class="dataTables_info" v-text="'共 '+middleData.length+'页'"></div>
+                       </div>
+                       <div class="col-xs-10">
+                           <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                               <ul class="pagination">
+                                   <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                       @click="prev">
+                                       <a href="javascript:;" v-text="'上一页'"></a>
+                                   </li>
+                                   <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                       v-for="value in middleData.length" @click="changeIndex(value)">
+                                       <a href="javascript:;" v-text="value"></a>
+                                   </li>
+                                   <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                       @click="next">
+                                       <a href="javascript:;" v-text="'下一页'"></a>
+                                   </li>
+                               </ul>
+                           </div>
+                       </div>
+                   </div>
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/ace/assets/js/v-datetimepicker.js"></script>
+<script src="/js/contentMgmt/contentClassifyMgmt/secondLevel.js"></script>
+</body>
+</html>

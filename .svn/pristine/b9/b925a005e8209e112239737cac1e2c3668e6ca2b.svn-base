@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        #simple-table > tbody > tr > td {
+            padding: 0;
+            vertical-align: middle;
+        }
+        .cover {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(9, 10, 10, 0.527);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!--信息提示弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--选择体验金弹窗-->
+                        <div class="modal" id="select" tabindex="0" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title">选择体验金</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="col-sm-12">
+                                            <div class="form-inline" style="margin: 10px 0;">
+                                                <div class="form-group">
+                                                    <label class="control-label">搜索条件:</label>
+                                                    <input type="text" style="width: 460px;"
+                                                           v-model.trim="searchCondition"
+                                                           placeholder="请输入体验金编号或体验金名称">
+                                                </div>
+                                            </div>
+                                            <div class="table-header">
+                                                体验金列表
+                                            </div>
+                                            <div style="margin-bottom: 0;height:400px; overflow-y: auto">
+                                                <table class="table table-striped table-bordered table-hover dataTable"
+                                                       style="margin-bottom: 0;">
+                                                    <thead>
+                                                    <tr>
+                                                        <th class="center col-sm-3">体验金编号</th>
+                                                        <th class="center col-sm-3">体验金名称</th>
+                                                        <th class="center col-sm-3">体验金金额</th>
+                                                        <th class="center col-sm-3">操作</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <template v-if="experienceCoupon_filter.length>0">
+                                                        <tr v-for="(item, index) in experienceCoupon_filter" :key="index">
+                                                            <td class="center" v-text="item.experienceCouponId"></td>
+                                                            <td class="center" v-text="item.experienceCouponName.slice(0,20)"></td>
+                                                            <td class="center" v-text="item.experienceCouponAmt"></td>
+                                                            <td class="center">
+                                                                <a href="javascript:;" @click="select(item)">选择</a>
+                                                            </td>
+                                                        </tr>
+                                                    </template>
+                                                    <template v-else>
+                                                        <tr>
+                                                            <td class="center" v-text="'暂无数据'" colspan="4"></td>
+                                                        </tr>
+                                                    </template>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                    </div>
+                                    <p class="text-center" style="padding: 10px 0;">
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal">取消</button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--发送提示弹窗-->
+                        <div class="modal" id="send" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">体验金发送</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确认发送体验金?</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" @click="send">确定</button>
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group pull-right">
+                                <% if(canShow||authorityList.includes('U')) { %>
+                                <input type="button" class="btn btn-sm btn-danger" @click="showSend" value="发送">
+                                <% } %>
+                                <input type="button" class="btn btn-sm btn-primary" @click="addRow" value="新增一行">
+                            </div>
+                            <div style="clear: both;"></div>
+                        </div>
+
+                        <div class="table-header">
+                            <%= cpage %>--表格数据
+                        </div>
+
+                        <!--数据表-->
+                        <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                               style="margin-bottom: 0;">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-2">体验金编号</th>
+                                <th class="center col-sm-2">体验金名称</th>
+                                <th class="center col-sm-2">客户号</th>
+                                <th class="center col-sm-2">来源渠道</th>
+                                <th class="center col-sm-3">来源详情</th>
+                                <th class="center col-sm-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="(item,index) in tableData" :key="index">
+                                <td class="center">
+                                    <template v-if="!!item.experienceCouponId">
+                                        <span v-text="item.experienceCouponId"></span>
+                                    </template>
+                                    <template v-else>
+                                        <a href="javascript:;" @click="showSelect(index)">选择</a>
+                                    </template>
+                                </td>
+                                <td class="center" v-text="item.experienceCouponName"></td>
+                                <td class="center">
+                                    <input type="text" style="width: 100%;text-align: center"
+                                           v-model.trim="item.custNo">
+                                </td>
+                                <td class="center">
+                                    <span v-text="item.source" style="text-align: center;"></span>
+                                </td>
+                                <td class="center">
+                                    <input type="text" style="width: 100%;text-align: center"
+                                           v-model.trim="item.sourceDetail">
+                                </td>
+                                <td class="center">
+                                    <a href="javascript:;" class="red" @click="deleteRow(index)">删除</a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/js/lib/ajaxfileupload.js"></script>
+<script src="/js/lib/xlsx.core.min.js"></script>
+<script src="/js/awardMgmt/experienceGold/sendMgmt.js"></script>
+</body>
+</html>

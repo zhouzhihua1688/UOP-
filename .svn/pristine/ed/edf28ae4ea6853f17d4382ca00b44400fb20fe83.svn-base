@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm"
+                                        data-dismiss="modal">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--页面头部-->
+                <div class="page-header clearfix " style="padding-top: 16px;padding-bottom: 7px;">
+                    <div class="col-sm-11">
+                        <h1 style="padding-bottom: 10px;margin-left: 0;" v-text="topData.blockName">---</h1>
+                        <p style="color: #999;" v-text="topData.blockDesc">---</p>
+                        <p>
+                            <span style="margin-right: 50px;"><span>{{topData.triggerType|translateTriggerType}}</span> - <span>{{topData.takeEffectType|translateTakeEffectType}}</span></span>
+                            <span style="margin-right: 50px;" v-text="topData.showTargetUserGroups">-</span>
+                            <span><span v-text="topData.startTime">-</span> ~ <span
+                                    v-text="topData.endTime">-</span></span>
+                        </p>
+                        <p>
+                            <span>由 <span v-text="topData.createBy">-</span> 创建于 <span
+                                    v-text="topData.createTime">-</span>, 最近一次修改人 <span
+                                    v-text="topData.modifyBy">-</span>, 时间 <span
+                                    v-text="topData.updateTime">-</span></span>
+                        </p>
+                    </div>
+                    <div class="col-sm-1" style="height: 100%;" >
+                        <button class="btn btn-primary no-border pull-right"
+                                style="border-radius: 10px;vertical-align: middle;" @click="updateToHomePage(topData)">编辑
+                        </button>
+                    </div>
+                </div>
+                <!--页面图表-->
+                <div class="page-header clearfix" style="padding-top: 16px;padding-bottom: 7px;">
+                    <div class="tabbable">
+                        <ul class="nav nav-tabs padding-12 tab-color-blue background-blue">
+                            <li class="active">
+                                <a data-toggle="tab" href="#local">触达人数走势</a>
+                            </li>
+                            <li>
+                                <a data-toggle="tab" href="#service">触达人数列表</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="local" class="tab-pane in active" style="height: 300px;overflow: scroll;">
+                                <div id="charts" style="width: 100%;height: 100%;"></div>
+                            </div>
+                            <div id="service" class="tab-pane" style="height: 300px;overflow: scroll;">
+                                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                    <div class="col-xs-6">
+                                        <div class="dataTables_length">
+                                            <label>每页显示</label>
+                                            <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum2">
+                                                <option value="5">5</option>
+                                                <option value="10">10</option>
+                                                <option value="20">20</option>
+                                            </select>
+                                            <label>条</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <div id="dynamic-table_filter" class="dataTables_filter">
+                                            <label>快速查询:</label>
+                                            <input type="text" class="input-sm" v-model="condition2">
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--数据表-->
+                                <table class="table table-striped table-bordered table-hover dataTable"
+                                       style="margin-bottom: 0;">
+                                    <thead>
+                                    <tr>
+                                        <th class="center">日期</th>
+                                        <th class="center">人数</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <template v-if="viewData.length>0">
+                                        <tr v-for="(item,index) in viewData" :key="index">
+                                            <td class="center col-sm-6" v-text="item.days"></td>
+                                            <td class="center col-sm-6" v-text="item.count"></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="2"></td>
+                                        </tr>
+                                    </template>
+                                    </tbody>
+                                </table>
+                                <!--底部页码-->
+                                <div v-if="viewData.length>0" class="row"
+                                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                    <div class="col-xs-2">
+                                        <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                                    </div>
+                                    <div class="col-xs-10">
+                                        <div class="dataTables_paginate paging_simple_numbers">
+                                            <ul class="pagination">
+                                                <li class="paginate_button"
+                                                    v-show="pageList2.length<middleData.length&&currentIndex2>maxSpace2">
+                                                    <a href="javascript:;" v-text="'1...'" @click="toFirst2"></a>
+                                                </li>
+                                                <li :class="currentIndex2==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                    @click="prev2">
+                                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                                </li>
+                                                <li :class="value==currentIndex2+1?'paginate_button active':'paginate_button'"
+                                                    v-for="value in pageList2" @click="changeIndex2(value)">
+                                                    <a href="javascript:;" v-text="value"></a>
+                                                </li>
+                                                <li class="paginate_button"
+                                                    v-show="pageList2.length<middleData.length&&middleData.length-currentIndex2>maxSpace2">
+                                                    <a href="javascript:;" v-text="'...'+middleData.length"
+                                                       @click="toLast2"></a>
+                                                </li>
+                                                <li :class="currentIndex2==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                    @click="next2">
+                                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label">用户编号:</label>
+                        <input type="text" v-model="custNo">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" style="width: 70px;">起止时间:</label>
+                        <input type="text" id="startTime" class="date-timepicker"
+                               style="width: 145px;">
+                        <span style="margin: 0 15px;">至</span>
+                        <input type="text" id="endTime" class="date-timepicker"
+                               style="width: 145px;">
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getListData(0)">
+                    </div>
+                </div>
+
+                <div class="table-header">
+                    触达详细列表
+                </div>
+
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                       style="margin-bottom: 0;">
+                    <thead>
+                    <tr>
+                        <th class="center col-sm-2">触达用户编号</th>
+                        <!-- <th class="center col-sm-2">触达用户姓名</th>
+                        <th class="center col-sm-3">触达用户手机号</th> -->
+                        <th class="center col-sm-2">状态</th>
+                        <th class="center col-sm-3">触达时间</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="tableData.length>0">
+                        <tr v-for="(item,index) in tableData" :key="index">
+                            <td class="center" v-text="item.custNo"></td>
+                            <!-- <td class="center" v-text="item.custName"></td>
+                            <td class="center" v-text="item.custPhone"></td> -->
+                            <td class="center">{{item.status|translateStatus}}</td>
+                            <td class="center" v-text="item.showInsertTime"></td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'没有数据'" colspan="5"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <div v-if="tableData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers"
+                             id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/js/lib/echarts.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/automatedOperation/operatePlanMgmt/operatePlanMgmtCheck.js"></script>
+</body>
+
+</html>

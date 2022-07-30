@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datepicker3.min.css" />
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <style>
+        .table>tbody>tr>td{
+            vertical-align:middle;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content" id="companyPause">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div id="addCompanyPauseSchedule" class="modal" tabindex="-1" role="dialog" aria-hidden="true"
+                        data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form class="form-horizontal" id="companyPauseScheduleForm">
+                                    <div class="modal-body">
+                                        <div class="widget-box">
+                                            <div class="widget-header">
+
+                                                <div class="widget-toolbar no-border">
+                                                    <ul class="nav nav-tabs" id="myTab">
+                                                        <li class="active">
+                                                            <a data-toggle="tab" href="#add_schedule">添加停运公告</a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="widget-body">
+                                                <div class="widget-main padding-6">
+                                                    <div class="tab-content">
+                                                        <div id="add_schedule" class="tab-pane in active">
+                                                            <div class="form-group">
+                                                                <label class="control-label col-sm-3"> 机构<span class="required">*</span>
+                                                                </label>
+                                                                <div class="col-sm-9">
+                                                                    <input type="hidden" name="id" id="id" value="">
+                                                                    <select id="company" name="company" v-model="addcompanyCode">
+                                                                        <option value="">全部</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <label class="control-label col-sm-3"> 周期类型<span class="required">*</span>
+                                                                </label>
+                                                                <div class="col-sm-9">
+                                                                    <select id="pauseType" v-model="pauseType">
+                                                                        <!-- <option value="">请选择</option> -->
+                                                                        <option value="1" selected="selected">仅一次</option>
+                                                                        <option value="2">每日</option>
+                                                                        <option value="3">每周</option>
+                                                                        <option value="4">每月</option>
+                                                                        <option value="5">每年</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <label class="control-label col-sm-3">
+                                                                    开始时间<span class="required">*</span> </label>
+                                                                <div class="col-sm-9">
+
+                                                                    <div class="input-group" v-show='pauseType=="" || pauseType=="1"'>
+                                                                        <input type="text" class="date-timepicker oneStartDate"
+                                                                            ref="startOne" style="width: 100%;">
+                                                                        <span class="input-group-addon" style="width: 16%;">
+                                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <div class="input-group" v-show='pauseType=="2"'
+                                                                        style="width: 120px;">
+                                                                        <input type="text" class="dateTime daysStartTime"
+                                                                            ref="startDays" style="width: 100%;">
+                                                                        <span class="input-group-addon" style="width: 16%;">
+                                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <div v-show='pauseType=="3"'>
+                                                                        星期<select class="weekStartDate" v-model="startTime.week">
+                                                                            <option value="1" selected>1</option>
+                                                                            <option value="2">2</option>
+                                                                            <option value="3">3</option>
+                                                                            <option value="4">4</option>
+                                                                            <option value="5">5</option>
+                                                                            <option value="6">6</option>
+                                                                            <option value="7">7</option>
+                                                                        </select>
+
+                                                                        <div class="input-group" style="display: inline-block; width: 80px;">
+                                                                            <input type="text" class="dateTime weekStartTime"
+                                                                                ref='startWeekTime' style="width: 100%;">
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div v-show='pauseType=="4"'>
+
+                                                                        <select class="monthStartDate" v-model="startTimeDay">
+                                                                            <option v-for="(item,index) in 28" :value="item"
+                                                                                v-text='item' :key='item'></option>
+                                                                        </select>号
+
+
+                                                                        <div class="input-group" style="display: inline-block; width: 80px;">
+                                                                            <input type="text" class="dateTime monthStartTime"
+                                                                                ref='startMountTime' style="width: 100%;">
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div v-show='pauseType=="5"'>
+
+                                                                        <select class="yearStartDate" v-model="startTime.month" >
+                                                                            <option v-for="(item,index) in 12" :value="item"
+                                                                                v-text='item' :key='item'></option>
+                                                                        </select>月
+
+                                                                        <select class="yearStartDay" v-model="ystartTimeday">
+                                                                            <option v-for="(item,index) in 28" :value="item"
+                                                                                v-text='item' :key='item'></option>
+                                                                        </select>号
+
+                                                                        <div class="input-group" style="display: inline-block; width: 80px;" >
+                                                                            <input type="text" class="dateTime yearStartTime" ref='startYearMonthTime'
+                                                                                style="width: 100%;">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <label class="col-sm-3 control-label">
+                                                                    结束时间<span class="required">*</span> </label>
+                                                                <div class="col-sm-9">
+
+                                                                    <div class="input-group" v-show='pauseType=="" || pauseType=="1"'>
+                                                                        <input type="text" class="date-timepicker oneEndDate"
+                                                                            ref="endOne" style="width: 100%;">
+                                                                        <span class="input-group-addon" style="width: 16%;">
+                                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                                        </span>
+                                                                    </div>
+
+
+                                                                    <div class="input-group" v-show='pauseType=="2"'
+                                                                        style="width: 120px;">
+                                                                        <input type="text" class="dateTime daysEndTime"
+                                                                            ref="endDays" style="width: 100%;">
+                                                                        <span class="input-group-addon" style="width: 16%;">
+                                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <div v-show='pauseType=="3"'>
+                                                                        星期<select class="weekEndDate" v-model="endTime.week">
+                                                                            <option value="1" selected>1</option>
+                                                                            <option value="2">2</option>
+                                                                            <option value="3">3</option>
+                                                                            <option value="4">4</option>
+                                                                            <option value="5">5</option>
+                                                                            <option value="6">6</option>
+                                                                            <option value="7">7</option>
+                                                                        </select>
+
+                                                                        <div class="input-group" style="display: inline-block; width: 80px;">
+                                                                            <input type="text" class="dateTime weekEndTime"
+                                                                                ref='endWeekTime' style="width: 100%;">
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div v-show='pauseType=="4"'>
+
+                                                                        <select class="monthEndDate" v-model="endTimeDay">
+                                                                            <option v-for="(item,index) in 28" :value="item"
+                                                                                v-text='item' :key='item'></option>
+                                                                        </select>号
+
+                                                                        <div class="input-group" style="display: inline-block; width: 80px;">
+                                                                            <input type="text" class="dateTime monthEndTime"
+                                                                                ref='endMountTime' style="width: 100%;">
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div v-show='pauseType=="5"'>
+
+                                                                        <select class="yearEndDate" v-model="endTime.month">
+                                                                            <option v-for="(item,index) in 12" :value="item"
+                                                                                v-text='item' :key='item'></option>
+                                                                        </select>月
+
+                                                                        <select class="yearEndDay" v-model="yendTimeday" >
+                                                                            <option v-for="(item,index) in 28" :value="item"
+                                                                                v-text='item' :key='item'></option>
+                                                                        </select>号
+
+                                                                        <div class="input-group" style="display: inline-block; width: 80px;">
+                                                                            <input type="text" class="dateTime yearEndTime" ref='endYearMonthTime'
+                                                                                style="width: 100%;">
+                                                                        </div>
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- <div class="form-group">
+                                                            <label class="col-sm-3 control-label" for="content">
+                                                                内容<span class="required">*</span> </label>
+                                                            <div class="col-sm-9">
+                                                <textarea type="text" id="content" name="content"
+                                                          placeholder="请输入内容" class="input-xlarge"></textarea>
+                                                            </div>
+                                                        </div> -->
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+
+                                    <div class="modal-footer">
+                                        <div class="col-md-offset-3 col-md-9">
+                                            <button class="btn btn-info" id="sub_btn" type="button" @click.prevent.stop="add">
+                                                <i class="icon-ok bigger-110"></i>
+                                                提交
+                                            </button>
+                                            <button class="btn" type="reset" id="reset_btn">
+                                                <i class="icon-undo bigger-110"></i>
+                                                重置
+                                            </button>
+                                            <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                <i class="icon-reply icon-only bigger-110"></i>
+                                                取消
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--删除-->
+                    <div class="modal" id="delete" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                    <h4 class="modal-title">删除</h4>
+                                </div>
+                                <p>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                </p>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-danger btn-sm " @click="confirmDelete">确定</button>
+                                    <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--信息提示弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-inline" style="padding: 10px 0;">
+                        <input type="text" class="form-control" placeholder="输入机构名称" v-model="searchField">
+                        <button type="button" class="btn btn-sm btn-primary" @click="searchInput">搜索</button>
+                        <button type="button" class="btn btn-sm btn-primary pull-right" style="margin-left: 10px;"
+                            @click="deleteEven">删除</button>
+                        <!-- <button type="button" class="btn btn-sm btn-primary pull-right" style="margin-left: 10px;"
+                        @click="compilePause">修改</button> -->
+                        <button type="button" class="btn btn-sm btn-primary pull-right" @click="boxShow">新增</button>
+                    </div>
+                    <div class="table-header">
+                        机构停运时间配置列表
+                    </div>
+                    <!--数据表-->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover dataTable">
+                            <thead>
+                                <tr>
+                                    <th class="center">
+                                        <label class="pos-rel">
+                                            <input type="checkbox" class="ace" :checked="allCheck" @click="selectAll" />
+                                            <span class="lbl"></span>
+                                        </label>
+                                    </th>
+                                    <th class="center col-sm-2">ID</th>
+                                    <th class="center col-sm-3">机构名称</th>
+                                    <th class="center col-sm-2">开始时间</th>
+                                    <th class="center col-sm-2">结束时间</th>
+                                    <th class="center col-sm-2">周期类型</th>
+                                    <th class="center col-sm-2">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template v-if="tableData.length>0">
+                                    <tr v-for="(item,index) in tableData" :key="index" :class="item.check?'active':''">
+                                        <td class="center">
+                                            <label class="pos-rel">
+                                                <input type="checkbox" class="ace" :checked="item.check" @click="select(index)" />
+                                                <span class="lbl"></span>
+                                            </label>
+                                        </td>
+                                        <td class="center col-sm-2 col-md-2 col-lg-2" v-text="item.id"></td>
+                                        <td class="center col-sm-2 col-md-2 col-lg-2" v-text="item.companyName"></td>
+                                        <td class="center col-sm-2 col-md-2 col-lg-2">{{item.startTime |
+                                            formatTime(item.pauseType)}}</td>
+                                        <td class="center col-sm-2 col-md-2 col-lg-2">{{item.endTime |
+                                            formatTime(item.pauseType)}}</td>
+                                        <td class="center col-sm-1 col-md-1 col-lg-1">{{item.pauseType | pauseType}}</td>
+                                        <td class="center col-sm-1 col-md-1 col-lg-1"><a href="javascript:;" @click="compilePause(item.id,item.companyCode,item.pauseType,item.startTime,item.endTime)">修改</a></td>
+                                    </tr>
+                                </template>
+                                <template v-else>
+                                    <tr>
+                                        <td class="center" v-text="'没有数据'" colspan="9"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!--底部页码-->
+                    <div v-if="tableData.length>0" class="row" style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                        <div class="col-xs-2">
+                            <div class="dataTables_info" v-text="'共 '+total+' 页'"></div>
+                        </div>
+                        <div class="col-xs-10">
+                            <div class="dataTables_paginate paging_simple_numbers">
+
+                                <ul class="pagination">
+                                    <li style="margin-left: 20px;">
+                                        <select name="records" v-model="records">
+                                            <option value="10">10</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                            <option value="500">500</option>
+                                        </select>
+                                    </li>
+                                    <li class="paginate_button" v-show="pageList.length<total&&currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                    </li>
+                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                        @click="prev">
+                                        <a href="javascript:;" v-text="'<'"></a>
+                                    </li>
+                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'" v-for="value in pageList"
+                                        @click="changeIndex(value)">
+                                        <a href="javascript:;" v-text="value"></a>
+                                    </li>
+                                    <li class="paginate_button" v-show="pageList.length<total&&total-currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'...'+total" @click="toLast"></a>
+                                    </li>
+                                    <li :class="currentIndex==total-1?'paginate_button next disabled':'paginate_button next'"
+                                        @click="next">
+                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+
+
+    <% include ../../common/basic-scripts.html %>
+    <script src="/js/lib/vue.js"></script>
+    <!--<script src="/js/cashMgmt/livingPay/My97DatePicker/WdatePicker.js"></script>-->
+    <script src="/ace/assets/js/jquery-ui.custom.min.js"></script>
+    <script src="/ace/assets/js/jquery.ui.touch-punch.min.js"></script>
+    <script src="/ace/assets/js/markdown.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-markdown.min.js"></script>
+    <script src="/ace/assets/js/chosen.jquery.min.js"></script>
+    <script src="/ace/assets/js/jquery.hotkeys.index.min.js"></script>
+    <script src="/ace/assets/js/spinbox.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datepicker.min.js"></script>
+    <script src="/ace/assets/js/autosize.min.js"></script>
+    <script src="/ace/assets/js/jquery.inputlimiter.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/js/lib/zh-cn.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/js/cashMgmt/livingPay/validate.min.js"></script>
+    <script src="/js/cashMgmt/livingPay/companyPauseSchedule.js"></script>
+</body>
+
+</html>

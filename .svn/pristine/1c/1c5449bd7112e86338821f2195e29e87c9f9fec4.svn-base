@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group pull-left">
+                                <input type="button" class="btn btn-sm btn-primary " value="保存" @click='keepData'>
+                            </div>
+                            <div class="form-group pull-right">
+                                <input type="button" class="btn btn-sm btn-primary " value="返回" @click='windowBack'>
+                            </div>
+                            <div style="clear: both"></div>
+                            <div style="float: left;min-width: 50px;margin: 10px;" v-for="(item,index) in viewData">
+                                <label class="pos-rel">
+                                    <!-- 复选框 -->
+                                    <input type="checkbox" class="ace" @click='item.checked=!item.checked' :checked='item.checked'>
+                                    <span class="lbl"></span>
+                                    {{item.ruleName}}
+                                </label>
+                            </div>
+
+
+                        </div><!-- /.row -->
+                    </div><!-- /.page-content -->
+                </div>
+            </div><!-- /.main-content -->
+            <% include ../../common/footer.html %>
+        </div><!-- /.main-container -->
+        <% include ../../common/basic-scripts.html %>
+        <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+        <script src="/js/lib/vue.js"></script>
+        <script src="/js/marketingActive/activeTemplateMgmt/activeComponentRule.js"></script>
+</body>
+
+</html>

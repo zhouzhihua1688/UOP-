@@ -1,0 +1,165 @@
+const request = require('request');
+const extend = require('extend')
+const userMgmt_apiConfig = require('../routes/userMgmt/apiConfig');
+// const userMgmt_apiConfig = {
+//     Authorization: 'Basic dW9wOjEyMzQ1Ng==',
+//     user:{
+//         login: 'http://10.50.115.125:8089/inner-uaa/v1/oauth/token'
+//     }
+// };
+const authorization = userMgmt_apiConfig.Authorization;
+const login_url = userMgmt_apiConfig.user.login;
+
+// const authorization = global.envConfig.inner_uaa.Authorization;
+// const authorization = 'Basic dW9wOjEyMzQ1Ng==';
+
+
+function requestWrapper(uri, options, callback) {
+    // if (typeof uri === 'undefined') {
+    //   throw new Error('undefined is not a valid uri or options object.')
+    // }
+
+    // var params = requset.initParams(uri, options, callback)
+
+    // if (params.method === 'HEAD' && paramsHaveRequestBody(params)) {
+    //   throw new Error('HTTP HEAD requests MUST NOT include a request body.')
+    // }
+
+    // return new request.Request(params)
+
+    var params = request.initParams(uri, options, callback)
+
+    callback = params.callback;
+    options = params;
+
+    if (options && !options.session) {
+        return !!callback && callback(new Error('------requestWrapper------error, session must be set in options to use access_token and refresh_token!!!'))
+    }
+
+    !options.headers && (options.headers = {})
+    // extend(options.headers, { Authorization: authorization })
+    extend(options.headers, {Authorization: options.session['access_token']})
+
+    // console.log('requestWrapper 1 options=', options);    
+    // console.log('requestWrapper 1 params callback=', callback);
+
+    return request(options, (error, response, body) => {
+        // console.log('requestWrapper 1 error:', error);
+        // console.log('requestWrapper 1 statusCode:', response && response.statusCode);
+        // console.log('requestWrapper 1 body:', String(body).slice(0, 100));
+        // body = '{xzcv:'
+        if (error) {
+            return !!callback && callback(error, response, body);
+        }
+        try {
+            let result = typeof body == 'string' ? JSON.parse(body) : body;
+
+            if (response.statusCode == 200/*  && result.returnCode == 0 */) {
+                return !!callback && callback(error, response, body);
+            }
+
+            if (response.statusCode == 400) {
+                return !!callback && callback(new Error('------requestWrapper------unknown error, check requst header'));
+            }
+
+            if (response.statusCode == 403) {
+                return !!callback && callback(new Error('------requestWrapper------403, UAA未配置对应url，未关联到角色'));
+            }
+
+            if (response.statusCode == 404) {
+                if (result && result.returnCode == 1001){
+                    return !!callback && callback(new Error('------requestWrapper------404, returnCode=1001，UAA未配置对应url，未导入'));    
+                }
+                return !!callback && callback(new Error('------requestWrapper------404, Not Found'));
+            }
+
+            if (response.statusCode > 401) {
+                return !!callback && callback(error, response, body);
+            }
+
+            if (response.statusCode == 401 && result && result.returnCode == 1000) {
+                console.log('------requestWrapper------access_token expired, need to get refresh_token');
+
+                options_refresh = {
+                    auth: {
+                        username: 'uop',
+                        password: '123456'
+                    },
+                    url: login_url,
+                    formData: {
+                        grant_type: 'refresh_token',
+                        scope: 'all',
+                        refresh_token: options.session['refresh_token'].slice(7)
+                    },
+                    timeout: 15000
+                }
+
+                console.log('get refresh_token options:', options_refresh);
+                request.post(options_refresh, (error, response, body) => {
+                    console.log('get refresh_token error:', error);
+                    console.log('get refresh_token statusCode:', response && response.statusCode);
+                    // console.log('requestWrapper 2 body:', body);
+                    if (error) {
+                        return !!callback && callback(error, response, body);
+                    }
+                    try {
+                        let result = typeof body == 'string' ? JSON.parse(body) : body;
+                        delete result.loginUserDto;
+                        console.log('get refresh_token result:', result);
+
+                        if (response.statusCode == 400) {
+                            console.log('------requestWrapper------refresh_token expired, please relogin!!!');
+                            return !!callback && callback(new Error('会话过期，请重新登录'));
+                        }
+
+                        if (response.statusCode == 200 && result.returnCode == 0) {
+                            console.log('------requestWrapper------got new access_token=', result['access_token']);
+                            console.log('------requestWrapper------got new refresh_token=', result['refresh_token']);
+                            options.session['access_token'] = 'bearer ' + result['access_token'];
+                            options.session['refresh_token'] = 'bearer ' + result['refresh_token'];
+                            options.headers['Authorization'] = 'bearer ' + result['access_token'];
+                            console.log('------requestWrapper------ new options=', options);
+                            return request(options, callback)
+                        }
+                    } catch (e) {
+                        return !!callback && callback(new Error(e));
+                    }
+
+                })
+
+            }
+        } catch (e) {
+            return !!callback && callback(new Error(e));
+        }
+    })
+}
+
+function paramsHaveRequestBody(params) {
+    return (
+        params.body ||
+        params.requestBodyStream ||
+        (params.json && typeof params.json !== 'boolean') ||
+        params.multipart
+    )
+}
+
+function verbFunc(verb) {
+    var method = verb.toUpperCase()
+    return function (uri, options, callback) {
+        var params = request.initParams(uri, options, callback)
+        params.method = method
+        return requestWrapper(params, params.callback)
+    }
+}
+
+// define like this to please codeintel/intellisense IDEs
+requestWrapper.get = verbFunc('get')
+requestWrapper.head = verbFunc('head')
+requestWrapper.options = verbFunc('options')
+requestWrapper.post = verbFunc('post')
+requestWrapper.put = verbFunc('put')
+requestWrapper.patch = verbFunc('patch')
+requestWrapper.del = verbFunc('delete')
+requestWrapper['delete'] = verbFunc('delete')
+
+module.exports = requestWrapper

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache,must-revalidate">
+<meta http-equiv="expires" content="0">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datepicker3.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap24.css"/>
+    <style>
+
+
+        [v-cloak] {
+            display: none !important;
+        }
+
+        .msg{
+            overflow: hidden;
+            text-overflow-ellipsis: true;
+            white-space: nowrap;
+        }
+
+
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!--提示信息弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--数据中心文件管理模块-->
+                        <div class=" panel panel-info">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">数据中心文件管理</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-inline row">
+                                    <div class="col-lg-3">
+                                        <label class="control-label">开始时间:</label>
+                                        <div class="input-group">
+                                            <input id="startDate" type="text" class="date-picker pull-left "
+                                                   placeholder="请输入时间"/>
+                                            <span class="input-group-addon">
+                                                    <i class="fa fa-calendar bigger-110"></i>
+                                                </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <label class="control-label">结束时间:</label>
+                                        <div class="input-group">
+                                            <input id="endDate" type="text" class="date-picker pull-left "
+                                                   placeholder="请输入时间"/>
+                                            <span class="input-group-addon">
+                                                    <i class="fa fa-calendar bigger-110"></i>
+                                                </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group" style="padding-top: 20px">
+                                        <label class="control-label">文件类型:</label>
+                                        <label class="pos-rel" style="margin-right: 10px"> <input type="checkbox"
+                                                                                                  class="ace "
+                                                                                                  v-model="all_check"/><span
+                                                class="lbl"></span>&nbsp;全选
+                                        </label>
+                                        <template v-for="(item,index) in fileDescs" :key="index">
+                                            <label class="pos-rel" style="margin-right: 10px"> <input type="checkbox"
+                                                                                                      class="ace "
+                                                                                                      v-model="item.check"/><span
+                                                    class="lbl"></span>&nbsp;{{item.filertpedesc}}
+                                            </label>
+                                        </template>
+                                    </div>
+                                </div>
+
+
+                                <div class="form-inline row " style="padding-top: 10px">
+                                    <div class="col-lg-1">
+                                        <label class=" control-label ">上次执行结果:        </label>
+                                    </div>
+                                    <div class="col-lg-9">
+                                        <label class="  label label-info" data-toggle="tooltip" data-placement="top" :title="lastDataMsg" >{{lastDataMsg}}</label>
+                                    </div>
+                                    <div class="col-lg-2 ">
+                                        <div class="form-group pull-right " style="margin-right: 10px">
+                                            <input type="button" class="btn btn-sm btn-primary right" value="批量导入"
+                                                   @click="toImport"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--确认批量导入模态框-->
+                        <div class="modal" id="import" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">导入确认</h4>
+                                    </div>
+                                    <div class="modal-body " style="padding-left: 40px;">
+                                        <h3>即将导入文件:</h3>
+                                        <h4>日期: {{startDate}} - {{endDate}}</h4>
+                                        <h4>文件类别:</h4>
+                                        <h4 v-for="item in filetypes" >&nbsp;&nbsp;&nbsp;{{item.filertpedesc}} &nbsp;</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-danger btn-sm " @click="importData">确定
+                                        </button>
+                                        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--费用初算模块-->
+                        <div class=" panel panel-info">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">费用重算管理</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="  row">
+                                    <div class=" form-inline col-lg-3">
+                                        <label class="control-label">年月:</label>
+                                        <div class=" input-group">
+                                            <input id="ymonth" type="text" class="date-picker-ymonth pull-left "
+                                                   placeholder="请输入时间">
+                                            <span class="input-group-addon">
+                                                    <i class="fa fa-calendar bigger-110"></i>
+                                                </span>
+                                        </div>
+                                    </div>
+                                    <div class=" form-inline col-lg-6">
+                                        <label class="control-label">费用类型:</label>
+                                        <select class="form-control select" style="width: 170px;" v-model="faretype">
+                                            <option value="1">手续费</option>
+                                            <option value="2">交易费</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="  col-lg-3">
+                                        <div class="form-group pull-right" style="margin-right: 10px">
+                                            <input type="button" class="btn btn-sm btn-primary right" value="重新初算"
+                                                   @click="toCal">
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="form-inline row " style="padding-top: 10px">
+                                    <div class="col-lg-1">
+                                        <label class=" control-label ">上次执行结果:        </label>
+                                    </div>
+                                    <div class="col-lg-9">
+                                        <label class="  label label-info" data-toggle="tooltip" data-placement="top" :title="lastCalMsg" >{{lastCalMsg}}</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--确认重算费用模态框-->
+                        <div class="modal" id="cal" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">初算确认</h4>
+                                    </div>
+                                    <div class="modal-body center" style="padding: 20px;">
+                                        <h3>即将初算 {{ymonth}} 月 {{faretype ==='1'?'手续费':faretype ==='2'?'交易费':'未知费用类型' }} ,初算过程较长,请耐性等待!</h3>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-danger btn-sm " @click="cal">确定
+                                        </button>
+                                        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div><!-- /.row -->
+    </div><!-- /.page-content -->
+</div>
+
+
+<% include ../../common/footer.html %>
+
+</div><!-- /.main-container -->
+
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/jquery-ui.custom.min.js"></script>
+<script src="/ace/assets/js/jquery.ui.touch-punch.min.js"></script>
+<script src="/ace/assets/js/markdown.min.js"></script>
+<script src="/ace/assets/js/bootstrap-markdown.min.js"></script>
+<script src="/ace/assets/js/spinbox.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datepicker.min.js"></script>
+<script src="/ace/assets/js/autosize.min.js"></script>
+<script src="/ace/assets/js/jquery.inputlimiter.min.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/cashMgmt/livingPay/validate.min.js"></script>
+<script src="/js/thirdPartyOperation/expenseMgmt/manager.js"></script>
+
+</body>
+
+</html>

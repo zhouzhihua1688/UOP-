@@ -1,0 +1,185 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').shareMgmt.scene;
+
+module.exports = function(app) {
+	// 获取接口类型列表
+	app.post('/marketingActive/shareMgmt/scene/getShareRventTypeList.ajax', (req, res, next) => {
+		let option = {
+			session: req.session,
+			url: apiUrl.getShareRventTypeList,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/marketingActive/shareMgmt/scene/getShareRventTypeList.ajax option:', option);
+		request(option, (error, response, body) => {
+			console.log('/marketingActive/shareMgmt/scene/getShareRventTypeList.ajax error:', error);
+			console.log('/marketingActive/shareMgmt/scene/getShareRventTypeList.ajax statusCode:', response && response.statusCode);
+			console.log('/marketingActive/shareMgmt/scene/getShareRventTypeList.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '数据获取失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode == '0') {
+				res.send({
+					error: 0,
+					msg: '调用成功',
+					data: result.body
+				});
+			} else {
+				res.send({
+					error: 1,
+					msg: '获取数据失败'
+				});
+			}
+		});
+	});
+	// 获取列表数据
+	app.post('/marketingActive/shareMgmt/scene/getList.ajax', (req, res, next) => {
+		let params = req.body;
+		let option = {
+			session: req.session,
+			url: apiUrl.getList,
+			qs: params,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/marketingActive/shareMgmt/scene/getList.ajax option:', option);
+		request(option, (error, response, body) => {
+			console.log('/marketingActive/shareMgmt/scene/getList.ajax error:', error);
+			console.log('/marketingActive/shareMgmt/scene/getList.ajax statusCode:', response && response.statusCode);
+			console.log('/marketingActive/shareMgmt/scene/getList.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '数据获取失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode == '0') {
+				res.send({
+					error: 0,
+					msg: '调用成功',
+					data: result.body
+				});
+			} else {
+				res.send({
+					error: 1,
+					msg: '获取数据失败'
+				});
+			}
+		});
+	});
+	// 新增
+	app.post('/marketingActive/shareMgmt/scene/add.ajax', (req, res, next) => {
+		let params = req.body;
+		params.modifyBy = req.session['loginInfo'].userid;
+		let option = {
+			session: req.session,
+			url: apiUrl.add,
+			body: params,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/marketingActive/shareMgmt/scene/add.ajax option:', option);
+		request.post(option, (error, response, body) => {
+			console.log('/marketingActive/shareMgmt/scene/add.ajax error:', error);
+			console.log('/marketingActive/shareMgmt/scene/add.ajax statusCode:', response && response.statusCode);
+			console.log('/marketingActive/shareMgmt/scene/add.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '新增失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode == '0') {
+				res.send({
+					error: 0,
+					msg: '新增成功',
+					data: result.body
+				});
+			} else {
+				res.send({
+					error: 1,
+					msg: '新增失败'
+				});
+			}
+		});
+	});
+	// 修改
+	app.post('/marketingActive/shareMgmt/scene/update.ajax', (req, res, next) => {
+		let params = req.body;
+		params.modifyBy = req.session['loginInfo'].userid;
+		let option = {
+			session: req.session,
+			url: apiUrl.update,
+			body: params,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/marketingActive/shareMgmt/scene/update.ajax option:', option);
+		request.post(option, (error, response, body) => {
+			console.log('/marketingActive/shareMgmt/scene/update.ajax error:', error);
+			console.log('/marketingActive/shareMgmt/scene/update.ajax statusCode:', response && response.statusCode);
+			console.log('/marketingActive/shareMgmt/scene/update.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '调用失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode == '0') {
+				res.send({
+					error: 0,
+					msg: '调用成功',
+					data: result.body
+				});
+			} else {
+				res.send({
+					error: 1,
+					msg: '调用失败'
+				});
+			}
+		});
+	});
+	// 删除
+	// app.post('/marketingActive/shareMgmt/scene/delete.ajax', (req, res, next) => {
+	// 	let params = req.body;
+	// 	let option = {
+	// 		session: req.session,
+	// 		url: apiUrl.del,
+	// 		body: params,
+	// 		timeout: 15000,
+	// 		json: true
+	// 	};
+	// 	console.log('/marketingActive/shareMgmt/scene/delete.ajax option:', option);
+	// 	request.post(option, (error, response, body) => {
+	// 		console.log('/marketingActive/shareMgmt/scene/delete.ajax error:', error);
+	// 		console.log('/marketingActive/shareMgmt/scene/delete.ajax statusCode:', response && response.statusCode);
+	// 		console.log('/marketingActive/shareMgmt/scene/delete.ajax body:', body);
+	// 		if (error) {
+	// 			return res.send({
+	// 				error: 1,
+	// 				msg: '调用失败'
+	// 			});
+	// 		}
+	// 		let result = typeof body === 'string' ? JSON.parse(body) : body;
+	// 		if (result && result.returnCode == '0') {
+	// 			res.send({
+	// 				error: 0,
+	// 				msg: '调用成功',
+	// 				data: result.body
+	// 			});
+	// 		} else {
+	// 			res.send({
+	// 				error: 1,
+	// 				msg: '调用失败'
+	// 			});
+	// 		}
+	// 	});
+	// });
+};

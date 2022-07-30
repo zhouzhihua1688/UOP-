@@ -1,0 +1,218 @@
+//营销活动接口总配置
+let awardMgmt = global.envConfig.awardMgmt ? global.envConfig.awardMgmt : global.envConfig.inner_gateway;
+let reward = global.envConfig.reward ? global.envConfig.reward : global.envConfig.inner_gateway;
+let awardMgmtExchange = global.envConfig.awardMgmt_exchange ? global.envConfig.awardMgmt_exchange : global.envConfig.inner_gateway;
+let userGroup = global.envConfig.userGroup ? global.envConfig.userGroup : global.envConfig.inner_gateway;
+let highNetWorthEquityMgmt = global.envConfig.highNetWorthEquityMgmt ? global.envConfig.highNetWorthEquityMgmt : global.envConfig.inner_gateway;
+let custGroupId = global.envConfig.custGroupId ? global.envConfig.custGroupId : global.envConfig.inner_gateway;
+let experienceGold = global.envConfig.experienceGold ? global.envConfig.experienceGold : global.envConfig.inner_gateway;
+awardMgmt += '/activity-center/admin/v1';
+reward += '/reward/v1';
+userGroup += '/user-group/v1';
+highNetWorthEquityMgmt += '/reward/v1';
+experienceGold += '/reward/v1';
+//消息中心
+let messageCenter = global.envConfig.messageCenter ? global.envConfig.messageCenter : global.envConfig.inner_gateway;
+messageCenter += '/message-center/v1';
+
+module.exports = {
+    awardSetting: {
+        typeSetting: {
+            getTable: `${awardMgmt}/mcp-award-type-config/query-award-type-config`,
+            del: `${awardMgmt}/mcp-award-type-config/del-award-type-config`,
+            add: `${awardMgmt}/mcp-award-type-config/add-award-type-config`,
+            update: `${awardMgmt}/mcp-award-type-config/update-award-type-config`
+        },
+        portSetting: {
+            getTable: `${awardMgmt}/mcp-reward-card-channel/query-by-page`,
+            del: `${awardMgmt}/mcp-reward-card-channel/delete-reward-card-channel`,
+            add: `${awardMgmt}/mcp-reward-card-channel/add-reward-card-channel`,
+            update: `${awardMgmt}/mcp-reward-card-channel/update-reward-card-channel`,
+        },
+        cardSetting: {
+            getTable: `${awardMgmt}/mcp-reward-card-config/query-by-page`,
+            getDiaInfoList: `${awardMgmt}/mcp-reward-card-config/query-by-id`,
+            del: `${awardMgmt}/mcp-reward-card-config/delete-reward-card-config`,
+            add: `${awardMgmt}/mcp-reward-card-config/add-reward-card-config`,
+            update: `${awardMgmt}/mcp-reward-card-config/update-reward-card-config`,
+            upload: `${awardMgmt}/up-or-download/common-upload-image`
+        },
+        infoSetting: {
+            getTable: `${awardMgmt}/mcp-reward-card-info/query-by-page`,
+            del: `${awardMgmt}/mcp-reward-card-info/delete-reward-card-info`,
+            add: `${awardMgmt}/mcp-reward-card-info/add-reward-card-info`,
+            upload: `${awardMgmt}/mcp-reward-card-info/import-card-info`,
+            update: `${awardMgmt}/mcp-reward-card-info/update-reward-card-info`
+        },
+        phoneSetting: {
+            getTable: `${awardMgmt}/mcp-reward-mob-charge-config/query-by-page`,
+            del: `${awardMgmt}/mcp-reward-mob-charge-config/delete-reward-mob-charge-config`,
+            add: `${awardMgmt}/mcp-reward-mob-charge-config/add-reward-mob-charge-config`,
+            update: `${awardMgmt}/mcp-reward-mob-charge-config/update-reward-mob-charge-config`,
+            awardType: `${awardMgmt}/mcp-base-award-config/query-by-id`,
+        },
+        batchCard: {
+            getTable: `${awardMgmt}/mcp-bulid-reward-card-records/query-by-page`,
+            add: `${awardMgmt}/mcp-bulid-reward-card-records/add-bulid-reward-card-records`,
+            activeAll: `${awardMgmt}/mcp-activity-config/query-all-activity`,
+            update: `${awardMgmt}/mcp-bulid-reward-card-records/update-bulid-reward-card-records`
+        },
+        phoneNumRun: {
+            getTable: `${awardMgmt}/mcp-reward-num-segment-config/query-by-page`,
+            add: `${awardMgmt}/mcp-reward-num-segment-config/add-reward-num-segment-config`,
+            del: `${awardMgmt}/mcp-reward-num-segment-config/delete-reward-num-segment-config`,
+            update: `${awardMgmt}/mcp-reward-num-segment-config/update-reward-num-segment-config`
+        },
+        awardTable: {
+            dataList: `${awardMgmt}/mcp-rewards-config/query-rewards-config`,
+            dataAdd: `${awardMgmt}/mcp-rewards-config/add-rewards-config`,
+            dataQuery: `${awardMgmt}/mcp-rewards-config/query-by-award-package-id`,
+            dataChange: `${awardMgmt}/mcp-rewards-config/update-rewards-config`,
+            dataDelete: `${awardMgmt}/mcp-rewards-config/delete-rewards-config`,
+            ExcelUpload: `${awardMgmt}/mcp-rewards-config/import-rewards-config`,
+        }
+    },
+    awardSearch: {
+        awardRecord: {
+            query: `${awardMgmt}/mcp-reward-card-cust-info/query-by-page`
+        },
+        userDetail: {
+            query: `${awardMgmt}/mcp-rewards-cust-records-details/query-cust-records-details`
+        },
+        awardLogAll: {
+            query: `${awardMgmt}/mcp-rewards-cust-records/query-cust-award-records`
+        },
+    },
+    redPacketSettingMgmt: {
+        redPacketType: {
+            add: `${reward}/redEnvelope/add`,
+            del: `${reward}/redEnvelope/delete`,
+            query: `${reward}/redEnvelope/query`,
+            update: `${reward}/redEnvelope/update`
+        },
+        redPacketQuery: {
+            query: `${reward}/redEnvelope/cust/query`
+        },
+        redPacketSend: {
+            send: `${reward}/user/redenvelop/send-batch`,
+            getEnvelopList: `${reward}/redEnvelope/query`
+        }
+    },
+    integralSettingMgmt: {
+        integralType: {
+            query: `${reward}/point`,
+            add: `${reward}/point/add`,
+            update: `${reward}/point/update`,
+            del: `${reward}/point/delete`
+        },
+        integralQuery: {
+            query: `${reward}/point/cust/query/point/flow`,
+            integral: `${reward}/mold/get-source-enum`,
+            consumption: `${reward}/mold/get-expend-point-type`,
+        },
+        integralCalc: {
+            getPointList: `${reward}/point`,
+            send: `${reward}/point/cust/send`,
+            sendBatch: `${reward}/point/cust/send/batch`
+        },
+        integralExchange:{
+           getTableData:`${reward}/point/products`,
+           search:`${reward}/point/product`,
+           saveParam:`${reward}/point/product/add`,
+           update:`${reward}/point/product/update`,
+           getUserGroupList:`${userGroup}/group/get-user-group-list`
+        },
+        integralExchangeDH: {
+            query: `${reward}/point/get-not-down-pointflows`,
+            download: `${reward}/estair/get-excle-in`,
+            upload: `${reward}/estair/update-point-state`
+        }
+    },
+    couponSettingMgmt: {
+        couponMgmt: {},
+        couponTypeMgmt: {},
+        couponUserMgmt: {}
+    },
+    daoLeWechatRedPackeMgmt: {
+        redPacketType: {
+            add: `${reward}/RedenvelopDaoleWeixinConfig/add`,
+            // del: `${reward}/redEnvelope/delete`,
+            query: `${reward}/RedenvelopDaoleWeixinConfig/query-by-page`,
+            update: `${reward}/RedenvelopDaoleWeixinConfig/update`
+        },
+        redPacketQuery: {
+            // add: `${reward}/RedenvelopDaoleWeixinRecords/add`,
+            query: `${reward}/RedenvelopDaoleWeixinRecords/query-by-page`
+        },
+        redPacketStatus: {
+            query: `${awardMgmt}/mcp-act-weixin-redenvelope/query-weixin-redenvelope-by-page`
+        }
+    },
+    highNetWorthEquityMgmt: {
+        basicInterestConfig: {
+            query: `${highNetWorthEquityMgmt}/right/award-base-right/query-by-page`,
+            saveParam: `${highNetWorthEquityMgmt}/right/award-base-right/add`,
+            update: `${highNetWorthEquityMgmt}/right/award-base-right/update`,
+            del: `${highNetWorthEquityMgmt}/right/award-base-right/delete`,
+            partnersParams: `${highNetWorthEquityMgmt}/right/right-partner/query-by-page`,
+        },
+        rightsPackageConfig: {
+            getTableData: `${highNetWorthEquityMgmt}/right/award-right-package/query-by-page`,
+            saveParam: `${highNetWorthEquityMgmt}/right/award-right-package/add`,
+            update: `${highNetWorthEquityMgmt}/right/award-right-package/update`,
+            deleteParam: `${highNetWorthEquityMgmt}/right/award-right-package/delete`,
+            rightListParam:`${highNetWorthEquityMgmt}/right/award-base-right/query-by-page`,
+        },
+        interestRelationConfig: {
+            getTableData: `${highNetWorthEquityMgmt}/right/relation-usergroup/query-right-usergroup-package`,
+            rightPackageList:`${highNetWorthEquityMgmt}/right/award-right-package/query-by-page`,
+            groupIdList:`${custGroupId}/user-group/v1/etrade-user-group/get-list`,
+            saveParam: `${highNetWorthEquityMgmt}/right/relation-usergroup/insert`,
+            update: `${highNetWorthEquityMgmt}/right/relation-usergroup/update`,
+            deleteParam: `${highNetWorthEquityMgmt}/right/relation-usergroup/delete`
+        },
+        interestReceiveQuery: {
+            getTableData: `${highNetWorthEquityMgmt}/right/receivce-right`,
+            getTableData2:`${highNetWorthEquityMgmt}/right/all-receivce-right`,
+            checkDetails: `${highNetWorthEquityMgmt}/right/cust/use-record`,
+        },
+        equityPartners: {
+            getTableData: `${highNetWorthEquityMgmt}/right/right-partner/query-by-page`,
+            saveParam: `${highNetWorthEquityMgmt}/right/right-partner/add`,
+            update: `${highNetWorthEquityMgmt}/right/right-partner/update`,
+            deleteParam: `${highNetWorthEquityMgmt}/right/right-partner/delete-by-id`
+        },
+    },
+    experienceGold: {
+        configSetting: {
+            query: `${experienceGold}/experien-coupon-param/query-by-page`,
+            saveParam: `${experienceGold}/experien-coupon-param/insert`,
+            update: `${experienceGold}/experien-coupon-param/update`,
+            del: `${experienceGold}/experien-coupon-param/delete`,
+        },
+        experienceGoldMgmt: {
+            query: `${experienceGold}/experience-coupon/query-by-page`,
+            saveParam: `${experienceGold}/experience-coupon/insert-experien-coupon`,
+            update: `${experienceGold}/experience-coupon/update-experien-coupon`,
+            upload: `${experienceGold}/up-or-download/common-upload-image`,
+            refresh: `${experienceGold}/experience-coupon/refresh-exp-coupon-list`,
+        },
+        rewardSetting: {
+            query: `${experienceGold}/experience-coupon-rule/query-by-page`,
+            saveParam: `${experienceGold}/experience-coupon-rule/insert`,
+            update: `${experienceGold}/experience-coupon-rule/update`,
+            del: `${experienceGold}/experience-coupon-rule/delete`,
+            queryExperienceCouponList: `${experienceGold}/experience-coupon/query-by-page`,
+            msgRuleList:`${messageCenter}/messageRule/rule/ruleSource/get`,
+            awardList: `${awardMgmt}/mcp-rewards-config/query-rewards-config`,
+            activeList: `${awardMgmt}/mcp-activity-config/query-all-activity`,
+        },
+        rewardQuery: {
+            query: `${experienceGold}/experience-coupon-reward-record/query-by-page`,
+        },
+        sendQuery: {
+            query: `${experienceGold}/experience-coupon-user-record/query-by-page`,
+            querySourceList: `${experienceGold}/experience-coupon-user-record/get-source-list`,
+        },
+    },
+};

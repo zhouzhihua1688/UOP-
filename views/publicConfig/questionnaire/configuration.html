@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div {
+            text-align: right;
+        }
+
+        @media (min-width: 768px) {
+
+            #operate .modal-dialog,
+            #showOperate .modal-dialog,
+            #falsePageComponent .modal-dialog {
+                width: 1000px;
+                margin: 30px auto;
+            }
+
+        }
+
+        .left {
+            width: 12%;
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .left p {
+            margin: 20px 10px;
+        }
+
+        .left p button {
+            width: 100%;
+            padding: 10px 0;
+            height: 100%;
+        }
+
+        .right {
+            width: 88%;
+            flex-grow: 9;
+            border-left: 1px solid #e5e5e5;
+            padding: 0 10px;
+            max-height: 70vh;
+            overflow-y: scroll;
+        }
+
+        .right>div {
+            padding: 10px;
+            border: 1px solid #666;
+            margin: 20px 10px;
+        }
+
+        .right ul {
+            width: 60%;
+            flex-grow: 6;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .questionlist {
+            display: flex;
+        }
+
+        .questionlist .serialnum {
+            width: 10%;
+            flex-grow: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .questionlist .operateIcon {
+            width: 10%;
+            flex-grow: 1;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: flex-start;
+            font-size: 20px;
+        }
+
+        .questionlist i {
+            cursor: pointer;
+        }
+
+        .questionlist .operateIcon i,
+        .glyphicon-trash {
+            color: #ccc;
+        }
+
+        .questionlist .operateIcon i:hover,
+        .glyphicon-trash:hover {
+            color: #393939;
+        }
+
+        .questionConfig {
+            flex-grow: 2;
+            width: 20%;
+            padding-left: 20px;
+        }
+
+        input[type=checkbox],
+        input[type=radio] {
+            vertical-align: -1.5px;
+            margin-right: 10px;
+        }
+
+        .right ul input[type=text] {
+            border: none;
+        }
+
+        textarea {
+            resize: none
+        }
+
+        .align {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-right: 20px;
+            border-bottom: .5px #ccc solid;
+        }
+
+        ul .align:nth-of-type(2),
+        ul .align:last-of-type {
+            border: none;
+        }
+
+        #operate ul .align:nth-last-child(2) {
+            border: none;
+        }
+
+        .qsHeader {
+            padding: 20px 0;
+            color: #69AA46;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content" id="content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <!--信息提示弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                        data-dismiss="modal">确定</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--发布、暂停弹窗-->
+                    <div class="modal" id="dataStatus" tabindex="-1" role="dialog" aria-hidden="true"
+                        data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <p>
+                                    <div class="modal-body text-center">
+                                        <h4>确认{{issueOrStopData.issueFlag==0?'暂停':'发布'}}吗?</h4>
+                                    </div>
+                                </p>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                        @click='changeStatus'>确定</button>
+                                    <button type="button" class="btn btn-default btn-sm"
+                                        data-dismiss="modal">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--批量添加选项-->
+                    <div class="modal" id="falsePageComponent" tabindex="-1" role="dialog" aria-hidden="true"
+                        data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content" style="width: 1000px;">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                </div>
+                                <p style="padding:0 10px;">
+                                    <true-page ref="truePage"></true-page>
+                                </p>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                        data-dismiss="modal">关闭</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--批量添加选项-->
+                    <div class="modal" id="batch" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title">批量添加</h4>
+                                </div>
+                                <p>
+                                    <div class="modal-body text-center">
+                                        <p>每一行代表一个选项，可同时添加多个</p>
+                                        <textarea v-model.trim='batchStr' style="width: 100%;" rows="15"></textarea>
+                                    </div>
+                                </p>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                        @click='addOptions'>确定</button>
+                                    <button type="button" class="btn btn-default btn-sm"
+                                        data-dismiss="modal">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--新增弹窗-->
+                    <div class="modal" id="operate" tabindex="-1" role="dialog" aria-hidden="true"
+                        data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content" style="width: 1000px;">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                    </button>
+                                    <h4 class="modal-title inline">编辑题目</h4>
+                                </div>
+                                <div class="form-horizontal">
+                                    <div style="display: flex;justify-content:flex-start;align-items: flex-start;">
+                                        <div class="left">
+                                            <p><button @click='addQuestion("1")'>单选题</button></p>
+                                            <p><button @click='addQuestion("2")'>多选题</button></p>
+                                            <p><button @click='addQuestion("3")'>填空题</button></p>
+                                        </div>
+                                        <div class="right">
+                                            <div>
+                                                <p><span>问卷标题：</span><input type="text" placeholder="问卷标题"
+                                                        v-model='operateData.surveyTitle'></p>
+                                                <p><span>问卷描述：</span><input type="text" placeholder="问卷描述"
+                                                        v-model='operateData.surveyDesc'></p>
+                                                <p><span>使用场景：</span>
+                                                    <!--<input type="text" placeholder="使用场景，不可重复"-->
+                                                        <!--v-model='operateData.surveySceneCode'-->
+                                                        <!--@input="operateData.surveySceneCode='SV'+operateData.surveySceneCode.substr(2,6)">-->
+                                                    <input type="text" placeholder="使用场景，不可重复"
+                                                           v-model='operateData.surveySceneCode'>
+                                                </p>
+                                                <p><span>提交按钮：</span><input type="text" placeholder="提交按钮文案描述"
+                                                        v-model='operateData.submitBtnDesc'></p>
+                                                <p><span>问卷类型：</span>
+                                                    <select class="input-sm" style="width:170px" v-model='operateData.surveyType'>
+                                                        <option value="0">0-普通</option>
+                                                        <option value="1">1-社区投票</option>
+                                                        <option value="2">2-理财需求</option>
+                                                    </select>
+                                                    <span v-if="operateData.surveyType == 1"><input type="checkbox" v-model="operateData.extFields.reward">投票完成后发奖</span>
+                                                </p>
+                                                
+
+                                                                                      </div>
+                                            <div class="questionlist"
+                                                v-for='(item,index) of operateData.questionVoList'>
+                                                <div class="serialnum">{{index+1}}</div>
+                                                <template v-if='item.questionType==1'>
+                                                    <ul>
+                                                        <li><input type="text" value="标题" style="width:300px"
+                                                                v-model.trim='item.questionName'>
+                                                        </li>
+                                                        <li class="align qsHeader" v-if='item.list.length>0'>
+                                                            <div>
+                                                                选项
+                                                            </div>
+                                                            <div>
+                                                                <span style="margin-right: 90px;">默认文案</span>
+                                                                <span>是否可填写</span>
+                                                            </div>
+                                                        </li>
+                                                        <li v-for='(options,ind) of item.list' class="align">
+                                                            <div>
+                                                                <input disabled type="radio">
+                                                                <input type="text" style="background: #eff;" v-model.trim='options.optionName'>
+                                                            </div>
+                                                            <i class="ace-icon glyphicon glyphicon-trash"
+                                                                @click='item.list.splice(ind,1)'></i>
+                                                            <input type="text" v-model='options.contentHint'
+                                                                placeholder="文本提示" style="background: #eff;"
+                                                                :style='{"visibility":options.allowContent?"unset":"hidden"}'>
+                                                            <input type="checkbox" v-model='options.allowContent'>
+                                                        </li>
+                                                        <li class="blue" style="cursor: pointer;">
+                                                            <span @click='addOptionsDialog(item)'>
+                                                                <i class="ace-icon glyphicon glyphicon-list"></i>
+                                                                批量添加选项
+                                                            </span>
+                                                        </li>
+                                                    </ul>
+                                                    <div class="questionConfig">
+                                                        <p><input type="checkbox" v-model='item.required'>必填</p>
+                                                    </div>
+                                                </template>
+                                                <template v-else-if='item.questionType==2'>
+                                                    <ul>
+                                                        <li><input type="text" value="标题" style="width:300px"
+                                                                v-model.trim='item.questionName'>
+                                                        </li>
+                                                        <li class="align qsHeader" v-if='item.list.length>0'>
+                                                            <div>
+                                                                选项
+                                                            </div>
+                                                            <div>
+                                                                <span style="margin-right: 90px;">默认文案</span>
+                                                                <span>是否可填写</span>
+                                                            </div>
+                                                        </li>
+                                                        <li v-for='(options,ind) of item.list' class="align">
+                                                            <div>
+                                                                <input disabled type="checkbox">
+                                                                <input type="text" style="background: #eff;" v-model.trim='options.optionName'>
+                                                            </div>
+                                                            <i class="ace-icon glyphicon glyphicon-trash"
+                                                                @click='item.list.splice(ind,1)'></i>
+                                                            <input type="text" v-model='options.contentHint'
+                                                                placeholder="文本提示" style="background: #eff;"
+                                                                :style='{"visibility":options.allowContent?"unset":"hidden"}'>
+                                                            <input type="checkbox" v-model='options.allowContent'>
+                                                        </li>
+                                                        <li class="blue" style="cursor: pointer;">
+                                                            <span @click='addOptionsDialog(item)'>
+                                                                <i class="ace-icon glyphicon glyphicon-list"></i>
+                                                                批量添加选项
+                                                            </span>
+                                                        </li>
+                                                    </ul>
+                                                    <div class="questionConfig">
+                                                        <p><input type="checkbox" v-model='item.required'>必填</p>
+                                                        <p><input type="number" style="width: 80px;"
+                                                                v-model.number='item.selectUpperLimit'
+                                                                placeholder="选择个数">多选上限
+                                                        </p>
+                                                        <p><input type="number" style="width: 80px;"
+                                                                v-model.number='item.selectLowerLimit'
+                                                                placeholder="选择个数">多选下限
+                                                        </p>
+                                                    </div>
+                                                </template>
+                                                <template v-else-if='item.questionType==3 '>
+                                                    <ul>
+                                                        <li><input type="text" style="width:300px"
+                                                                v-model.trim='item.questionName'>
+                                                        </li>
+                                                        <!-- <li><textarea cols="20" rows="2"></textarea></li> -->
+                                                    </ul>
+                                                    <div class="questionConfig">
+                                                        <p><input type="checkbox" v-model='item.required'>必填</p>
+                                                        <p><input type="number" style="width: 80px;"
+                                                                v-model.number='item.selectUpperLimit'
+                                                                placeholder="字数">字数上限
+                                                        </p>
+                                                        <p><input type="number" style="width: 80px;"
+                                                                v-model.number='item.selectLowerLimit'
+                                                                placeholder="字数">字数下限
+                                                        </p>
+                                                    </div>
+                                                </template>
+                                                <div class="operateIcon">
+                                                    <i class="ace-icon glyphicon glyphicon-play" v-show='index!==0'
+                                                        style="transform:rotateZ(-90deg)"
+                                                        @click='move(index,index-1)'></i>
+                                                    <i class="ace-icon glyphicon glyphicon-play"
+                                                        v-show='index!==operateData.questionVoList.length-1'
+                                                        style="transform:rotateZ(90deg)"
+                                                        @click='move(index,index+1)'></i>
+                                                    <i class="ace-icon glyphicon glyphicon-trash"
+                                                        @click='operateData.questionVoList.splice(index,1)'></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" style="margin-right: 40px;"
+                                            @click='add'>保存</button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                            aria-hidden="true">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--查看弹窗-->
+                    <div class="modal" id="showOperate" tabindex="-1" role="dialog" aria-hidden="true"
+                        data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content" style="width: 1000px;">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                    </button>
+                                    <h4 class="modal-title inline">查看题目</h4>
+                                </div>
+                                <div class="form-horizontal">
+                                    <div style="display: flex;justify-content:flex-start;align-items: flex-start;">
+                                        <div class="right">
+                                            <!-- <div>
+                                                <p>问卷标题：{{operateData.surveyTitle}}</p>
+                                                <p>问卷描述：{{operateData.surveyDesc}}</p>
+                                                <p>使用场景：{{operateData.surveySceneCode}}</p>
+                                                <p>提交按钮文案描述：{{operateData.submitBtnDesc}}</p>
+                                            </div> -->
+                                            <div>
+                                                <p><span>问卷标题：</span><input type="text" placeholder="问卷标题"
+                                                        v-model='operateData.surveyTitle'></p>
+                                                <p><span>问卷描述：</span><input type="text" placeholder="问卷描述"
+                                                        v-model='operateData.surveyDesc'></p>
+                                                <p>使用场景：{{operateData.surveySceneCode}}</p>
+                                                <p><span>提交按钮：</span><input type="text" placeholder="提交按钮文案描述"
+                                                        v-model='operateData.submitBtnDesc'>
+                                                    <span v-if="operateData.surveyType == 1"><input type="checkbox"  v-model="operateData.extFields.reward" >投票完成后发奖</span>
+                                                    </p>
+                                            </div>
+                                            <div class="questionlist"
+                                                v-for='(item,index) of operateData.questionVoList'>
+                                                <div class="serialnum">{{index+1}}</div>
+                                                <template v-if='item.questionType==1'>
+                                                    <ul>
+                                                        <li>{{item.questionName}}
+                                                        </li>
+                                                        <li class="align qsHeader">
+                                                            <div>
+                                                                选项
+                                                            </div>
+                                                            <div>
+                                                                <span style="margin-right: 90px;">默认文案</span>
+                                                                <span>是否可填写</span>
+                                                            </div>
+                                                        </li>
+                                                        <li v-for='(options,ind) of item.list' class="align">
+                                                            <div>
+                                                                <input disabled type="radio">{{options.optionName}}
+                                                            </div>
+                                                            <div>
+                                                                <input type="text" :value='options.contentHint' disabled
+                                                                    placeholder="文本提示"
+                                                                    :style='{"visibility":options.allowContent?"unset":"hidden"}'>
+                                                                <input type="checkbox" v-model='options.allowContent'
+                                                                    disabled>
+                                                            </div>
+                                                        </li>
+                                                    </ul>
+                                                    <div class="questionConfig">
+                                                        <p><input type="checkbox" v-model='item.required' disabled>必填
+                                                        </p>
+                                                    </div>
+                                                </template>
+                                                <template v-else-if='item.questionType==2'>
+                                                    <ul>
+                                                        <li>{{item.questionName}}
+                                                        </li>
+                                                        <li class="align qsHeader">
+                                                            <div>
+                                                                选项
+                                                            </div>
+                                                            <div>
+                                                                <span style="margin-right: 90px;">默认文案</span>
+                                                                <span>是否可填写</span>
+                                                            </div>
+                                                        </li>
+                                                        <li v-for='(options,ind) of item.list' class="align">
+                                                            <div>
+                                                                <input disabled type="checkbox">{{options.optionName}}
+                                                            </div>
+                                                            <div>
+                                                                <input type="text" :value='options.contentHint' disabled
+                                                                    placeholder="文本提示"
+                                                                    :style='{"visibility":options.allowContent?"unset":"hidden"}'>
+                                                                <input type="checkbox" v-model='options.allowContent'
+                                                                    disabled>
+                                                            </div>
+                                                        </li>
+                                                    </ul>
+                                                    <div class="questionConfig">
+                                                        <p><input type="checkbox" disabled v-model='item.required'>必填
+                                                        </p>
+                                                        <p>多选上限：<span class="red">{{item.selectUpperLimit}}</span>
+
+                                                        </p>
+                                                        <p>多选下限：<span class="red">{{item.selectLowerLimit}}</span>
+                                                        </p>
+                                                    </div>
+                                                </template>
+                                                <template v-else-if='item.questionType==3'>
+                                                    <ul>
+                                                        <li>{{item.questionName}} </li>
+                                                        <!-- <li><textarea cols="20" rows="2"></textarea></li> -->
+                                                    </ul>
+                                                    <div class="questionConfig">
+                                                        <p><input type="checkbox" disabled v-model='item.required'>必填
+                                                        </p>
+                                                        <p>字数上限：<span class="red">{{item.selectUpperLimit}}</span>
+
+                                                        </p>
+                                                        <p>字数下限：<span class="red">{{item.selectLowerLimit}}</span>
+
+                                                        </p>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" style="margin-right: 40px;"
+                                            @click='saveData'>保存</button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                            aria-hidden="true">关闭</button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-inline" style="padding: 10px 0;">
+                        <div class="form-group">
+                            <label class="control-label" style="width:60px;">开始时间:</label>
+                            <date-picker :config="{format:'YYYY/MM/DD hh:mm:ss'}" v-model='startDate'>
+                                <span class="input-group-addon" slot='right'>
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                            </date-picker>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" style="width:60px;">结束时间:</label>
+                            <date-picker :config="{format:'YYYY/MM/DD hh:mm:ss'}" v-model='endDate'>
+                                <span class="input-group-addon" slot='right'>
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                            </date-picker>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" style="width: 80px;">项目状态:</label>
+                            <select style="width: 150px;" v-model='issueFlag'>
+                                <option value="">全部</option>
+                                <option value="0">已发布</option>
+                                <option value="1">未发布</option>
+                                <option value="2">草稿</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" style="width: 80px;">标题:</label>
+                            <input type="text" style="width: 150px;" v-model='keyWord'>
+                        </div>
+
+                            <div class="form-group">
+                                <label class="control-label" style="width: 80px;">问卷类型:</label>
+                                <select style="width: 150px;" v-model='surveyType'>
+                                    <option value="">全部</option>
+                                    <option value="0">普通</option>
+                                    <option value="1">社区投票</option>
+                                    <option value="2">理财需求</option>
+                                </select>
+                            </div>
+
+                        <div class="form-group pull-right">
+                            <input type="button" class="btn btn-sm btn-primary" value="查询" style="margin-right: 50px;"
+                                @click="getTableData">
+                            <% if(canShow||authorityList.includes('C')) { %>
+                            <input type="button" class="btn btn-sm btn-primary" value="新增" @click='showOperateDialog'>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="table-header">
+                        <%= cpage %>--表格数据
+                    </div>
+
+                    <!--分页器和快速查询-->
+                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="500">500</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <div id="dynamic-table_filter" class="dataTables_filter">
+                                <label>快速查询:</label>
+                                <input type="text" class="input-sm" v-model="condition">
+                            </div>
+                        </div>
+                    </div>
+                    <!--数据表-->
+                    <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                        style="margin-bottom: 0;">
+                        <thead>
+                            <tr>
+                                <th class="center col-sm-1">ID</th>
+                                <th class="center col-sm-1">问卷场景代码</th>
+                                <th class="center col-sm-2">标题</th>
+                                <th class="center col-sm-1">提交按钮描述</th>
+                                <th class="center col-sm-1">问卷描述</th>
+                                <th class="center col-sm-1">状态</th>
+                                <th class="center col-sm-1">创建人</th>
+                                <th class="center col-sm-1">创建时间</th>
+                                <th class="center col-sm-1">更新时间</th>
+                                <th class="center col-sm-1">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-if="viewData.length>0">
+                                <tr v-for="(item,index) in viewData" :key="index">
+                                    <td class="center" v-text='item.surveyId'></td>
+                                    <td class="center" v-text='item.surveySceneCode'></td>
+                                    <td class="center" v-text='item.surveyTitle'></td>
+                                    <td class="center" v-text='item.submitBtnDesc'></td>
+                                    <td class="center" v-text='item.surveyDesc '></td>
+                                    <td class="center">{{item.issueFlag | issueFlagText}}</td>
+                                    <td class="center" v-text='item.creator'></td>
+                                    <td class="center">{{moment(item.createTimestamp).format('YYYY-MM-DD HH:mm:ss')}}
+                                    </td>
+                                    <td class="center">{{moment(item.updateTimestamp).format('YYYY-MM-DD HH:mm:ss')}}
+                                    </td>
+                                    <td class="center">
+                                        <% if(canShow||authorityList.includes('U')) { %>
+                                        <a href="javascript:;" v-if='item.issueFlag==2' class="green"
+                                            @click="showUpdate(item.surveyId,item.issueFlag)">修改</a>
+                                        <% } %>
+                                        <a href="javascript:;" v-else
+                                            @click="showUpdate(item.surveyId,item.issueFlag)">查看</a>
+                                        &nbsp;
+                                        <a href="javascript:;"
+                                            @click="showStatus(item.surveyId,item.issueFlag)">{{item.issueFlag==0?'停止':'发布'}}</a>
+                                        &nbsp;
+                                        <a href="javascript:;" @click="showAnswer(item.surveyId)">数据</a>
+
+
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'没有数据'" colspan="12"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                    <!--底部页码-->
+                    <div v-if="viewData.length>0" class="row"
+                        style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                        <div class="col-xs-2">
+                            <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                        </div>
+                        <div class="col-xs-10">
+                            <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                <ul class="pagination">
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                    </li>
+                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                        @click="prev">
+                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                    </li>
+                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                        v-for="value in pageList" @click="changeIndex(value)">
+                                        <a href="javascript:;" v-text="value"></a>
+                                    </li>
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'...'+middleData.length" @click="toLast"></a>
+                                    </li>
+                                    <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                        @click="next">
+                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+
+        <template id="truePage">
+            <div>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label" style="width: 40px;">开始:</label>
+                        <date-picker :config="{format:'YYYY/MM/DD HH:mm:ss'}" v-model='startDate'>
+                            <span class="input-group-addon" slot='right'>
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </date-picker>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" style="width: 40px;">结束:</label>
+                        <date-picker :config="{format:'YYYY/MM/DD HH:mm:ss'}" v-model='endDate'>
+
+                            <span class="input-group-addon" slot='right'>
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </date-picker>
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" style="margin-right: 20px;"
+                            @click='getTableData(0)'>
+                        <input type="button" class="btn btn-sm btn-primary" value="导出" @click='exportAnswerList'>
+                    </div>
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                    <thead>
+                        <tr>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">产品ID</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">问卷ID</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">问题ID</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">客户编号</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">问题</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">回答ID</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">回答内容</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">回答选项</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">创建时间</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">更新时间</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template v-if="tableData&&tableData.length>0">
+                            <tr v-for="(item,index) in tableData" :key="index">
+                                <td class="center" v-text='item.productId'></td>
+                                <td class="center" v-text='surveyId'></td>
+                                <td class="center" v-text='item.questionId'></td>
+                                <td class="center" v-text='item.custNo'></td>
+                                <td class="center" v-text='item.questionName'></td>
+                                <td class="center" v-text='item.answerId'></td>
+                                <td class="center" v-text='item.answerContent'></td>
+                                <td class="center" v-text='item.optionName'></td>
+                                <td class="center">{{moment(item.createTimestamp).format('YYYY-MM-DD HH:mm:ss')}}
+                                </td>
+                                <td class="center">{{moment(item.updateTimestamp).format('YYYY-MM-DD HH:mm:ss')}}
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <tr>
+                                <td class="center" v-text="'没有数据'" colspan="11"></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <div v-if="tableData.length>0" class="row"
+                    style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button" v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/ace/assets/js/v-datetimepicker.js"></script>
+    <script src="/js/publicConfig/questionnaire/configuration.js"></script>
+</body>
+
+</html>

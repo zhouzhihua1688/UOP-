@@ -1,0 +1,126 @@
+// 接口总配置
+let automatedOperation = '';
+let recommendSystem = '';
+let userGroup = '';
+
+if (global.envConfig.AOS) {
+    automatedOperation = global.envConfig.AOS;
+} else {
+    automatedOperation = global.envConfig.inner_gateway;
+}
+if (global.envConfig.RES) {
+    recommendSystem = global.envConfig.RES;
+} else {
+    recommendSystem = global.envConfig.inner_gateway;
+}
+if (global.envConfig.USERGROUP) {
+    userGroup = global.envConfig.USERGROUP;
+} else {
+    userGroup = global.envConfig.inner_gateway;
+}
+
+automatedOperation += '/aos/v1';
+recommendSystem += '/res/v1';
+userGroup += '/user-group/v1';
+//营销活动接口总配置
+let awardMgmt = global.envConfig.awardMgmt ? global.envConfig.awardMgmt : global.envConfig.inner_gateway;
+awardMgmt += '/activity-center/admin/v1';
+//消息中心
+let messageCenter = global.envConfig.messageCenter ? global.envConfig.messageCenter : global.envConfig.inner_gateway;
+messageCenter += '/message-center/v1';
+
+module.exports = {
+    //自动化运营总配置
+    automatedOperation: {
+        //模型管理
+        modelMgmt: {
+            //模型配置管理
+            modelConfigMgmt: {
+                queryInfo: `${automatedOperation}/model/query-by-page`,
+                releaseStatus: `${automatedOperation}/model/update-modle-releaseStatus`,
+                add: `${automatedOperation}/model/add-model-config`,
+                update: `${automatedOperation}/model/update-model-config`,
+                //模型子块
+                queryModelBlock: `${automatedOperation}/model-block/query-by-page`,
+                addModelBlock: `${automatedOperation}/model-block/add-model-block-config`,
+                updateModelBlock: `${automatedOperation}/model-block/update-model-block-config`,
+                isEnable: `${automatedOperation}/model-block/update-model-block-enable`,
+                // 触发节点类型
+                queryNodeType: `${automatedOperation}/trigger-node-type/query-by-page`,
+                // 触发节点配置
+                queryNodeConfig: `${automatedOperation}/trigger-node/query-by-page`,
+                //推荐系统接口
+                queryRecommend: `${automatedOperation}/res/query-by-page`,
+                //消息中心接口
+                queryMessageCenter:`${messageCenter}/messageRule/rule/ruleSource/get`,
+                //奖励系统接口
+                queryAwardMgmt:`${awardMgmt}/mcp-rewards-config/query-rewards-config`,
+                //模型发布功能
+                releaseModel: `${automatedOperation}/model/release-model`,
+                //模型下线
+                offlineModel: `${automatedOperation}/model/offline-model`,
+                //刷新模型子块
+                refreshBlockModel:`${automatedOperation}/model-block/rel-block-info`,
+                //刷新当前
+                refreshCurrent:`${automatedOperation}/model/refresh-model`,
+                //目标用户组列表
+                userGroup:`${userGroup}/etrade-user-group/qry-user-group`
+            }
+        },
+        //触发节点管理
+        triggerNodeMgmt: {
+            //触发节点类型配置
+            triggerNodeTypeConfig: {
+                queryInfo: `${automatedOperation}/trigger-node-type/query-by-page`,
+                add: `${automatedOperation}/trigger-node-type/add-node-type-config`,
+                update: `${automatedOperation}/trigger-node-type/update-node-type-config`
+            },
+            //触发节点配置
+            triggerNodeConfig:{
+                queryInfo: `${automatedOperation}/trigger-node/query-by-page`,
+                add: `${automatedOperation}/trigger-node/add-trigger-node`,
+                update: `${automatedOperation}/trigger-node/update-trigger-node`,
+                queryNodeTypeList: `${automatedOperation}/trigger-node-type/query-by-page`,
+                //刷新
+                refresh:`${automatedOperation}/trigger-node/rel-trigger-node-info`
+            },
+        },
+        //触达内容管理
+        reachContentMgmt:{
+            //触达方式配置
+            reachMannerConfig:{
+                queryInfo: `${automatedOperation}/trigger-target-type/query-by-page`,
+                add: `${automatedOperation}/trigger-target-type/add-trigger-target-type-config`,
+                update: `${automatedOperation}/trigger-target-type/update-trigger-target-type-config`
+            },
+            //推荐系统配置
+            recommendSystemConfig:{
+                queryInfo: `${automatedOperation}/res/query-by-page`,
+                add: `${automatedOperation}/res/add-res-config`,
+                update: `${automatedOperation}/res/update-res-config`,
+                // 推荐系统接口
+                queryMenuList:`${recommendSystem}/res-app-layout-config/query-menu-list`,
+                querySubmenuId:`${recommendSystem}/res-app-layout-template-config/query-submenu-id`,
+                themeInfos:`${recommendSystem}/app-func-layout/theme-infos/infos`,
+                //主体关联客群
+                queryDetail:`${recommendSystem}/res-group-object-config/query-list`,
+                linkDataInfo:`${recommendSystem}/`,
+                //刷新
+                refresh:`${automatedOperation}/res/rel-res-config-info`
+            }
+        },
+        //任务执行查询
+        taskTrackerQuery:{
+            //节点触发记录查询
+            taskTrackerStatusQuery:{
+                queryInfo: `${automatedOperation}/model-block-node-exe-record/query-by-model-id`,
+                queryInfoBlock: `${automatedOperation}/model-block-node-exe-record/query-by-page`
+            },
+           //任务执行记录查询
+            taskTrackerRecordQuery:{
+                queryInfo: `${automatedOperation}/model-block-job-manage/query-by-model-id`,
+                queryInfoBlock: `${automatedOperation}/model-block-job-manage/query-by-page`
+            }
+        }
+    }
+};

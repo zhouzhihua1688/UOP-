@@ -1,0 +1,16 @@
+module.exports = function (app) {
+    require('./quotaMgmt')(app);
+    require('./bookingCodeMgmt')(app);
+    require('./investAudit')(app);
+    require('./custGroupInfo')(app);
+    require('./custInfo')(app);
+    require('./custGroupMapping')(app);
+    require('./custGroupSign')(app);
+    require('./netQueryPrivilegeMgmt')(app);
+    require('./fundSpecificPopulationList')(app);
+    require('./basicsParamMaintain')(app);
+    require('./productAreaMgmt')(app);
+    require('./observationDaysMgmt')(app);
+    require('./custCareQry')(app);
+    require('./recommendOtherFund')(app);    
+};

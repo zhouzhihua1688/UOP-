@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <!-- <link rel="stylesheet" href="/css/chosen.min.css"> -->
+    <link rel="stylesheet" href="/ace/assets/css/select2.min.css" />
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+                        <div class="col-xs-12">
+                            <!--信息提示弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--新增弹窗-->
+                            <div class="modal" id="operate" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">&times;
+                                            </button>
+                                            <h4 class="modal-title inline">新增</h4>
+                                        </div>
+                                        <div class="form-horizontal">
+                                            <div class="form-group" style="margin-top: 20px;">
+                                                <label class="col-sm-5 control-label">特权基金ID:</label>
+                                                <div class="col-sm-4">
+                                                    <!-- <textarea cols="30" v-model.trim='privilegeFundId'
+                                                        rows="4"></textarea> -->
+                                                    <div class="col-sm-4">
+                                                        <textarea cols="30" style="resize: none"
+                                                            v-text='privilegeFundId.join(",")' disabled
+                                                            rows="4"></textarea>
+                                                        <select id="addItem" class="select2" multiple=""
+                                                            data-placeholder="请选择">
+                                                            <option v-for="item in fundIdList" :value="item.fundId">
+                                                                {{item.fundId}} - {{item.fundName}}</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <p class="text-center">
+                                                <button class="btn btn-sm btn-primary" @click='add'
+                                                    style="margin-right: 50px;">保存</button>
+                                                <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                    aria-hidden="true">取消
+                                                </button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--修改弹窗-->
+                            <div class="modal" id="modify" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">&times;
+                                            </button>
+                                            <h4 class="modal-title inline">修改</h4>
+                                        </div>
+                                        <div class="form-horizontal">
+                                            <div class="form-group" style="margin-top: 20px;">
+                                                <label class="col-sm-5 control-label">特权基金ID:</label>
+                                                <div class="col-sm-4">
+                                                    <textarea cols="30" style="resize: none"
+                                                        v-text='modifyData.privilegeFundId.join(",")' disabled
+                                                        rows="4"></textarea>
+                                                    <select id="temId" class="select2" multiple=""
+                                                        data-placeholder="请选择">
+                                                        <option v-for="item in fundIdList" :value="item.fundId">
+                                                            {{item.fundId}} - {{item.fundName}}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <p class="text-center">
+                                                <button class="btn btn-sm btn-primary" @click='modify'
+                                                    style="margin-right: 50px;">保存</button>
+                                                <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                    aria-hidden="true">取消
+                                                </button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-inline" style="padding: 10px 0;" v-cloak>
+
+                                <div class="form-group pull-right">
+
+                                    <input type="button" class="btn btn-sm btn-primary" v-if='tableData.length===0'
+                                        value="新增" @click='showAddDialog'>
+                                    <input type="button" class="btn btn-sm btn-primary" v-else value="修改"
+                                        @click='showModify'>
+                                </div>
+                                <div style="clear: both;"></div>
+                            </div>
+
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+
+                            <!--分页器和快速查询-->
+                            <!-- <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                <div class="col-xs-6">
+                                    <div class="dataTables_length">
+                                        <label>每页显示</label>
+                                        <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                            <option value="10">10</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                        </select>
+                                        <label>条</label>
+                                    </div>
+                                </div>
+                            </div> -->
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                                style="margin-bottom: 0;">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1">特权基金ID</th>
+                                        <th class="center col-sm-1">基金名称</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="viewData.length>0">
+                                        <tr v-for="(item,index) in viewData" :key="index">
+                                            <td class="center" v-text='item.fundId'></td>
+                                            <td class="center">{{item.fundId | fundName(fundIdList)}}</td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="12"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <!--底部页码-->
+                            <!-- <div v-if="viewData.length>0" class="row"
+                                style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                        <ul class="pagination">
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                            </li>
+                                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in pageList" @click="changeIndex(value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'...'+middleData.length"
+                                                    @click="toLast"></a>
+                                            </li>
+                                            <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div> -->
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <!-- <script src="/ace/assets/js/chosen.jquery.min.js"></script> -->
+    <script src="/ace/assets/js/select2.min.js"></script>
+    <script src="/js/businessMgmt/businessParamConfig/nonsupport.js"></script>
+</body>
+
+</html>

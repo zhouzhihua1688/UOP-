@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        #serial img {
+            width: 100px;
+            height: 100px;
+        }
+
+        .mask-layer {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 2020;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mask-layer>div {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        .mask-layer-black {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            opacity: .85;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .mask-layer-container {
+            width: 640px;
+            height: 570px;
+            background: #fff;
+            position: absolute;
+            margin: 0 auto;
+            z-index: 2030;
+            padding: 0 10px;
+            border-radius: 10px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -webkit-transform: translate(-50%, -50%);
+            -moz-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            -o-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+        }
+
+        .mask-layer-container-operate {
+            width: 100%;
+            height: 30px;
+            padding: 10px 0;
+            text-align: center;
+            border-bottom: solid 1px #ddd;
+        }
+
+        .mask-layer-imgbox {
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .mask-layer-imgbox>p {
+            position: absolute;
+            cursor: move;
+            transform-origin: center;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            -webkit-margin-before: 0;
+            -webkit-margin-after: 0;
+            cursor: move;
+            left: 0;
+            top: 0;
+        }
+
+        .mask-layer-imgboxp>p>img {
+            display: inline-block;
+            vertical-align: middle;
+            cursor: move;
+        }
+
+        /*按钮样式*/
+        .btn-default-styles {
+            display: inline-block;
+            padding: 5px 10px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.42857143;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            -ms-touch-action: manipulation;
+            touch-action: manipulation;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-image: none;
+            background: #428BCA;
+            color: #fff;
+            border: solid 1px #428BCA;
+            border-radius: 4px;
+        }
+
+        .btn-default-styles:focus {
+            outline: none;
+        }
+
+        .btn-default-styles:hover {
+            background: #428BCA;
+            animation: anniu 1s infinite;
+        }
+
+        .btn-default-styles:active {
+            box-shadow: 0 2px 3px rgba(0, 0, 0, .2) inset;
+        }
+
+        img {
+            cursor: pointer;
+        }
+    </style>
+
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xs-12">
+                                <!--审核-->
+                                <div class="modal" id="serial" tabindex="-1" role="dialog" aria-hidden="true"
+                                    data-backdrop="static">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header" style="padding: 10px;">
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-hidden="true">×
+                                                </button>
+                                                <h4 class="modal-title">审核材料</h4>
+                                            </div>
+                                            <div class="modal-body ">
+                                                <h4 v-if="firstData">
+                                                    <template v-if="firstData.subApKind==620002">资产证明材料</template>
+                                                    <template v-else>投资经验材料</template>
+                                                </h4>
+
+                                                <img :src="item" alt="" v-for="(item, index) in a620.imgPath"
+                                                     :key="index" modal="zoomImg"     @click="fullScreen">
+                                                <h4 class="">流水号:<span v-text="firstDataNum"></span>&nbsp;当前审核状态:<span
+                                                        v-text='firstDataFlag=="Y"?"已审核":firstDataFlag=="U"?"未审核":firstDataFlag=="F"?"审核失败":firstDataFlag=="I"?"审核中":"已过期"'></span>
+                                                </h4>
+                                                <h4>审核结果: <input type="radio" id="pass" value="Y"
+                                                        v-model="checkFlg" /><label for='pass'>通过</label> <input
+                                                        type="radio" id="notpass" value="F" v-model="checkFlg" /><label
+                                                        for='notpass'>不通过</label></h4>
+                                                <div v-show='firstData&&firstData.subApKind==620002' class="form-group"
+                                                    style="margin-right: 20px;">
+                                                    <div class="input-group">
+                                                        <label>材料有效日期:</label>
+                                                        <input type="text" name='validate1'
+                                                            class="date-timepicker validate1">
+                                                    </div>
+                                                </div>
+                                                <div v-show="checkFlg=='F'">
+                                                    <div class="form-group">
+                                                        <label class="radio-inline">
+                                                            <input type="radio" value="不符合家庭金融资产500万以上认定标准"
+                                                                name="radio1" v-model="radioValue1">不符合家庭金融资产500万以上认定标准
+                                                        </label>
+                                                        <label class="radio-inline">
+                                                            <input type="radio" value="不符合投资经历2年以上认定标准" name="radio1"
+                                                                v-model="radioValue1">不符合投资经历2年以上认定标准
+                                                        </label>
+                                                        <label class="radio-inline">
+                                                            <input type="radio" value="证明材料不清晰" name="radio1"
+                                                                v-model="radioValue1">证明材料不清晰
+                                                        </label>
+                                                        <label class="radio-inline">
+                                                            <input type="radio" value="证明材料未显示身份信息" name="radio1"
+                                                                v-model="radioValue1">证明材料未显示身份信息
+                                                        </label>
+                                                        <label class="radio-inline">
+                                                            <input type="radio" value="证明材料已过有效期" name="radio1"
+                                                                v-model="radioValue1">证明材料已过有效期
+                                                        </label>
+                                                        <label class="radio-inline">
+                                                            <input type="radio" value="不符合近3年本人平均收入不低于40万的认定标准"
+                                                                name="radio1"
+                                                                v-model="radioValue1">不符合近3年本人平均收入不低于40万的认定标准
+                                                        </label>
+                                                        <label class="radio-inline">
+                                                            <input type="radio" value="" name="radio1"
+                                                                v-model="radioValue1">其他
+                                                        </label>
+                                                    </div>
+                                                    <textarea style="width: 100%" v-model="rejectCause1"></textarea>
+                                                </div>
+
+                                                <p class="text-center">
+                                                    <button type="button" class="btn btn-primary btn-sm"
+                                                        @click="submitFirst">提交
+                                                    </button>
+                                                </p>
+
+                                                <div v-show="secondData&&secondShowFlag">
+                                                    <template v-if="secondData&&secondData.subApKind==620002">
+                                                        <h4>资产证明材料</h4>
+                                                    </template>
+                                                    <template v-else>
+                                                        <h4>投资经验材料</h4>
+                                                    </template>
+                                                    <img :src="item" alt="" v-for="(item, index) in a621.imgPath"
+                                                         :key="'a621'+index" modal="zoomImg" @click="fullScreen">
+                                                    <h4 class="">流水号:<span
+                                                            v-text="secondDataNum"></span>&nbsp;当前审核状态:<span
+                                                            v-text='secondDataFlag=="Y"?"已审核":secondDataFlag=="U"?"未审核":secondDataFlag=="F"?"审核失败":secondDataFlag=="I"?"审核中":"已过期"'></span>
+                                                    </h4>
+                                                    <h4>审核结果: <input type="radio" id="pass2" value="Y"
+                                                            v-model="checkFlg2" /><label for='pass2'>通过</label>
+                                                        <input type="radio" id="notpass2" value="F"
+                                                            v-model="checkFlg2" /><label for='notpass2'>不通过</label></h4>
+                                                    <div v-show='secondData&&secondData.subApKind==620002'
+                                                        class="form-group" style="margin-right: 20px;">
+                                                        <div class="input-group">
+                                                            <label>材料有效日期:</label>
+                                                            <input type="text" name='validate2'
+                                                                class="date-timepicker validate2">
+                                                        </div>
+                                                    </div>
+                                                    <div v-show="checkFlg2=='F'">
+                                                        <div class="form-group">
+                                                            <label class="radio-inline">
+                                                                <input type="radio" value="不符合家庭金融资产500万以上认定标准"
+                                                                    name="radio2"
+                                                                    v-model="radioValue2">不符合家庭金融资产500万以上认定标准
+                                                            </label>
+                                                            <label class="radio-inline">
+                                                                <input type="radio" value="不符合投资经历2年以上认定标准"
+                                                                    name="radio2" v-model="radioValue2">不符合投资经历2年以上认定标准
+                                                            </label>
+                                                            <label class="radio-inline">
+                                                                <input type="radio" value="证明材料不清晰" name="radio2"
+                                                                    v-model="radioValue2">证明材料不清晰
+                                                            </label>
+                                                            <label class="radio-inline">
+                                                                <input type="radio" value="证明材料未显示身份信息" name="radio2"
+                                                                    v-model="radioValue2">证明材料未显示身份信息
+                                                            </label>
+                                                            <label class="radio-inline">
+                                                                <input type="radio" value="证明材料已过有效期" name="radio2"
+                                                                    v-model="radioValue2">证明材料已过有效期
+                                                            </label>
+                                                            <label class="radio-inline">
+                                                                <input type="radio" value="不符合近3年本人平均收入不低于40万的认定标准"
+                                                                    name="radio2"
+                                                                    v-model="radioValue2">不符合近3年本人平均收入不低于40万的认定标准
+                                                            </label>
+                                                            <label class="radio-inline">
+                                                                <input type="radio" value="" name="radio2"
+                                                                    v-model="radioValue2">其他
+                                                            </label>
+                                                        </div>
+                                                        <textarea style="width: 100%"
+                                                            v-model.trim="rejectCause2"></textarea>
+                                                    </div>
+
+                                                    <p class="text-center">
+                                                        <button type="button" class="btn btn-primary btn-sm"
+                                                            @click="submitSecond">提交
+                                                        </button>
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <p class="text-center">
+                                                <button type="button" class="btn btn-primary btn-sm"
+                                                    data-dismiss="modal">取消
+                                                </button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- DIALOG ENDS -->
+                                <div class="form-inline" style="padding: 10px 0;">
+                                    <!-- <div class="form-group" style="margin-right: 20px;">
+                                <label style="width: 60px;">基金账号:</label>
+                                <input type="text" name="fundAcco" >
+                            </div> -->
+                                    <div class="form-group" style="margin-right: 20px;">
+                                        <label style="width: 60px;">审核状态:</label>
+                                        <select name="checkFlg" style="width: 168px;" v-model="qCheckFlg">
+                                            <option value="">全部</option>
+                                            <option value="Y">已审核</option>
+                                            <option value="U">未审核</option>
+                                            <option value="F">审核失败</option>
+                                            <option value="I">审核中</option>
+                                            <option value="E">已过期</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="margin-right: 20px;">
+                                        <label style="width: 60px;">证件证号:</label>
+                                        <input type="text" name='idNo' v-model.trim="qIdNo">
+                                    </div>
+
+                                    <div class="form-group" style="margin-right: 20px;">
+                                        <label style="width: 60px;">基金账号:</label>
+                                        <input type="text" name='fundAcco' v-model.trim="qFundAcco">
+                                    </div>
+
+                                    <div class="form-group pull-right">
+                                        <input type="button" class="btn btn-sm btn-primary " @click='getTableData(0);'
+                                            value="查询">
+
+                                        <input type="button" class="btn btn-sm btn-danger " value="导出.xlsx"
+                                            @click="exportExcel">
+                                    </div>
+                                </div>
+                                <div class="form-inline" style="padding: 10px 0;">
+                                    <div class="form-group" style="margin-right: 20px;">
+                                        <label style="width: 60px;">开始日期:</label>
+                                        <input type="text" name='appStrDt' class="date-timepicker appStrDt">
+                                    </div>
+                                    <div class="form-group" style="margin-right: 20px;">
+                                        <label style="width: 60px;">结束日期:</label>
+                                        <input type="text" name='appEndDt' class="date-timepicker appEndDt">
+                                    </div>
+                                    <div class="form-group" style="margin-right: 20px;">
+                                        <label style="width: 60px;">审核日期:</label>
+                                        <input type="text" name='checkDt' class="date-timepicker checkDt">
+                                    </div>
+
+                                </div>
+
+
+                                <div class="table-header">
+                                    <%= cpage %>--表格数据
+                                </div>
+                                <!--分页器和快速查询-->
+                                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                    <div class="col-xs-6">
+                                        <div class="dataTables_length" id="dynamic-table_length">
+                                            <label>每页显示</label>
+                                            <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                                <option value="10">10</option>
+                                                <option value="50">50</option>
+                                                <option value="100">100</option>
+                                                <option value="500">500</option>
+                                            </select>
+                                            <label>条</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--数据表-->
+                                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">客户姓名</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">证件类型</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">证件号码</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">申请日期</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">处理日期</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">状态</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">审核员</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">驳回原因</th>
+                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template v-if="tableData.length>0">
+                                            <tr v-for="(item,index) in tableData" :key="index">
+                                                <td class="center" v-text='item.invNm'></td>
+                                                <td class="center" v-text='item.idTpName'></td>
+                                                <td class="center" v-text='item.idNo'></td>
+                                                <td class="center" v-text='formatStrTime(item.applyDate)'></td>
+                                                <td class="center" v-text='formatStrTime(item.verifyDate)'></td>
+                                                <td class="center"
+                                                    v-text='item.checkFlg=="Y"?"已审核":item.checkFlg=="U"?"未审核":item.checkFlg=="F"?"审核失败":item.checkFlg=="I"?"审核中":"已过期"'>
+                                                </td>
+                                                <td class="center" v-text='item.checkerID'></td>
+                                                <td class="center" v-text='item.checkComment'></td>
+                                                <td class="center">
+                                                    <% if(canShow||authorityList.includes('U')) { %>
+                                                    <template v-if='item.subApKind=="620002"'>
+                                                        <a href="javascript:;" @click='serialNoDialog(item)'>金融资产审核</a>
+                                                    </template>
+                                                    <template v-else>
+                                                        <a href="javascript:;" @click='serialNoDialog(item)'>投资经验审核</a>
+                                                    </template>
+                                                    <% } %>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+
+                                <!--底部页码-->
+                                <div v-if="tableData.length>0" class="row"
+                                    style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                    <div class="col-xs-2">
+                                        <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                                    </div>
+                                    <div class="col-xs-10">
+                                        <div class="dataTables_paginate paging_simple_numbers"
+                                            id="dynamic-table_paginate">
+                                            <ul class="pagination">
+                                                <li class="paginate_button"
+                                                    v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                                </li>
+                                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                    @click="prev">
+                                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                                </li>
+                                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                    v-for="value in pageList" @click="changeIndex(value)">
+                                                    <a href="javascript:;" v-text="value"></a>
+                                                </li>
+                                                <li class="paginate_button"
+                                                    v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                                    <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                                </li>
+                                                <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                                    @click="next">
+                                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div><!-- /.row -->
+                    </div><!-- /.page-content -->
+                </div>
+            </div><!-- /.main-content -->
+            <% include ../../common/footer.html %>
+        </div><!-- /.main-container -->
+        <% include ../../common/basic-scripts.html %>
+        <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    </div>
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/lib/ajaxfileupload.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <!--<script src="/ace/assets/js/vue-datetimepicker.js"></script>-->
+    <script src="/js/businessMgmt/highFinancialMgmt/investAudit.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,212 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').paramsMaintain.maintain;
+module.exports = function (app) {
+    // select选项
+    app.post('/publicConfig/paramsMaintain/maintain/initSelect.ajax', (req, res, next) => {
+        let options = {
+            session: req.session,
+            url: apiUrlList.initSelect,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/publicConfig/paramsMaintain/maintain/initSelect.ajax options=', options);
+        request(options, (error, response, body) => {
+            console.log('/publicConfig/paramsMaintain/maintain/initSelect.ajax error:', error);
+            console.log('/publicConfig/paramsMaintain/maintain/initSelect.ajax statusCode:', response && response.statusCode);
+            console.log('/publicConfig/paramsMaintain/maintain/initSelect.ajax body:', body);
+            if (error) {
+                console.log(error)
+                return res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                return res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                return res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+    // 表格数据
+    app.post('/publicConfig/paramsMaintain/maintain/tableList.ajax', (req, res, next) => {
+        let params = req.body;
+        let options = {
+            session: req.session,
+            url: apiUrlList.tableList,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/publicConfig/paramsMaintain/maintain/tableList.ajax options=', options);
+        request(options, (error, response, body) => {
+            console.log('/publicConfig/paramsMaintain/maintain/tableList.ajax error:', error);
+            console.log('/publicConfig/paramsMaintain/maintain/tableList.ajax statusCode:', response && response.statusCode);
+            console.log('/publicConfig/paramsMaintain/maintain/tableList.ajax body:', body);
+            if (error) {
+                console.log(error)
+                return res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                return res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                return res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+    // 修改
+    app.post('/publicConfig/paramsMaintain/maintain/modify.ajax', (req, res, next) => {
+        let params = req.body;
+        let options = {
+            session: req.session,
+            url: apiUrlList.modify,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/publicConfig/paramsMaintain/maintain/modify.ajax options=', options);
+        request.post(options, (error, response, body) => {
+            console.log('/publicConfig/paramsMaintain/maintain/modify.ajax error:', error);
+            console.log('/publicConfig/paramsMaintain/maintain/modify.ajax statusCode:', response && response.statusCode);
+            console.log('/publicConfig/paramsMaintain/maintain/modify.ajax body:', body);
+            if (error) {
+                console.log(error)
+                return res.send({
+                    error: 1,
+                    msg: '修改失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                return res.send({
+                    error: 0,
+                    msg: '修改成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                return res.send({
+                    error: 1,
+                    msg: '修改失败'
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+    // 删除
+    app.post('/publicConfig/paramsMaintain/maintain/delete.ajax', (req, res, next) => {
+        let params = req.body;
+        let options = {
+            session: req.session,
+            url: apiUrlList.delete,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/publicConfig/paramsMaintain/maintain/delete.ajax options=', options);
+        request.delete(options, (error, response, body) => {
+            console.log('/publicConfig/paramsMaintain/maintain/delete.ajax error:', error);
+            console.log('/publicConfig/paramsMaintain/maintain/delete.ajax statusCode:', response && response.statusCode);
+            console.log('/publicConfig/paramsMaintain/maintain/delete.ajax body:', body);
+            if (error) {
+                console.log(error)
+                return res.send({
+                    error: 1,
+                    msg: '删除失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                return res.send({
+                    error: 0,
+                    msg: '删除成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                return res.send({
+                    error: 1,
+                    msg: '删除失败'
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+    // 删除
+    app.post('/publicConfig/paramsMaintain/maintain/add.ajax', (req, res, next) => {
+        let params = req.body;
+        let options = {
+            session: req.session,
+            url: apiUrlList.add,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/publicConfig/paramsMaintain/maintain/add.ajax options=', options);
+        request.put(options, (error, response, body) => {
+            console.log('/publicConfig/paramsMaintain/maintain/add.ajax error:', error);
+            console.log('/publicConfig/paramsMaintain/maintain/add.ajax statusCode:', response && response.statusCode);
+            console.log('/publicConfig/paramsMaintain/maintain/add.ajax body:', body);
+            if (error) {
+                console.log(error)
+                return res.send({
+                    error: 1,
+                    msg: '新增失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                return res.send({
+                    error: 0,
+                    msg: '新增成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                return res.send({
+                    error: 1,
+                    msg: '新增失败'
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+};

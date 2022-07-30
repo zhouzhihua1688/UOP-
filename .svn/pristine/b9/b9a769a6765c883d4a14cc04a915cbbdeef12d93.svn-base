@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div {
+            padding: 10px 0;
+            text-align: right;
+        }
+
+        .cover {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(9, 10, 10, 0.527);
+            z-index: 999;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+
+                        <div class="col-xs-12">
+                            <div class="cover" style="z-index: 1999;display: none;" v-show='loading'>
+                                <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                            </div><!-- loading动画 -->
+                            <div class="cover" style="z-index: 1999;display: none;" v-show='loading'>
+                                <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                            </div><!-- loading动画 -->
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--冻结提示信息弹窗-->
+                            <div class="modal" id="freezeInfo" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm"
+                                                @click='confirmOperate'>确定
+                                            </button>
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--直销冻结提示信息弹窗-->
+                            <div class="modal" id="freezeDirect" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4>确认要冻结客户直销交易吗？</h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm"
+                                                @click='freezeDirect'>确定
+                                            </button>
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 冻结 -->
+                            <div class="modal" id="unfreezeList" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog" style="width: 1200px;">
+                                    <div class="modal-content">
+                                        <div class="form-horizontal">
+                                            <div class="modal-header" style="padding: 10px;">
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-hidden="true">×
+                                                </button>
+                                                <h4 class="modal-title">冻结渠道</h4>
+                                            </div>
+
+                                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="center col-sm-1 col-md-1 col-lg-1"></th>
+                                                        <th class="center col-sm-1 col-md-1 col-lg-1">客户姓名</th>
+                                                        <th class="center col-sm-2 col-md-2 col-lg-2">证件号码</th>
+                                                        <th class="center col-sm-1 col-md-1 col-lg-1">渠道</th>
+                                                        <th class="center col-sm-1 col-md-1 col-lg-1">渠道号</th>
+                                                        <th class="center col-sm-1 col-md-1 col-lg-1">状态</th>
+                                                        <th class="center col-sm-1 col-md-1 col-lg-1">是否允许自助解冻*</th>
+                                                        <th class="center col-sm-1 col-md-1 col-lg-1">原因</th>
+                                                        <th class="center col-sm-1 col-md-1 col-lg-1">备注</th>
+
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <template v-if="unfreezeList.length>0">
+                                                        <tr v-for="(item,index) in unfreezeList" :key="index">
+                                                            <td class="center col-md-1">
+                                                                <label class="pos-rel">
+                                                                    <input type="checkbox" class="ace"
+                                                                        :checked="item.check"
+                                                                        @click='item.check=!item.check' />
+                                                                    <span class="lbl"></span>
+                                                                </label>
+                                                            </td>
+                                                            <td class="center" v-text='item.invnm'></td>
+                                                            <td class="center" v-text='item.idno'></td>
+                                                            <td class="center" v-text='item.branchName'></td>
+                                                            <td class="center" v-text='item.branchCode'></td>
+                                                            <td class="center" v-text='item.status'></td>
+                                                            <td class="center" v-text='item.allowUnfreezeSelf'></td>
+                                                            <td class="center" v-text='item.reason'></td>
+                                                            <td class="center" v-text='item.reasonCommont'></td>
+
+                                                        </tr>
+                                                    </template>
+                                                    <template v-else>
+                                                        <tr>
+                                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                                        </tr>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+
+                                            <div class="modal-footer">
+                                                <div class="col-md-offset-3 col-md-9">
+                                                    <button type="button" class="btn btn-primary btn-sm"
+                                                        @click='operate("unfreezeList")'>冻结
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                        data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 解冻 -->
+                            <div class="modal" id="freezeList" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog" style="width: 1200px;">
+                                    <div class="modal-content">
+                                        <div class="form-horizontal">
+                                            <div class="modal-header" style="padding: 10px;">
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-hidden="true">×
+                                                </button>
+                                                <h4 class="modal-title">j解冻渠道</h4>
+                                            </div>
+
+                                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="center col-sm-1 col-md-1 col-lg-1"></th>
+                                                        <th class="center col-sm-1 col-md-1 col-lg-1">客户姓名</th>
+                                                        <th class="center col-sm-2 col-md-2 col-lg-2">证件号码</th>
+                                                        <th class="center col-sm-1 col-md-1 col-lg-1">渠道</th>
+                                                        <th class="center col-sm-1 col-md-1 col-lg-1">状态</th>
+                                                        <th class="center col-sm-1 col-md-1 col-lg-1">原因</th>
+                                                        <th class="center col-sm-1 col-md-1 col-lg-1">备注</th>
+
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <template v-if="freezeList.length>0">
+                                                        <tr v-for="(item,index) in freezeList" :key="index">
+                                                            <td class="center col-md-1">
+                                                                <label class="pos-rel">
+                                                                    <input type="checkbox" class="ace"
+                                                                        :checked="item.check"
+                                                                        @click='item.check=!item.check' />
+                                                                    <span class="lbl"></span>
+                                                                </label>
+                                                            </td>
+                                                            <td class="center" v-text='item.invnm'></td>
+                                                            <td class="center" v-text='item.idno'></td>
+                                                            <td class="center" v-text='item.branchName'></td>
+                                                            <td class="center" v-text='item.status'></td>
+                                                            <td class="center" v-text='item.reason'></td>
+                                                            <td class="center" v-text='item.reasonCommont'></td>
+
+                                                        </tr>
+                                                    </template>
+                                                    <template v-else>
+                                                        <tr>
+                                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                                        </tr>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+
+                                            <div class="modal-footer">
+                                                <div class="col-md-offset-3 col-md-9">
+                                                    <button type="button" class="btn btn-primary btn-sm"
+                                                        @click='operate("freezeList")'>解冻
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                        data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- DIALOG ENDS -->
+
+                            <div class="form-inline">
+                                <div class="form-group ">
+                                    <label style="width: 80px;">客户号：</label>
+                                    <input type="text" v-model='custNo' />
+                                </div>
+                                <!-- <div class="form-group ">
+                                    <label style="width: 80px;">客户姓名：</label>
+                                    <input type="text" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">证件号码：</label>
+                                    <input type="text" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">银行卡号：</label>
+                                    <input type="text" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">手机号码：</label>
+                                    <input type="text" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">交易账号：</label>
+                                    <input type="text" />
+                                </div> -->
+
+                                <!-- <div class="form-group ">
+                                    <input type="button" class="btn btn-sm btn-primary " value="查询" @click="queryData">
+                                </div> -->
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " @click='getTableData'
+                                        value="查询">
+                                </div>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!-- button -->
+                            <div class="form-inline" style="margin-top: 10px;">
+                                <div class="form-group " style="margin-right: 20px;">
+                                    <input type="button" class="btn btn-sm btn-primary " value="冻结"
+                                        @click='getUnfreezeList'>
+                                </div>
+                                <div class="form-group " style="margin-right: 20px;">
+                                    <input type="button" class="btn btn-sm btn-primary " value="直销交易冻结" @click='direct'>
+                                </div>
+                                <div class="form-group ">
+                                    <input type="button" class="btn btn-sm btn-primary " value="解冻"
+                                        @click='getFreezeList'>
+                                </div>
+                            </div>
+                            <!--标题-->
+                            <div class="row"
+                                style="padding:8px 0;background-color: #EFF3F8; margin:0;color: #000;font-weight: 900;">
+                                <div class="col-xs-6">
+                                    客户基本信息
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">客户交易状态</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">客户登录状态</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">客户号</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">姓名</th>
+                                        <th class="center col-sm-2 col-md-2 col-lg-2">证件号码</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">身份证归属地</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">手机号码</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">手机号码归属地</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">邮箱</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">设备ID</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">注册时间</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="custInfo.length>0">
+                                        <tr v-for="(item,index) in custInfo" :key="index">
+                                            <td class="center" v-text='item.custst'></td>
+                                            <td class="center" v-text='item.logonallowedText'></td>
+                                            <td class="center" v-text='item.custno'></td>
+                                            <td class="center" v-text='item.invnm'></td>
+                                            <td class="center" v-text='item.idno'></td>
+                                            <td class="center" v-text='item.idCity'></td>
+                                            <td class="center" v-text='item.mobileno'></td>
+                                            <td class="center" v-text='item.mobileAddr'></td>
+                                            <td class="center" v-text='item.email'></td>
+                                            <td class="center" v-text='item.deviceid'></td>
+                                            <td class="center" v-text='item.regDateStr'></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <!--标题-->
+                            <div class="row"
+                                style="padding:8px 0;background-color: #EFF3F8; margin:20px 0 0 0;color: #000;font-weight: 900;">
+                                <div class="col-xs-6">
+                                    客户标签信息
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">账户安全级别</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">借记卡是否可信</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">手机号是否可信</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">账户是否实名</th>
+                                        <th class="center col-sm-2 col-md-2 col-lg-2">手机三要素实名</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">可信来源</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">是否绑定过借记卡</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">建议风险验证方式</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">备注</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="userLabel.length>0">
+                                        <tr v-for="(item,index) in userLabel" :key="index">
+                                            <td class="center" v-text='item.accoRiskLevel'></td>
+                                            <td class="center" v-text='item.debitcardtrust'></td>
+                                            <td class="center" v-text='item.mobilenotrust'></td>
+                                            <td class="center" v-text='item.accountvalid'></td>
+                                            <td class="center" v-text='item.ismobilethreeelevalid'></td>
+                                            <td class="center" v-text='item.mobiletrustsource'></td>
+                                            <td class="center" v-text='item.isbindedcard'></td>
+                                            <td class="center" v-text='item.riskverificationmethod'></td>
+                                            <td class="center" v-text='item.note'></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <!--标题-->
+                            <div class="row"
+                                style="padding:8px 0;background-color: #EFF3F8; margin:20px 0 0 0;color: #000;font-weight: 900;">
+                                <div class="col-xs-6">
+                                    账户限制记录
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">客户号</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">操作人</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">渠道</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">操作时间</th>
+                                        <th class="center col-sm-2 col-md-2 col-lg-2">说明</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="userHistory.length>0">
+                                        <tr v-for="(item,index) in userHistory" :key="index">
+                                            <td class="center" v-text='item.custNo'></td>
+                                            <td class="center" v-text='item.firstConfirmAcco'></td>
+                                            <td class="center" v-text='item.branchCode'></td>
+                                            <td class="center" v-text='item.secondConfirmTimestamp'></td>
+                                            <td class="center" v-text='item.reason'></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <!--标题-->
+                            <div class="row"
+                                style="padding:8px 0;background-color: #EFF3F8; margin:20px 0 0 0;color: #000;font-weight: 900;">
+                                <div class="col-xs-6">
+                                    安全中心数据
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">是否开通多卡取</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">开通时间</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">是否开通信用卡还款</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">开通时间</th>
+                                        <th class="center col-sm-2 col-md-2 col-lg-2">是否开通话费充</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">开通时间</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="switchInfo.length>0">
+                                        <tr v-for="(item,index) in switchInfo" :key="index">
+                                            <td class="center" v-text='item.moreCardTakeState'></td>
+                                            <td class="center" v-text='item.moreCardTakeDate'></td>
+                                            <td class="center" v-text='item.repayDateState'></td>
+                                            <td class="center" v-text='item.repayDate'></td>
+                                            <td class="center"></td>
+                                            <td class="center"></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <!--标题-->
+                            <div class="row"
+                                style="padding:8px 0;background-color: #EFF3F8; margin:20px 0 0 0;color: #000;font-weight: 900;">
+                                <div class="col-xs-6">
+                                    客户绑卡信息
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">网点名</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">银行卡类型</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">银行渠道编号</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">银行渠道名称</th>
+                                        <th class="center col-sm-2 col-md-2 col-lg-2">银行卡号</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">绑卡时间</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">安全中心本金</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">安全中心可取额</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">快捷绑卡手机号</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="tiedCard.length>0">
+                                        <tr v-for="(item,index) in tiedCard" :key="index">
+                                            <td class="center" v-text='item.branchName'></td>
+                                            <td class="center">{{item.cardType | chineseCardType}}</td>
+                                            <td class="center" v-text='item.bankNo'></td>
+                                            <td class="center" v-text='item.bankChannelName'></td>
+                                            <td class="center" v-text='item.bankAccoDisplay'></td>
+                                            <td class="center" v-text='item.bindCardTime'></td>
+                                            <td class="center" v-text='item.principal'></td>
+                                            <td class="center" v-text='item.availLimit'></td>
+                                            <td class="center" v-text='item.cardMobileNo'></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <!--标题-->
+                            <div class="row"
+                                style="padding:8px 0;background-color: #EFF3F8; margin:20px 0 0 0;color: #000;font-weight: 900;">
+                                <div class="col-xs-6">
+                                    客户资产信息
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">网点名</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">总资产</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">现金宝资产</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">理财资产</th>
+                                        <th class="center col-sm-2 col-md-2 col-lg-2">组合资产</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">基金资产</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">高端资产</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">在途资产</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="custAsset.length>0">
+                                        <tr v-for="(item,index) in custAsset" :key="index">
+                                            <td class="center" v-text='item.branchName'></td>
+                                            <td class="center" v-text='item.totalBalance'></td>
+                                            <td class="center" v-text='item.vaccoBalance'></td>
+                                            <td class="center" v-text='item.productAssetOfDirect'></td>
+                                            <td class="center" v-text='item.fundGroupAssetOfDirect'></td>
+                                            <td class="center" v-text='item.fundAssetOfDirect'></td>
+                                            <td class="center" v-text='item.vipAssetOfDirect'></td>
+                                            <td class="center" v-text='item.onTheWay'></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <!--标题-->
+                            <div class="row"
+                                style="padding:8px 0;background-color: #EFF3F8; margin:20px 0 0 0;color: #000;font-weight: 900;">
+                                <div class="col-xs-6">
+                                    客户直销交易记录：只记录资金流进、流出、信用卡还款交易
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">网点名</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">交易类型</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">交易时间</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">银行卡类型</th>
+                                        <th class="center col-sm-2 col-md-2 col-lg-2">银行卡渠道号</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">银行卡号</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">交易金额</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">交易结果</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="tradeRecords.length>0">
+                                        <tr v-for="(item,index) in tradeRecords" :key="index">
+                                            <td class="center" v-text='item.branchCode'></td><!-- branchName -->
+                                            <td class="center" v-text='item.subApkind'></td><!-- subApkindText -->
+                                            <td class="center" v-text='item.date'></td>
+                                            <td class="center">{{item.cardType | chineseCardType}}</td>
+                                            <td class="center" v-text='item.bankno'></td>
+                                            <td class="center" v-text='item.bankacco'></td>
+                                            <td class="center" v-text='item.balance'></td>
+                                            <td class="center">{{item.applyst | chineseApplyst(item.payst)}}</td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+
+                            <!--底部页码-->
+                            <!-- <div v-if="tradeRecords.length>0" class="row"
+                                style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                        <ul class="pagination">
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                            </li>
+                                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in pageList" @click="changeIndex(value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                            </li>
+                                            <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div> -->
+
+
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/customerService/accountQuery/custInfo.js"></script>
+</body>
+
+</html>

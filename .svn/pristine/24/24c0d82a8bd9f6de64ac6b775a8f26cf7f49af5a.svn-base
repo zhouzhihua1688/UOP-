@@ -1,0 +1,402 @@
+
+@charset "utf-8";
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,button,textarea,p,blockquote,th,td { margin:0; padding:0; }
+html{height: 100%;}
+body{color: #4d4d4d;font: 14px/1em 'microsoft yahei';position: relative;min-width:1100px;min-height: 100%;}
+ol,ul,li { list-style:none; }
+.footer{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    min-width: 960px;
+    background-color: #e5e5e5;
+}
+.footer p{
+    height: 80px;
+    line-height: 80px;
+}
+
+/* S login.html */
+.login{
+    width: 600px;
+    margin: 120px auto 150px;
+    color: #343434;
+}
+.login-title{
+    text-align: center;
+}
+.login-title h2{
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+.login-body{
+    background-color: #F1F1F1;
+    padding: 30px 60px;
+    font-size: 16px;
+}
+.login-body h3{
+    margin-bottom: 40px;
+}
+.login-body .login-input{
+    height: 40px;
+    line-height: 40px;
+}
+.btn-login {
+    color: #fff;
+    background-color: #f06b00;
+    width: 163px;
+    height: 40px;
+    margin-right: 20px;
+}
+.btn-login:hover {
+    color: #fff;
+    background-color: rgba(240,107,0,0.8);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#19ffffff,endColorstr=#19ffffff);
+}
+.btn-reset {
+    color: #fff;
+    background-color: #5d5c60;
+    width: 163px;
+    height: 40px;
+}
+.btn-reset:hover {
+    color: #fff;
+    background-color: rgba(93,92,96,0.8);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#19ffffff,endColorstr=#19ffffff);
+}
+/* E login.html */
+/* S index.html */
+.header{
+    height: 80px;
+    line-height: 80px;
+}
+.header-left .logo{
+    max-width: 50%;
+    margin-top: -14px;
+}
+.header-left .project-name{
+    font-size: 20px;
+    margin-left: 40px;
+}
+.header-right ul li{
+    float: left;
+    font-size: 16px;
+    margin-right: 15px;
+}
+.header-right ul li a{
+    color: #4d4d4d;
+    text-decoration: none;
+}
+.header-right ul li i{
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    background: url("../img/manage_icons.png") no-repeat;
+    vertical-align: middle;
+}
+.header-right i.setting{
+    background-position: -10px -10px;
+}
+.header-right i.setting:hover{
+    background-position: -10px -40px;
+}
+.header-right i.shutdown{
+    background-position: -40px -10px;
+}
+.header-right i.shutdown:hover{
+    background-position: -40px -40px;
+}
+
+.nav-channel{
+    background-color: #2b3540;
+    overflow: hidden;
+}
+.nav-channel ul{
+    padding-left: 150px;
+}
+.nav-channel ul li{
+    float: left;
+    height: 56px;
+    line-height: 56px;
+    margin-right: 20px;
+}
+.nav-channel ul li.on{
+    background-color: #f06b00;
+}
+.nav-channel ul li a{
+    color: #fff;
+    text-decoration: none;
+    display: inline-block;
+    padding: 0 20px;
+}
+.nav-channel i.home{
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: url("../img/manage_icons.png") no-repeat -170px -10px;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+.index{
+    margin-top: 20px;
+}
+.index .col-md-2{
+    width: 16.66666667%;
+}
+.index .col-md-10{
+    width: 83.33333333%;
+}
+.nav-left{
+    border: 1px solid #c7c7c7;
+    border-top: none;
+}
+.nav-left>li{
+    background-color: #eaeaea;
+    border-top: 1px solid #c7c7c7;
+    cursor: pointer;
+    position: relative;
+}
+.nav-left>li>a{
+    color: #343434;
+    text-decoration: none;
+    height: 45px;
+    line-height: 45px;
+    padding-left: 3em;
+}
+.nav-left>li>i{
+    position: absolute;
+    top: 18px;
+    right: 25px;
+    width: 15px;
+    height: 10px;
+    background: url("../img/manage_icons.png") no-repeat;
+}
+.nav-left>li>i.arrow-down{
+    background-position: -96px -33px;
+}
+.nav-left>li>i.arrow-up{
+    background-position: -96px -10px;
+}
+.nav-inner{
+    background-color: #fff;
+    display: none;
+}
+.nav-inner li{
+    cursor: pointer;
+    height: 45px;
+    line-height: 45px;
+    padding-left: 4em;
+}
+.nav-inner li:first-child{
+    border-top: 1px solid #c7c7c7;
+}
+.nav-inner li.on{
+    background-color: #f06b00;
+}
+.nav-inner li a{
+    color: #4d4d4d;
+    text-decoration: none;
+}
+.nav-inner li.on a{
+    color: #fff;
+    text-decoration: none;
+}
+.nav-tabs > li{
+    border: 1px solid #c7c7c7;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    background-color: #eaeaea;
+    padding: 12px 10px;
+    margin-right: 4px;
+    cursor: pointer;
+}
+.nav-tabs > li.on{
+    color: #f06b00;
+    background-color: #fff;
+    border-bottom: 1px solid #fff;
+}
+.nav-tabs > li > i{
+    font-style: normal;
+    font-size: 16px;
+    margin-left: 5px;
+    color: #343434;
+    cursor: pointer;
+}
+
+.table-content{
+    padding: 20px 20px 150px;
+    border: 1px solid #ddd;
+    border-top: none;
+}
+.table-top{
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+.table-top h4{
+    line-height: 30px;
+}
+.table-top .Wdate {
+    border: #ccc 1px solid;
+    height: 32px;
+    line-height: 32px;
+    margin-right: 5px;
+    padding-left: 5px;
+    cursor: pointer;
+}
+.table-top .btn-search {
+    width: 90px;
+    height: 32px;
+    line-height: 30px;
+    padding: 0;
+}
+.table-strip{
+    border: 1px solid #ddd;
+}
+.table-strip > thead > tr > th {
+    border-bottom: none;
+    background-color: #eaeaea;
+}
+.table-strip > thead > tr > th:first-child {
+    text-align: center;
+}
+.table-strip > tbody > tr:nth-of-type(even) {
+    background-color: #F4F4F4;
+}
+.table-strip > tbody > tr > td {
+    border-top: none;
+}
+.table-strip > tbody > tr > td:first-child {
+    text-align: center;
+}
+.table-strip > tbody > tr > td:last-child a{
+    color: #4d4d4d;
+    text-decoration: none;
+    margin-right: 10px;
+}
+.table-strip > tbody > tr > td:last-child a:hover{
+    color: #f06b00;
+}
+.table-strip input[type="checkbox"]{
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    margin: 2px 0 0;
+}
+.btn:hover, .btn:focus, .btn.focus {
+    color: #fff;
+}
+.btn-orange {
+    color: #fff;
+    background-color: rgba(240,107,0,1);
+}
+.btn-orange:hover {
+    color: #fff;
+    background-color: rgba(240,107,0,0.8);
+}
+.btn-grey {
+    color: #fff;
+    background-color: rgba(93,92,96,1);
+}
+.btn-grey:hover {
+    color: #fff;
+    background-color: rgba(93,92,96,0.8);
+}
+.btn-control {
+    width: 100px;
+    height: 36px;
+    font-size: 16px;
+    margin-right: 5px;
+}
+
+.icon-off{
+    display: inline-block;
+    width: 42px;
+    height: 22px;
+    background: url("../img/manage_icons.png") no-repeat -120px -10px;
+    vertical-align: middle;
+    cursor: pointer;
+    margin-bottom: 0;
+}
+.icon-on{
+    display: inline-block;
+    width: 42px;
+    height: 22px;
+    background: url("../img/manage_icons.png") no-repeat -120px -40px;
+    vertical-align: middle;
+    cursor: pointer;
+    margin-bottom: 0;
+}
+.table-strip tr td input[type="checkbox"] {
+    display: none;
+}
+.table-strip tr td:first-child input[type="checkbox"] {
+    display: inline-block;
+}
+
+.modal-content {
+    border-radius: 0;
+}
+.modal-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid #c7c7c7;
+    background-color: #eaeaea;
+}
+.modal-header .close {
+    margin-top: -7px;
+    font-size: 34px;
+    font-weight: normal;
+}
+.modal-title {
+    font-size: 16px;
+}
+.modal-body {
+    padding: 35px 15px 15px;
+    font-size: 16px;
+}
+.modal-body i.icon-mark{
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    background: url("../img/manage_icons.png") no-repeat -170px -40px;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+.modal-body .edit-info{
+    overflow: hidden;
+    padding-bottom: 20px;
+    padding-left: 60px;
+    border-bottom: 1px dashed #ccc;
+}
+.modal-body .edit-info li{
+    width: 42%;
+    float: left;
+    height: 32px;
+    line-height: 32px;
+    margin-bottom: 15px;
+}
+.modal-body .edit-info li:nth-child(even){
+    width: 58%;
+}
+.modal-body .edit-info li>label{
+    width: 7em;
+    text-align: right;
+    margin-right: 10px;
+    font-weight: normal;
+}
+.modal-body .Wdate {
+    border: #ccc 1px solid;
+    height: 32px;
+    line-height: 32px;
+    padding-left: 5px;
+    width: 140px;
+    cursor: pointer;
+}
+.modal-footer {
+    text-align: center;
+    border-top: none;
+    margin-bottom: 20px;
+}
+/* E index.html */

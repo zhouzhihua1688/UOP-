@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <style>
+        .blues {
+            background-color: #428BCA;
+            color: #fff;
+        }
+
+        .box {
+            text-align: center;
+            float: left;
+            border: 1px solid #ccc;
+            padding: 5px 10px;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+
+        .componentBox {
+            text-align: center;
+            float: left;
+            padding: 5px 50px;
+            cursor: pointer;
+            box-sizing: border-box;
+            border-left: 1px solid #ccc;
+            margin: 0;
+        }
+
+        #sessionShow {
+            position: fixed;
+            z-index: 999999;
+            width: 100px;
+            height: 100px;
+            background: #000;
+            top: 10%;
+            left: 60%;
+
+        }
+
+        .modals {
+            position: fixed;
+            top: 0;
+            z-index: 1050;
+            -webkit-overflow-scrolling: touch;
+            outline: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.486);
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .buttonAdd {
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+
+        .toggleLog {
+            margin-top: 50px;
+        }
+
+        .delRule {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ruleList {
+            position: absolute;
+            left: 300px;
+            top: 0px;
+            height: 200px;
+            overflow: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        .modal-dialog {
+            position: absolute;
+            top: calc(100vh/2.3);
+            left: calc(100vw/2);
+            transform: translateX(-50%)translateY(-50%) !important;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+                        <!--提示信息弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                            data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--保存或修改成功弹窗-->
+                        <div class="modal" id="overInfo" tabindex="-1" role="dialog" aria-hidden="true"
+                            data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="row" style="margin-top: 10px;">
+                            <label class="center col-sm-4 col-md-4 col-lg-4">活动:
+                                <vue-select :options='activeAll' label='actName' model='actId' v-model="actId"
+                                    :disabled='id!=""'></vue-select>
+                            </label>
+                            <label class="center col-sm-4 col-md-4 col-lg-4">活动模型:
+                                <vue-select :options='moduleAll' label='moduleName' model='moduleId' v-model="moduleId">
+                                </vue-select>
+
+                            </label>
+                            <label class="center col-sm-4 col-md-4 col-lg-4">
+                                <div class="form-group ">
+                                    <input type="button" class="btn  btn-danger " value="保存" @click='keep'>
+                                </div>
+                            </label>
+                        </div>
+                        <hr>
+
+                        <div style="display: flex;justify-content: center;align-items:center;">
+                            <template v-for="(item,index) in cutAll.mcpActCutinPointConfigs">
+                                <p v-text='item.cutinPointName' :key="index" class='box' style="flex-grow:1"
+                                    :class='{blues:item.cutinPointId==cutId}'
+                                    @click='getComponent(item.cutinPointId,item.cutionPointKey,index)'>
+                                </p>
+                            </template>
+                        </div>
+                        <div style="clear: both;"></div>
+
+
+                        <template v-for="(componentRule,indexs) in componentAll.componentRulesRlDtos" tag='div'>
+                            <h4 class='center '>{{componentRule.mcpActComponentConfig.componentName}}</h4>
+                            <div class="col-sm-12" style="margin-bottom: 30px;">
+                                <div class="tabbable">
+                                    <ul class="nav nav-tabs padding-12 tab-color-blue background-blue">
+                                        <li class="">
+                                            <a data-toggle="tab"
+                                                :href="'#'+'b'+componentRule.mcpActComponentConfig.componentId"
+                                                @click='componentIndex=indexs'>组件规则</a>
+                                        </li>
+                                        <li class="" v-for="(tab,arrInd) in componentTab" :key='arrInd'>
+                                            <a data-toggle="tab"
+                                                :href="'#'+'a'+componentRule.mcpActComponentConfig.componentId+arrInd">{{tab}}</a>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content">
+                                        <div :id="'b'+componentRule.mcpActComponentConfig.componentId"
+                                            class="tab-pane in " style='height:500px ;'>
+
+
+                                            <!-- <button type="button" class="btn  btn-primary buttonAdd" v-if='indexAdd==0'
+                                                    @click='ruleListAdd(componentRule)'>+</button> -->
+                                            <p v-for="(item,index) in componentRule.mcpBaseRuleTemplates" :key='index'>
+                                                <label class="pos-rel">
+                                                    <input type="checkbox" class="ace"
+                                                        :checked='check(sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleIndexList,item.id)'
+                                                        @click='ruleDialog(item.ruleName,item.ruleTemplateKey,sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)],item.id)' />
+                                                    <span class="lbl" v-text='item.ruleName'></span>
+                                                    <!-- :checked='item.checked'  -->
+                                                </label>
+
+                                            </p>
+                                            <ul style='height:430px ;' class='ruleList'
+                                                v-if=' sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleComplexConfigList.length>0'>
+                                                <li class='delRule'
+                                                    v-for="(item,index) in sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleComplexConfigList">
+                                                    <p
+                                                        @click='showData(sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)],item)'>
+                                                        {{item.rulesRelation |setName }}
+                                                    </p>
+                                                    <p style='margin-left: 10px'>
+                                                        <button class='btn btn-sm btn-primary'
+                                                            @click='showData(sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)],item,index)'>修改</button>
+                                                        &nbsp;&nbsp;
+                                                        <button class='btn btn-sm btn-danger'
+                                                            @click='deleteRuleList(sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)],index)'>删除</button>
+                                                    </p>
+                                                </li>
+                                            </ul>
+
+                                            <div class="modals"
+                                                v-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogStatus'
+                                                v-cloak>
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="form-horizontal ">
+                                                            <div class="table-header" style="margin-bottom: 20px;">
+                                                                {{sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogName}}
+                                                            </div>
+                                                            <template
+                                                                v-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogKey==1'>
+                                                                <!-- 安全等级规则 -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示优先级:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule1.notMatchMsgSalience">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示信息:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule1.ruleNotMatchReturnMsg">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        安全等级配置:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select style="width: 169px;"
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule1.securityLevel'>
+                                                                            <option :value="item.val"
+                                                                                v-for="(item,index) in safetyClassAll">
+                                                                                {{item.showName}}</option>
+                                                                        </select>
+                                                                    </div><!-- 黑白灰 -->
+                                                                </div>
+                                                            </template>
+                                                            <template
+                                                                v-else-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogKey==2'>
+                                                                <!-- 活动参与周期规则 -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示优先级:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule2.notMatchMsgSalience">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示信息:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule2.ruleNotMatchReturnMsg">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        日期格式:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select style="width: 169px;"
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule2.dateFormatStr'>
+                                                                            <option value="yyyyMMddHHmmss">
+                                                                                yyyyMMddHHmmss</option>
+                                                                            <option value="HHmmss">HHmmss</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-2 control-label">
+                                                                    </label>
+                                                                    <div class="col-sm-7 control-label">
+                                                                        年<input type="text"
+                                                                            v-model.trim='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule2.year'
+                                                                            style='width: 60px;'>
+                                                                        月<input type="text"
+                                                                            v-model.trim='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule2.month'
+                                                                            style='width: 60px;'>
+                                                                        日<input type="text"
+                                                                            v-model.trim='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule2.monthOfDay'
+                                                                            style='width: 60px;'>
+                                                                        周<input type="text"
+                                                                            v-model.trim='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule2.weekOfDay'
+                                                                            style='width: 60px;'>
+                                                                    </div>
+
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        开始时间:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule2.intervalTimeFrom'>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        结束时间:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule2.intervalTimeTo'>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                            <template
+                                                                v-else-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogKey==3'>
+                                                                <!-- 用户分组规则 -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示优先级:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule3.notMatchMsgSalience">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示信息:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule3.ruleNotMatchReturnMsg">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        分组配置:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select style='width: 169px;'
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule3.groupId'>
+                                                                            <option :value='item.groupId'
+                                                                                v-for="(item,index) in userGroupList">
+                                                                                {{item.groupName}}</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                            <template
+                                                                v-else-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogKey==4'>
+                                                                <!-- 活动参与次数规则 -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示优先级:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule4.notMatchMsgSalience">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示信息:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule4.ruleNotMatchReturnMsg">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        每天参与次数:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model.trim.number='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule4.chancesOfDay'>
+                                                                        <template
+                                                                            v-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule4.chancesOfDay==""'>
+                                                                            <span>
+                                                                                如果为空，则不限制次数
+                                                                            </span>
+                                                                        </template>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        每人总参与次数:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model.trim.number='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule4.chancesOfTotal'>
+                                                                        <template
+                                                                            v-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule4.chancesOfTotal==""'>
+                                                                            <span>
+                                                                                如果为空，则不限制次数
+                                                                            </span>
+                                                                        </template>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        每天总共参与次数:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model.trim.number='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule4.actTotalChangesOfPerDay'>
+                                                                        <template
+                                                                            v-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule4.actTotalChangesOfPerDay==""'>
+                                                                            <span>
+                                                                                如果为空，则不限制次数
+                                                                            </span>
+                                                                        </template>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        总共次数:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model.trim.number='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule4.actTotalChangeOfAll'>
+                                                                        <template
+                                                                            v-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule4.actTotalChangeOfAll==""'>
+                                                                            <span>
+                                                                                如果为空，则不限制次数
+                                                                            </span>
+                                                                        </template>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        参与类型:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select style='width: 169px;'
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule4.dayType'>
+                                                                            <option value='1'>自然日</option>
+                                                                            <option value='2'>工作日</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                            <template
+                                                                v-else-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogKey==5'>
+                                                                <!-- 发奖次数规则 -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示优先级:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule5.notMatchMsgSalience">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示信息:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule5.ruleNotMatchReturnMsg">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        每天发奖次数:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model.trim='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule5.dayRewardCount'>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        总发奖次数:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model.trim='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule5.totalRewardCount'>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                            <template
+                                                                v-else-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogKey==6'>
+                                                                <!-- 用户资产规则 -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示优先级:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule6.notMatchMsgSalience">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示信息:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule6.ruleNotMatchReturnMsg">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        资产配置:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model.trim='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule6.assetRange'>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                            <template
+                                                                v-else-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogKey==7'>
+                                                                <!-- 签到天数规则 -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示优先级:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule7.notMatchMsgSalience">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示信息:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule7.ruleNotMatchReturnMsg">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        签到类型:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select style="width: 169px;"
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule7.checkInType'>
+                                                                            <option value='1'>连续签到</option>
+                                                                            <option value='2'>累计签到</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        签到周期:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select style="width: 169px;"
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule7.checkInPeriod'>
+                                                                            <option value='W'>周</option>
+                                                                            <option value='M'>月</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <!-- <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        签到奖励:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select style="width: 169px;" v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule7.awardPkgId'>
+                                                                            <option :value='item.id' v-for="(item,index) in awardDataAll">{{item.awardsPkgName}}</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div> -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        签到天数:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model.trim='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule7.totalDays'>
+
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                            <template
+                                                                v-else-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogKey==8'>
+                                                                <!-- 大数据清算规则 -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示优先级:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule8.notMatchMsgSalience">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示信息:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule8.ruleNotMatchReturnMsg">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        条件表达式:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule8.conditionExpr'>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        计算公式:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule8.formulaExpression'>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                            <template
+                                                                v-else-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogKey==10'>
+                                                                <!-- 渠道发奖规则 -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示优先级:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule10.notMatchMsgSalience">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示信息:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule10.ruleNotMatchReturnMsg">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        渠道配置:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule10.seatNo'>
+                                                                            <option value="">请选择</option>
+                                                                            <option :value="item.seatNo"
+                                                                                v-for="(item,index) in seatNoList">
+                                                                                {{item.actSeatName}}</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                            <template
+                                                                v-else-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogKey==11'>
+                                                                <!-- 渠道发奖规则 -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示优先级:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule11.notMatchMsgSalience">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示信息:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule11.ruleNotMatchReturnMsg">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        日期类型:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule11.dateType'>
+                                                                            <option value="">请选择</option>
+                                                                            <option value="1">自然日</option>
+                                                                            <option value="2">工作日</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                            <template
+                                                                v-else-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogKey==12'>
+                                                                <!-- 异步注册消息来源规则 -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示优先级:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule12.notMatchMsgSalience">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示信息:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule12.ruleNotMatchReturnMsg">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        异步注册消息来源:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule12.registerSource'>
+                                                                            <option value="">请选择</option>
+                                                                            <option value="icif">icif</option>
+                                                                            <option value="mobile">mobile</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                            <template
+                                                                v-else-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogKey==13'>
+                                                                <!-- 事件编码规则 -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示优先级:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule13.notMatchMsgSalience">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示信息:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule13.ruleNotMatchReturnMsg">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        业务编码:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule13.apKind">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        子业务编码:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule13.subApKind">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        事件类型:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule13.eventType'>
+                                                                            <option value="">请选择</option>
+                                                                            <option :value="item.type"
+                                                                                v-for="(item,index) in eventList">
+                                                                                {{item.desc}}</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                            <template
+                                                                v-else-if='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLogKey==14'>
+                                                                <!-- 是否验证参与规则 -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示优先级:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="number"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule14.notMatchMsgSalience">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        提示信息:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule14.ruleNotMatchReturnMsg">
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        是否验证:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select
+                                                                            v-model='sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleLog.rule14.checkTakePart'>
+                                                                            <option value="true">是</option>
+                                                                            <option value="false">否</option>
+
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <div class="col-md-offset-3 col-md-9">
+                                                                <button type="button" class="btn btn-info"
+                                                                    @click='skipNextOne(sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)])'>
+                                                                    确定
+                                                                </button>
+                                                                <button type="button" class="btn btn-danger"
+                                                                    data-dismiss="modal"
+                                                                    @click='cancel(sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)])'>
+                                                                    取消
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <button type="button" class="btn btn-sm  btn-primary "
+                                                @click='ruleListAdd(sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)])'>确定</button>
+                                            <!-- </div> -->
+
+                                            <div class="modals" id='aa' v-if='rule.ruleStatic2' v-cloak>
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="form-horizontal" style='overflow: hidden;'>
+                                                            <div class="table-header" style="margin-bottom: 20px;">
+                                                                基础规则关系</div>
+                                                            <template
+                                                                v-for="(val,index) in ruleSelectName(sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)]) ">
+                                                                <p v-text='val' style='float: left;margin: 10px'></p>
+                                                                <select
+                                                                    v-if='index!=ruleSelectName(sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)]).length-1'
+                                                                    style='float: left;margin: 10px'
+                                                                    v-model="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].ruleSelect[index]">
+                                                                    <option value="&&">&&</option>
+                                                                    <option value="||">||</option>
+                                                                </select>
+                                                            </template>
+
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <div class="col-md-offset-3 col-md-9">
+                                                                <button type="button" class="btn btn-info"
+                                                                    @click='setRulesRelation(sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)])'>
+                                                                    确定
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="modals" v-if='rule.ruleStatic3' v-cloak>
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="form-horizontal">
+                                                            <div class="table-header" style="margin-bottom: 20px;">规则类型
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label class="col-sm-3 control-label">
+                                                                    规则权重:</label>
+                                                                <div class="col-sm-9">
+                                                                    <input type="number"
+                                                                        v-model="ruleType.ruleComplexSalience"><span
+                                                                        style="color:red;margin-left: 20px;"
+                                                                        v-if='redShow'>必填项</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label class="col-sm-3 control-label">
+                                                                    规则类型:</label>
+                                                                <div class="col-sm-9">
+                                                                    <select style='width: 169px;'
+                                                                        v-model="ruleType.ruleUseType">
+                                                                        <option value="1">参与(1)</option>
+                                                                        <option value="2">发奖(2)</option>
+                                                                    </select>
+
+                                                                </div>
+                                                            </div>
+
+                                                            <template v-if='ruleType.ruleUseType==1'>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        能否参与:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select style='width: 169px;'
+                                                                            v-model="ruleType.allowInFlag">
+                                                                            <option value="1">能(1)</option>
+                                                                            <option value="0">不能(0)</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+
+                                                            </template>
+                                                            <template v-else>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        奖励包id:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select style='width: 169px;'
+                                                                            v-model.trim="ruleType.awardPkgId">
+                                                                            <option value="">请选择</option>
+                                                                            <option :value="item.id"
+                                                                                v-for="(item,index) in awardDataAll">
+                                                                                {{item.awardsPkgName}}</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        红包金额:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model.trim="ruleType.bonusAmt">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        积分数量:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text"
+                                                                            v-model.trim="ruleType.pointsCount">
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <div class="col-md-offset-3 col-md-9">
+                                                                <button type="button" class="btn btn-info"
+                                                                    @click='setRuleType(sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)])'>
+                                                                    确定
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+                                        <div :id="'a'+componentRule.mcpActComponentConfig.componentId+arrInd"
+                                            class="tab-pane in " v-for="(tab,arrInd) in componentTab" :key='arrInd'>
+                                            <p>
+                                                <template v-if="arrInd==0 ">
+                                                    <div
+                                                        style="display: flex;justify-content: center;align-items:center">
+                                                        组件执行成功文案配置:<textarea cols="40" rows="5"
+                                                            v-model.trim="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].successMsg"></textarea>
+                                                    </div>
+                                                </template>
+                                                <template v-else-if="arrInd==1">
+                                                    <div
+                                                        style="display: flex;justify-content: center;align-items:center">
+                                                        关联推送数据源配置:
+                                                        <vue-select
+                                                            v-model.trim="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].readConfigId"
+                                                            :options='[{fileDesc:"请选择",readConfigId:""},...LargeDataAll]'
+                                                            label='fileDesc' model='readConfigId'>
+                                                        </vue-select>
+                                                    </div>
+                                                </template>
+                                                <template v-else-if="arrInd==2">
+                                                    <div
+                                                        style="display: flex;justify-content: center;align-items:center">
+                                                        直接发奖配置:
+                                                        <vue-select
+                                                            v-model.trim="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].awardPkgId"
+                                                            :options='[{awardsPkgName:"请选择",id:""},...awardDataAll]'
+                                                            label='awardsPkgName' model='id'>
+                                                        </vue-select>
+                                                        <span style="color:#f00">仅供发奖切点使用</span>
+                                                    </div>
+                                                </template>
+                                                <template v-else-if="arrInd==3">
+                                                    <div
+                                                        style="display: flex;justify-content: center;align-items:center">
+                                                        活动短信配置:
+                                                        <vue-select
+                                                            v-model.trim="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].messageConfigId"
+                                                            :options='[{ruleName:"请选择",ruleId:""},...infoDataAll]'
+                                                            label='ruleName' model='ruleId'>
+                                                        </vue-select>
+                                                    </div>
+                                                </template>
+                                                <template v-else-if="arrInd==4">
+                                                    <div
+                                                        style="display: flex;justify-content: center;align-items:center">
+                                                        活动分享配置:
+                                                        <vue-select
+                                                            v-model.trim="sendData.activityBaseComponentsList[site(componentRule.mcpActComponentConfig.componentId)].shareConfigId"
+                                                            :options='[{shareTitle:"请选择",shareNo:""},...shareDataAll]'
+                                                            label='shareTitle' model='shareNo'>
+                                                        </vue-select>
+                                                    </div>
+                                                </template>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </template>
+
+
+                        <!--  -->
+
+
+
+
+
+
+                        <div class="modals" v-if='rule.hint' v-cloak>
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm"
+                                            @click='dialogItem(MsgLog)'>确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div><!-- /.row -->
+
+                    <!-- ----------------------------------------全局组件----------------------------------------------- -->
+
+                    <!-- ----------------------------------------全局组件----------------------------------------------- -->
+
+
+
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/js/lib/select.js"></script>
+
+    <script src="/js/marketingActive/activeRun/activeSettingAdd.js"></script>
+
+</body>
+
+</html>

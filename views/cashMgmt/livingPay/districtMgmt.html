@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div id="addDistrictCode" class="modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" >
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form class="form-horizontal" id="districtCodeForm">
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-3" for="districtName"> 区域名称 </label>
+                                        <div class="col-sm-9">
+                                            <input type="text" id="districtName" name="districtName"
+                                                   placeholder="区域名称"
+                                                   class="form-control"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="control-label col-sm-3" for="districtCode"> 区域编码 </label>
+                                        <div class="col-sm-9">
+                                            <input type="text" id="districtCode" name="districtCode"
+                                                   placeholder="区域编码" class="col-xs-10 col-sm-5"/>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label no-padding-right" for="spell">
+                                            拼音首字母 </label>
+                                        <div class="col-sm-9">
+                                            <input type="text" id="spell" name="spell" class="col-xs-10 col-sm-5"
+                                                   placeholder="拼音首字母"
+                                                   onkeyup="toUpperCase(this)"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label no-padding-right" for="isSupport">
+                                            是否支持 </label>
+                                        <div class="col-sm-9">
+                                            <div class="radio">
+                                                <label>
+                                                    <input type="radio" class="ace" value="0" id="isSupport"
+                                                           name="isSupport" checked="checked">
+                                                    <span class="lbl">是</span>
+                                                </label>
+                                                <label>
+                                                    <input type="radio" class="ace" value="1" id="isSupport"
+                                                           name="isSupport">
+                                                    <span class="lbl">否</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                                <div class="modal-footer">
+                                    <div class="col-md-offset-3 col-md-9">
+                                        <button class="btn btn-info" id="sub_btn" type="button" @click="add">
+                                            <i class="icon-ok bigger-110"></i>
+                                            提交
+                                        </button>
+                                        <button class="btn" type="reset" id="reset_btn">
+                                            <i class="icon-undo bigger-110"></i>
+                                            重置
+                                        </button>
+                                        <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                            <i class="icon-reply icon-only bigger-110"></i>
+                                            取消
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--删除-->
+                <div class="modal" id="delete" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">删除</h4>
+                            </div>
+                            <p>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            </p>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-danger btn-sm "  @click="confirmDelete">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--支持-->
+                <div class="modal" id="beSupport" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">支持</h4>
+                            </div>
+                            <p>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            </p>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-danger btn-sm "  @click="confirmBeSupport">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--取消支持-->
+                <div class="modal" id="inSupport" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">取消支持</h4>
+                            </div>
+                            <p>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            </p>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-danger btn-sm "  @click="confirmInSupport">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <input type="text" class="form-control" placeholder="输入区域编码或区域名称" v-model="searchField">
+                    <button type="button" class="btn btn-sm btn-primary"  @click="searchInput">搜索</button>
+                    <button type="button" class="btn btn-sm btn-primary pull-right" style="margin-left: 10px;"  @click="inSupport">取消支持</button>
+                    <button type="button" class="btn btn-sm btn-primary pull-right" style="margin-left: 10px;"  @click="beSupport">支持</button>
+                    <button type="button" class="btn btn-sm btn-primary pull-right" style="margin-left: 10px;"  @click="deleteEven">删除</button>
+                    <button type="button" class="btn btn-sm btn-primary pull-right" @click="boxShowAdd">新增</button>
+                </div>
+                <div class="table-header">
+                    区域配置列表
+                </div>
+                <!--数据表-->
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered table-hover dataTable">
+                        <thead>
+                        <tr>
+                            <th class="center">
+                                <label class="pos-rel">
+                                    <input type="checkbox" class="ace" :checked="allCheck" @click="selectAll"/>
+                                    <span class="lbl"></span>
+                                </label>
+                            </th>
+                            <th class="center col-sm-3 col-md-3 col-lg-3">区域编码</th>
+                            <th class="center col-sm-3 col-md-3 col-lg-3">区域名称</th>
+                            <th class="center col-sm-3 col-md-3 col-lg-3">拼音首字母</th>
+                            <th class="center col-sm-3 col-md-3 col-lg-3">是否支持</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template v-if="tableData.length>0">
+                            <tr v-for="(item,index) in tableData" :key="index" :class="item.check?'active':''">
+                                <td class="center">
+                                    <label class="pos-rel">
+                                        <input type="checkbox" class="ace" :checked="item.check" @click="select(index)"/>
+                                        <span class="lbl"></span>
+                                    </label>
+                                </td>
+                                <td class="center col-sm-2 col-md-2 col-lg-2" v-text="item.districtCode"></td>
+                                <td class="center col-sm-2 col-md-2 col-lg-2" v-text="item.districtName"></td>
+                                <td class="center col-sm-2 col-md-2 col-lg-2" v-text="item.spell"></td>
+                                <td class="center col-sm-2 col-md-2 col-lg-2" v-text="item.isSupport==0?'支持':'不支持'"></td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <tr>
+                                <td class="center" v-text="'没有数据'" colspan="9"></td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!--底部页码-->
+                <div v-if="tableData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+total+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers">
+
+                            <ul class="pagination">
+                                <li style="margin-left: 20px;">
+                                    <select name="records" v-model="records">
+                                        <option value="10">10</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="500">500</option>
+                                    </select>
+                                </li>
+                                <li class="paginate_button" v-show="pageList.length<total&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'<'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button" v-show="pageList.length<total&&total-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+total" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==total-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<script src="/js/lib/vue.js"></script>
+<script src="/js/cashMgmt/livingPay/validate.min.js"></script>
+<script src="/js/cashMgmt/livingPay/districtCodeConfigList.js"></script>
+</body>
+</html>
+
+

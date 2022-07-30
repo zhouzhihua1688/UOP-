@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datepicker3.min.css" />
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <link rel="stylesheet" href="/ace/assets/css/jquery-ui.min.css" />
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap24.css" />
+    <style>
+        [v-cloak]{
+            display: none!important
+        }
+        .btnshow {
+            display: block!important;
+        }
+
+        .btnhide {
+            display: none!important;
+        }
+       
+    </style>
+</head>
+
+<body class="no-skin">
+
+    <% include ../../common/header.html %>
+
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+                        <div class="col-xs-12">
+                            <!-- 版本号大于1.0 时 dialog begin-->
+
+                        </div>
+                        <!--版本信息窗-->
+                        <div class="modal" id="editioninfo" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static" data-backdrop="static">
+                            <div class="modal-dialog" style="min-width:800px;">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">版本信息</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <table id="simple" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-1">年月</th>
+                                            <th class="center col-1">版本</th>
+                                            <th class="center col-1">调整产品</th>
+                                            <th class="center col-1">调整渠道</th>
+                                            <th class="center col-1">渠道名称</th>
+                                            <th class="center col-1">认购费调整说明</th>
+                                            <th class="center col-1">申购费调整说明</th>
+                                            <th class="center col-1">赎回费调整说明</th>
+                                            <th class="center col-1">调整人</th>
+                                            <th class="center col-1">调整时间</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="(item, index) in editioninfo" :key="index">
+                                            <td class="center col-md-1" v-text="item.ymonth"></td>
+                                            <template v-if="feedbackgo==false">
+                                                <td class="center col-md-1" >
+                                                    <a href="javascript:;" v-text="item.edition"  @click="dialogSend(item)"></a></td>
+                                            </template>
+                                            <template v-else>
+                                                <td class="center col-md-1" >
+                                                    <a href="javascript:;"  v-text="item.edition" ></a></td>
+                                            </template>
+                                            <td class="center col-md-1" v-text="item.fundnm"></td>
+                                            <td class="center col-md-1" v-text="item.branchcode"></td>
+                                            <td class="center col-md-1" v-text="item.branchnm"></td>
+                                            <td class="center col-md-1" v-text="item.subscriberemark"></td>
+                                            <td class="center col-md-1" v-text="item.buyremark"></td>
+                                            <td class="center col-md-1" v-text="item.redeemremark"></td>
+                                            <td class="center col-md-1" v-text="item.operater"></td>
+                                            <td class="center col-md-1" text="item.checktime">{{item.checktime | time}}</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--信息提示弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DIALOG ENDS -->
+                        <div class="form-inline" style="padding: 10px 0;">
+                            <label class="control-label">基金名称:</label>
+                            <!--产品名称-->
+                            <div class="form-group">
+                                <input type="text" v-model.trim='fundnm' />
+                            </div>
+                            <label class="control-label">市行名称:</label>
+                            <!--渠道名称-->
+                            <div class="form-group">
+                                <input type="text" v-model.trim='branchnm' />
+                            </div>
+                            <div class="form-group">
+                                <input type="button" class="btn btn-sm btn-primary right" value="查询" @click='query'>
+                            </div>
+
+                            <div class="form-group pull-right" v-cloak>
+
+                                <div class="form-group right">
+                                    <input type="button" class="btn btn-sm btn-danger right" value="对比无误" @click='check'
+                                        v-show='feedbackgo=="2"&status=="N"' v-if="xiaohui">
+                                </div>
+
+                                <div class="form-group right">
+                                    <input type="button" class="btn btn-sm btn-primary right" value="导出汇总" @click='download("month")'>
+                                </div>
+
+                                <div class="form-group right" v-show='feedbackgo!=2'>
+                                    <input type="button" class="btn btn-sm btn-primary right" value="导出明细" @click='download("days")' >
+                                </div>
+
+                            </div>
+
+                            <div class="form-group pull-right" style="padding-right: 3px;" v-cloak v-show="changeStatus">
+
+                                <div class="form-group " v-show='feedbackgo!=2'>
+                                    <input type="button" class="btn btn-sm btn-primary right" value="保存" @click='keepOrReview(1)'>
+                                </div>
+
+                                <div class="form-group " v-show='feedbackgo!=2'>
+                                    <input type="button" class="btn btn-sm btn-primary right" value="复核通过" @click='keepOrReview(2)'>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="form-inline" style="padding: 10px 0;">
+                            <label class="control-label">复核说明:</label>
+                            <div class="form-group">
+                                <template v-if="changeStatus">
+                                    <input type="text" class="input-xxlarge" v-model="remark" key="1" />
+                                </template>
+                                <template v-else>
+                                    <input type="text" class="input-xxlarge" readonly  v-model="remark" key="2" />
+                                </template>
+                            </div>
+                            <div class="form-group " style="padding-left: 10px">
+                                <span> 复核人：</span> <span v-text='operater'></span> <span v-text="checktime"></span>
+                            </div>
+                        </div>
+                        <div class="table-header">
+                            <%= cpage %>--表格数据
+                        </div>
+                        <!--分页器和快速查询-->
+                        <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                            <div class="col-xs-6">
+                                <div class="dataTables_length" id="dynamic-table_length">
+                                    <label>每页显示</label>
+                                    <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                        <option value="200">200</option>
+                                        <option value="500">500</option>
+                                        <option value="800">800</option>
+                                    </select>
+                                    <label>条</label>
+                                </div>
+                            </div>
+                            <div class="col-xs-6">
+                                <div class="dataTables_filter">
+                                    <label>快速查询:</label>
+                                    <input type="text" class="input-sm" v-model="condition">
+                                </div>
+                            </div>
+                        </div>
+                        <!--数据表-->
+                        <table id="simple-table" class="table table-bordered table-hover dataTable">
+                            <thead>
+                                <tr>
+                                    <th class="center">年月</th>
+                                    <th class="center">网点号</th>
+                                    <th class="center">市行名称</th>
+                                    <th class="center">基金代码</th>
+                                    <th class="center">基金名称</th>
+                                    <th class="center">认购金额</th>
+                                    <th class="center">分成</th>
+                                    <th class="center">认购费（实付）</th>
+                                    <th class="center">申购金额</th>
+                                    <th class="center">分成</th>
+                                    <th class="center">申购费（实付）</th>
+                                    <th class="center">赎回金额</th>
+                                    <th class="center">分成</th>
+                                    <th class="center">赎回费（实付）</th>
+                                    <th class="center">交易费合计</th>
+                                    <th class="center">尾随佣金</th>
+                                    <th class="center">销售服务费</th>
+                                    <th class="center">操作</th>
+                                    <th class="center">版本</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="viewData.length>0">
+                                <tr v-for="(item, index) in viewData" :key="index">
+                                    <td class="center" v-text='item.ymonth'></td><!--年月  -->
+                                    <td class="center" v-text='item.branchcode'></td><!-- 网点号 -->
+                                    <td class=" col-xs-1" v-text='item.branchnm' style="white-space:nowrap"></td> <!-- 市行名称 -->
+                                    <td class="center" v-text='item.fundid'></td><!-- 基金代码 -->
+                                    <td class="center" v-text='item.fundnm'></td><!-- 基金名称 -->
+                                    <td class="" v-text='item.subscribeamt ' style="text-align:right"></td><!-- 认购金额 -->
+                                    <td class=""  v-text='item.fundnm=="小计"?"-":item.fundnm=="总计"?"-":item.subscriberate+"%"' style="text-align:right"></td><!-- 分成 -->
+                                    <td class="" v-text='item.subscribereal' style="text-align:right"></td><!-- 认购费（实付） -->
+                                    <td class="" v-text='item.buyamt ' style="text-align:right"></td><!-- 申购金额 -->
+                                    <td class="" v-text='item.fundnm=="小计"?"-":item.fundnm=="总计"?"-":item.buyrate+"%"' style="text-align:right"></td><!-- 分成 -->
+                                    <td class="" v-text='item.buyreal' style="text-align:right"></td><!-- 申购费（实付） -->
+                                    <td class="" v-text='item.redeemamt' style="text-align:right"></td><!-- 赎回金额 -->
+                                    <td class="" v-text='item.fundnm=="小计"?"-":item.fundnm=="总计"?"-":item.redeemrate+"%"' style="text-align:right"></td><!-- 分成 -->
+                                    <td class="" v-text='item.redeemreal' style="text-align:right"></td><!-- 赎回费（实付） -->
+                                    <td class="" v-text='item.totalfare' style="text-align:right"></td><!-- 交易费合计 -->
+                                    <td class="" v-text='item.tailfarereal' style="text-align:right"></td><!-- 尾随佣金 -->
+                                    <td class="" v-text='item.servicefarereal ' style="text-align:right"></td><!-- 销售服务费 -->
+                                    <td class="center " style="min-width: 50px;"><!-- 操作 -->
+                                        <template v-if="item.fundnm!='小计'">
+                                            <template v-if="item.status=='S'">
+                                                <template v-if="feedbackgo==false">
+                                                    <a href="javascript:;" @click.stop.prevent="sendGoTo(1,item.branchcode,item.fundid)" v-show="index!=viewData.length-1" >查看</a>
+                                                </template>
+                                                <template v-else>
+                                                    <a href="javascript:;"  v-show="index!=viewData.length-1" ></a>
+                                                </template>
+                                            </template>
+                                            <template v-else>
+                                                <template v-if="feedbackgo==false">
+                                                    <a href="javascript:;" @click.stop.prevent="sendGoTo(3,item.branchcode,item.fundid)" v-show="index!=viewData.length-1" style="color:red">调整</a>
+                                                </template>
+                                                <template v-else>
+                                                    <a href="javascript:;"  v-show="index!=viewData.length-1" style="color:red"></a>
+                                                </template>
+                                                
+                                            </template>
+                                        </template>
+                                        <template v-else>
+
+                                        </template>
+                                    </td>
+                                    <td class="center"><!-- 版本 -->
+                                        <template v-if="item.edition!='1.0'">
+                                            <a @click.stop.prevent="getEditionHis(item.fundid,item.branchcode)" href="javascript:;"
+                                                :data-index="index" v-text="item.edition"></a>
+                                        </template>
+                                        <template v-else>
+                                            {{item.edition}}
+                                        </template>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'没有数据'" colspan="19"></td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                        <!--底部页码-->
+                        <div v-if="viewData.length>0" class="row" style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                            <div class="col-xs-2">
+                                <div class="dataTables_info" v-text="'共 '+viewData.length+' 条'"></div>
+                            </div>
+                            <div class="col-xs-10">
+                                <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                    <ul class="pagination">
+                                        <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                            @click="prev">
+                                            <a href="javascript:;" v-text="'上一页'"></a>
+                                        </li>
+                                        <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                            v-for="value in middleData.length" @click="changeIndex(value)">
+                                            <a href="javascript:;" v-text="value"></a>
+                                        </li>
+                                        <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                            @click="next">
+                                            <a href="javascript:;" v-text="'下一页'"></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- PAGE CONTENT ENDS -->
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+
+    <% include ../../common/footer.html %>
+
+    </div><!-- /.main-container -->
+
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+
+    <!-- <script src="/ace/assets/js/jquery-ui.custom.min.js"></script>
+    <script src="/ace/assets/js/jquery.ui.touch-punch.min.js"></script>
+    <script src="/ace/assets/js/markdown.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-markdown.min.js"></script>
+    <script src="/ace/assets/js/spinbox.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datepicker.min.js"></script>
+    <script src="/ace/assets/js/autosize.min.js"></script>
+    <script src="/ace/assets/js/jquery.inputlimiter.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/js/lib/zh-cn.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script> -->
+    <script src="/ace/assets/js/bootstrap-datepicker.min.js"></script>
+    <script src="/js/thirdPartyOperation/expenseMgmt/transactionReview.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache,must-revalidate">
+<meta http-equiv="expires" content="0">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datepicker3.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap24.css"/>
+    <style>
+        .show {
+            display: none;
+        }
+
+        .hide {
+            display: block;
+        }
+
+        [v-cloak] {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../left-menu.html %>
+    <div class="main-content">
+
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!-- 公用 提示信息弹窗-->
+                        <div class="modal" id="info"  tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 确认生成清单 提示信息弹窗-->
+                        <div class="modal" id="createRemid" style="top: 30%" tabindex="-1" role="dialog"
+                             aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm"
+                                                @click="newCreateCheck" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--  暂停导出 弹窗-->
+                        <div class="modal" id="pedia" style="top: 30%" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h5 style="text-indent:2em">
+                                            选中任务将 暂停/ 恢复 执行导出操作</h5>
+                                        <h5 style="text-align: center">请确认，是否要执行该操作？</h5>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm"
+                                                @click="pauseExport" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 暂停上传 弹窗-->
+                        <div class="modal" id="pudia" style="top: 30%" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h5 style="text-indent:2em">
+                                            选中任务将 暂停 / 恢复 执行上传操作</h5>
+                                        <h5 style="text-align: center">请确认，是否要执行该操作？</h5>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm"
+                                                @click="pauseUpload" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--初始化清单 弹窗-->
+                        <div class="modal" id="restartCh" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content" style="width:800px;height:550px">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">初始化清单</h4>
+                                    </div>
+
+                                    <div class="modal-body">
+
+                                        <div class="form-group" style="margin-left:10px;margin-bottom: 15px">
+                                            <label class="control-label">选中文件日期:</label>
+                                            <input type="text" readonly="readonly" v-model="today"/>
+                                        </div>
+                                        <div class="form-group" style="margin-left:10px;margin-bottom: 15px">
+                                            <label class="control-label">按文件类型:</label>
+                                            <input type="text" v-model="fileCodes" placeholder="多个filecode使用 , 分隔" style="width: 400px"/>
+                                        </div>
+
+                                        <div class="form-group" style="margin-left:10px;margin-bottom: 15px">
+                                            <label class="control-label">按文件渠道:</label>
+                                            <table class="table table-striped table-bordered table-hover dataTable"
+                                                   style="margin-bottom: 0;">
+                                                <thead>
+                                                <tr>
+                                                    <!--<th class="left">渠道</th>-->
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="branchTableData.length>0">
+                                                    <tr v-for="(item1,index) in branchTableData">
+                                                        <template v-for="item in item1">
+
+                                                            <td class="left col-md-1">
+                                                                <label class="pos-rel ">
+                                                                    <input type="checkbox" class="ace"
+                                                                           :value="item.branchCode"
+                                                                           name="checkBranch" v-model="item.isCheck"/>
+                                                                    <span class="lbl">&nbsp;&nbsp;&nbsp;{{item.branchCode}}&nbsp;&nbsp;&nbsp;{{item.branchNm}}</span>
+                                                                </label>
+                                                            </td>
+
+                                                        </template>
+                                                    </tr>
+                                                </template>
+                                                <template v-else>
+                                                    <tr>
+                                                        <td class="center" v-text="'没有数据'" colspan="2"></td>
+                                                    </tr>
+                                                </template>
+
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm"
+                                                    @click="showCreateRemind"
+                                                    data-dismiss="modal">重新生成
+                                            </button>
+                                            <button type="button" class="btn btn-primary btn-sm"
+                                                    data-dismiss="modal">取消
+                                            </button>
+                                        </p>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!--提示信息弹窗-->
+                        <div class="modal" id="info1"  style="top: 26%" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>数据获取失败</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal" id="gouxuan" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>请勾选</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm"
+                                                data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal" id="option" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <h5 style="text-indent:2em">
+                                            当选择人工立即执行操作时，系统将不在检查前置和后置条件，直接立即执行导入或导出操作，已经被导入或导出的文件会被再次执行。</h5>
+                                        <h5 style="text-align: center">请确认，是否要执行该操作？</h5>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm"
+                                                @click="breaksimplement" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal" id="syst" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close cha" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <h5 style="text-indent:2em">当已导入或导出的文件状态被系统重置后，系统在下次轮询时，会再次执行导入或导出操作。</h5>
+                                        <h5 style="text-align: center">请确认，是否要执行该操作？</h5>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm"
+                                                @click="breaksimplements">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal" id="chu" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <h5 style="text-indent:2em">当日 (<input type="text" readonly v-model="today"
+                                                                               style="width:75px;border: none ">)
+                                            任务清单被重新初始化时，已执行过导入或导出的文件会被再次执行，请谨慎操作。</h5>
+                                        <h5 style="text-align: center">请确认，是否要执行该操作？</h5>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm"
+                                                @click="breaks">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--查看操作日志-->
+                        <div class="modal" id="create" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog" style="width: 1000px;">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">操作日志</h4>
+                                    </div>
+                                    <div class="modal-body">
+
+                                        <div class="table-header">
+                                            操作日志
+                                        </div>
+                                        <!--分页器和快速查询-->
+                                        <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                            <div class="col-xs-6">
+                                                <div class="dataTables_length" id="dynamic-table_length_2">
+                                                    <label>每页显示</label>
+                                                    <select class="input-sm" name="pageMaxNum2" v-model="pageMaxNum2">
+                                                        <option value="10">10</option>
+                                                        <option value="20">20</option>
+                                                        <option value="50">50</option>
+                                                    </select>
+                                                    <label>条</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-xs-6">
+                                                <div id="dynamic-table_filter_2" class="dataTables_filter">
+                                                    <label>快速查询:</label>
+                                                    <input type="text" class="input-sm" v-model="condition2">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!--数据表-->
+                                        <table class="table table-bordered table-hover dataTable">
+                                            <thead>
+                                            <tr>
+                                                <th class="center">操作人</th>
+                                                <th class="center">操作时间</th>
+                                                <th class="center">渠道</th>
+                                                <th class="center">操作文件</th>
+                                                <th class="center">文件日期</th>
+                                                <th class="center">操作说明</th>
+                                                <th class="center">操作结果</th>
+
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <template v-if="viewData2.length>0">
+                                                <tr v-for="(item,index) in viewData2" :key="index">
+                                                    <td class="center" v-text="item.operator"></td>
+                                                    <td class="center" text="item.operateTime">{{item.operateTime |
+                                                        time}}
+                                                    </td>
+                                                    <td class="center" v-text="item.partnerName"></td>
+                                                    <td class="center" v-text="item.fileDesc"></td>
+                                                    <td class="center" v-text="item.expDate"></td>
+                                                    <td class="center" v-text="item.instruction"
+                                                        style="font-weight:bold"></td>
+                                                    <td class="center" v-text="item.retCode"></td>
+
+                                                </tr>
+                                            </template>
+                                            <template v-else>
+                                                <tr>
+                                                    <td class="center" v-text="'没有数据'" colspan="10"></td>
+                                                </tr>
+                                            </template>
+                                            </tbody>
+                                        </table>
+                                        <!--底部页码-->
+                                        <div v-if="viewData2.length>0" class="row"
+                                             style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                            <div class="col-xs-2">
+                                                <div class="dataTables_info" v-text="'共 '+middleData2.length+' 页'"></div>
+                                            </div>
+                                            <div class="col-xs-10">
+                                                <div class="dataTables_paginate paging_simple_numbers"
+                                                     id="dynamic-table_paginate_2">
+                                                    <ul class="pagination">
+                                                        <li :class="currentIndex2==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                            @click="prev2">
+                                                            <a href="javascript:;" v-text="'上一页'"></a>
+                                                        </li>
+                                                        <li :class="value==currentIndex2+1?'paginate_button active':'paginate_button'"
+                                                            v-for="value in middleData2.length"
+                                                            @click="changeIndex2(value)">
+                                                            <a href="javascript:;" v-text="value"></a>
+                                                        </li>
+                                                        <li :class="currentIndex2==middleData2.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                            @click="next2">
+                                                            <a href="javascript:;" v-text="'下一页'"></a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- PAGE CONTENT BEGINS -->
+                        <form class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group">
+                                <label class="control-label">文件日期:</label>
+                                <div class="input-group">
+                                    <input type="text" id="sendtime" class="form-control date-picker"
+                                           v-model="today">
+                                    <span class="input-group-addon">
+                                            <i class="fa fa-calendar bigger-110"></i>
+                                        </span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">渠道名称:</label>
+                                <input type="text" v-model="branchnm">
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">文件描述:</label>
+                                <input type="text" v-model="fileDesc">
+                            </div>
+
+                            <div class="form-group pull-right">
+                                <input type="button" class="btn btn-sm btn-primary" value="查询" @click="search">
+                            </div>
+                        </form>
+                        <div class="form-inline " style="padding-bottom: 40px">
+                            <div class="form-group pull-left">
+                                <input type="button" class=" btn-sm  right" value="初始化当日对账清单" @click="showresetTask"
+                                       style="background-color:darkgoldenrod;border: none;padding: 5px 10px;font-size: 12px;line-height: 2;color: white;border-radius:0 ">
+                            </div>
+                            <div class="form-group pull-right" v-cloak>
+
+
+                                <div class="form-group right">
+                                    <input type="button" class="btn btn-sm btn-primary right" value="系统执行"
+                                           @click="showimplements">
+                                </div>
+                                <div class="form-group right">
+                                    <input type="button" class="btn btn-sm btn-primary right" value="人工执行"
+                                           @click="showimplement">
+                                </div>
+                                <div class="form-group right">
+                                    <input type="button" class="btn btn-sm btn-primary right" value="导出暂停/恢复"
+                                           @click="showPauseExport">
+                                </div>
+                                <div class="form-group right">
+                                    <input type="button" class="btn btn-sm btn-primary right" value="上传暂停/恢复"
+                                           @click="showPauseUpload">
+                                </div>
+                                <div class="form-group right">
+                                    <input type="button" class="btn btn-sm btn-primary right" value="操作日志"
+                                           @click="record">
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="table-header">
+                            <%= cpage %>--表格数据
+                        </div>
+                        <!--分页器和快速查询-->
+                        <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                            <div class="col-xs-6">
+                                <div class="dataTables_length" id="dynamic-table_length">
+                                    <label>每页显示</label>
+                                    <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                    <label>条</label>
+                                </div>
+                            </div>
+                            <div class="col-xs-6">
+                                <div id="dynamic-table_filter" class="dataTables_filter">
+                                    <label>快速查询:</label>
+                                    <input type="text" class="input-sm" v-model="condition">
+                                </div>
+                            </div>
+                        </div>
+                        <!--数据表-->
+                        <table id="simple-table" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center">勾选
+                                    <!--   <label class="pos-rel">
+                                           <input type="checkbox" class="ace" :checked="allCheck" @click="selectAll"/>
+                                           <span class="lbl"></span>
+                                       </label>-->
+                                </th>
+                                <th class="center">序号</th>
+                                <th class="center">渠道名称</th>
+                                <th class="center">文件类型</th>
+                                <th class="center">文件描述</th>
+                                <th class="center">类型</th>
+                                <th class="center">入出状态</th>
+                                <th class="center">计划时间</th>
+                                <th class="center">实际时间</th>
+                                <th class="center">后置状态</th>
+                                <th class="center">是否上传</th>
+                                <th class="center">上传状态</th>
+                                <th class="center">上传时间</th>
+                                <th class="center">执行信息</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <template v-if="viewData.length>0">
+                                <tr v-for="(item,index) in viewData" :key="index" :class="item.check?'active':''">
+
+                                    <td class="center" style="white-space:nowrap">
+                                        <label class="pos-rel">
+                                            <input type="checkbox" class="ace " name="seqnos" :checked="item.check" @click="add(index)"/>
+                                            <span class="lbl"></span>
+                                        </label>
+                                    </td>
+
+                                    <td class="center" v-text="index+1"></td>
+                                    <td class="center col-md-1" style="white-space:nowrap">{{item.branchCode}}&nbsp;&nbsp;&nbsp;{{item.partnerName}}</td>
+                                    <td class="center col-md-1" v-text="item.fileCode"></td>
+                                    <td class="center col-md-1" v-text="item.fileDesc"style="white-space:nowrap"></td>
+                                    <td class="center" text="item.ioType">
+                                        <template v-if="item.ioType=='I'">
+                                            <span v-text="'导入'"></span>
+                                        </template>
+                                        <template v-else>
+                                            <span v-text="'导出'"></span>
+                                        </template>
+                                    </td>
+                                    <!--<td class="center" style="color: red;font-weight: bold">{{item.expSt | expStatus}}</td>-->
+                                    <td class="center">
+                                        <template v-if="item.expSt=='P'">
+                                            <span style="color: red;">{{item.expSt | expStatus}}</span>
+                                        </template>
+                                        <template v-else-if="item.expSt=='R'">
+                                            <span style="color: green;font-weight: bold">{{item.expSt | expStatus}}</span>
+                                        </template>
+                                        <template v-else-if="item.expSt=='E'">
+                                            <span style="color: red;font-weight: bold">{{item.expSt | expStatus}}</span>
+                                        </template>
+                                        <template v-else>
+                                            <span>{{item.expSt | expStatus}}</span>
+                                        </template>
+                                    </td>
+                                    <td class="center col-md-1"
+                                        style="white-space:nowrap">{{item.expplantime}}
+                                    </td>
+                                    <td class="center col-md-1"
+                                        style="white-space:nowrap">{{item.expDateS}}&nbsp;&nbsp;&nbsp;{{item.expTimeS}}
+                                    </td>
+
+                                    <!--<td class="center" >{{item.chkStEnd | chkStatusEnd}}</td>-->
+                                    <td class="center" >
+                                        <template v-if="item.chkStEnd=='E'">
+                                            <span style="color: red;font-weight: bold">{{item.chkStEnd | chkStatusEnd}}</span>
+                                        </template>
+                                        <template v-else>
+                                            <span>{{item.chkStEnd | chkStatusEnd}}</span>
+                                        </template>
+                                    </td>
+
+
+                                    <td class="center">
+                                        <template v-if="item.ioType=='I'">
+                                            <span v-text="">-</span>
+                                        </template>
+                                        <template v-else>
+                                            <span>{{item.isUpload | isUploadStatus}}</span>
+                                        </template>
+                                    </td>
+                                    <td class="center" style="white-space:nowrap">
+                                        <template v-if="item.uploadSt=='P'">
+                                            <span style="color: red;">{{item.uploadSt | uploadStatus}}</span>
+                                        </template>
+                                        <template v-else-if="item.uploadSt=='R'">
+                                            <span style="color: green;">{{item.uploadSt | uploadStatus}}</span>
+                                        </template>
+                                        <template v-else-if="item.uploadSt=='F'">
+                                            <span style="color: red;font-weight: bold">{{item.uploadSt | uploadStatus}}</span>
+                                        </template>
+                                        <template v-else>
+                                            <span>{{item.uploadSt | uploadStatus}}</span>
+                                        </template>
+                                    </td>
+
+                                    <td class="center col-md-1" v-text="">{{item.uploadTimeS | time}}</td>
+                                    <td class="center col-md-1" v-text="item.expRetMsg"></td>
+
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'没有数据'" colspan="15"></td>
+                                </tr>
+                            </template>
+                            </tbody>
+
+                        </table>
+                        <!--底部页码-->
+                        <div v-if="viewData.length>0" class="row"
+                             style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                            <div class="col-xs-2">
+                                <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                            </div>
+                            <div class="col-xs-10">
+                                <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                    <ul class="pagination">
+                                        <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                            @click="prev">
+                                            <a href="javascript:;" v-text="'上一页'"></a>
+                                        </li>
+                                        <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                            v-for="value in middleData.length" @click="changeIndex(value)">
+                                            <a href="javascript:;" v-text="value"></a>
+                                        </li>
+                                        <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                            @click="next">
+                                            <a href="javascript:;" v-text="'下一页'"></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- PAGE CONTENT ENDS -->
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+
+            </div><!-- /.page-content -->
+        </div>
+
+
+    </div><!-- /.main-content -->
+
+    <% include ../../common/footer.html %>
+
+</div><!-- /.main-container -->
+
+<% include ../../common/basic-scripts.html %>
+
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<!-- inline scripts related to this page -->
+<script src="/ace/assets/js/jquery-ui.custom.min.js"></script>
+<script src="/ace/assets/js/jquery.ui.touch-punch.min.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/ace/assets/js/spinbox.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datepicker.min.js"></script>
+<script src="/ace/assets/js/autosize.min.js"></script>
+<script src="/ace/assets/js/jquery.inputlimiter.min.js"></script>
+<script src="/ace/assets/js/jquery.maskedinput.min.js"></script>
+<script src="/ace/assets/js/markdown.min.js"></script>
+<script src="/ace/assets/js/bootstrap-markdown.min.js"></script>
+<script src="/ace/assets/js/jquery.hotkeys.index.min.js"></script>
+<script src="/ace/assets/js/bootstrap-wysiwyg.min.js"></script>
+<script src="/ace/assets/js/bootbox.js"></script>
+<script src="/js/thirdPartyOperation/common/richTextBox.js"></script>
+<script src="/js/thirdPartyOperation/channelMaintain/fileInteraction.js"></script>
+
+</body>
+
+</html>

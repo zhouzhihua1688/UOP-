@@ -1,0 +1,247 @@
+Vue.component('selectChosen', {
+    template: `
+        <select class="chosen-select form-control" ref="sele">
+                <option value="">请选择</option>
+                <option :value="item[keyName[0]]"
+                 v-for="(item,index) in list">
+                 {{item[keyName[0]]}}-{{item[keyName[1]]}}
+                </option>
+        </select>
+        `,
+    model: {
+        prop: "value",
+        event: "change",
+    },
+    props: {
+        value: {
+            validator: () => true,
+        },
+        list: {
+            type: [Object, Array],
+            default: () => [],
+        },
+        keyName:{
+            type:Array,
+            default:()=> ['','']
+        }
+    },
+    watch: {
+        value(newval) {
+            $(this.$refs.sele).val(newval).trigger("chosen:updated");
+        }
+    },
+    mounted() {
+        $(this.$refs.sele).chosen({
+            search_contains: true,
+            no_results_text: '未找到',
+            disable_search_threshold: 6,
+            width: '168px'
+        });
+        $(this.$refs.sele).on('change', function (e, params) {
+            this.$emit('change', params ? params.selected : '')
+        }.bind(this));
+    },
+    updated() {
+        $(this.$refs.sele).trigger("chosen:updated");
+    },
+})
+
+new Vue({
+    el: '#content',
+    data: {
+        // 查询
+        groupId:'',
+        // 主页面相关数据
+        tableData: [],
+        fundGroupList:[],
+		shiftTypeList:[],
+        diaMsg:'',
+        //主表格分页数据
+        currentIndex: 1,
+        maxSpace: 5,
+        totalPage: 0,
+        pageMaxNum: 10,
+        loadingStatus:'暂无数据',
+		baseUrl:'/investmentMgmt/investmentStrategy/targetProfitStrategyRecord'
+    },
+    mounted: function () {
+        var dialogs = ['info', 'del'];
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        this.getTableData();
+        this.fundGroup();
+        this.getShiftTypeList();
+    },
+    
+    watch: {
+        pageMaxNum: function () {
+            this.currentIndex = 1;
+            this.getTableData();
+        },
+        groupId:function(){
+            this.currentIndex = 1;
+        }
+    },
+    methods: {
+        moment,
+        getTableData: function () {
+            var params = {};
+            params.pageNo = this.currentIndex;
+            this.pageMaxNum&&(params.pageSize = this.pageMaxNum);
+            this.groupId&&(params.groupId = this.groupId);
+            this.loadingStatus = '数据获取中...';
+            $.post({
+                url: this.baseUrl+'/getTableData.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        if(result.data.length>0){
+                            this.tableData = result.data;
+                        }else{
+                            this.tableData = [];
+                            this.loadingStatus = '没有数据';
+                        }
+                    } else {
+                        this.tableData = [];
+                        this.currentIndex = 0;
+                        this.totalPage = 0;
+                        this.showDialog('', 'info', false, result.msg);
+                        this.loadingStatus = '没有数据';
+                    }
+                }.bind(this)
+            });
+        },
+        fundGroup: function () {
+            $.post({
+                url: this.baseUrl+'/fundGroups.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        var filterList=[];
+                        filterList=result.data.body.filter((item)=>{
+                            return item.fundgroupType=='13'||item.fundgroupType=='14'||item.fundgroupType=='15'||item.fundgroupType=='16'||item.fundgroupType=='17'
+                        });
+                        this.fundGroupList = filterList;
+                    }
+                }.bind(this)
+            });
+        },
+		getShiftTypeList: function () {
+            $.post({
+                url: this.baseUrl+'/getShiftTypeList.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        this.shiftTypeList = result.data;
+                    }
+                }.bind(this)
+            });
+        },
+		// 发车系列翻译
+		transferTableData:function(val,type){
+			var obj;
+			obj=this.shiftTypeList.find(function(item){
+				return item.shiftType == val
+			})
+			if(obj){
+				return obj[type]
+			}else{
+				return val
+			}
+		},
+		transferFundInfo:function(val){
+			var obj;
+			obj=this.shiftTypeList.find(function(item){
+				return item.groupId == val
+			})
+			if(obj){
+				return obj.groupName
+			}else{
+				return val
+			}
+		},
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            } else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            } else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            } else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            } else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        //主表格分页方法
+        prev: function () {
+            if (this.currentIndex <= 1) {
+                return;
+            }
+            this.currentIndex--;
+            this.getTableData()
+            // this.getTableData(this.currentIndex - 1);
+        },
+        next: function () {
+            // if (this.currentIndex >= this.totalPage - 1) {
+            //     return;
+            // }
+            // this.getTableData(this.currentIndex + 1);
+            if(this.tableData.length<this.pageMaxNum){
+                return
+            }
+            this.currentIndex++
+            this.getTableData()
+        },
+        changeIndex: function (index) {
+            this.getTableData(index - 1);
+        },
+        toFirst: function () {
+            this.getTableData(0);
+        },
+        toLast: function () {
+            this.getTableData(this.totalPage - 1);
+        },
+    },
+    components:{
+        datePicker: VueBootstrapDatetimePicker,
+    },
+	filters:{
+		timeFormat:function(val){
+			if(val){
+				return moment(val).format('YYYY-MM-DD')
+			}else{
+				return '-'
+			}
+		},
+		numberFormat:function(val){
+			if(val||val===0){
+				return val+'%'
+			}else{
+				return '-'
+			}
+		}
+	}
+});
+

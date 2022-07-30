@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        .cover {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(9, 10, 10, 0.527);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!-- loading动画 -->
+                <div class="cover" v-show="loadingShow" style="z-index: 1999;display: none;">
+                    <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                </div><!-- loading动画 -->
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--删除弹窗-->
+                <div class="modal" id="delete" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <p>
+                            <div class="modal-body text-center">
+                                <h4>是否确认删除?</h4>
+                            </div>
+                            </p>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="deleteData">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--新增弹窗-->
+                <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title inline">模板操作</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding: 0 12px;">
+                                    <div class="form-group">
+                                        <label class="control-label">
+                                            <label class="control-label" style="width: 70px;">模板名称:</label>
+                                            <input type="text" placeholder="必填" v-model.trim="diaTemplateName">
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label">
+                                            <label class="control-label" style="width: 70px;">消息渠道:</label>
+                                            <select class="form-control" style="width: 170px;display: inline"
+                                                    v-model="diaChannelType" :disabled="!!updateId">
+                                                <option value="1">App站内信</option>
+                                                <option value="2">App-push</option>
+                                                <option value="3">短信</option>
+                                                <option value="4">微信</option>
+                                                <option value="5">微信高端</option>
+                                                <option value="6">定投公众号</option>
+                                                <option value="7">IM消息</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                    <div class="form-group" v-show="diaChannelType==1">
+                                        <label class="control-label" style="width: 70px;">模板摘要:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaTemplateExplain">
+                                    </div>
+                                    <div class="form-group" v-show="diaChannelType==1||diaChannelType==2">
+                                        <label class="control-label" style="width: 70px;">标题:</label>
+                                        <input type="text" style="width: 80%;" :placeholder="diaChannelType==2?'必填,客户端展示,请勿随意填写':'必填'" v-model.trim="diaTitle">
+                                    </div>
+                                    <div class="form-group" v-show="diaChannelType==4">
+                                        <label class="control-label" style="width: 70px;">模板选择:</label>
+                                        <select class="form-control" style="width: 170px;display: inline"
+                                                v-model="diaWXType">
+                                            <option value="servive">服务状态通知</option>
+                                            <option value="trade">交易通知</option>
+                                            <option value="monthBill">月度对账单提醒</option>
+                                            <option value="investment">投顾服务通知</option>
+                                            <option value="navUpdate">净值更新</option>
+                                            <option value="notice">活动通知</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" v-show="diaChannelType==5">
+                                        <label class="control-label" style="width: 70px;">模板选择:</label>
+                                        <select class="form-control" style="width: 170px;display: inline"
+                                                v-model="diaWXHighType">
+                                            <option value="highTrade">交易通知</option>
+                                            <option value="highServive">服务状态通知</option>
+                                            <option value="highInvestment">投顾服务通知</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" v-show="diaChannelType==6">
+                                        <label class="control-label" style="width: 70px;">模板选择:</label>
+                                        <select class="form-control" style="width: 170px;display: inline"
+                                                v-model="diaOfficialAccountType">
+                                            <option value="report">报表通知</option>
+                                            <option value="id">身份认证审核通知</option>
+                                            <option value="review">审核结果通知</option>
+                                            <option value="unbind">账户解绑通知</option>
+                                        </select>
+                                    </div>
+                                    <!--微信模板: 服务状态通知-->
+                                    <div class="form-group" v-show="isWXtype1">
+                                        <label class="control-label" style="width: 70px;">欢迎语:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData1.text1">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                         v-model.trim="diaWXData1.textColor1" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype1">
+                                        <label class="control-label" style="width: 70px;">服务名称:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData1.text2">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData1.textColor2" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype1">
+                                        <label class="control-label" style="width: 70px;">服务状态:</label>
+                                        <input type="text" style="width: 58%;" placeholder="非必填"
+                                               v-model.trim="diaWXData1.text3">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData1.textColor3" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype1">
+                                        <label class="control-label" style="width: 70px;">问题详情:</label>
+                                        <input type="text" style="width: 58%;" placeholder="非必填"
+                                               v-model.trim="diaWXData1.text4">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData1.textColor4" :placeholder="initTextColor">
+                                        <span @click="showWXContent"><a href="javascript:;">预览</a></span>
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype1">
+                                        <label class="control-label" style="width: 70px;">备注:</label>
+                                        <textarea cols="52" rows="3" style="vertical-align:top;"
+                                                  v-model.trim="diaWXData1.text5"></textarea>
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype1">
+                                        <label class="control-label" style="width: 70px;">备注颜色:</label>
+                                        <input type="text" style="width: 80%;"  maxlength="7" :placeholder="initTextColor"
+                                               v-model.trim="diaWXData1.textColor5">
+                                    </div>
+                                    <!--微信模板: 交易通知-->
+                                    <div class="form-group" v-show="isWXtype2">
+                                        <label class="control-label" style="width: 70px;">欢迎语:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData2.text1">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData2.textColor1" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype2">
+                                        <label class="control-label" style="width: 70px;">业务:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData2.text2">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData2.textColor2" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype2">
+                                        <label class="control-label" style="width: 70px;">金额:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData2.text3">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData2.textColor3" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype2">
+                                        <label class="control-label" style="width: 70px;">状态:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData2.text4">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData2.textColor4" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype2">
+                                        <label class="control-label" style="width: 70px;">时间:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData2.text5">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData2.textColor5" :placeholder="initTextColor">
+                                        <span @click="showWXContent"><a href="javascript:;">预览</a></span>
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype2">
+                                        <label class="control-label" style="width: 70px;">备注:</label>
+                                        <textarea cols="52" rows="3" style="vertical-align:top;"
+                                                  v-model.trim="diaWXData2.text6"></textarea>
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype2">
+                                        <label class="control-label" style="width: 70px;">备注颜色:</label>
+                                        <input type="text" style="width: 80%;"  maxlength="7" :placeholder="initTextColor"
+                                               v-model.trim="diaWXData2.textColor6">
+                                    </div>
+                                    <!--微信模板: 月度对账单提醒-->
+                                    <div class="form-group" v-show="isWXtype3">
+                                        <label class="control-label" style="width: 70px;">欢迎语:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData3.text1">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData3.textColor1" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype3">
+                                        <label class="control-label" style="width: 75px;">对账单日期:</label>
+                                        <input type="text" style="width: 56%;" placeholder="必填"
+                                               v-model.trim="diaWXData3.text2">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData3.textColor2" :placeholder="initTextColor">
+                                        <span @click="showWXContent"><a href="javascript:;">预览</a></span>
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype3">
+                                        <label class="control-label" style="width: 70px;">备注:</label>
+                                        <textarea cols="52" rows="3" style="vertical-align:top;"
+                                                  v-model.trim="diaWXData3.text3"></textarea>
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype3">
+                                        <label class="control-label" style="width: 70px;">备注颜色:</label>
+                                        <input type="text" style="width: 80%;"  maxlength="7" :placeholder="initTextColor"
+                                               v-model.trim="diaWXData3.textColor3">
+                                    </div>
+                                    <!--微信模板: 投顾服务通知-->
+                                    <div class="form-group" v-show="isWXtype4">
+                                        <label class="control-label" style="width: 70px;">欢迎语:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData4.text1">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData4.textColor1" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype4">
+                                        <label class="control-label" style="width: 70px;">服务名称:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData4.text2">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData4.textColor2" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype4">
+                                        <label class="control-label" style="width: 70px;">服务时间:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData4.text3">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData4.textColor3" :placeholder="initTextColor">
+                                        <span @click="showWXContent"><a href="javascript:;">预览</a></span>
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype4">
+                                        <label class="control-label" style="width: 70px;">备注:</label>
+                                        <textarea cols="52" rows="3" style="vertical-align:top;"
+                                                  v-model.trim="diaWXData4.text4"></textarea>
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype4">
+                                        <label class="control-label" style="width: 70px;">备注颜色:</label>
+                                        <input type="text" style="width: 80%;"  maxlength="7" :placeholder="initTextColor"
+                                               v-model.trim="diaWXData4.textColor4">
+                                    </div>
+                                    <!--微信模板: 净值更新-->
+                                    <div class="form-group" v-show="isWXtype5">
+                                        <label class="control-label" style="width: 70px;">欢迎语:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData5.text1">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData5.textColor1" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype5">
+                                        <label class="control-label" style="width: 70px;">净值日期:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData5.text2">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData5.textColor2" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype5">
+                                        <label class="control-label" style="width: 70px;">净值信息:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData5.text3">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                        v-model.trim="diaWXData5.textColor3" :placeholder="initTextColor">
+                                        <span @click="showWXContent"><a href="javascript:;">预览</a></span>
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype5">
+                                        <label class="control-label" style="width: 70px;">备注:</label>
+                                        <textarea cols="52" rows="3" style="vertical-align:top;"
+                                                  v-model.trim="diaWXData5.text4"></textarea>
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype5">
+                                        <label class="control-label" style="width: 70px;">备注颜色:</label>
+                                        <input type="text" style="width: 80%;"  maxlength="7" :placeholder="initTextColor"
+                                               v-model.trim="diaWXData5.textColor4">
+                                    </div>
+                                    <!--微信模板: 活动通知-->
+                                    <div class="form-group" v-show="isWXtype6">
+                                        <label class="control-label" style="width: 70px;">欢迎语:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData6.text1">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                               v-model.trim="diaWXData6.textColor1" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype6">
+                                        <label class="control-label" style="width: 70px;">活动名称:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData6.text2">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                               v-model.trim="diaWXData6.textColor2" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype6">
+                                        <label class="control-label" style="width: 70px;">账户昵称:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData6.text3">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                               v-model.trim="diaWXData6.textColor3" :placeholder="initTextColor">
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype6">
+                                        <label class="control-label" style="width: 70px;">申请时间:</label>
+                                        <input type="text" style="width: 58%;" placeholder="必填"
+                                               v-model.trim="diaWXData6.text4">
+                                        <label class="control-label" style="width: 35px;">颜色:</label>
+                                        <input type="text" style="width: 15%;" maxlength="7"
+                                               v-model.trim="diaWXData6.textColor4" :placeholder="initTextColor">
+                                        <span @click="showWXContent"><a href="javascript:;">预览</a></span>
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype6">
+                                        <label class="control-label" style="width: 70px;">备注:</label>
+                                        <textarea cols="52" rows="3" style="vertical-align:top;"
+                                                  v-model.trim="diaWXData6.text5"></textarea>
+                                    </div>
+                                    <div class="form-group" v-show="isWXtype6">
+                                        <label class="control-label" style="width: 70px;">备注颜色:</label>
+                                        <input type="text" style="width: 80%;"  maxlength="7" :placeholder="initTextColor"
+                                               v-model.trim="diaWXData6.textColor5">
+                                    </div>
+                                    <!--微信高端模板: 交易通知-->
+                                    <div class="form-group" v-show="isWXHighType1">
+                                        <label class="control-label" style="width: 70px;">欢迎语:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaWXHighData1.text1">
+                                    </div>
+                                    <div class="form-group" v-show="isWXHighType1">
+                                        <label class="control-label" style="width: 70px;">业务:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaWXHighData1.text2">
+                                    </div>
+                                    <div class="form-group" v-show="isWXHighType1">
+                                        <label class="control-label" style="width: 70px;">金额:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaWXHighData1.text3">
+                                    </div>
+                                    <div class="form-group" v-show="isWXHighType1">
+                                        <label class="control-label" style="width: 70px;">状态:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaWXHighData1.text4">
+                                    </div>
+                                    <div class="form-group" v-show="isWXHighType1">
+                                        <label class="control-label" style="width: 70px;">时间:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaWXHighData1.text5">
+                                        <span @click="showWXContent"><a href="javascript:;">预览</a></span>
+                                    </div>
+                                    <div class="form-group" v-show="isWXHighType1">
+                                        <label class="control-label" style="width: 70px;">备注:</label>
+                                        <textarea cols="52" rows="3" style="vertical-align:top;"
+                                                  v-model.trim="diaWXHighData1.text6"></textarea>
+                                    </div>
+                                    <!--微信高端模板: 服务状态通知-->
+                                    <div class="form-group" v-show="isWXHighType2">
+                                        <label class="control-label" style="width: 70px;">欢迎语:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaWXHighData2.text1">
+                                    </div>
+                                    <div class="form-group" v-show="isWXHighType2">
+                                        <label class="control-label" style="width: 70px;">服务名称:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaWXHighData2.text2">
+                                    </div>
+                                    <div class="form-group" v-show="isWXHighType2">
+                                        <label class="control-label" style="width: 70px;">服务状态:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaWXHighData2.text3">
+                                    </div>
+                                    <div class="form-group" v-show="isWXHighType2">
+                                        <label class="control-label" style="width: 70px;">问题详情:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaWXHighData2.text4">
+                                        <span @click="showWXContent"><a href="javascript:;">预览</a></span>
+                                    </div>
+                                    <div class="form-group" v-show="isWXHighType2">
+                                        <label class="control-label" style="width: 70px;">备注:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaWXHighData2.text5">
+                                    </div>
+                                    <!--微信高端模板: 顾投服务通知-->
+                                    <div class="form-group" v-show="isWXHighType3">
+                                        <label class="control-label" style="width: 70px;">欢迎语:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaWXHighData3.text1">
+                                    </div>
+                                    <div class="form-group" v-show="isWXHighType3">
+                                        <label class="control-label" style="width: 70px;">服务名称:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaWXHighData3.text2">
+                                    </div>
+                                    <div class="form-group" v-show="isWXHighType3">
+                                        <label class="control-label" style="width: 70px;">服务时间:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaWXHighData3.text3">
+                                        <span @click="showWXContent"><a href="javascript:;">预览</a></span>
+                                    </div>
+                                    <div class="form-group" v-show="isWXHighType3">
+                                        <label class="control-label" style="width: 70px;">备注:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaWXHighData3.text4">
+                                    </div>
+                                    <!--定投公众号模板: 报表通知-->
+                                    <div class="form-group" v-show="isOfficialAccount1">
+                                        <label class="control-label" style="width: 70px;">欢迎语:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaOfficialAccountData1.text1">
+                                    </div>
+                                    <div class="form-group" v-show="isOfficialAccount1">
+                                        <label class="control-label" style="width: 70px;">报表类型:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaOfficialAccountData1.text2">
+                                    </div>
+                                    <div class="form-group" v-show="isOfficialAccount1">
+                                        <label class="control-label" style="width: 70px;">统计日期:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaOfficialAccountData1.text3">
+                                        <span @click="showWXContent"><a href="javascript:;">预览</a></span>
+                                    </div>
+                                    <div class="form-group" v-show="isOfficialAccount1">
+                                        <label class="control-label" style="width: 70px;">备注:</label>
+                                        <input type="text" style="width: 80%;"
+                                               v-model.trim="diaOfficialAccountData1.text4">
+                                    </div>
+                                    <!--定投公众号模板: 身份认证审核通知-->
+                                    <div class="form-group" v-show="isOfficialAccount2">
+                                        <label class="control-label" style="width: 70px;">欢迎语:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaOfficialAccountData2.text1">
+                                    </div>
+                                    <div class="form-group" v-show="isOfficialAccount2">
+                                        <label class="control-label" style="width: 70px;">客户姓名:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaOfficialAccountData2.text2">
+                                    </div>
+                                    <div class="form-group" v-show="isOfficialAccount2">
+                                        <label class="control-label" style="width: 70px;">时间:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaOfficialAccountData2.text3">
+                                        <span @click="showWXContent"><a href="javascript:;">预览</a></span>
+                                    </div>
+                                    <div class="form-group" v-show="isOfficialAccount2">
+                                        <label class="control-label" style="width: 70px;">备注:</label>
+                                        <input type="text" style="width: 80%;"
+                                               v-model.trim="diaOfficialAccountData2.text4">
+                                    </div>
+                                    <!--定投公众号模板: 审核结果通知-->
+                                    <div class="form-group" v-show="isOfficialAccount3">
+                                        <label class="control-label" style="width: 70px;">欢迎语:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaOfficialAccountData3.text1">
+                                    </div>
+                                    <div class="form-group" v-show="isOfficialAccount3">
+                                        <label class="control-label" style="width: 70px;">审核结果:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaOfficialAccountData3.text2">
+                                    </div>
+                                    <div class="form-group" v-show="isOfficialAccount3">
+                                        <label class="control-label" style="width: 70px;">审核日期:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaOfficialAccountData3.text3">
+                                        <span @click="showWXContent"><a href="javascript:;">预览</a></span>
+                                    </div>
+                                    <div class="form-group" v-show="isOfficialAccount3">
+                                        <label class="control-label" style="width: 70px;">备注:</label>
+                                        <input type="text" style="width: 80%;"
+                                               v-model.trim="diaOfficialAccountData3.text4">
+                                    </div>
+                                    <!--定投公众号模板: 账户解绑通知-->
+                                    <div class="form-group" v-show="isOfficialAccount4">
+                                        <label class="control-label" style="width: 70px;">欢迎语:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaOfficialAccountData4.text1">
+                                    </div>
+                                    <div class="form-group" v-show="isOfficialAccount4">
+                                        <label class="control-label" style="width: 70px;">解除账户:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaOfficialAccountData4.text2">
+                                    </div>
+                                    <div class="form-group" v-show="isOfficialAccount4">
+                                        <label class="control-label" style="width: 70px;">解绑时间:</label>
+                                        <input type="text" style="width: 80%;" placeholder="必填"
+                                               v-model.trim="diaOfficialAccountData4.text3">
+                                        <span @click="showWXContent"><a href="javascript:;">预览</a></span>
+                                    </div>
+                                    <div class="form-group" v-show="isOfficialAccount4">
+                                        <label class="control-label" style="width: 70px;">备注:</label>
+                                        <input type="text" style="width: 80%;"
+                                               v-model.trim="diaOfficialAccountData4.text4">
+                                    </div>
+                                    <!--微信模板展示appid和链接-->
+                                    <div class="form-group" v-show="diaChannelType==4">
+                                        <label class="control-label" style="width: 90px;">小程序appid:</label>
+                                        <input type="text" style="width: 76%;" v-model.trim="diaWXAppId" placeholder="非必填">
+                                    </div>
+                                    <div class="form-group" v-show="diaChannelType==4">
+                                        <label class="control-label" style="width: 90px;">小程序链接:</label>
+                                        <input type="text" style="width: 76%;" v-model.trim="diaWXPagePath" placeholder="非必填">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="margin-right: -55px;">
+                                            <label class="control-label" style="width: 70px;">模板内容:</label>
+                                            <template v-if="diaChannelType==4||diaChannelType==5||diaChannelType==6">
+                                                <div v-html="diaContent" style="display:inline-block;vertical-align:top;width: 433px;height: 139px;border: 1px solid #d5d5d5;overflow:scroll;"></div>
+                                            </template>
+                                            <template v-else>
+                                                <textarea cols="52" rows="6" style="vertical-align:top;" v-model="diaContent"></textarea>
+                                            </template>
+                                        </label>
+                                    </div>
+                                    <div class="form-group" v-show="jumpPageShow">
+                                        <label class="control-label" style="width: 70px;">跳转页面:</label>
+                                        <select class="form-control" style="width: 170px;display: inline"
+                                                v-model="diaLinkType">
+                                            <option v-for="(item,index) in jumpLinkList" :value="item.name"
+                                                    v-text="item.name"></option>
+                                            <option v-if="diaChannelType==2&&!updateId" value="后端配置">后端配置</option>
+                                            <option v-if="(diaChannelType==1||diaChannelType==2)&&!updateId" value="空">
+                                                空
+                                            </option>
+                                        </select>
+                                        <span class="red"
+                                              v-show="needShowPreUrl">已加前缀:htffundxjb://action?type=url&link=</span>
+                                    </div>
+                                    <div class="form-group" v-if="hasfundId">
+                                        <label class="control-label" style="width: 70px;">基金ID:</label>
+                                        <input type="text" style="width: 80%;" v-model="diafundId">
+                                    </div>
+                                    <div class="form-group" v-if="jumpLinkShow">
+                                        <label class="control-label" style="width: 70px;">链接地址:</label>
+                                        <template v-if="!needInputUrl&&diaChannelType!=4">
+                                            <input type="text" disabled style="width: 80%;" v-model="showDiaUrl">
+                                        </template>
+                                        <template v-else>
+                                            <input type="text" :placeholder="diaChannelType==2?'必填':''"
+                                                   style="width: 80%;" v-model="diaUrl">
+                                        </template>
+                                    </div>
+                                    <div class="form-group" style="position: relative;" v-show="diaChannelType==1">
+                                        <div class="input-group">
+                                            <label class="control-label" style="width: 70px;">开始时间:</label>
+                                            <input type="text" id="startTime" class="date-timepicker"
+                                                   style="width: 145px;">
+                                            <span class="input-group-addon" style="width: 16%;">
+                                                <i class="fa fa-clock-o bigger-110"></i>
+                                            </span>
+                                        </div>
+                                        <div class="input-group" style="position: absolute;top: 0;right: 0;">
+                                            <label class="control-label" style="width: 70px;">结束时间:</label>
+                                            <input type="text" id="endTime" class="date-timepicker"
+                                                   style="width: 145px;">
+                                            <span class="input-group-addon" style="width: 16%;">
+                                                <i class="fa fa-clock-o bigger-110"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="position: relative;" v-show="diaChannelType==1">
+                                        <div class="input-group">
+                                            <label class="control-label" for="showTimeInterval" style="width: 100px;">显示时间间隔:</label>
+                                            <input type="checkbox" class="ace" id="showTimeInterval"
+                                                   v-model="showTimeInterval" @click="checkTimeInterval"/>
+                                            <span class="lbl"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="position: relative;"
+                                         v-show="diaChannelType==1&&showTimeInterval==true">
+                                        <div class="input-group">
+                                            <label class="control-label" style="width: 70px;">时间间隔:</label>
+                                            <input type="number" class="ace" v-model="timeInterval"
+                                                   oninput="this.value=this.value.replace(/[^0-9.]/g,'')"/>
+                                            <span class="lbl"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary" @click="add">保存</button>
+                                    <button class="btn btn-sm btn-primary" data-dismiss="modal" aria-hidden="true">取消
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--批量新增弹窗-->
+                <div class="modal" id="addExcel" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title inline">批量新增模板</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding: 0 12px;">
+                                    <div class="form-group" style="margin-top: 20px;">
+                                        <span class="control-label" style="margin-right: 20px;">数据表:</span>
+                                        <input type="text" id="uploadInput" style="width: 50%;"
+                                               placeholder="请上传.xlsx文件" disabled/>
+                                        <input type="button" class="btn btn-sm btn-primary" id="uploadBtn" value="选择">
+                                        <input type="button" class="btn btn-sm btn-danger" @click="downloadFile"
+                                               value="下载模板文件">
+                                    </div>
+                                </div>
+                                <input id="uploadFileInput" type="file" style="display: none"/>
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary" @click="addExcel">新增</button>
+                                    <button class="btn btn-sm btn-primary" data-dismiss="modal" aria-hidden="true">取消
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--批量修改弹窗-->
+                <div class="modal" id="updateExcel" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title inline">批量修改模板</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding: 0 12px;">
+                                    <div class="form-group" style="margin-top: 20px;">
+                                        <span class="control-label" style="margin-right: 20px;">数据表:</span>
+                                        <input type="text" id="updateInput" style="width: 50%;"
+                                               placeholder="请上传.xlsx文件" disabled/>
+                                        <input type="button" class="btn btn-sm btn-primary" id="updateBtn" value="选择">
+                                        <input type="button" class="btn btn-sm btn-danger" @click="downloadUpdateFile"
+                                               value="下载模板文件">
+                                    </div>
+                                </div>
+                                <input id="updateFileInput" type="file" style="display: none"/>
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary" @click="updateExcel">修改</button>
+                                    <button class="btn btn-sm btn-primary" data-dismiss="modal" aria-hidden="true">取消
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label">模板ID:</label>
+                        <input type="text" v-model="templateId">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">模板名称:</label>
+                        <input type="text" v-model="templateName">
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="search">
+                        <% if(canShow||authorityList.includes('C')) { %>
+                        <input type="button" class="btn btn-sm btn-primary" value="新增" @click="showAdd">
+                        <% } %>
+                        <% if(canShow||authorityList.includes('C')) { %>
+                        <input type="button" class="btn btn-sm btn-primary" value="批量新增" @click="showAddExcel">
+                        <% } %>
+                        <% if(canShow||authorityList.includes('U')) { %>
+                        <input type="button" class="btn btn-sm btn-primary" value="批量修改" @click="showUpdateExcel">
+                        <% } %>
+                        <input type="button" class="btn btn-sm btn-danger " value="全量导出" @click="exportAll">
+                    </div>
+                </div>
+                <div class="form-inline" style="padding-bottom: 10px;">
+                    <div class="form-group">
+                        <label class="control-label">创建人:</label>
+                        <input type="text" v-model="creator">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">消息渠道:</label>
+                        <select class="form-control" style="width: 170px;display: inline" v-model="channelType">
+                            <option value="">全部</option>
+                            <option value="1">App站内信</option>
+                            <option value="2">App-push</option>
+                            <option value="3">短信</option>
+                            <option value="4">微信</option>
+                            <option value="5">微信高端</option>
+                            <option value="6">定投公众号</option>
+                            <option value="7">IM消息</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                    <div class="col-xs-6">
+                        <div id="dynamic-table_filter" class="dataTables_filter">
+                            <label>快速查询:</label>
+                            <input type="text" class="input-sm" v-model="condition">
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                       style="margin-bottom: 0;">
+                    <thead>
+                    <tr>
+                        <th class="center">模板ID</th>
+                        <th class="center">模板名称</th>
+                        <th class="center">模板摘要</th>
+                        <th class="center">创建时间</th>
+                        <th class="center">消息渠道</th>
+                        <th class="center">结束时间</th>
+                        <th class="center">创建人</th>
+                        <th class="center">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="viewData.length>0">
+                        <tr v-for="(item,index) in viewData" :key="index">
+                            <td class="center col-sm-2" v-text="item.templateId"></td>
+                            <td class="center col-sm-1" v-text="item.templateName"></td>
+                            <td class="center col-sm-2" v-text="item.summary"></td>
+                            <td class="center col-sm-2" v-text="item.createTime"></td>
+                            <td class="center col-sm-1" v-if="item.pushType!=1" v-text="item.showChannelType"></td>
+                            <td class="center col-sm-1" v-else>IM消息</td>
+                            <td class="center col-sm-2" v-text="item.endTime"></td>
+                            <td class="center col-sm-1" v-text="item.creator"></td>
+                            <td class="center col-sm-1">
+                                <% if(canShow||authorityList.includes('U')) { %>
+                                <a href="javascript:;" @click="showUpdate(index)">修改</a>
+                                <% } %>
+                                &nbsp;
+                                <% if(canShow||authorityList.includes('D')) { %>
+                                <a href="javascript:;" class="red" @click="showDelete(index)">删除</a>
+                                <% } %>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'没有数据'" colspan="8"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <div v-if="viewData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+middleData.length" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!--模板上传文件示例-->
+                <table id="data-table" border="1" style="display: none;">
+                    <tr>
+                        <td>templateName</td>
+                        <td>channelType</td>
+                        <td>pushType</td>
+                        <td>content</td>
+                        <td>wxTemplateType</td>
+                        <td>appId</td>
+                        <td>pagePath</td>
+                        <td>title</td>
+                        <td>summary</td>
+                        <td>url</td>
+                        <td>startTime</td>
+                        <td>endTime</td>
+                        <td>duration</td>
+                        <td>dataColor</td>
+                    </tr>
+                    <tr>
+                        <td>App站内信模板1</td>
+                        <td>1</td>
+                        <td>0</td>
+                        <td>App站内信模板1</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>App站内信模板1</td>
+                        <td>App站内信模板1</td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td>2019-01-01 00:00:00</td>
+                        <td>2019-01-01 00:00:00</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>App站内信模板2</td>
+                        <td>1</td>
+                        <td>0</td>
+                        <td>App站内信模板2</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>App站内信模板2</td>
+                        <td>App站内信模板2</td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td>${startTime}</td>
+                        <td>${endTime}</td>
+                        <td>10</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>App-push模板</td>
+                        <td>2</td>
+                        <td>0</td>
+                        <td>App-push模板</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>IM消息模板</td>
+                        <td>2</td>
+                        <td>1</td>
+                        <td>IM消息模板</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>短信模板</td>
+                        <td>3</td>
+                        <td>0</td>
+                        <td>短信模板</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>微信模板-服务状态通知</td>
+                        <td>4</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","keyword3":"xxx","remark":"xxx"}</td>
+                        <td>servive</td>
+                        <td>appId</td>
+                        <td>pagePath</td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{"first":"#173177,"keyword1":"#173177","keyword2":"#173177","keyword3":"#173177","remark":"#173177"}</td>
+                    </tr>
+                    <tr>
+                        <td>微信模板-交易通知</td>
+                        <td>4</td>
+                        <td>0</td>
+                        <td>{"title":"xxx","OPERATE":"xxx","AMT":"xxx","STATUS":"xxx","DATE":"xxx","remark":"xxx"}</td>
+                        <td>trade</td>
+                        <td>appId</td>
+                        <td>pagePath</td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{"title":"#173177","OPERATE":"#173177","AMT":"#173177","STATUS":"#173177","DATE":"#173177","remark":"#173177"}</td>
+                    </tr>
+                    <tr>
+                        <td>微信模板-月度对账单提醒</td>
+                        <td>4</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"${custNm}","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>monthBill</td>
+                        <td>appId</td>
+                        <td>pagePath</td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{"first":"#173177","keyword1":"#173177","keyword2":"#173177","remark":"#173177"}</td>
+                    </tr>
+                    <tr>
+                        <td>微信模板-投顾服务通知</td>
+                        <td>4</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>investment</td>
+                        <td>appId</td>
+                        <td>pagePath</td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{"first":"#173177","keyword1":"#173177","keyword2":"#173177","remark":"#173177"}</td>
+                    </tr>
+                    <tr>
+                        <td>微信模板-净值更新</td>
+                        <td>4</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>navUpdate</td>
+                        <td>appId</td>
+                        <td>pagePath</td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{"first":"#173177","keyword1":"#173177","keyword2":"#173177","remark":"#173177"}</td>
+                    </tr>
+                    <tr>
+                        <td>微信模板-活动通知</td>
+                        <td>4</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","keyword3":"xxx","remark":"xxx"}</td>
+                        <td>notice</td>
+                        <td>appId</td>
+                        <td>pagePath</td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{"first":"#173177","keyword1":"#173177","keyword2":"#173177","keyword3":"#173177","remark":"#173177"}</td>
+                    </tr>
+                    <tr>
+                        <td>微信高端模板-交易通知</td>
+                        <td>5</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","OPERATE":"xxx","AMT":"xxx","STATUS":"xxx","DATE":"xxx","remark":"xxx"}</td>
+                        <td>highTrade</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>微信高端模板-服务状态通知</td>
+                        <td>5</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","keyword3":"xxx","remark":"xxx"}</td>
+                        <td>highServive</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>微信高端模板-顾投服务通知</td>
+                        <td>5</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>highInvestment</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>定投公众号模板-报表通知</td>
+                        <td>6</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>report</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>定投公众号模板-身份认证审核通知</td>
+                        <td>6</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>id</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>定投公众号模板-审核结果通知</td>
+                        <td>6</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>review</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>定投公众号模板-账户解绑通知</td>
+                        <td>6</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>unbind</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </table>
+                <!--批量修改模板示例-->
+                <table id="data-table-update" border="1" style="display: none;">
+                    <tr>
+                        <td>templateId</td>
+                        <td>templateName</td>
+                        <td>channelType</td>
+                        <td>pushType</td>
+                        <td>content</td>
+                        <td>wxTemplateType</td>
+                        <td>appId</td>
+                        <td>pagePath</td>
+                        <td>title</td>
+                        <td>summary</td>
+                        <td>url</td>
+                        <td>startTime</td>
+                        <td>endTime</td>
+                        <td>duration</td>
+                        <td>dataColor</td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>App站内信模板1</td>
+                        <td>1</td>
+                        <td>0</td>
+                        <td>App站内信模板1</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>App站内信模板1</td>
+                        <td>App站内信模板1</td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td>2019-01-01 00:00:00</td>
+                        <td>2019-01-01 00:00:00</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>App站内信模板2</td>
+                        <td>1</td>
+                        <td>0</td>
+                        <td>App站内信模板2</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>App站内信模板2</td>
+                        <td>App站内信模板2</td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td>${startTime}</td>
+                        <td>${endTime}</td>
+                        <td>10</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>App-push模板</td>
+                        <td>2</td>
+                        <td>0</td>
+                        <td>App-push模板</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>IM消息模板</td>
+                        <td>2</td>
+                        <td>1</td>
+                        <td>IM消息模板</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>短信模板</td>
+                        <td>3</td>
+                        <td>0</td>
+                        <td>短信模板</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>微信模板-服务状态通知</td>
+                        <td>4</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","keyword3":"xxx","remark":"xxx"}</td>
+                        <td>servive</td>
+                        <td>appId</td>
+                        <td>pagePath</td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{"first":"#173177","keyword1":"#173177","keyword2":"#173177","keyword3":"#173177","remark":"#173177"}</td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>微信模板-交易通知</td>
+                        <td>4</td>
+                        <td>0</td>
+                        <td>{"title":"xxx","OPERATE":"xxx","AMT":"xxx","STATUS":"xxx","DATE":"xxx","remark":"xxx"}</td>
+                        <td>trade</td>
+                        <td>appId</td>
+                        <td>pagePath</td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{"title":"#173177","OPERATE":"#173177","AMT":"#173177","STATUS":"#173177","DATE":"#173177","remark":"#173177"}</td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>微信模板-月度对账单提醒</td>
+                        <td>4</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"${custNm}","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>monthBill</td>
+                        <td>appId</td>
+                        <td>pagePath</td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{"first":"#173177","keyword1":"#173177","keyword2":"#173177","remark":"#173177"}</td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>微信模板-投顾服务通知</td>
+                        <td>4</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>investment</td>
+                        <td>appId</td>
+                        <td>pagePath</td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{"first":"#173177","keyword1":"#173177","keyword2":"#173177","remark":"#173177"}</td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>微信模板-净值更新</td>
+                        <td>4</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>navUpdate</td>
+                        <td>appId</td>
+                        <td>pagePath</td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{"first":"#173177","keyword1":"#173177","keyword2":"#173177","remark":"#173177"}</td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>微信模板-活动通知</td>
+                        <td>4</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","keyword3":"xxx","remark":"xxx"}</td>
+                        <td>notice</td>
+                        <td>appId</td>
+                        <td>pagePath</td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{"first":"#173177","keyword1":"#173177","keyword2":"#173177","keyword3":"#173177","remark":"#173177"}</td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>微信高端模板</td>
+                        <td>5</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","OPERATE":"xxx","AMT":"xxx","STATUS":"xxx","DATE":"xxx","remark":"xxx"}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>微信高端模板-服务状态通知</td>
+                        <td>5</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","keyword3":"xxx","remark":"xxx"}</td>
+                        <td>highServive</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>微信高端模板-顾投服务通知</td>
+                        <td>5</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>highInvestment</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>htffundxjb://action?type=tb</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>定投公众号模板-报表通知</td>
+                        <td>6</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>report</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>定投公众号模板-身份认证审核通知</td>
+                        <td>6</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>id</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>定投公众号模板-审核结果通知</td>
+                        <td>6</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>review</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>xxxxxx</td>
+                        <td>定投公众号模板-账户解绑通知</td>
+                        <td>6</td>
+                        <td>0</td>
+                        <td>{"first":"xxx","keyword1":"xxx","keyword2":"xxx","remark":"xxx"}</td>
+                        <td>unbind</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </table>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/js/lib/xlsx.core.min.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/messageCenter/templateMgmt.js"></script>
+</body>
+</html>

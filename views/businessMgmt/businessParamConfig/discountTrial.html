@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <style>
+        .table>tbody>tr>td,
+        .table>tbody>tr>th {
+            vertical-align: middle;
+        }
+
+        /* #addNotice input {
+            width: 183px;
+        } */
+        .form-inline input,
+        .form-inline select {
+            width: 170px;
+            height: 32px;
+        }
+
+        .form-inline label {
+            text-align: right;
+            width: 80px;
+        }
+
+        th {
+            background: #f5f5f5;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 新增弹窗 -->
+                            <div class="modal" id="addNotice" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="form-horizontal">
+                                            <div class="table-header" style="margin-bottom: 20px;">新增</div>
+
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    任务名称: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text">
+                                                </div>
+                                            </div>
+
+
+                                            <div class="modal-footer">
+                                                <div class="col-md-offset-3 col-md-9">
+                                                    <button class="btn btn-info" type="button">
+                                                        保存
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- DIALOG ENDS -->
+                            <div class="form-inline" style="padding: 10px 0;">
+
+                                <div class="form-group ">
+                                    <label style="width: 60px;">客户类型:</label>
+                                    <select v-model="custType">
+                                        <option value="">请选择</option>
+                                        <option :value="item.pmco" v-for="(item,index) in selectOption.custTypeList">
+                                            {{item.pmnm}}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 60px;">产品:</label>
+                                    <input type="text" v-model="product" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 60px;">交易类型:</label>
+                                    <select v-model="tradeType">
+                                        <option value="">请选择</option>
+                                        <option :value="item.pmco" v-for="(item,index) in selectOption.tradeTypeList">
+                                            {{item.pmnm}}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 60px;">业务类型:</label>
+                                    <select v-model="apkind">
+                                        <option value="">请选择</option>
+                                        <option :value="item.pmco" v-for="(item,index) in selectOption.apkindList">
+                                            {{item.pmnm}}——{{item.pmco}}</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group ">
+                                    <label style="width: 60px;">网点:</label>
+                                    <select v-model="branchCode">
+                                        <option value="">请选择</option>
+                                        <option :value="item.pmco" v-for="(item,index) in selectOption.branchCodelList">
+                                            {{item.pmnm}}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 60px;">渠道:</label>
+                                    <select v-model="channel">
+                                        <option value="">请选择</option>
+                                        <option :value="item.pmco" v-for="(item,index) in selectOption.channelList">
+                                            {{item.pmnm}}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 60px;">交易金额:</label>
+                                    <input type="text" v-model="tradeAmt" />
+                                </div>
+                                <div class="form-group pull-right" style="margin-left: 5px;">
+                                    <button class="btn btn-sm btn-primary " @click='getTableData'>查询</button>
+                                </div>
+                            </div>
+                            <div class="form-inline" style="padding: 10px 0;">
+                                <div class="form-group ">
+                                    <label style="width: 60px;">折扣类型:</label>
+                                    <select v-model="discountOption">
+                                        <option value="">请选择</option>
+                                        <option value="1">最新折扣</option>
+                                        <option value="2">最优折扣(默认)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 60px;">收费方式:</label>
+                                    <select v-model="shareType">
+                                        <option value="">请选择</option>
+                                        <option value="A">前端收费</option>
+                                        <option value="B">后端收费</option>
+                                    </select>
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 60px;">账号类型:</label>
+                                    <select v-model="accoType">
+                                        <option value="">请选择</option>
+                                        <option value="01">企业年金账户</option>
+                                    </select>
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 60px;">目标产品:</label>
+                                    <input type="text" v-model="oproduct" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 60px;">银行编号:</label>
+                                    <input type="text" v-model="bankNo" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 60px;">客户编号:</label>
+                                    <input type="text" v-model="custNo" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 60px;">日期:</label>
+                                    <date-picker v-model="time" style="width: 170px;"
+                                    :config="{format:'YYYY-MM-DD HH:mm:ss'}">
+                                </date-picker>
+                                </div>
+
+
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!--分页器和快速查询-->
+                            <!--数据表-->
+                            <table v-if='tableData.fundFee' id="simple-table"
+                                class="table table-bordered table-hover dataTable">
+                                <tr>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">产品标准费率</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">最大收费金额</th>
+                                    <td colspan="2" class="center col-sm-1 col-md-1 col-lg-1"
+                                        v-text='tableData.fundFee.maxFee'></td>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">标准费率</th>
+                                    <td colspan="1" class="center col-sm-1 col-md-1 col-lg-1" v-text='tableData.stdFee'>
+                                    </td>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1"></th>
+                                    <td colspan="2" class="center col-sm-1 col-md-1 col-lg-1"></td>
+                                </tr>
+                                <tr>
+                                    <th :rowspan="tableData.privilegeDetails? (tableData.privilegeDetails.length>0? 3+tableData.privilegeDetails.length : 4) : 4"
+                                        class="center col-sm-1 col-md-1 col-lg-1">特权折扣</th>
+                                    <!-- <td colspan="12" class="center col-sm-1 col-md-1 col-lg-1">匹配列表</td> -->
+                                </tr>
+                                <tr>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">特权ID</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">客户ID</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">白名单</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">特权类型</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">生效时间</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">过期时间</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">特权值</th>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1"></th>
+                                </tr>
+                                <template v-if='tableData.privilegeDetails? tableData.privilegeDetails.length>0 :false'>
+                                    <tr v-for="(item, index) in tableData.privilegeDetails" :key="index+'b'">
+                                        <td class="center col-sm-1 col-md-1 col-lg-1" v-text='item.privilegeId'></td>
+                                        <td class="center col-sm-1 col-md-1 col-lg-1" v-text='item.custNo'></td>
+                                        <td class="center col-sm-1 col-md-1 col-lg-1" v-text='item.whiteList'></td>
+                                        <td class="center col-sm-1 col-md-1 col-lg-1" v-text='item.privilegeType'></td>
+                                        <td class="center col-sm-1 col-md-1 col-lg-1" v-text='item.receiveTime'></td>
+                                        <td class="center col-sm-1 col-md-1 col-lg-1" v-text='item.expireTime'></td>
+                                        <td class="center col-sm-1 col-md-1 col-lg-1" v-text='item.privilegeValue'></td>
+                                        <td class="center col-sm-1 col-md-1 col-lg-1" v-text='item.privilegeId'></td>
+                                    </tr>
+                                </template>
+                                <template v-else>
+                                    <tr>
+                                        <td colspan="8" class="center col-sm-1 col-md-1 col-lg-1">没有数据</td>
+                                    </tr>
+                                </template>
+                                <tr>
+                                    <th class="center col-sm-1 col-md-1 col-lg-1">特权最终折扣</th>
+                                    <td colspan="7" class="center col-sm-1 col-md-1 col-lg-1"
+                                        v-text='tableData.privilegeValue'></td>
+                                </tr>
+                                <!-- <td colspan="12" class="center col-sm-1 col-md-1 col-lg-1">匹配列表</td> -->
+
+                                <tr>
+                                    <th :rowspan="3" class="center col-sm-1 col-md-1 col-lg-1">规则匹配折扣</th>
+                                </tr>
+                                <tr>
+                                    <td colspan="8" style="padding: 0">
+                                        <div style="width: 80vw;overflow-x: scroll">
+                                            <table v-if='tableData.fundFee' style="width:3000px"
+                                                class="table table-bordered table-hover dataTable">
+                                                <tr>
+                                                    <th class="center ">匹配情况</th>
+                                                    <th class="center ">优先级</th>
+                                                    <th class="center ">规则编号</th>
+                                                    <th class="center ">客户类型</th>
+                                                    <th class="center ">交易类型</th>
+                                                    <th class="center ">产品</th>
+                                                    <th class="center ">目标产品(转换基金代码)</th>
+                                                    <th class="center ">网点</th>
+                                                    <th class="center ">渠道</th>
+                                                    <th class="center ">银行编号</th>
+                                                    <th class="center ">账号类型</th>
+                                                    <th class="center ">起始金额</th>
+                                                    <th class="center ">结束金额</th>
+                                                    <th class="center ">展示折扣</th>
+                                                    <th class="center ">交易折扣</th>
+                                                    <th class="center ">生效时间</th>
+                                                    <th class="center ">失效时间</th>
+
+                                                    <!-- <th class="center ">复核员</th>
+                                                <th class="center ">创建时间</th>
+            
+                                                <th class="center ">操作员</th>
+                                                <th class="center ">来源表ID</th> -->
+
+                                                </tr>
+                                                <tr v-for="(item, index) in tableData.ruleDiscountList" :key="index">
+                                                    <!-- :class='{danger:item.target=="N",success:item.target=="Y"}' -->
+                                                    <td class="center " v-text='item.matchMsg'></td>
+                                                    <td class="center " v-text='item.priority'></td>
+                                                    <td class="center " v-text='item.id'></td>
+                                                    <td class="center " v-text='item.custType'></td>
+                                                    <td class="center " v-text='item.tradeType'></td>
+                                                    <td class="center " v-text='item.product'></td>
+                                                    <td class="center " v-text='item.oproduct'></td>
+                                                    <td class="center " v-text='item.branchCode'></td>
+                                                    <td class="center " v-text='item.channel'></td>
+                                                    <td class="center " v-text='item.bankNo'></td>
+                                                    <td class="center " v-text='item.accoType'></td>
+                                                    <td class="center " v-text='item.startAmount'>
+                                                    <td class="center " v-text='item.endAmount'></td>
+                                                    <td class="center " v-text='item.displayDiscount'>
+                                                    </td>
+                                                    <td class="center " v-text='item.tradeDiscount'>
+                                                    </td>
+                                                    <td class="center " v-text='item.startTime'></td>
+                                                    <td class="center " v-text='item.endTime'></td>
+
+                                                    <!-- <td class="center " v-text='item.checker'></td>
+                                                <td class="center " v-text='item.createTime'></td>
+            
+                                                <td class="center " v-text='item.operator'></td>
+                                                <td class="center " v-text='item.sourceId'></td>
+                                                </td> -->
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        </td>
+                        </tr>
+                        <tr>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">规则最终折扣</th>
+                            <td colspan="19" class="center col-sm-1 col-md-1 col-lg-1"
+                                v-text='tableData.discountCalcRsp.tradeDiscount'></td>
+                        </tr>
+
+
+                        <tr>
+                            <th rowspan="6" class="center col-sm-1 col-md-1 col-lg-1">折扣试算结果</th>
+                        </tr>
+                        <tr>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">展示折扣</th>
+                            <td colspan="3" class="center col-sm-1 col-md-1 col-lg-1"
+                                v-text='tableData.discountCalcRsp.displayDiscount'></td>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">展示费率</th>
+                            <td colspan="3" class="center col-sm-1 col-md-1 col-lg-1"
+                                v-text='tableData.discountCalcRsp.displayRatio'></td>
+                        </tr>
+                        <tr>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">交易折扣</th>
+                            <td colspan="3" class="center col-sm-1 col-md-1 col-lg-1"
+                                v-text='tableData.discountCalcRsp.tradeDiscount'></td>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">交易费率</th>
+                            <td colspan="3" class="center col-sm-1 col-md-1 col-lg-1"
+                                v-text='tableData.discountCalcRsp.tradeRatio'></td>
+                        </tr>
+                        <tr>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">标准费率</th>
+                            <td colspan="3" class="center col-sm-1 col-md-1 col-lg-1"
+                                v-text='tableData.discountCalcRsp.stdRatio'></td>
+                            <td class="center col-sm-1 col-md-1 col-lg-1"></td>
+                            <td colspan="3" class="center col-sm-1 col-md-1 col-lg-1"></td>
+                        </tr>
+
+
+                        <!-- <template v-if="tableData.length>0">
+                                    <tr v-for="(item,index) in tableData" :key="index">
+                                        <td class="center" v-text=''></td>
+                                    </tr>
+                                </template>
+                                <template v-else>
+                                    <tr>
+                                        <td class="center" v-text="'没有数据'" colspan="12"></td>
+                                    </tr>
+                                </template> -->
+                        </table>
+
+
+                    </div>
+
+
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/ace/assets/js/vue-datetimepicker.js"></script>
+    <script src="/js/businessMgmt/businessParamConfig/discountTrial.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,16 @@
+{
+  "returnCode":0,
+  "returnMsg":"调用成功",
+  "data": [
+    {
+      "ymonth": "201801",
+      "status": "1.0",
+      "uploadby": "yx",
+      "uploadtime": "2018-10-11 10:56:38",
+      "inserttime": "2018-10-11 10:56:38",
+      "updatetime": null,
+      "attach1": null,
+      "attach2": null
+    }
+  ]
+}

@@ -1,0 +1,355 @@
+const request = require('./../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').accountQuery.custInfo;
+module.exports = function (app) {
+    // 获取  初始数据和查询
+    app.post('/customerService/accountQuery/custInfo/getInfo.ajax', (req, res, next) => {
+        let params = req.body;
+
+        Promise.all([new Promise((resolve, reject) => {
+            let option = {
+                session: req.session,
+                url: apiUrl.getInfo,
+                qs: { custNo: params.custNo },
+                timeout: 15000,
+                json: true
+            };
+            console.log('/customerService/accountQuery/custInfo/getInfo.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/customerService/accountQuery/custInfo/getInfo.ajax error:', error);
+                console.log('/customerService/accountQuery/custInfo/getInfo.ajax statusCode:', response && response.statusCode);
+                console.log('/customerService/accountQuery/custInfo/getInfo.ajax body:', body);
+                if (error) {
+                    return resolve({
+                        error: 1,
+                        msg: '基本信息获取失败'
+                    });
+                }
+                let result = typeof body === 'string' ? JSON.parse(body) : body;
+                if (result && result.returnCode === 0) {
+                    resolve({
+                        error: 0,
+                        msg: '调用成功',
+                        data: result.body
+                    })
+                } else {
+                    resolve({
+                        error: 1,
+                        msg: '基本信息获取失败'
+                    });
+                }
+            });
+        }), new Promise((resolve, reject) => {
+            let option = {
+                session: req.session,
+                url: apiUrl.userTiedCard,
+                qs: { custNo: params.custNo },
+                timeout: 15000,
+                json: true
+            };
+            console.log('/customerService/accountQuery/custInfo/userTiedCard.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/customerService/accountQuery/custInfo/userTiedCard.ajax error:', error);
+                console.log('/customerService/accountQuery/custInfo/userTiedCard.ajax statusCode:', response && response.statusCode);
+                console.log('/customerService/accountQuery/custInfo/userTiedCard.ajax body:', body);
+                if (error) {
+                    return resolve({
+                        error: 1,
+                        msg: '客户绑卡信息获取失败'
+                    });
+                }
+                let result = typeof body === 'string' ? JSON.parse(body) : body;
+                if (result && result.returnCode === 0) {
+                    resolve({
+                        error: 0,
+                        msg: '调用成功',
+                        data: { tiedCard: result.body }
+                    })
+                } else {
+                    resolve({
+                        error: 1,
+                        msg: '客户绑卡信息获取失败'
+                    });
+                }
+            });
+        }), new Promise((resolve, reject) => {
+            let option = {
+                session: req.session,
+                url: apiUrl.userHistory,
+                qs: params,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/customerService/accountQuery/custInfo/userHistory.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/customerService/accountQuery/custInfo/userHistory.ajax error:', error);
+                console.log('/customerService/accountQuery/custInfo/userHistory.ajax statusCode:', response && response.statusCode);
+                console.log('/customerService/accountQuery/custInfo/userHistory.ajax body:', body);
+                if (error) {
+                    return resolve({
+                        error: 1,
+                        msg: '客户历史冻结记录获取失败'
+                    });
+                }
+                let result = typeof body === 'string' ? JSON.parse(body) : body;
+                if (result && result.returnCode === 0) {
+                    resolve({
+                        error: 0,
+                        msg: '调用成功',
+                        data: { userHistory: result.body.results }
+                    })
+                } else {
+                    resolve({
+                        error: 1,
+                        msg: '客户历史冻结记录获取失败'
+                    });
+                }
+            });
+        }), new Promise((resolve, reject) => {
+            let option = {
+                session: req.session,
+                url: apiUrl.userTradeRecords,
+                qs: params,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/customerService/accountQuery/custInfo/userTradeRecords.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/customerService/accountQuery/custInfo/userTradeRecords.ajax error:', error);
+                console.log('/customerService/accountQuery/custInfo/userTradeRecords.ajax statusCode:', response && response.statusCode);
+                console.log('/customerService/accountQuery/custInfo/userTradeRecords.ajax body:', body);
+                if (error) {
+                    return resolve({
+                        error: 1,
+                        msg: '客户交易流水获取失败'
+                    });
+                }
+                let result = typeof body === 'string' ? JSON.parse(body) : body;
+                if (result && result.returnCode === 0) {
+                    resolve({
+                        error: 0,
+                        msg: '调用成功',
+                        data: { tradeRecords: result.body.results }
+                    })
+                } else {
+                    resolve({
+                        error: 1,
+                        msg: '客户交易流水获取失败'
+                    });
+                }
+            });
+        })]).then(function (data) {
+            let obj = {}
+            let errInfo = []
+            data.forEach(item => {
+                if (item.error === 0) {
+                    Object.assign(obj, item.data)
+                } else {
+                    errInfo.push(item.msg)
+                }
+            })
+            let status = data.every(item => {
+                return item.error === 1
+            })
+            if (!status) {
+                res.send({
+                    error: 0,
+                    msg: errInfo.length > 0 ? errInfo.join(',') : '查询成功',
+                    data: obj
+                })
+            } else {
+                res.send({
+                    error: 1,
+                    msg: errInfo.join(',')
+                })
+            }
+        }).catch(function (err) {
+            console.log('/customerService/accountQuery/custInfo/userTradeRecords.ajax :', err)
+            res.send({
+                error: 0,
+                msg: '调用失败'
+            })
+        })
+    });
+
+    app.post('/customerService/accountQuery/custInfo/unfreezeList.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.unfreezeList,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/customerService/accountQuery/custInfo/unfreezeList.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/customerService/accountQuery/custInfo/unfreezeList.ajax error:', error);
+            console.log('/customerService/accountQuery/custInfo/unfreezeList.ajax statusCode:', response && response.statusCode);
+            console.log('/customerService/accountQuery/custInfo/unfreezeList.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '基本信息获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                })
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '基本信息获取失败'
+                });
+            }
+        });
+    });
+    app.post('/customerService/accountQuery/custInfo/freezeList.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.freezeList,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/customerService/accountQuery/custInfo/freezeList.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/customerService/accountQuery/custInfo/freezeList.ajax error:', error);
+            console.log('/customerService/accountQuery/custInfo/freezeList.ajax statusCode:', response && response.statusCode);
+            console.log('/customerService/accountQuery/custInfo/freezeList.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '基本信息获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                })
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '基本信息获取失败'
+                });
+            }
+        });
+    });
+    app.post('/customerService/accountQuery/custInfo/frozenReason.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.frozenReason,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/customerService/accountQuery/custInfo/frozenReason.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/customerService/accountQuery/custInfo/frozenReason.ajax error:', error);
+            console.log('/customerService/accountQuery/custInfo/frozenReason.ajax statusCode:', response && response.statusCode);
+            console.log('/customerService/accountQuery/custInfo/frozenReason.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '冻结原因获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                })
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '冻结原因获取失败'
+                });
+            }
+        });
+    });
+    app.post('/customerService/accountQuery/custInfo/frozen.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.frozen,
+            headers: {
+                operator: req.session.loginInfo.userid
+            },
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/customerService/accountQuery/custInfo/frozen.ajax option:', option);
+        request.put(option, (error, response, body) => {
+            console.log('/customerService/accountQuery/custInfo/frozen.ajax error:', error);
+            console.log('/customerService/accountQuery/custInfo/frozen.ajax statusCode:', response && response.statusCode);
+            console.log('/customerService/accountQuery/custInfo/frozen.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '冻结失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                })
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '冻结失败'
+                });
+            }
+        });
+    });
+    app.post('/customerService/accountQuery/custInfo/unfreeze.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            headers: {
+                operator: req.session.loginInfo.userid
+            },
+            url: apiUrl.unfreeze,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/customerService/accountQuery/custInfo/unfreeze.ajax option:', option);
+        request.put(option, (error, response, body) => {
+            console.log('/customerService/accountQuery/custInfo/unfreeze.ajax error:', error);
+            console.log('/customerService/accountQuery/custInfo/unfreeze.ajax statusCode:', response && response.statusCode);
+            console.log('/customerService/accountQuery/custInfo/unfreeze.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '冻结失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                })
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '冻结失败'
+                });
+            }
+        });
+    });
+
+};

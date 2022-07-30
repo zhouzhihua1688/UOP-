@@ -1,0 +1,21 @@
+{
+	"retCode":"0000",
+	"retMsg":"调用成功",
+	"cost":[
+		{	
+			"costTypehood":"三方手续费",
+			"quarter":"2018Q1",
+			"sendTime":"2018/6/6  14:20:41"
+		},
+		{	
+			"costTypehood":"三方尾佣",
+			"quarter":"2018Q1",
+			"sendTime":"2018/6/6  14:20:41"
+		},
+		{	
+			"costTypehood":"代销尾佣",
+			"quarter":"2018Q1",
+			"sendTime":"2018/6/6  14:20:41"
+		}	
+	]
+}

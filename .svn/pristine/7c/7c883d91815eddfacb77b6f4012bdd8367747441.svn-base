@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-multiselect.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        .chosen-single {
+            height: 30px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!-- 提示信息弹窗 -->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 本地新增弹窗 -->
+                        <div class="modal" id="addLocal" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog" style="width: 700px;">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title inline">数据操作</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form">
+                                            <div style="float:left;padding-left: 30px;">
+                                                <div class="form-group">
+                                                    <label class="control-label">产品代码:</label>
+                                                    <!--<select id="fundList_local_dialog"-->
+                                                            <!--class="chosen-select form-control"-->
+                                                            <!--data-placeholder="请选择">-->
+                                                    <!--</select>-->
+                                                    <select id="fundList" class="multiselect" multiple="multiple">
+                                                    </select>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">客户类型:</label>
+                                                    <label class="pos-rel">
+                                                        <input type="checkbox" id="custType9"
+                                                               value="*" class="ace"
+                                                               @click="setCustType('*')"
+                                                               v-model="local.dialog_custType"/>
+                                                        <span class="lbl"></span>
+                                                    </label>
+                                                    <label for="custType9">全部</label>
+                                                    <template v-for="(item,index) in local.dialog_custTypeList">
+                                                        <label class="pos-rel">
+                                                            <input type="checkbox"
+                                                                   :id="'custType'+index"
+                                                                   :value="item.key" class="ace"
+                                                                   @click="setCustType(item.key)"
+                                                                   v-model="local.dialog_custType"/>
+                                                            <span class="lbl"></span>
+                                                        </label>
+                                                        <label :for="'custType'+index"
+                                                               v-text="item.value"></label>
+                                                    </template>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">交易类型:</label>
+                                                    <select style="width:170px;" v-model="local.dialog_tradeType">
+                                                        <option :value="item.key"
+                                                                v-for="(item,index) in local.dialog_tradeTypeList"
+                                                                v-text="item.value">
+                                                        </option>
+                                                    </select>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 60px;">网点:</label>
+                                                    <select style="width:170px;" v-model="local.dialog_branchCode">
+                                                        <option value="*">全部</option>
+                                                        <option :value="item.key"
+                                                                v-for="(item,index) in local.dialog_branchCodeList"
+                                                                v-text="item.value">
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 60px;">渠道:</label>
+                                                    <select style="width:170px;" v-model="local.dialog_channel">
+                                                        <option value="*">全部</option>
+                                                        <option :value="item.key"
+                                                                v-for="(item,index) in local.dialog_channelList"
+                                                                v-text="item.value">
+                                                        </option>
+                                                    </select>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">银行编号:</label>
+                                                    <input type="text" v-model.trim="local.dialog_bankNo"
+                                                           placeholder="可空"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">目标产品:</label>
+                                                    <input type="text" v-model.trim="local.dialog_oproduct"
+                                                           placeholder="可空"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width:60px;">优先级:</label>
+                                                    <input type="text" v-model.trim="priority"
+                                                           placeholder="数字默认为0"/>
+                                                </div>
+                                            </div>
+                                            <div style="float:right;padding-right: 30px;">
+                                                <div class="form-group" style="margin-bottom: 2px;">
+                                                    <label class="control-label">交易折扣:</label>
+                                                    <input type="text" v-model.trim="local.dialog_tradeDiscount"
+                                                           placeholder="必填"
+                                                           @input="changeDisplayDiscount('local','dialog')"/>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                                <span class="red" style="padding-left: 60px;">取值为0到1,例:5折应填0.5</span>
+                                                <div class="form-group" style="margin-bottom: 2px;">
+                                                    <label class="control-label">展示折扣:</label>
+                                                    <input type="text" v-model.trim="local.dialog_displayDiscount"
+                                                           placeholder="必填"/>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                                <span class="red" style="padding-left: 60px;">取值为0到1,例:5折应填0.5</span>
+                                                <div class="form-group" style="margin-bottom: 5px;">
+                                                    <div class="input-group" style="margin-bottom: 5px;">
+                                                        <label class="control-label">开始时间:</label>
+                                                        <input type="text" id="startTime_local" class="date-timepicker">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                    <span style="padding-left: 60px;padding-top:10px;">
+                                                        <a href="javascript:;"
+                                                           @click="setStartTime('now','local')">现在日期</a>&nbsp;
+                                                        <a href="javascript:;" @click="setStartTime('future','local')">未来日期</a>&nbsp;
+                                                        <a href="javascript:;" @click="setStartTime(0,'local')">0点</a>&nbsp;
+                                                        <a href="javascript:;" @click="setStartTime(9,'local')">9点</a>&nbsp;
+                                                        <a href="javascript:;" @click="setStartTime(15,'local')">15点</a>
+                                                    </span>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 5px;">
+                                                    <div class="input-group" style="margin-bottom: 5px;">
+                                                        <label class="control-label">结束时间:</label>
+                                                        <input type="text" id="endTime_local" class="date-timepicker">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                    <span style="padding-left: 60px;">
+                                                        <a href="javascript:;"
+                                                           @click="setEndTime('now','local')">现在日期</a>&nbsp;
+                                                        <a href="javascript:;" @click="setEndTime('future','local')">未来日期</a>&nbsp;
+                                                        <a href="javascript:;" @click="setEndTime(0,'local')">0点</a>&nbsp;
+                                                        <a href="javascript:;" @click="setEndTime(9,'local')">9点</a>&nbsp;
+                                                        <a href="javascript:;" @click="setEndTime(15,'local')">15点</a>
+                                                    </span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">起始金额:</label>
+                                                    <input type="text" v-model.trim="local.dialog_startAmount"
+                                                           placeholder="必填"/>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">结束金额:</label>
+                                                    <input type="text" v-model.trim="local.dialog_endAmount"
+                                                           placeholder="必填"/>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 60px;">备注:</label>
+                                                    <input type="text" v-model.trim="local.dialog_remark"
+                                                           placeholder="可空"/>
+                                                </div>
+                                            </div>
+                                            <div style="clear: both"></div>
+                                            <p class="text-center">
+                                                <button class="btn btn-sm btn-primary" @click="addLocal">确定
+                                                </button>
+                                                <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                        aria-hidden="true">取消
+                                                </button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 本地查看和修改弹窗 -->
+                        <div class="modal" id="updateLocal" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog" style="width: 700px;">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title inline">数据操作</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form">
+                                            <div style="float:left;padding-left: 30px;">
+                                                <div class="form-group">
+                                                    <label class="control-label">产品代码:</label>
+                                                    <input type="text" :value="local.dialog_product"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">客户类型:</label>
+                                                    <input type="text"
+                                                           :value="printCustType(local.dialog_custType)"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">交易类型:</label>
+                                                    <input type="text" :value="printTradeType(local.dialog_tradeType)"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 60px;">网点:</label>
+                                                    <input type="text" :value="printBranchCode(local.dialog_branchCode)"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 60px;">渠道:</label>
+                                                    <input type="text" :value="printChannel(local.dialog_channel)"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">银行编号:</label>
+                                                    <input type="text" :value="local.dialog_bankNo"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">目标产品:</label>
+                                                    <input type="text" :value="local.dialog_oproduct"
+                                                           disabled/>
+                                                </div>
+                                            </div>
+                                            <div style="float:right;padding-right: 30px;">
+                                                <div class="form-group" style="margin-bottom: 2px;">
+                                                    <label class="control-label">交易折扣:</label>
+                                                    <input type="text" v-model.trim="local.dialog_tradeDiscount"
+                                                           placeholder="必填" :disabled="local.dialog_isCheck"
+                                                           @input="changeDisplayDiscount('local','dialog')"/>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                                <span class="red" style="padding-left: 60px;">取值为0到1,例:5折应填0.5</span>
+                                                <div class="form-group" style="margin-bottom: 2px;">
+                                                    <label class="control-label">展示折扣:</label>
+                                                    <input type="text" v-model.trim="local.dialog_displayDiscount"
+                                                           placeholder="必填" :disabled="local.dialog_isCheck"/>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                                <span class="red" style="padding-left: 60px;">取值为0到1,例:5折应填0.5</span>
+                                                <div class="form-group" style="margin-bottom: 5px;">
+                                                    <div class="input-group" style="margin-bottom: 5px;">
+                                                        <label class="control-label">开始时间:</label>
+                                                        <input type="text" id="startTime_local_update"
+                                                               class="date-timepicker"
+                                                               :disabled="local.dialog_isCheck">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                    <span style="padding-left: 60px;" v-show="local.dialog_isUpdate">
+                                                        <a href="javascript:;"
+                                                           @click="setStartTime('now','local_update')">现在日期</a>&nbsp;
+                                                        <a href="javascript:;"
+                                                           @click="setStartTime('future','local_update')">未来日期</a>&nbsp;
+                                                        <a href="javascript:;" @click="setStartTime(0,'local_update')">0点</a>&nbsp;
+                                                        <a href="javascript:;" @click="setStartTime(9,'local_update')">9点</a>&nbsp;
+                                                        <a href="javascript:;" @click="setStartTime(15,'local_update')">15点</a>
+                                                    </span>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 5px;">
+                                                    <div class="input-group" style="margin-bottom: 5px;">
+                                                        <label class="control-label">结束时间:</label>
+                                                        <input type="text" id="endTime_local_update"
+                                                               class="date-timepicker"
+                                                               :disabled="local.dialog_isCheck">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                    <span style="padding-left: 60px;" v-show="local.dialog_isUpdate">
+                                                        <a href="javascript:;"
+                                                           @click="setEndTime('now','local_update')">现在日期</a>&nbsp;
+                                                        <a href="javascript:;"
+                                                           @click="setEndTime('future','local_update')">未来日期</a>&nbsp;
+                                                        <a href="javascript:;"
+                                                           @click="setEndTime(0,'local_update')">0点</a>&nbsp;
+                                                        <a href="javascript:;"
+                                                           @click="setEndTime(9,'local_update')">9点</a>&nbsp;
+                                                        <a href="javascript:;" @click="setEndTime(15,'local_update')">15点</a>
+                                                    </span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">起始金额:</label>
+                                                    <input type="text" v-model.trim="local.dialog_startAmount"
+                                                           placeholder="必填" :disabled="local.dialog_isCheck"/>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">结束金额:</label>
+                                                    <input type="text" v-model.trim="local.dialog_endAmount"
+                                                           placeholder="必填" :disabled="local.dialog_isCheck"/>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 60px;">备注:</label>
+                                                    <input type="text" v-model.trim="local.dialog_remark"
+                                                           :disabled="local.dialog_isCheck"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width:60px;">优先级:</label>
+                                                    <input type="text" v-model.trim="priority" :disabled="local.dialog_isCheck"/>
+                                                </div>
+                                            </div>
+                                            <div style="clear: both"></div>
+                                            <template v-if="!local.dialog_isCheck">
+                                                <p class="text-center">
+                                                    <button class="btn btn-sm btn-primary" @click="updateLocal">确定
+                                                    </button>
+                                                    <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                            aria-hidden="true">取消
+                                                    </button>
+                                                </p>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 撤销弹窗 -->
+                        <div class="modal" id="localRevert" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">撤销</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确定撤销该数据？</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" @click="revert">确定
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                aria-hidden="true">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 提交弹窗 -->
+                        <div class="modal" id="localSubmit" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提交</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确定提交该数据？(提交后不可更改)</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm">确定
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                aria-hidden="true">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 重新提交删除弹窗 -->
+                        <div class="modal" id="submitAgainDelete" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">删除</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确定重新提交删除操作？</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm"
+                                                @click="submitAgain">确定
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                aria-hidden="true">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 重新提交新增和修改弹窗 -->
+                        <div class="modal" id="submitAgainOperate" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog" style="width: 700px;">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title inline">数据操作</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form">
+                                            <div style="float:left;padding-left: 30px;">
+                                                <div class="form-group">
+                                                    <label class="control-label">产品代码:</label>
+                                                    <input type="text" :value="local.submitAgain_product" disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">客户类型:</label>
+                                                    <input type="text"
+                                                           :value="printCustType(local.submitAgain_custType)"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">交易类型:</label>
+                                                    <input type="text"
+                                                           :value="printTradeType(local.submitAgain_tradeType)"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 60px;">网点:</label>
+                                                    <input type="text"
+                                                           :value="printBranchCode(local.submitAgain_branchCode)"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 60px;">渠道:</label>
+                                                    <input type="text" :value="printChannel(local.submitAgain_channel)"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">银行编号:</label>
+                                                    <input type="text" :value="local.submitAgain_bankNo"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">目标产品:</label>
+                                                    <input type="text" :value="local.submitAgain_oproduct"
+                                                           disabled/>
+                                                </div>
+                                            </div>
+                                            <div style="float:right;padding-right: 30px;">
+                                                <div class="form-group" style="margin-bottom: 2px;">
+                                                    <label class="control-label">交易折扣:</label>
+                                                    <input type="text" v-model.trim="local.submitAgain_tradeDiscount"
+                                                           placeholder="必填"
+                                                           @input="changeDisplayDiscount('local','submitAgain')"/>
+                                                </div>
+                                                <span class="red" style="padding-left: 60px;">取值为0到1,例:5折应填0.5</span>
+                                                <div class="form-group" style="margin-bottom: 2px;">
+                                                    <label class="control-label">展示折扣:</label>
+                                                    <input type="text" v-model.trim="local.submitAgain_displayDiscount"
+                                                           placeholder="必填"/>
+                                                </div>
+                                                <span class="red" style="padding-left: 60px;">取值为0到1,例:5折应填0.5</span>
+                                                <div class="form-group" style="margin-bottom: 10px;">
+                                                    <div class="input-group" style="margin-bottom: 10px;">
+                                                        <label class="control-label">开始时间:</label>
+                                                        <input type="text" id="startTime_submit"
+                                                               class="date-timepicker">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                                    </div>
+                                                    <span style="padding-left: 60px;">
+                                                        <a href="javascript:;" @click="setStartTime('now','submit')">现在日期</a>&nbsp;
+                                                        <a href="javascript:;" @click="setStartTime('future','submit')">未来日期</a>&nbsp;
+                                                        <a href="javascript:;" @click="setStartTime(0,'submit')">0点</a>&nbsp;
+                                                        <a href="javascript:;" @click="setStartTime(9,'submit')">9点</a>&nbsp;
+                                                        <a href="javascript:;"
+                                                           @click="setStartTime(15,'submit')">15点</a>
+                                                    </span>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 5px;">
+                                                    <div class="input-group" style="margin-bottom: 5px;">
+                                                        <label class="control-label">结束时间:</label>
+                                                        <input type="text" id="endTime_submit" class="date-timepicker">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                                    </div>
+                                                    <span style="padding-left: 60px;">
+                                                        <a href="javascript:;"
+                                                           @click="setEndTime('now','submit')">现在日期</a>&nbsp;
+                                                        <a href="javascript:;" @click="setEndTime('future','submit')">未来日期</a>&nbsp;
+                                                        <a href="javascript:;" @click="setEndTime(0,'submit')">0点</a>&nbsp;
+                                                        <a href="javascript:;" @click="setEndTime(9,'submit')">9点</a>&nbsp;
+                                                        <a href="javascript:;" @click="setEndTime(15,'submit')">15点</a>
+                                                    </span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">起始金额:</label>
+                                                    <input type="text" v-model.trim="local.submitAgain_startAmount"
+                                                           placeholder="必填"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">结束金额:</label>
+                                                    <input type="text" v-model.trim="local.submitAgain_endAmount"
+                                                           placeholder="必填"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 60px;">备注:</label>
+                                                    <input type="text" v-model.trim="local.submitAgain_remark"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 60px;">优先级:</label>
+                                                    <input type="text" v-model.trim="priority"/>
+                                                </div>
+                                            </div>
+                                            <div style="clear: both"></div>
+                                            <p class="text-center">
+                                                <button class="btn btn-sm btn-primary" @click="submitAgain">确定
+                                                </button>
+                                                <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                        aria-hidden="true">取消
+                                                </button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 服务端删除弹窗 -->
+                        <div class="modal" id="serviceToLocalDelete" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">删除</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确定删除该数据？</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm"
+                                                @click="serviceToLocalDelete">确定
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                aria-hidden="true">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 服务端查看和修改弹窗 -->
+                        <div class="modal" id="serviceToLocalUpdate" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog" style="width: 700px;">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title inline">数据操作</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form">
+                                            <div style="float:left;padding-left: 30px;">
+                                                <div class="form-group">
+                                                    <label class="control-label">产品代码:</label>
+                                                    <input type="text" :value="service.dialog_product" disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">客户类型:</label>
+                                                    <input type="text"
+                                                           :value="printCustType(service.dialog_custType)"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">交易类型:</label>
+                                                    <input type="text" :value="printTradeType(service.dialog_tradeType)"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 60px;">网点:</label>
+                                                    <input type="text"
+                                                           :value="printBranchCode(service.dialog_branchCode)"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 60px;">渠道:</label>
+                                                    <input type="text" :value="printChannel(service.dialog_channel)"
+                                                           disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">银行编号:</label>
+                                                    <input type="text" :value="service.dialog_bankNo" disabled/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">目标产品:</label>
+                                                    <input type="text" :value="service.dialog_oproduct" disabled/>
+                                                </div>
+                                            </div>
+                                            <div style="float:right;padding-right: 30px;">
+                                                <div class="form-group" style="margin-bottom: 2px;">
+                                                    <label class="control-label">交易折扣:</label>
+                                                    <input type="text" v-model.trim="service.dialog_tradeDiscount"
+                                                           placeholder="必填" :disabled="!service.dialog_isUpdate"
+                                                           @input="changeDisplayDiscount('service','dialog')"/>
+                                                </div>
+                                                <span class="red" style="padding-left: 60px;">取值为0到1,例:5折应填0.5</span>
+                                                <div class="form-group" style="margin-bottom: 2px;">
+                                                    <label class="control-label">展示折扣:</label>
+                                                    <input type="text" v-model="service.dialog_displayDiscount"
+                                                           placeholder="必填" :disabled="!service.dialog_isUpdate"/>
+                                                </div>
+                                                <span class="red" style="padding-left: 60px;">取值为0到1,例:5折应填0.5</span>
+                                                <div class="form-group" style="margin-bottom: 5px;">
+                                                    <div class="input-group" style="margin-bottom: 5px;">
+                                                        <label class="control-label">开始时间:</label>
+                                                        <input type="text" id="startTime_service"
+                                                               class="date-timepicker"
+                                                               :disabled="!service.dialog_isUpdate">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                                    </div>
+                                                    <span style="padding-left: 60px;" v-show="service.dialog_isUpdate">
+                                                        <a href="javascript:;" @click="setStartTime('now','service')">现在日期</a>&nbsp;
+                                                        <a href="javascript:;"
+                                                           @click="setStartTime('future','service')">未来日期</a>&nbsp;
+                                                        <a href="javascript:;" @click="setStartTime(0,'service')">0点</a>&nbsp;
+                                                        <a href="javascript:;" @click="setStartTime(9,'service')">9点</a>&nbsp;
+                                                        <a href="javascript:;"
+                                                           @click="setStartTime(15,'service')">15点</a>
+                                                    </span>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 5px;">
+                                                    <div class="input-group" style="margin-bottom: 5px;">
+                                                        <label class="control-label">结束时间:</label>
+                                                        <input type="text" id="endTime_service" class="date-timepicker"
+                                                               :disabled="!service.dialog_isUpdate">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                                    </div>
+                                                    <span style="padding-left: 60px;" v-show="service.dialog_isUpdate">
+                                                        <a href="javascript:;"
+                                                           @click="setEndTime('now','service')">现在日期</a>&nbsp;
+                                                        <a href="javascript:;" @click="setEndTime('future','service')">未来日期</a>&nbsp;
+                                                        <a href="javascript:;" @click="setEndTime(0,'service')">0点</a>&nbsp;
+                                                        <a href="javascript:;" @click="setEndTime(9,'service')">9点</a>&nbsp;
+                                                        <a href="javascript:;" @click="setEndTime(15,'service')">15点</a>
+                                                    </span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">起始金额:</label>
+                                                    <input type="text" v-model.trim="service.dialog_startAmount"
+                                                           placeholder="必填" :disabled="!service.dialog_isUpdate"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">结束金额:</label>
+                                                    <input type="text" v-model.trim="service.dialog_endAmount"
+                                                           placeholder="必填" :disabled="!service.dialog_isUpdate"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 60px;">备注:</label>
+                                                    <input type="text" v-model.trim="service.dialog_remark"
+                                                           :disabled="!service.dialog_isUpdate"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width:60px">优先级:</label>
+                                                    <input type="text" v-model="priority" :disabled="!service.dialog_isUpdate"/>
+                                                </div>
+                                            </div>
+                                            <div style="clear: both"></div>
+                                            <template v-if="service.dialog_isUpdate">
+                                                <p class="text-center">
+                                                    <button class="btn btn-sm btn-primary"
+                                                            @click="serviceToLocalUpdate">确定
+                                                    </button>
+                                                    <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                            aria-hidden="true">取消
+                                                    </button>
+                                                </p>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- DIALOG ENDS -->
+                        <div class="tabbable">
+                            <ul class="nav nav-tabs padding-12 tab-color-blue background-blue">
+                                <li class="active">
+                                    <a data-toggle="tab" href="#local">经办数据</a>
+                                </li>
+                                <li>
+                                    <a data-toggle="tab" href="#service">已生效数据</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div id="local" class="tab-pane in active">
+                                    <!-- 本地数据 -->
+                                    <div class="form-inline" style="padding-bottom: 10px;">
+                                        <div class="form-group">
+                                            <label class="control-label">产品代码:</label>
+                                            <select id="fundList_local" class="chosen-select form-control"
+                                                    data-placeholder="全部">
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">交易类型:</label>
+                                            <select style="width:170px" v-model="local.tradeType">
+                                                <option value="">全部</option>
+                                                <option :value="item.key" v-for="(item,index) in local.tradeTypeList"
+                                                        v-text="item.value"></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">渠道:</label>
+                                            <select style="width:170px" v-model="local.channel">
+                                                <option value="">全部</option>
+                                                <option :value="item.key" v-for="(item,index) in local.channelList"
+                                                        v-text="item.value">
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">操作类型:</label>
+                                            <select style="width: 169px;" v-model="local.operate">
+                                                <option value="">全部</option>
+                                                <option value="1">新增</option>
+                                                <option value="2">修改</option>
+                                                <option value="3">删除</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">复核状态:</label>
+                                            <select style="width: 169px;" v-model="local.status">
+                                                <option value="">全部</option>
+                                                <option value="1">编辑中</option>
+                                                <option value="2">待复核</option>
+                                                <option value="0">复核通过</option>
+                                                <option value="9">复核驳回</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group pull-right">
+                                            <input type="button" class="btn btn-sm btn-primary" @click="searchLocal"
+                                                   value="查询">
+                                            <input type="button" class="btn btn-sm btn-primary" @click="showAddLocal"
+                                                   value="新增">
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                    </div>
+                                    <div class="table-header">
+                                        经办表格数据
+                                    </div>
+                                    <!--分页器和快速查询-->
+                                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                        <div class="col-xs-6">
+                                            <div class="dataTables_length">
+                                                <label>每页显示</label>
+                                                <select class="input-sm" name="pageMaxNum" v-model="local.pageMaxNum">
+                                                    <option value="10">10</option>
+                                                    <option value="20">20</option>
+                                                    <option value="50">50</option>
+                                                </select>
+                                                <label>条</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--数据表-->
+                                    <table class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center">产品代码</th>
+                                            <th class="center">交易类型</th>
+                                            <th class="center">渠道</th>
+                                            <th class="center">展示折扣</th>
+                                            <th class="center">交易折扣</th>
+                                            <th class="center">创建时间</th>
+                                            <th class="center">优先级</th>
+                                            <th class="center">操作类型</th>
+                                            <th class="center">复核状态</th>
+                                            <th class="center">复核人</th>
+                                            <th class="center">复核时间</th>
+                                            <th class="center">复核备注</th>
+                                            <th class="center">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="viewData_local.length>0">
+                                            <tr v-for="(item,index) in viewData_local" :key="index">
+                                                <td class="center" v-text="item.product"></td>
+                                                <td class="center" v-text="item.showTradeType"></td>
+                                                <td class="center" v-text="item.showChannel"></td>
+                                                <td class="center" v-text="item.displayDiscount"></td>
+                                                <td class="center" v-text="item.tradeDiscount"></td>
+                                                <td class="center" v-text="item.createTime"></td>
+                                                <td class="center" v-text="item.priority"></td>
+                                                <td :class="{center:true,green:item.operate==1,orange:item.operate==2,red:item.operate==3}"
+                                                    v-text="item.showOperate"></td>
+                                                <td :class="{center:true,
+                                                            green:item.status==0,
+                                                            black:item.status==1,
+                                                            blue:item.status==2,
+                                                            red:item.status==9}"
+                                                    v-text="item.showStatus"></td>
+                                                <td class="center" v-text="item.reviewer"></td>
+                                                <td class="center" v-text="item.reviewTime"></td>
+                                                <td class="center" v-text="item.remark"></td>
+                                                <td class="center">
+                                                    <template v-if="item.status==2">
+                                                        <a href="javascript:;" @click="localCheckDialog(item)">查看</a>
+                                                        <span>/</span>
+                                                        <template v-if="item.operate!=3">
+                                                            <a href="javascript:;" @click="showLocalUpdate(item)">修改</a>
+                                                            <span>/</span>
+                                                        </template>
+                                                        <a href="javascript:;" class="red"
+                                                           @click="showRevert(item)">撤销</a>
+                                                    </template>
+                                                    <template v-else-if="item.status==9">
+                                                        <a href="javascript:;" @click="showSubmitAgain(item)">重新提交</a>
+                                                    </template>
+                                                    <template v-else>
+                                                        <span>-</span>
+                                                    </template>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'暂无数据'" colspan="16"></td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                    <!--底部页码-->
+                                    <div v-if="viewData_local.length>0" class="row"
+                                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                        <div class="col-xs-2">
+                                            <div class="dataTables_info"
+                                                 v-text="'共 '+middleData_local.length+' 页'"></div>
+                                        </div>
+                                        <div class="col-xs-10">
+                                            <div class="dataTables_paginate paging_simple_numbers">
+                                                <ul class="pagination">
+                                                    <li class="paginate_button"
+                                                        v-show="pageList_local.length<middleData_local.length&&local.currentIndex>local.maxSpace">
+                                                        <a href="javascript:;" v-text="'1...'" @click="toFirst(2)"></a>
+                                                    </li>
+                                                    <li :class="local.currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                        @click="prev(2)">
+                                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                                    </li>
+                                                    <li :class="value==local.currentIndex+1?'paginate_button active':'paginate_button'"
+                                                        v-for="value in pageList_local" @click="changeIndex(value,2)">
+                                                        <a href="javascript:;" v-text="value"></a>
+                                                    </li>
+                                                    <li class="paginate_button"
+                                                        v-show="pageList_local.length<middleData_local.length&&middleData_local.length-local.currentIndex>local.maxSpace">
+                                                        <a href="javascript:;" v-text="'...'+middleData_local.length"
+                                                           @click="toLast(2)"></a>
+                                                    </li>
+                                                    <li :class="local.currentIndex==middleData_local.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                        @click="next(2)">
+                                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="service" class="tab-pane">
+                                    <!-- 服务端数据查询条件 -->
+                                    <div class="form-inline" style="padding-bottom: 10px;">
+                                        <div class="form-group">
+                                            <label class="control-label">产品代码:</label>
+                                            <select id="fundList_service" class="chosen-select form-control"
+                                                    data-placeholder="全部">
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">交易类型:</label>
+                                            <select style="width:170px" v-model="service.tradeType">
+                                                <option value="">全部</option>
+                                                <option :value="item.key" v-for="(item,index) in service.tradeTypeList"
+                                                        v-text="item.value"></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">渠道:</label>
+                                            <select style="width:170px" v-model="service.channel">
+                                                <option value="">全部</option>
+                                                <option :value="item.key" v-for="(item,index) in service.channelList"
+                                                        v-text="item.value">
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group pull-right">
+                                            <input type="button" class="btn btn-sm btn-primary" @click="searchService"
+                                                   value="查询">
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                    </div>
+                                    <div class="table-header">
+                                        已生效表格数据
+                                    </div>
+                                    <!--分页器和快速查询-->
+                                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                        <div class="col-xs-6">
+                                            <div class="dataTables_length">
+                                                <label>每页显示</label>
+                                                <select class="input-sm" name="pageMaxNum" v-model="service.pageMaxNum">
+                                                    <option value="10">10</option>
+                                                    <option value="20">20</option>
+                                                    <option value="50">50</option>
+                                                </select>
+                                                <label>条</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--数据表-->
+                                    <table class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center ">产品代码</th>
+                                            <th class="center ">交易类型</th>
+                                            <th class="center ">渠道</th>
+                                            <th class="center ">展示折扣</th>
+                                            <th class="center ">交易折扣</th>
+                                            <th class="center ">客户类型</th>
+                                            <th class="center ">网点</th>
+                                            <th class="center ">起始金额</th>
+                                            <th class="center ">结束金额</th>
+                                            <th class="center ">优先级</th>
+                                            <th class="center ">开始时间</th>
+                                            <th class="center ">结束时间</th>
+                                            <th class="center ">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="viewData_service.length>0">
+                                            <tr v-for="(item,index) in viewData_service" :key="index">
+                                                <td class="center" v-text="item.product"></td>
+                                                <td class="center" v-text="item.showTradeType"></td>
+                                                <td class="center" v-text="item.showChannel"></td>
+                                                <td class="center" v-text="item.displayDiscount"></td>
+                                                <td class="center" v-text="item.tradeDiscount"></td>
+                                                <td class="center" v-text="item.showCustType"></td>
+                                                <td class="center" v-text="item.showBranchCode"></td>
+                                                <td class="center" v-text="item.startAmount"></td>
+                                                <td class="center" v-text="item.endAmount"></td>
+                                                <td class="center" v-text="item.priority"></td>
+                                                <td class="center" v-text="item.startTime"></td>
+                                                <td class="center" v-text="item.endTime"></td>
+                                                <td class="center">
+                                                    <a href="javascript:;" @click="serviceCheckDialog(item)">查看</a>
+                                                    <span>/</span>
+                                                    <a href="javascript:;"
+                                                       @click="showServiceToLocalUpdate(item)">修改</a>
+                                                    <span>/</span>
+                                                    <a href="javascript:;" class="red"
+                                                       @click="showServiceToLocalDelete(item)">删除</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'暂无数据'" colspan="16"></td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                    <!--底部页码-->
+                                    <div v-if="viewData_service.length>0" class="row"
+                                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                        <div class="col-xs-2">
+                                            <div class="dataTables_info"
+                                                 v-text="'共 '+middleData_service.length+' 页'"></div>
+                                        </div>
+                                        <div class="col-xs-10">
+                                            <div class="dataTables_paginate paging_simple_numbers">
+                                                <ul class="pagination">
+                                                    <li class="paginate_button"
+                                                        v-show="pageList_service.length<middleData_service.length&&service.currentIndex>service.maxSpace">
+                                                        <a href="javascript:;" v-text="'1...'" @click="toFirst(1)"></a>
+                                                    </li>
+                                                    <li :class="service.currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                        @click="prev(1)">
+                                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                                    </li>
+                                                    <li :class="value==service.currentIndex+1?'paginate_button active':'paginate_button'"
+                                                        v-for="value in pageList_service" @click="changeIndex(value,1)">
+                                                        <a href="javascript:;" v-text="value"></a>
+                                                    </li>
+                                                    <li class="paginate_button"
+                                                        v-show="pageList_service.length<middleData_service.length&&middleData_service.length-service.currentIndex>service.maxSpace">
+                                                        <a href="javascript:;" v-text="'...'+middleData_service.length"
+                                                           @click="toLast(1)"></a>
+                                                    </li>
+                                                    <li :class="service.currentIndex==middleData_service.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                        @click="next(1)">
+                                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/ace/assets/js/bootstrap-multiselect.min.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/businessMgmt/businessParamConfig/discountHandle.js"></script>
+</body>
+</html>

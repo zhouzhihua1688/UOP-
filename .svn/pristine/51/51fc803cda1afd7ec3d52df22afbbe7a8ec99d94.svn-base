@@ -1,0 +1,78 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').scenceMgmt.upReplyRule;
+
+module.exports = function (app) {
+    // 获取上行回复规则列表
+    app.post('/messageCenter/scenceMgmt/upReplyRule/search.ajax', (req, res, next) => {
+        let option = {
+            session: req.session,
+            url: apiUrlList.query,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/scenceMgmt/upReplyRule/search.ajax option:', option);
+        request.get(option, (error, response, body) => {
+            console.log('/messageCenter/scenceMgmt/upReplyRule/search.ajax error:', error);
+            console.log('/messageCenter/scenceMgmt/upReplyRule/search.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/scenceMgmt/upReplyRule/search.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({
+                    error: 0, msg: '调用成功', data: result.body.map(item => {
+                        item.fundType_show = item.fundType;
+                        if (item.fundType === 'S') {
+                            item.fundType_show = '申购';
+                        }
+                        else if (item.fundType === 'R') {
+                            item.fundType_show = '赎回';
+                        }
+                        return item;
+                    })
+                });
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg, data: null});
+            }
+            else {
+                res.send({error: 1, msg: '添加失败', data: null});
+            }
+        });
+    });
+    // 新增上行规则
+    app.post('/messageCenter/scenceMgmt/upReplyRule/add.ajax', (req, res, next) => {
+        let params = {};
+        req.body.content && (params.content = req.body.content);
+        req.body.fundId && (params.fundId = req.body.fundId);
+        req.body.fundType && (params.fundType = req.body.fundType);
+        params.isAgree = req.body.isAgree === 'true';
+        let option = {
+            session: req.session,
+            url: apiUrlList.add,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/scenceMgmt/upReplyRule/add.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/messageCenter/scenceMgmt/upReplyRule/add.ajax error:', error);
+            console.log('/messageCenter/scenceMgmt/upReplyRule/add.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/scenceMgmt/upReplyRule/add.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({error: 0, msg: '添加成功', data: null});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg, data: null});
+            }
+            else {
+                res.send({error: 1, msg: '添加失败', data: null});
+            }
+        });
+    });
+};

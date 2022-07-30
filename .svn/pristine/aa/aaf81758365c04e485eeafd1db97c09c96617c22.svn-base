@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content" id="content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <!-- loading动画 -->
+                    <div class="cover" v-show="loadingShow" style="z-index: 1999;display: none;">
+                        <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                    </div>
+                    <!-- loading动画end -->
+                    <!-- 预览图 -->
+                    <div id="previewImg"
+                        style="display: none;position: fixed;background: #fff; width: 400px;;right:20px ;top:50%;transform:translateY(-50%);z-index: 999999;">
+                        <img :src="pagePreviewImgurl" alt="" style="display: block;width: 100%;max-height: 600px;">
+                    </div>
+                    <!--编辑弹窗-->
+                    <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"
+                                        @click="hideImg">
+                                        &times;
+                                    </button>
+                                    <h4 class="modal-title" style="display: inline">新建内容配置</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form " style="padding: 0 50px 0 24px;">
+                                        <div class="form-group">
+                                            <label class="control-label"
+                                                style="width: 150px;text-align: right">渠道:</label>
+                                            <select name="" id="" v-model="channelId">
+                                                <option v-for="item in channelMenu" :value="item.channelId"
+                                                    v-text="item.channelName"></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label"
+                                                style="width: 150px;text-align: right">模板:</label>
+                                            <select name="" id="" v-model="elementCollection">
+                                                <option v-for="item in viewList" :value="item.temId"
+                                                    v-text="item.temName"></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diabtnKey">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                按钮key:</label>
+                                            <input type="text" style="width: 60%;" v-model.trim="diabtnKey" />
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diabtnName">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                按钮名称:</label>
+                                            <input type="text" style="width: 60%;" v-model.trim="diabtnName" />
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diaurl">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                跳转地址:</label>
+                                            <input type="text" style="width: 60%;" v-model.trim="diaurl" />
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diaimageUrl">
+                                            <label class="control-label"
+                                                style="width: 150px;text-align: right">图片地址:</label>
+                                            <input type="text" id="uploadInput1" placeholder="请选择" style="width: 37%;"
+                                                disabled />
+                                            <input type="button" class="btn btn-sm btn-primary" id="uploadBtn1"
+                                                value="选择">
+                                            <input type="button" class="btn btn-sm btn-primary" @click="uploadPic1"
+                                                value="上传">
+                                            <input id="uploadFileInput1" type="file" name="file" style="display: none"
+                                                class="upload" />
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diaremark">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                备注:</label>
+                                            <input type="text" style="width: 60%;" v-model.trim="diaremark" />
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diabtnSubName">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                按钮子名称:</label>
+                                            <input type="text" style="width: 60%;" v-model.trim="diabtnSubName" />
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diarecommendTp">
+                                            <label class="control-label"
+                                                style="width: 150px;text-align: right">推荐类型:</label>
+                                            <select name="" id="" v-model="diarecommendTp">
+                                                <option v-for="item in recommendTpList" :value="item.recommendTp"
+                                                    v-text="item.recommendName"></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" v-show="diarecommendTp=='2'">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                自定义文案:</label>
+                                            <input type="text" style="width: 60%;" v-model.trim="diarecommendContent" />
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diarecommendMode">
+                                            <label class="control-label"
+                                                style="width: 150px;text-align: right">展示模式:</label>
+                                            <select name="" id="" v-model="diarecommendMode">
+                                                <option value="1">点击消失</option>
+                                                <option value="2">长久显示</option>
+                                                <option value="3">显示一天</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diamarketDisplayMode">
+                                            <label class="control-label"
+                                                style="width: 150px;text-align: right">营销文案展示模式:</label>
+                                            <select name="" id="" v-model="diamarketDisplayMode">
+                                                <option value=""></option>
+                                                <option value="1">点击消失</option>
+                                                <option value="2">长久显示</option>
+                                                <option value="3">显示一天</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diamarketContent">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                营销展示文案:</label>
+                                            <input type="text" style="width: 60%;" v-model.trim="diamarketContent" />
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diaredDotDisplayMode">
+                                            <label class="control-label"
+                                                style="width: 150px;text-align: right">按钮红点展示模式:</label>
+                                            <select name="" id="" v-model="diaredDotDisplayMode">
+                                                <option value=""></option>
+                                                <option value="1">点击消失</option>
+                                                <option value="2">长久显示</option>
+                                                <option value="3">显示一天</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diaredDotApiPath">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                红点API路径:</label>
+                                            <input type="text" style="width: 60%;" v-model.trim="diaredDotApiPath" />
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diasupportos">
+                                            <label class="control-label"
+                                                style="width: 150px;text-align: right">支持的系统:</label>
+                                            <select name="" id="" v-model="diasupportos">
+                                                <option value=""></option>
+                                                <option value="ios">苹果操作系统</option>
+                                                <option value="android">安卓操作系统</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary" @click="add">保存</button>
+                                    <button class="btn btn-default btn-sm" data-dismiss="modal"
+                                        @click="hideImg">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--信息提示弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                        data-dismiss="modal">确定</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--删除弹窗1-->
+                    <div class="modal" id="delete1" tabindex="-1" role="dialog" aria-hidden="true"
+                        data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title">删除</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4>是否确认删除?</h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                        @click="deleteConfirm">确定</button>
+                                    <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-inline" style="padding: 10px 0;">
+                        <div class="form-group">
+                            <label class="control-label">按钮名称:</label>
+                            <input type="text" v-model.trim="btnName">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">按钮key:</label>
+                            <input type="text" v-model.trim="btnKey">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">按钮子名称:</label>
+                            <input type="text" v-model.trim="btnSubName">
+                        </div>
+
+                        <div class="form-group pull-right">
+                            <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                            <input type="button" class="btn btn-sm btn-primary" value="刷新" @click="fresh">
+                            <input type="button" class="btn btn-sm btn-primary" value="新增内容" @click="showAdd">
+                        </div>
+                    </div>
+
+                    <div class="table-header">
+                        <%= cpage %>--表格数据
+                    </div>
+                    <!--分页器和快速查询-->
+                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length" id="dynamic-table_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="500">500</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!--数据表-->
+                    <table id="simple-table" class="table table-bordered table-hover dataTable">
+                        <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">配置ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">按钮key</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">按钮名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">跳转url</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">备注</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">按钮子名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">展示模式</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">支持系统</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">推荐内容</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">营销模式</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">营销文案</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">红点API路径</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">可用状态</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">渠道</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-if="tableData.length>0">
+                                <tr v-for="(item,index) in tableData" :key="index">
+                                    <td class="center" v-text='item.btnId'></td>
+                                    <td class="center" v-text='item.btnKey'></td>
+                                    <td class="center" v-text='item.btnName'></td>
+                                    <td class="center" v-text='overflowHide(item.url)' :title="item.url"></td>
+                                    <td class="center" v-text='item.remark'></td>
+                                    <td class="center" v-text='item.btnSubName'></td>
+                                    <td class="center"
+                                        v-text='item.recommendMode=="1"?"点击消失":item.recommendMode=="2"?"长久显示":"显示一天"'>
+                                    </td>
+                                    <td class="center" v-text='item.supportos'></td>
+                                    <td class="center" v-text='item.recommendContent'></td>
+                                    <td class="center" v-text='item.marketDisplayMode'></td>
+                                    <td class="center" v-text='item.marketContent'></td>
+                                    <td class="center" v-text='item.redDotApiPath'></td>
+                                    <td class="center" v-text='item.isEnable=="1"?"启用":"禁用"'></td>
+                                    <td class="center" v-text='channelNameForId(item.channelId)'></td>
+                                    <td class="center">
+                                        <a href="javascript:;" v-text='item.isEnable=="0"?"启用":"禁用"'
+                                            @click="enableOrDisable(item)"></a>/<a href="javascript:;"
+                                            @click="showUpdate(item)">修改</a>/<a href="javascript:;"
+                                            @click="deleteParams(item)">删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="loadingStatus" colspan="15"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                    <!--底部页码-->
+                    <div v-if="tableData.length>0" class="row"
+                        style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                        <div class="col-xs-2">
+                            <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                        </div>
+                        <div class="col-xs-10">
+                            <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                <ul class="pagination">
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                    </li>
+                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                        @click="prev">
+                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                    </li>
+                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                        v-for="value in pageList" @click="changeIndex(value)">
+                                        <a href="javascript:;" v-text="value"></a>
+                                    </li>
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                    </li>
+                                    <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                        @click="next">
+                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/lib/ajaxfileupload.js"></script>
+    <script src="/js/recommendSystem/recommendSystemTemplateConfig/AppBaseConfig.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+
+        .tag-margin {
+            margin: 0 2px 2px 0;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content" id="content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--删除角色弹窗-->
+                <div class="modal" id="delete" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">删除已分配角色</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确认删除已分配的角色?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="deleteRole">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--分配角色弹窗-->
+                <div class="modal" id="add" tabindex="0" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title">分配权限</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form">
+                                    <div class="form-group col-sm-12">
+                                        <label class="control-label">用户:</label>
+                                        <div class="tags"
+                                             style="width: 70%;min-height: 34px;vertical-align:top;padding: 2px 2px 0 2px;">
+                                            <span v-for="(item, index) in selectedUserList"
+                                                  :style="isUpdate?'padding-right:9px;':'padding-right:22px;'"
+                                                  class="tag tag-margin" :key="index">
+                                                {{item.userName}}
+                                                <button v-show="!isUpdate" type="button" class="close"
+                                                        @click="removeSelectedUser(item,index)">×</button>
+                                            </span>
+                                        </div>
+                                        <input v-show="!isUpdate" type="button" class="btn btn-sm btn-primary"
+                                               value="选择"
+                                               @click="showSelectUser">
+                                    </div>
+                                    <div class="form-group col-sm-12">
+                                        <label class="control-label">角色:</label>
+                                        <div class="tags"
+                                             style="width: 70%;min-height: 34px;vertical-align:top;padding: 2px 2px 0 2px;">
+                                            <span v-for="(item, index) in selectedRoleList" style="margin: 0 2px 2px 0;"
+                                                  class="tag" :key="index">
+                                                {{item.roleName}}
+                                                <button type="button" class="close"
+                                                        @click="removeSelectedRole(item,index)">×</button>
+                                            </span>
+                                        </div>
+                                        <input type="button" class="btn btn-sm btn-primary" value="选择"
+                                               @click="showSelectRole">
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="padding: 10px 0;">
+                                <button class="btn btn-sm btn-primary" @click="distributeRole">分配</button>
+                                <button class="btn btn-sm btn-primary" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                        <!-- /.modal-content -->
+                    </div>
+                    <!-- /.modal -->
+                </div>
+                <!--选择用户弹窗-->
+                <div class="modal" id="selectUser" tabindex="0" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title">分配权限</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="col-sm-12">
+                                    <div class="form-inline" style="margin: 10px 0;">
+                                        <div class="form-group">
+                                            <label class="control-label">用户ID:</label>
+                                            <input type="text" v-model="diaSearchUserId" style="width: 490px;">
+                                        </div>
+                                    </div>
+                                    <div class="table-header">
+                                        用户列表
+                                    </div>
+                                    <div style="margin-bottom: 0;height:400px; overflow-y: auto">
+                                        <table class="table table-striped table-bordered table-hover dataTable"
+                                               style="margin-bottom: 0;">
+                                            <thead>
+                                            <tr>
+                                                <th class="center col-sm-2">选择</th>
+                                                <th class="center col-sm-5">用户ID</th>
+                                                <th class="center col-sm-5">用户名</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <template v-if="filterUserList.length>0">
+                                                <tr v-for="(item, index) in filterUserList" :key="index">
+                                                    <td class="center">
+                                                        <label class="pos-rel">
+                                                            <input type="checkbox" class="ace" :checked="item.check"
+                                                                   @click="filterUserAdd(item)"/>
+                                                            <span class="lbl"></span>
+                                                        </label>
+                                                    </td>
+                                                    <td class="center" v-text="item.userId"></td>
+                                                    <td class="center" v-text="item.userName"></td>
+                                                </tr>
+                                            </template>
+                                            <template v-else>
+                                                <tr>
+                                                    <td class="center" v-text="'没有数据'" colspan="3"></td>
+                                                </tr>
+                                            </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div style="clear: both;"></div>
+                            </div>
+                            <p class="text-center" style="padding: 10px 0;">
+                                <button class="btn btn-sm btn-primary" @click="saveSelectUser">确定</button>
+                                <button class="btn btn-sm btn-primary" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--选择角色弹窗-->
+                <div class="modal" id="selectRole" tabindex="0" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" @click="hideSelectRole" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title">分配角色</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="col-sm-12">
+                                    <div class="form-inline" style="margin: 10px 0;">
+                                        <div class="form-group">
+                                            <label class="control-label">角色名:</label>
+                                            <input type="text" style="width: 490px;" v-model="diaSearchRoleName">
+                                        </div>
+                                    </div>
+                                    <div class="table-header">
+                                        角色列表
+                                    </div>
+                                    <div style="margin-bottom: 0;height:400px; overflow-y: auto">
+                                        <table class="table table-striped table-bordered table-hover dataTable"
+                                               style="margin-bottom: 0;">
+                                            <thead>
+                                            <tr>
+                                                <th class="center col-sm-4">选择</th>
+                                                <th class="center col-sm-8">角色名</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <template v-if="filterRoleList.length>0">
+                                                <tr v-for="(item, index) in filterRoleList" :key="index">
+                                                    <td class="center">
+                                                        <label class="pos-rel">
+                                                            <input type="checkbox" class="ace" :checked="item.check"
+                                                                   @click="filterRoleAdd(item)"/>
+                                                            <span class="lbl"></span>
+                                                        </label>
+                                                    </td>
+                                                    <td class="center" v-text="item.roleName"></td>
+                                                </tr>
+                                            </template>
+                                            <template v-else>
+                                                <tr>
+                                                    <td class="center" v-text="'没有数据'" colspan="2"></td>
+                                                </tr>
+                                            </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div style="clear: both;"></div>
+                            </div>
+                            <p class="text-center" style="padding: 10px 0;">
+                                <button class="btn btn-sm btn-primary" @click="saveSelectRole">确定</button>
+                                <button class="btn btn-sm btn-primary" @click="hideSelectRole">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label">用户信息:</label>
+                        <input type="text" v-model="searchField" placeholder="请输入用户ID或用户名称">
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-danger" value="删除" @click="showDelete">
+                        <input type="button" class="btn btn-sm btn-primary" value="分配权限" @click="showAdd">
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" v-model="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table class="table table-striped table-bordered table-hover dataTable"
+                       style="margin-bottom: 0;">
+                    <thead>
+                    <tr>
+                        <th class="center col-sm-1">
+                            <label class="pos-rel">
+                                <input type="checkbox" class="ace" :checked="checkAll" @click="allCheck"/>
+                                <span class="lbl"></span>
+                            </label>
+                        </th>
+                        <th class="center col-sm-1">ID</th>
+                        <th class="center col-sm-2">用户ID</th>
+                        <th class="center col-sm-2">用户名</th>
+                        <th class="center col-sm-4">已分配角色</th>
+                        <th class="center col-sm-2">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="distributedUserViewData.length>0">
+                        <tr v-for="(item, index) in distributedUserViewData" :key="index">
+                            <td class="center">
+                                <label class="pos-rel">
+                                    <input type="checkbox" class="ace" :checked="item.check" @click="check(item)"/>
+                                    <span class="lbl"></span>
+                                </label>
+                            </td>
+                            <td class="center" v-text="item.id"></td>
+                            <td class="center" v-text="item.userId"></td>
+                            <td class="center" v-text="item.userName"></td>
+                            <td class="center" v-text="item.distributedRole"></td>
+                            <td class="center">
+                                <a href="javascript:;" @click="updateRole(item)">修改</a>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'没有数据'" colspan="6"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <div v-if="distributedUserViewData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+distributedUserMiddleData.length+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers">
+                            <ul class="pagination">
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li class="paginate_button active">
+                                    <a href="javascript:;" v-text="currentIndex+1"></a>
+                                </li>
+                                <li :class="currentIndex==distributedUserMiddleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<script src="/js/lib/vue.js"></script>
+<script src="/js/lib/treeview.js"></script>
+<script src="/js/operationMgmt/userMgmt/role.js"></script>
+
+</body>
+</html>

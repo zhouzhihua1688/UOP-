@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+
+        #select-info .modal-dialog {
+            width: 960px;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label">
+                            基金代码:</label>
+                        <input class="scrollable" style="width:170px" type="text" v-model="fundIdList"/>
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>列表
+                </div>
+                <!--tab切换页面-->
+                <!-- <div> -->
+                    <!--分页器和快速查询-->
+                   <!--  <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length" id="dynamic-table_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+                    </div> -->
+                <!-- </div> -->
+                 <table class="table table-striped table-bordered table-hover dataTable" style="margin-bottom: 0;">
+                        <thead>
+                        <tr>
+                            <th class="center" style="width:80px">数据区别</th>
+                            <th class="center">基金代码</th>
+                            <th class="center">基金名称</th>
+                            <th class="center">基金简称</th>
+                            <th class="center">注册登记代码</th>
+                            <th class="center">货币类型</th>
+                            <th class="center">收费方式</th>
+                            <th class="center">基金等级</th>
+                            <th class="center">基金风险等级</th>
+                            <th class="center">基金类别</th>
+                            <th class="center">公募基金展示类别</th>
+                            <th class="center">基金面值</th>
+                            <th class="center">发型价格</th>
+                            <th class="center">基金净值小数位数</th>
+                            <th class="center">基金净值小数处理方式</th>
+                            <th class="center">注册登记机构名称</th>
+                            <th class="center">投资区域</th>
+                            <th class="center">申购确认日期</th>
+                            <th class="center">赎回确认日期</th>
+                            <th class="center">产品类型</th>
+                            <th class="center">分红方式</th>
+                            <th class="center">是否在直销发行</th>
+                            <th class="center">比对结果</th>
+                        </tr>
+
+                        </thead>
+                        <tbody>
+                        <template v-if="tableData.length>0">
+                        <template v-for="(fundItem,fundIndex) in tableData">
+                            <template v-for="(detailItem,detailIndex) in fundItem.originList">
+                                <tr>
+                                    <td class="center" v-text="'生产数据'+(detailIndex+1)"></td>
+                                    <td class="center" v-text="fundItem.fundId"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].fundchinesenm:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].fundnm:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].tano:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].currencytype:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].sharetype:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].shareclass:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].fundrisklevel:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].fundtp:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].displayfundtp:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].facevalue:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].issueprice:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].navfracnum:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].navfracmode:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].tanm:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].investarea:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].ackbidday:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].ackredday:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].producttype:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].melonmd:'-'"></td>
+                                    <td class="center" v-text="fundItem.originList[detailIndex]?fundItem.originList[detailIndex].directsellingsign:'-'"></td>
+                                    <td v-if="detailIndex===0" class="center" v-text="fundItem.diffResult?'相同':'不相同'" :rowspan="fundItem.originList.length*2" :style="'border-bottom:2px solid #69AA46'"></td>
+                                </tr>
+                                <tr :style="'border-bottom:2px solid #69AA46'">
+                                    <td class="center" v-text="'并行数据'+(detailIndex+1)"></td>
+                                    <td class="center" v-text="fundItem.fundId"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'fundchinesenm')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].fundchinesenm:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'fundnm')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].fundnm:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'tano')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].tano:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'currencytype')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].currencytype:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'sharetype')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].sharetype:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'shareclass')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].shareclass:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'fundrisklevel')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].fundrisklevel:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'fundtp')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].fundtp:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'displayfundtp')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].displayfundtp:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'facevalue')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].facevalue:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'issueprice')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].issueprice:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'navfracnum')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].navfracnum:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'navfracmode')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].navfracmode:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'tanm')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].tanm:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'investarea')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].investarea:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'ackbidday')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].ackbidday:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'ackredday')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].ackredday:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'producttype')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].producttype:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'melonmd')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].melonmd:'-'"></td>
+                                    <td class="center"
+                                        :style="compareResult(fundItem.originList[detailIndex],fundItem.parallelList[detailIndex],'directsellingsign')"
+                                        v-text="fundItem.parallelList[detailIndex]?fundItem.parallelList[detailIndex].directsellingsign:'-'"></td>
+                                </tr>
+                            </template>
+                        </template>
+                    </template>
+                        <template v-else>
+                            <tr>
+                                <td class="center" v-text="'没有数据'" colspan="26"></td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/businessMgmt/fundComparison/basicInformation.js"></script>
+</body>
+</html>
+
+
+<!-- <template v-if="tableData.length>0">
+                            <tr v-for="(item,index) in tableData" :key="index">
+                                <td>
+                                     <template>
+                                        <u style="font-weight:bold">生产数据</u><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">并行数据</span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span v-text="item.fundid"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                                  <span v-if="item2.fundid!=item.fundid" style="#69AA46" v-text="item2.fundid">
+                                               </span>
+                                               <span v-else v-text="item2.fundid">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span  v-text="item.fundchinesenm"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                                <span v-if="item2.fundchinesenm!=item.fundchinesenm" style="#69AA46" v-text="item2.fundchinesenm">
+                                               </span>
+                                               <span v-else v-text="item2.fundchinesenm">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span v-text="item.fundnm"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                                  <span v-if="item2.fundnm!=item.fundnm" style="#69AA46" v-text="item2.fundnm">
+                                               </span>
+                                               <span v-else v-text="item2.fundnm">
+                                               </span>
+
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span v-text="item.tano"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                                <span v-if="item2.tano!=item.tano" style="#69AA46" v-text="item2.tano">
+                                               </span>
+                                               <span v-else v-text="item2.tano">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span  v-text="item.currencytype"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                               <span v-if="item2.currencytype!=item.currencytype" style="#69AA46" v-text="item2.currencytype">
+                                               </span>
+                                               <span v-else v-text="item2.currencytype">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center" >
+                                    <template>
+                                        <span  v-text="item.sharetype"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                                 <span v-if="item2.sharetype!=item.sharetype" style="#69AA46" v-text="item2.sharetype">
+                                               </span>
+                                               <span v-else v-text="item2.sharetype">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span v-text="item.shareclass"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                                <span v-if="item2.shareclass!=item.shareclass" style="#69AA46" v-text="item2.shareclass">
+                                               </span>
+                                               <span v-else v-text="item2.shareclass">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center" >
+                                    <template>
+                                        <span v-text="item.fundrisklevel"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                                 <span v-if="item2.fundrisklevel!=item.fundrisklevel" style="#69AA46" v-text="item2.fundrisklevel">
+                                               </span>
+                                               <span v-else v-text="item2.fundrisklevel">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span v-text="item.fundtp"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                                <span v-if="item2.fundtp!=item.fundtp" style="#69AA46" v-text="item2.fundtp">
+                                               </span>
+                                               <span v-else v-text="item2.fundtp">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span v-text="item.displayfundtp"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                               <span v-if="item2.displayfundtp!=item.displayfundtp" style="#69AA46" v-text="item2.displayfundtp">
+                                               </span>
+                                               <span v-else v-text="item2.displayfundtp">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span v-text="item.facevalue"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                               <span v-if="item2.facevalue!=item.facevalue" style="#69AA46" v-text="item2.facevalue">
+                                               </span>
+                                               <span v-else v-text="item2.facevalue">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span  v-text="item.issueprice"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                               <span v-if="item2.issueprice!=item.issueprice" style="#69AA46" v-text="item2.issueprice">
+                                               </span>
+                                               <span v-else v-text="item2.issueprice">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span  v-text="item.navfracnum"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                               <span v-if="item2.navfracnum!=item.navfracnum" style="#69AA46" v-text="item2.navfracnum">
+                                               </span>
+                                               <span v-else v-text="item2.navfracnum">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center" >
+                                    <template>
+                                        <span  v-text="item.navfracmode"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                            <span v-if="item2.fundid==item.fundid">
+                                               <span v-if="item2.navfracmode!=item.navfracmode" style="#69AA46" v-text="item2.navfracmode">
+                                               </span>
+                                               <span v-else v-text="item2.navfracmode">
+                                               </span>
+                                            </span>
+                                            
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center" >
+                                     <template>
+                                        <span  v-text="item.tanm"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                            <span v-if="item2.fundid==item.fundid">
+                                               <span v-if="item2.tanm!=item.tanm" style="color:#69AA46" v-text="item2.tanm">
+                                               </span>
+                                               <span v-else v-text="item2.tanm">
+                                               </span>
+                                            </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span  v-text="item.investarea"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                               <span v-if="item2.investarea!=item.investarea" style="color:#69AA46" v-text="item2.investarea">
+                                               </span>
+                                               <span v-else v-text="item2.investarea">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                     <template>
+                                        <span   v-text="item.ackbidday"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                                  <span v-if="item2.ackbidday!=item.ackbidday" style="color:#69AA46" v-text="item2.ackbidday">
+                                               </span>
+                                               <span v-else v-text="item2.ackbidday">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span  v-text="item.ackredday"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                                   <span v-if="item2.ackredday!=item.ackredday" style="color:#69AA46" v-text="item2.ackredday">
+                                               </span>
+                                               <span v-else v-text="item2.ackredday">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span  v-text="item.producttype"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                                <span v-if="item2.producttype!=item.producttype" style="color:#69AA46" v-text="item2.producttype">
+                                               </span>
+                                               <span v-else v-text="item2.producttype">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center" >
+                                     <template>
+                                        <span v-text="item.melonmd"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                               <span v-if="item2.melonmd!=item.melonmd" style="color:#69AA46" v-text="item2.melonmd">
+                                               </span>
+                                               <span v-else v-text="item2.melonmd">
+                                               </span>
+
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td class="center">
+                                    <template>
+                                        <span  v-text="item.directsellingsign"></span><br>
+                                    </template>
+                                    <template>
+                                        <span v-for="(item2,index) in tableData2" :key="index">
+                                             <span v-if="item2.fundid==item.fundid">
+                                               <span v-if="item2.directsellingsign!=item.directsellingsign" style="color:#69AA46" v-text="item2.directsellingsign">
+                                               </span>
+                                               <span v-else v-text="item2.directsellingsign">
+                                               </span>
+                                             </span>
+                                        </span>
+                                    </template>
+                                </td>
+                                <td v-text="item.diffResult">
+                                    
+                                </td>
+                               
+                            </tr>
+                            <tr> 
+                              <td></td>   
+                            </tr>
+</template> -->

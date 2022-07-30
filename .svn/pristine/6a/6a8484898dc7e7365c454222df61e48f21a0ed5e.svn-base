@@ -1,0 +1,5 @@
+const request = require('./../../../local_data/requestWrapper');
+// const apiUrl = require('../apiConfig').investmentAccount.accountRule;
+module.exports = function(app){
+
+}

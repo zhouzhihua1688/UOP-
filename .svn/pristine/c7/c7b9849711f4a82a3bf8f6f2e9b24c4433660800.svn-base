@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datepicker3.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap24.css"/>
+    <style>
+        .show {
+            display: none;
+        }
+
+        .hide {
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+
+<% include ../../common/header.html %>
+
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!--提示信息弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--新增弹窗-->
+                        <div class="modal" id="create" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content" style="width:700px;height:400px">
+                                    <form id="addForm">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title" style="display: inline">新增渠道</h4>
+                                    </div>
+                                    <div class="modal-body" style="padding:10px 30px ">
+                                        <div class="form345">
+                                            <div class="form-group" style="margin-left:15px">
+                                                <label class="control-label">渠道代码:</label>
+                                                <input type="text" id="addbranchcode" name="branchcode"/>
+                                                <span style="color: red">*</span>
+                                                <!-- <input type="button" class="btn btn-sm btn-primary right" @click="crm" value="从CRM同步">-->
+                                                <label class="control-label" style="margin-left:115px">对应BD:</label>
+                                                <input type="text"  v-model="bd" id="qdjc" style="margin-left:7px"/>
+                                            </div>
+                                            <div class="form-group" style="margin-left:15px">
+                                                <label class="control-label">渠道简称:</label>
+                                                <input type="text"  v-model="shortnm" name="shortnm"/>
+                                                <span style="color: red">*</span>
+                                                <label class="control-label" style="margin-left:115px">渠道全称:</label>
+                                                <input type="text"  v-model="fullnm" name="fullnm"/>
+                                                <span style="color: red">*</span>
+                                                <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                            </div>
+                                            <div class="form-group" style="margin-left:42px;margin-bottom: 15px">
+                                                <label class="control-label">网址:</label>
+                                                <input type="text"  v-model="website"/>
+                                                <label class="control-label" style="margin-left:125px">客服电话:</label>
+                                                <input type="text"  v-model="tel"/>
+                                            </div>
+                                            <div class="form-group" style="margin-left:15px;margin-bottom: 10px;">
+                                                <label class="control-label">渠道类型:</label>
+                                                <select name="branchtype" class="form-control" style="width: 170px;display: inline-block" v-model="branchtype">
+                                                    <option value=""></option>
+                                                    <option value="A">直销</option>
+                                                    <option value="B">代销</option>
+                                                </select>
+                                                <span style="color: red">*</span>
+
+                                                <label class="control-label"style="margin-left:110px">行业类型:</label>
+                                                <select name="branchgroup" class="form-control" style="width: 170px;display: inline-block" v-model="branchgroup">
+                                                    <option value=""></option>
+                                                    <option value="1">银行</option>
+                                                    <option value="2">券商</option>
+                                                    <option value="3">第三方销售</option>
+                                                </select>
+                                                <template v-if="showRedTag">
+                                                    <span style="color: red">*</span>
+                                                </template>
+                                            </div>
+
+                                            <div class="form-group" style="margin-left:28px;margin-top: 30px">
+                                                <label class="control-label">创建人:</label>
+                                                <input  type="text" class="username" value="<%= username %>">
+                                                <label class="control-label" style="margin-left:125px">创建时间:</label>
+                                                <input type="text"  v-model="updatetime" />
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" style="width:100px" @click="add">保存</button>
+                                        <button class="btn btn-sm " style="width:100px; margin-left:30px;color:#ccc" data-dismiss="modal" class="close" aria-hidden="true">取消</button>
+                                    </p>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <!--更新弹窗-->
+                        <div class="modal" id="create1" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content" style="width:700px;height:400px">
+                                    <form id="upForm">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title" style="display: inline">渠道更新</h4>
+                                    </div>
+                                    <div class="modal-body" style="padding:10px 30px ">
+                                        <div id="form234">
+                                            <div class="form-group" style="margin-left:15px">
+                                                <label class="control-label">渠道代码:</label>
+                                                <input type="text" readonly id="branchcode" name="branchcode" v-model="branchcodes"/>
+                                                <!--<input type="button" class="btn btn-sm btn-primary right" @click="queryShortnm" value="从CRM同步">-->
+                                                <label class="control-label" style="margin-left:115px">对应BD:</label>
+                                                <input type="text" readonly v-model="bd" id="qdjc" style="margin-left:7px"/>
+                                            </div>
+                                            <div class="form-group" style="margin-left:15px">
+                                                <label class="control-label">渠道简称:</label>
+                                                <input type="text" v-model="shortnm" name="shortnm"/>
+                                                <label class="control-label" style="margin-left:115px">渠道全称:</label>
+                                                <input type="text" v-model="fullnm" name="fullnm"/>
+                                                <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                            </div>
+                                            <div class="form-group" style="margin-left:42px;margin-bottom: 15px">
+                                                <label class="control-label">网址:</label>
+                                                <input type="text" v-model="website"/>
+                                                <label class="control-label" style="margin-left:115px">客服电话:</label>
+                                                <input type="text" v-model="tel"/>
+                                            </div>
+                                            <div class="form-group" style="margin-left:15px;margin-bottom: 10px;">
+                                                <label class="control-label">渠道类型:</label>
+                                                <select name="branchtype" class="form-control" style="width: 170px;display: inline-block" v-model="branchtype">
+                                                    <option value=""></option>
+                                                    <option value="A">直销</option>
+                                                    <option value="B">代销</option>
+                                                </select>
+
+                                                <label class="control-label"style="margin-left:110px">行业类型:</label>
+                                                <select name="branchgroup" class="form-control" style="width: 170px;display: inline-block" v-model="branchgroup">
+                                                    <option value=""></option>
+                                                    <option value="1">银行</option>
+                                                    <option value="2">券商</option>
+                                                    <option value="3">第三方销售</option>
+                                                </select>
+
+                                            </div>
+
+                                            <div class="form-group" style="margin-left:28px;margin-top: 30px">
+                                                <label class="control-label">更新人:</label>
+                                                <input type="text"  v-model="updateby"  />
+                                                <label class="control-label" style="margin-left:115px">更新时间:</label>
+                                                <input type="text"  v-model="updatetime" />
+                                                <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="系统生成">-->
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" style="width:100px" @click="update">更新</button>
+                                        <button class="btn btn-sm " style="width:100px; margin-left:30px;color:#ccc" data-dismiss="modal" class="close" aria-hidden="true">取消</button>
+                                    </p>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <!--删除提示框-->
+                        <div class="modal" id="chu" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" >×</button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <h5 style="text-indent:2em">点击删除后，当前数据将不存在。</h5>
+                                        <h5 style="text-align: center">请确认，是否要执行该操作？</h5>
+                                    </div>
+                                    <p class="text-center" >
+                                        <button type="button" class="btn btn-primary btn-sm"  @click="delete1">确定</button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- DIALOG ENDS -->
+                        <div class="form-inline" style="padding: 10px 0;">
+                            <label class="control-label">渠道代码:</label>
+                            <div class="form-group">
+                                <input v-model="branchcode" type="text"/>
+                            </div>
+                            <label class="control-label" style="margin-left:20px">渠道名称:</label>
+                            <div class="form-group">
+                                <input id="shortnm" type="text"/>
+                            </div>
+                            <label class="control-label" style="margin-left:20px">渠道类型:</label>
+                            <select name="branchtype" class="form-control" style="width: 170px;" v-model="branchtype">
+                                <option value=""></option>
+                                <option value="A">直销</option>
+                                <option value="B">代销</option>
+                            </select>
+                            <div class="form-group pull-right">
+                                <input type="button" class="btn btn-sm btn-primary right" @click="search" value="查询">
+                                <input type="button" class=" btn-sm  right" @click="showAdd()"
+                                       value="新增渠道" style="background-color:darkgoldenrod;border: none;padding: 5px 16px;font-size: 12px;line-height: 2;color: white;border-radius:0 ">
+                            </div>
+                        </div>
+                        <div class="table-header">
+                            <%= cpage %>--表格数据
+                        </div>
+                        <!--分页器和快速查询-->
+                        <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                            <div class="col-xs-6">
+                                <div class="dataTables_length" id="dynamic-table_length">
+                                    <label>每页显示</label>
+                                    <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-xs-6">
+                                <div id="dynamic-table_filter" class="dataTables_filter">
+                                    <label>快速查询:</label>
+                                    <input type="text" class="input-sm" v-model="condition">
+                                </div>
+                            </div>
+                        </div>
+                        <!--数据表-->
+                        <table id="simple-table" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center">序号</th>
+                                <th class="center">渠道代码</th>
+                                <th class="center">渠道全称</th>
+                                <th class="center">渠道简称</th>
+                                <th class="center">渠道类型</th>
+                                <th class="center">网址</th>
+                                <th class="center">客服电话</th>
+                                <th class="center">负责BD</th>
+                                <th class="center">行业类型</th>
+                                <th class="center">更新人</th>
+                                <th class="center ">更新时间</th>
+                                <th class="center">渠道更新</th>
+                                <th class="center">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="viewData.length>0">
+                                <tr v-for="(item,index) in viewData" :key="index"
+                                    :style="index%2==0?'background-color: #f9f9f9;':''">
+                                    <td class="center " v-text="index+1"></td>
+                                    <td class="center col-md-1" v-text="item.branchcode"></td>
+                                    <td class="center col-md-1" v-text="item.fullnm" style="white-space:nowrap"></td>
+                                    <td class="center col-md-1" v-text="item.shortnm"></td>
+                                    <td class="center col-md-1">
+                                        <template v-if="item.branchtype=='A'">
+                                            <span href="javascript:;" >直销</span>
+                                        </template>
+                                        <template v-else-if="item.branchtype=='B'">
+                                            <span href="javascript:;">代销</span>
+                                        </template>
+                                        <template v-else>
+                                            <span href="javascript:;"></span>
+                                        </template>
+                                    </td>
+                                    <td class="center col-md-2" v-text="item.website"></td>
+                                    <td class="center col-md-1" v-text="item.tel"></td>
+                                    <td class="center col-md-1" v-text="item.bd"></td>
+                                    <td class="center col-md-1">
+                                        <template v-if="item.branchgroup=='1'">
+                                            <span href="javascript:;" >银行</span>
+                                        </template>
+                                        <template v-else-if="item.branchgroup=='2'">
+                                            <span href="javascript:;">券商</span>
+                                        </template>
+                                        <template v-else-if="item.branchgroup=='3'">
+                                            <span href="javascript:;">第三方销售</span>
+                                        </template>
+                                        <template v-else>
+                                            <span href="javascript:;"></span>
+                                        </template>
+                                    </td>
+                                    <td class="center col-md-1" v-text="item.updateby"></td>
+                                    <td class="center col-md-1" text="item.updatetime" style="white-space:nowrap">{{item.updatetime | time}}</td>
+                                    <td class="center col-md-1" text="item.insertby"><a href="javascript:;"  @click="showUpdate(item)">更新</a></td>
+                                    <td class="center col-md-1" text="item.remind"><a href="javascript:;" style="color:red;white-space:nowrap" @click="showdelete(item)">删除</a></td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'没有数据'" colspan="13"></td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                        <!--底部页码-->
+                        <div v-if="viewData.length>0" class="row"
+                             style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                            <div class="col-xs-2">
+                                <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                            </div>
+                            <div class="col-xs-10">
+                                <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                    <ul class="pagination">
+                                        <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                            @click="prev">
+                                            <a href="javascript:;" v-text="'上一页'"></a>
+                                        </li>
+                                        <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                            v-for="value in middleData.length" @click="changeIndex(value)">
+                                            <a href="javascript:;" v-text="value"></a>
+                                        </li>
+                                        <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                            @click="next">
+                                            <a href="javascript:;" v-text="'下一页'"></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- PAGE CONTENT ENDS -->
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+
+    <% include ../../common/footer.html %>
+
+</div><!-- /.main-container -->
+
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/jquery-ui.custom.min.js"></script>
+<script src="/ace/assets/js/jquery.ui.touch-punch.min.js"></script>
+<script src="/ace/assets/js/markdown.min.js"></script>
+<script src="/ace/assets/js/bootstrap-markdown.min.js"></script>
+<script src="/ace/assets/js/spinbox.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datepicker.min.js"></script>
+<script src="/ace/assets/js/autosize.min.js"></script>
+<script src="/ace/assets/js/jquery.inputlimiter.min.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/jquery.validate.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/thirdPartyOperation/channelMaintain/partnerSelling.js"></script>
+<script>
+    $('.date-picker').datepicker({
+        autoclose: true,
+        todayHighlight: true,
+        format:'yyyy-mm',
+        language: 'cn',
+        startView:'year',
+        maxViewMode:'years',
+        minViewMode:'years',
+        // startView:'months',
+        // maxViewMode:'months',
+        minViewMode:'months'
+    }).next().on(ace.click_event, function () {
+        $(this).prev().focus();
+    });
+
+</script>
+</body>
+
+</html>

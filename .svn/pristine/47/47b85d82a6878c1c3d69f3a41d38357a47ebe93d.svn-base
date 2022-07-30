@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        .chosen-single {
+            height: 30px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+        }
+        .dia-label {
+            width: 120px;
+            margin-left: 50px;
+        }
+        .chosen-drop{
+            height:500px !important;
+        }
+        .chosen-container .chosen-results {
+            color: #444;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+            margin: 0 4px 4px 0;
+            padding: 0 0 0 4px;
+            max-height:450px; 
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!-- <input type="text" list="a">
+                <datalist id='a'>
+                    <option value="1"></option>
+                    <option value="12"></option>
+                    <option value="13"></option>
+                </datalist> -->
+                <!--修改额度-->
+                <div class="modal" id="revise" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:600px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding:10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">修改当前立即购买额度</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding: 0 10px;">
+                                    <div style="text-align:center">
+                                        <div class="form-group">
+                                            <label class="control-label">产品代码:</label>
+                                            <input type="text" style="width:175px;" disabled v-model="fundId"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">产品名称:</label>
+                                            <input type="text" style="width:175px;" disabled v-model="fundName"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-80px">修改当前立即购买额度:</label>
+                                            <input type="text" style="width:175px;" v-model="currentLimit"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-50px">产品最大销售额度:</label>
+                                            <input type="text" style="width:175px;" v-model="maxSalesAmount"/>
+                                        </div>
+                                         <div class="form-group">
+                                            <label class="control-label" style="margin-left:-50px">当前预约购买额度:</label>
+                                            <input type="text" style="width:175px;" v-model="maxBookingAmt"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="update()">保存</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--新增额度-->
+                <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:600px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding:10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">新增当前立即购买额度</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding: 0 10px;">
+                                    <div style="text-align:center">
+                                        <div class="form-group">
+                                            <label class="control-label">产品代码:</label>
+                                            <input type="text" style="width:175px;" disabled v-model="fundId"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">产品名称:</label>
+                                            <input type="text" style="width:175px;" disabled v-model="fundName"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-80px">新增当前立即购买额度:</label>
+                                            <input type="text" style="width:175px;" v-model="currentLimit"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-50px">产品最大销售额度:</label>
+                                            <input type="text" style="width:175px;" v-model="maxSalesAmount"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-50px">当前预约购买额度:</label>
+                                            <input type="text" style="width:175px;" v-model="maxBookingAmt"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="saveParam()">保存</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- 当前预约明细查询 -->
+                <div class="modal" id="query" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:1100px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding:10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">当前预约明细</h4>
+                            </div>
+                            <div class="modal-body" style="padding:0px">
+                                <table  class="table table-bordered table-hover" style="margin-bottom:0px;">
+                                    <thead>
+                                    <tr>
+                                        <th class="center" style="width:200px">预约产品名称</th>
+                                        <th class="center" style="width:200px">客户名</th>
+                                        <th class="center" style="width:200px">证件类型</th>
+                                        <th class="center" style="width:200px">证件号码</th>
+                                        <th class="center" style="width:200px">手机号码</th>
+                                        <th class="center" style="width:200px">预约金额</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                                
+                            </div>
+                            <div class="modal-body" style="padding:0px;height:500px; overflow-y: auto">
+                                <table  class="table table-bordered table-hover">
+                                    <thead>
+                                   <!--  <tr>
+                                        <th class="center">预约产品名称</th>
+                                        <th class="center">客户名</th>
+                                        <th class="center">证件类型</th>
+                                        <th class="center">证件号码</th>
+                                        <th class="center">手机号码</th>
+                                        <th class="center">预约金额</th>
+                                    </tr> -->
+                                    </thead>
+                                    <tbody>
+                                    <template>
+                                    <tr v-for="(item,index) in fundData" :key="index">
+                                        <td class="center" v-text="item.fundName" style="width:210px"></td>
+                                        <td class="center" v-text="item.custName" style="width:210px"></td>
+                                        <td class="center" style="width:220px">{{item.idTp | idTp}}</td>
+                                        <td class="center" v-text="item.idNo" style="width:200px"></td>
+                                        <td class="center" v-text="item.mobileNo" style="width:200px"></td>
+                                        <td class="center" v-text="item.subAmt" style="width:200px"></td>
+                                    </tr>
+                                    </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="dataTables_info">总条数:{{totalRecord}}</div>
+                            <p class="text-center" style="clear:both">
+                                <button type="button" class="btn btn-default btn-sm"
+                                        data-dismiss="modal">返回
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--提示信息弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 20px 0 10px 0;">
+                    <!--<div class="form-group">-->
+                        <!--<label class="control-label">产品名称:</label>-->
+                        <!--&lt;!&ndash; <select style="width:175px" v-model="fundId"> &ndash;&gt;-->
+                            <!--&lt;!&ndash; <option value="all">全部</option> &ndash;&gt;-->
+                            <!--&lt;!&ndash; <option :value="item.fundId" v-for="(item,index) in nameList">-->
+                                <!--{{item.fundName}}-->
+                            <!--</option> &ndash;&gt;-->
+                        <!--&lt;!&ndash; </select> &ndash;&gt;-->
+                        <!---->
+                        <!---->
+                        <!--<select style="width:175px" v-model="fundIdList">-->
+                            <!--<option value="all">全部</option>-->
+                            <!--<option :value="item.fundId" v-for="(item,index) in nameList">-->
+                                <!--{{item.fundName}}-->
+                            <!--</option>-->
+                        <!--</select>-->
+                    <!--</div>-->
+
+                    <div class="form-group">
+                        <label class="control-label">产品名称:</label>
+                        <select id="fundNameList" class="chosen-select form-control" v-model="fundIdList"
+                                data-placeholder="全部">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">开放日期:</label>
+                        <select style="width:175px;" v-model="opendate">
+                            <option value="-1">全部</option>
+                            <option value="1">开放中</option>
+                            <option value="0">未开放</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">当前额度:</label>
+                        <select style="width:175px;" v-model="currentAmount">
+                            <option value="-1">全部</option>
+                            <option value="1">已分配</option>
+                            <option value="0">未分配</option>
+                        </select>
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click=getTableData(0)>
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <div>
+                    <!--分页器和快速查询-->
+                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length" id="dynamic-table_length">
+                                <label>每页显示</label>
+                                <!-- <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                </select> -->
+                                <input type="text" style="width:100px;" name="pageMaxNum" v-model="pageMaxNum"/>
+                                <label>条</label>
+                            </div>
+                        </div>
+                        <!-- <div class="col-xs-6">
+                            <div class="dataTables_filter">
+                                <label>快速查询:</label>
+                                <input type="text" class="input-sm" v-model="condition">
+                            </div>
+                        </div> -->
+                    </div>
+                    <!--数据表-->
+                    <table class="table table-striped table-bordered table-hover dataTable" style="margin-bottom: 0;">
+                        <thead>
+                        <tr>
+                            <!-- <th class="center">
+                                <label class="pos-rel">
+                                    <input type="checkbox" class="ace" v-model="allCheck" @click="selectAll(allCheck)"/>
+                                    <span class="lbl"></span>
+                                </label>
+                            </th> -->
+                            <th class="center">产品代码</th>
+                            <th class="center">产品名称</th>
+                            <th class="center">开放日期</th>
+                            <th class="center">产品当前规模</th>
+                            <th class="center">销售总额度</th>
+                            <th class="center" style="background-color: #ff4500;color:#333">当期额度</th>
+                            <th class="center" style="background-color:lightskyblue;color:#333">当前已下单金额</th>
+
+                            <th class="center" style="background-color:lightskyblue;color:#333">流水号冻结额度</th>
+
+                            <th class="center">赎回金额</th>
+
+                            <th class="center" style="background-color:lightskyblue;color:#333">当前立即购买额度</th>
+                            <th class="center" >当前预约购买额度</th>
+
+                            <th class="center">企业版当前可用额度</th>
+                            
+                            <th class="center">持有人数</th>
+                            <th class="center">300万以下人数</th>
+                            <th class="center">当前预约明细</th>
+                            <th class="center">系列明细查询</th>
+                            <th class="center">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <!--真分页业务数据-->
+                        <template v-if="tableData.length>0">
+                            <tr v-for="(item,index) in tableData" :key="index"
+                                :style="index%2==0?'background-color: #f9f9f9;':''">
+                                <td class="center" v-text="item.fundId"></td>
+                                <td class="center" v-text="item.fundName"></td>
+                                <td class="center" v-text="item.openDate"></td>
+                                <td class="center" v-text="item.balance"></td>
+                                <td class="center" v-text="item.maxSalesAmount"></td>
+                                <td class="center" v-text="item.avaliableAmt"></td>
+                                <td class="center" v-text="item.subAmt"></td>
+
+                                <td class="center" v-text="item.reserveAmt"></td>
+                                <td class="center" v-text="item.redAmt"></td>
+
+                                <td class="center" v-text="item.currentLimit"></td>
+                                <td class="center" v-text="item.maxBookingAmt"></td>
+                                <td class="center" v-text="item.currentLimitEnt"></td>
+                                <td class="center" v-text="item.peoNum"></td>
+                                <td class="center" v-text="item.peoNumLess"></td>
+                                <td class="center">
+                                    <a href="javascript:;" @click="query(item,0)">查询</a>
+                                </td>
+                                <td class="center"></td>
+                                <td class="center">
+                                    <template v-if="item.avaliableAmt==0&&item.avaliableAmt==''">
+                                        <a href="javascript:;" @click="showAdd(item)">新增额度</a>
+                                    </template>
+                                    <template v-else-if="item.avaliableAmt>0">
+                                        <a href="javascript:;" @click="showUpdate(item)">修改额度</a>
+                                    </template>
+                                </td>
+                                <!--<template v-if="item.avaliableAmt<0">-->
+                                    <!--<a href="javascript:;" @click="showAdd(item)">新增额度</a>-->
+                                <!--</template>-->
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <tr>
+                                <td class="center" v-text="'没有数据'" colspan="22"></td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+
+                    <!--底部页码-->
+                    <!--后端真分页-->
+                    <div v-if="tableData.length>0" class="row"
+                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                        <div class="col-xs-2">
+                            <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                        </div>
+                        <div class="col-xs-10">
+                            <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                <ul class="pagination">
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                    </li>
+                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                        @click="prev">
+                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                    </li>
+                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                        v-for="value in pageList" @click="changeIndex(value)">
+                                        <a href="javascript:;" v-text="value"></a>
+                                    </li>
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                    </li>
+                                    <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                        @click="next">
+                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/businessMgmt/highFinancialMgmt/quotaMgmt.js"></script>
+</body>
+</html>

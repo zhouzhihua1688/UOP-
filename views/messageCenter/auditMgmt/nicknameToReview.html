@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        table tbody td{
+            vertical-align: middle !important;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--拒绝弹窗-->
+                <div class="modal" id="rejectCheck" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">拒绝理由</h4>
+                            </div>
+                            <div class="modal-body ">
+                                <div class="form-group">
+                                    <textarea name="" id=""  v-model="chkComment" style="display:block;width: 100%;margin-top: 0.5rem" placeholder="请输入拒绝理由">
+
+                                    </textarea>
+                                </div>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-white btn-primary " data-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal" @click="rejectChecking">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group" style="padding-bottom: 10px;">
+                        <label class="control-label">证件号码:</label>
+                        <input type="text" v-model="idNo">
+                    </div>
+                    <div class="form-group" style="padding-bottom: 10px;">
+                        <label class="control-label">基金账号:</label>
+                        <input type="text" v-model="fundAcct">
+                    </div>
+                    <div class="form-group" style="padding-bottom: 10px;">
+                        <label class="control-label">交易账号:</label>
+                        <input type="text" v-model="tradeAcct">
+                    </div>
+
+                </div>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group" style="padding-bottom: 10px;">
+                        <label class="control-label">起始时间:</label>
+                        <input type="text" v-model="appStrDt" class="date-timepicker appStrDt">
+                    </div>
+                    <div class="form-group" style="padding-bottom: 10px;">
+                        <label class="control-label">终止时间:</label>
+                        <input type="text" v-model="appEndDt" class="date-timepicker appEndDt">
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length" id="dynamic-table_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                    <thead>
+                    <tr>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">手机号</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">姓名</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">昵称</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">提交时间</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">操作说明</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">操作时间</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">当前状态</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="tableData.length>0">
+                        <tr v-for="(item,index) in tableData" :key="index">
+                            <td class="center" v-text='item.mobile'></td>
+                            <td class="center" v-text='item.invNm'></td>
+                            <td class="center" v-text='item.nickname'></td>
+                            <td class="center" v-text='stringTimeFat(item.apDt) '></td>
+                            <td class="center" v-text='item.chkComment '></td>
+                            <td class="center" v-text='stringTimeFat(item.chkDt) '></td>
+                            <td class="center red" v-text='item.chkFlg=="Y"?"已通过":item.chkFlg=="I"?"待审核":"已拒绝"'></td>
+                            <td class="center" >
+                                <% if(canShow||authorityList.includes('U')) { %>
+                                <a href="javascript:;" @click="passCheck(item.serialNo)">通过</a>
+                                &nbsp;
+                                <a href="javascript:;" @click="rejectCheck(item.serialNo)">拒绝</a>
+                                <% } %>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="loadingStatus" colspan="11"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+
+                <!--底部页码-->
+                <div v-if="tableData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers"
+                             id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/messageCenter/nicknameToReview.js"></script>
+</body>
+</html>

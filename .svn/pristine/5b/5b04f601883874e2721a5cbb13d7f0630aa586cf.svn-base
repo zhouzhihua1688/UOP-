@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ./common/head.html %>
+    <!-- inline styles related to this page -->
+</head>
+<body class="no-skin">
+<% include ./common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ./common/sidebar.html %>
+    <% include ./common/footer.html %>
+</div><!-- /.main-container -->
+<% include ./common/basic-scripts.html %>
+</body>
+</html>

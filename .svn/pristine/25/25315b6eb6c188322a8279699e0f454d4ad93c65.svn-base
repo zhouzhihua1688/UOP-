@@ -1,0 +1,603 @@
+const request = require('./../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').activeRun.activeSettingAdd;
+
+module.exports = function (app) {
+    // 获取 所有活动
+    app.post('/marketingActive/activeRun/activeSetting/addActiveAll.ajax', (req, res, next) => {
+        let userName = req.session.loginInfo.username;
+        let option = {
+            session: req.session,
+            url: apiUrl.activeAll,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addActiveAll.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addActiveAll.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addActiveAll.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addActiveAll.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '所有活动失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                result.body.userName = userName;
+                res.send({
+                    error: 0,
+                    msg: '所有活动调用成功',
+                    userName,
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    userName,
+                    msg: '所有活动失败'
+                });
+            }
+        });
+    });
+    // 获取 所有模型
+    app.post('/marketingActive/activeRun/activeSetting/addModuleAll.ajax', (req, res, next) => {
+        let userName = req.session.loginInfo.username;
+        let option = {
+            session: req.session,
+            url: apiUrl.moduleAll,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addModuleAll.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addModuleAll.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addModuleAll.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addModuleAll.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '所有模型获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '所有模型调用成功',
+                    userName,
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    userName,
+                    msg: '所有模型数据失败'
+                });
+            }
+        });
+    });
+
+
+    // 获取 所有切点
+    app.post('/marketingActive/activeRun/activeSetting/addCutAll.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.cutAll,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addCutAll.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addCutAll.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addCutAll.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addCutAll.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '切点获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '切点获取成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '切点获取失败'
+                });
+            }
+        });
+    });
+
+    // 获取 所有组件
+    app.post('/marketingActive/activeRun/activeSetting/addComponentAll.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.componentAll,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addComponentAll.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addComponentAll.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addComponentAll.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addComponentAll.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '组件获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '组件调用成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '组件数据失败'
+                });
+            }
+        });
+    });
+
+
+    // 获取 关联推送数据源配置
+    app.post('/marketingActive/activeRun/activeSetting/addComponentLargeData.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.componentLargeData,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addComponentLargeData.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addComponentLargeData.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addComponentLargeData.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addComponentLargeData.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '关联推送数据源配置获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '关联推送数据源配置调用成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取关联推送数据源配置失败'
+                });
+            }
+        });
+    });
+
+
+
+    // 获取 直接发奖配置
+    app.post('/marketingActive/activeRun/activeSetting/addAwardData.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.awardData,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addAwardData.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addAwardData.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addAwardData.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addAwardData.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '直接发奖配置获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '直接发奖配置调用成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取直接发奖配置失败'
+                });
+            }
+        });
+    });
+
+
+    // 获取  活动短信配置
+    app.post('/marketingActive/activeRun/activeSetting/addInfoData.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.infoData,
+            // qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addInfoData.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addInfoData.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addInfoData.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addInfoData.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '获取活动短信配置失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '活动短信配置调用成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取活动短信配置失败'
+                });
+            }
+        });
+    });
+
+
+
+    // 获取 活动分享配置
+    app.post('/marketingActive/activeRun/activeSetting/addShareData.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.shareData,
+            // qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addShareData.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addShareData.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addShareData.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addShareData.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '活动分享配置获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '活动分享配置调用成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取活动分享配置失败'
+                });
+            }
+        });
+    });
+    // 获取 活动分享配置
+    app.post('/marketingActive/activeRun/activeSetting/addEventData.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.eventData,
+            // qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addEventData.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addEventData.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addEventData.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addEventData.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '事件类型获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '事件类型调用成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取事件类型失败'
+                });
+            }
+        });
+    });
+
+
+    // 获取 安全等级配置
+    app.post('/marketingActive/activeRun/activeSetting/addSecureData.ajax', (req, res, next) => {
+        // let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.secureData,
+            // qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addSecureData.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addSecureData.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addSecureData.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addSecureData.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '安全等级获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                let obj = [];
+                for (const key in result.body) {
+                    if (result.body.hasOwnProperty(key)) {
+                        obj.push({
+                            val: key,
+                            showName: result.body[key],
+                        })
+                    }
+                }
+                res.send({
+                    error: 0,
+                    msg: '安全等级调用成功',
+                    data: obj
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取安全等级失败'
+                });
+            }
+        });
+    });
+
+    // 获取 活动投放渠道
+    app.post('/marketingActive/activeRun/activeSetting/addRoad.ajax', (req, res, next) => {
+        // let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.road,
+            // qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addRoad.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addRoad.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addRoad.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addRoad.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '活动投放渠道失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '活动投放渠道调用成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '活动投放渠道失败'
+                });
+            }
+        });
+    });
+
+
+
+
+    // 保存 所有配置
+    app.post('/marketingActive/activeRun/activeSetting/addKeepData.ajax', (req, res, next) => {
+        let params = req.body;
+        try {
+            params.activityRuleConfig = JSON.parse(params.activityRuleConfig)
+            console.log(params.activityRuleConfig.activityBaseComponentsList)
+        } catch (error) {
+            console.log(error)
+        }
+        let option = {
+            session: req.session,
+            url: apiUrl.keepData,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addKeepData.ajax option:', option);
+
+        request.post(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addKeepData.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addKeepData.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addKeepData.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '保存失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '保存成功',
+                    data: result.body
+                });
+            } else {
+                result.url = option.url
+                res.send({
+                    error: 1,
+                    msg: '保存失败'
+                });
+            }
+        });
+    });
+
+    // 获取 修改数据
+    app.post('/marketingActive/activeRun/activeSetting/addActGetData.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.actGetData,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addActGetData.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addActGetData.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addActGetData.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addActGetData.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+        });
+    });
+
+
+
+    // 修改 所有配置
+    app.post('/marketingActive/activeRun/activeSetting/addChangeData.ajax', (req, res, next) => {
+        let params = req.body;
+        params.activityRuleConfig = JSON.parse(params.activityRuleConfig)
+        let option = {
+            session: req.session,
+            url: apiUrl.changeData,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addChangeData.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addChangeData.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addChangeData.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addChangeData.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '修改失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '修改成功',
+                    data: result.body
+                });
+            } else {
+                result.url = option.url
+                res.send({
+                    error: 1,
+                    msg: '修改失败'
+                });
+            }
+        });
+    });
+
+
+    // 获取 分组配置
+    app.post('/marketingActive/activeRun/activeSetting/addUserGroup.ajax', (req, res, next) => {
+        // let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.userGroup,
+            // qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeRun/activeSetting/addUserGroup.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/activeRun/activeSetting/addUserGroup.ajax error:', error);
+            console.log('/marketingActive/activeRun/activeSetting/addUserGroup.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeRun/activeSetting/addUserGroup.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                let data = result.body;
+                let checkDefault = data.some(item => {
+                    return item.groupId === '00000'
+                })
+                if(!checkDefault){
+                    data.unshift({
+                        groupId:'00000',
+                        groupName:'默认分组'
+                    })
+                }
+                res.send({
+                    error: 0,
+                    msg: '获取成功',
+                    data
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+        });
+    });
+};

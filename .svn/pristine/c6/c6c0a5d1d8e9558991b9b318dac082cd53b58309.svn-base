@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-multiselect.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--提示信息弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--查询信息弹窗-->
+                <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:1000px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">查询信息</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <div style="text-align:center">
+                                        <div class="form-group" style="float:left">
+                                            <label class="control-label" style="margin-left:22px">运作方式:</label>
+                                            <!--<input type="text" style="width:150px;"/>-->
+                                            <select name="" style="width:150px;" v-model="operationModeFund">
+                                                <option value="">请选择</option>
+                                                <option :value="item.pmco" v-for="(item,index) in modelList">
+                                                    {{item.pmco}}-{{item.pmnm}}
+                                                </option>
+                                            </select>
+                                            <span style="color:red">*必填</span>
+                                        </div>
+                                        <div class="form-group" style="float:left" v-if="operationModeFund!='10001'">
+                                            <label class="control-label" style="margin-left:45px">期限:</label>
+                                            <select name="" style="width:150px;" class="qixian">
+                                                <option value="">请选择</option>
+                                                <option :value="item.pmco" v-for="(item,index) in termList">
+                                                    {{item.pmco}}-{{item.pmnm}}
+                                                </option>
+                                            </select>
+                                            <!--<span style="color:red">*必填</span>-->
+                                        </div>
+                                        <div class="form-group" style="float:left;">
+                                            <label class="control-label" style="margin-left:28px">产品风险等级:</label>
+                                            <select name="" style="width:150px;" v-model="fundRiskLevel">
+                                                <!--<option value="">请选择</option>-->
+                                                <!--<option value="1">低</option>-->
+                                                <!--<option value="2">中</option>-->
+                                                <!--<option value="3">高</option>-->
+                                                <option value="">请选择</option>
+                                                <option :value="item.pmco" v-for="(item,index) in gradeList">
+                                                    {{item.pmco}}-{{item.pmnm}}
+                                                </option>
+                                            </select>
+                                            <span style="color:red">*必填</span>
+                                        </div>
+                                        <!--<div style="clear: both;border-bottom:1px solid #eee;margin-bottom:20px"></div>-->
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">基金经理1:</label>
+
+                                                <input type="text" style="width:150px;"  v-model="managerName"/>
+                                                <span style="color:red">*必填</span>
+                                                <!--<select name="" style="width:150px;" v-model="managerId">-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.managerId" v-for="(item,index) in managerDetailList">-->
+                                                        <!--{{item.managerId}}-{{item.managerName}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">基金经理2:</label>
+                                                <!--<select name="" style="width:150px;">-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option value=""></option>-->
+                                                <!--</select>-->
+                                                <input type="text" style="width:150px;"  v-model="managerName2"/>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:40px">营销优先级:</label>
+                                                <!--<input type="text" style="width:150px;"/>-->
+                                                <!--<select name="" style="width:150px;">-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option value=""></option>-->
+                                                <!--</select>-->
+                                                <select name="" style="width:150px;" v-model="markeList">
+                                                    <option value="">请选择</option>
+                                                    <option value="1">优先级1</option>
+                                                    <option value="2">优先级2</option>
+                                                    <option value="3">优先级3</option>
+                                                    <option value="4">优先级4</option>
+                                                    <option value="5">优先级5</option>
+                                                    <option value="6">优先级6</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div  style="clear: both;">
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:20px">适用场景:</label>
+                                                <select name="scenario" class="" style="width: 150px;" v-model="scenario">
+                                                    <option value="">请选择</option>
+                                                    <option :value="item.pmco" v-for="(item,index) in scenarioList">
+                                                        {{item.pmco}}-{{item.pmnm}}
+                                                    </option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group" style="float:left;margin-left:20px">
+                                                <input type="button" class="btn btn-sm btn-primary" value="查看适用模型" @click="checkModelName()">
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                        <div class="form-group" style="float: left">
+                                            <label class="control-label" style="margin-left:22px">模型名称:</label>
+                                            <select name="" style="width:150px;" v-model="mdlId" :mdlVer="mdlVer">
+                                                <option value="">请选择</option>
+                                                <option :value="item.mdlId" v-for="(item,index) in getModelNameList">
+                                                    {{item.mdlId}}-{{item.mdlNm}}
+                                                </option>
+                                            </select>
+                                            <span style="color:red">*必填</span>
+                                        </div>
+                                        <div style="clear: both;">
+                                            <div class="form-group">
+                                                <input type="button" class="btn btn-sm btn-primary" value="客群查询" @click="customerQuery()">
+                                            </div>
+                                        </div>
+
+                                        <div style="clear: both;border-bottom:1px solid #eee;margin-bottom:20px"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--<p class="text-center" style="clear: both">-->
+                                <!--<button class="btn btn-sm btn-primary" @click="saveParam()">确定</button>-->
+                                <!--<button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>-->
+                            <!--</p>-->
+                        </div>
+                    </div>
+                </div>
+                <!--下载-->
+                <div class="modal" id="downLoad" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:800px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">信息</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <div style="text-align:center">
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:12px">客户风险评级:</label>
+                                            <!--<select name="" style="width:150px;">-->
+                                                <!--<option value="">请选择</option>-->
+                                                <!--<option value="C1">保守型C1</option>-->
+                                                <!--<option value="C2">稳健型C2</option>-->
+                                                <!--<option value="C3">平衡型C3</option>-->
+                                                <!--<option value="C4">进取型C4</option>-->
+                                                <!--<option value="C5">积极型C5</option>-->
+                                            <!--</select>-->
+                                            <select id="riskList" multiple class="chosen-select"
+                                                    data-placeholder="请选择" style="width:150px;">
+                                                <option value=""></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:26px">推荐优先级:</label>
+                                            <!--<select name="" style="width:150px;">-->
+                                                <!--<option value="">请选择</option>-->
+                                                <!--<option value="1">优先级1</option>-->
+                                                <!--<option value="2">优先级2</option>-->
+                                                <!--<option value="3">优先级3</option>-->
+                                                <!--<option value="4">优先级4</option>-->
+                                                <!--<option value="5">优先级5</option>-->
+                                                <!--<option value="6">优先级6</option>-->
+                                            <!--</select>-->
+                                            <select id="priorityList" multiple class="chosen-select"
+                                                    data-placeholder="请选择" style="width:150px;">
+                                                <option value=""></option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="takeData()">下载</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--推送-->
+                <div class="modal" id="push" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:850px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">信息</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <div style="text-align:center">
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:12px">推送到系统:</label>
+                                            <!--<select name="" style="width:150px;" v-model="system" @change="chooseSystem(system)">-->
+                                                <!--<option value="">请选择</option>-->
+                                                <!--<option value="NCRM">NCRM</option>-->
+                                                <!--<option value="GROUP">GROUP</option>-->
+                                            <!--</select>-->
+                                            <select id="systemList" multiple class="chosen-select"
+                                                    data-placeholder="请选择" style="width:150px;">
+                                                <option value=""></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-5px">客户风险评级:</label>
+                                            <!--<select name="" style="width:150px;">-->
+                                                <!--<option value="">请选择</option>-->
+                                                <!--<option value=""></option>-->
+                                            <!--</select>-->
+                                            <select id="riskList2" multiple class="chosen-select"
+                                                    data-placeholder="请选择" style="width:150px;">
+                                                <option value=""></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:12px">推荐优先级:</label>
+                                            <!--<select name="" style="width:150px;">-->
+                                                <!--<option value="">请选择</option>-->
+                                                <!--<option value="1">优先级1</option>-->
+                                                <!--<option value="2">优先级2</option>-->
+                                                <!--<option value="3">优先级3</option>-->
+                                                <!--<option value="4">优先级4</option>-->
+                                                <!--<option value="5">优先级5</option>-->
+                                                <!--<option value="6">优先级6</option>-->
+                                            <!--</select>-->
+                                            <select id="priorityList2" multiple class="chosen-select"
+                                                    data-placeholder="请选择" style="width:150px;">
+                                                <option value=""></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:20px">外呼项目:</label>
+                                            <select name="" style="width:150px;" id="ncrmId" v-model="prjId">
+                                                <option value="">请选择</option>
+
+                                                <option :value="item.projectId" v-for="(item,index) in callList">
+                                                    {{item.projectId}}-{{item.projectName}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:35px">客群ID:</label>
+                                            <select name="" style="width:150px;" id="groupId" v-model="custGrpId">
+                                                <option value="">请选择</option>
+                                                <option :value="item.groupId" v-for="(item,index) in grouplist">
+                                                    {{item.groupId}}-{{item.groupName}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <!--<div class="form-group">-->
+                                            <!--<label class="control-label" style="margin-left:20px">文件地址:</label>-->
+                                            <!--<input type="text" style="width:150px;" />-->
+                                        <!--</div>-->
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:45px">备注:</label>
+                                            <input type="text" style="width:150px;"  v-model="remark"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                            <button class="btn btn-sm btn-primary" @click="putPush()">推送</button>
+                            <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--任务详情操作页-->
+                <div class="modal" id="details" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:850px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">详情信息</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <div style="text-align:center">
+                                        <div style="height:400px;overflow-y:auto;">
+                                            <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                                                   style="margin-bottom: 0;">
+                                                <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1">操作类型</th>
+                                                    <th class="center col-sm-1">操作流水号</th>
+                                                    <th class="center col-sm-1">操作状态</th>
+                                                    <th class="center col-sm-1">操作时间</th>
+                                                    <th class="center col-sm-1">操作</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="lookUpList.length>0">
+                                                    <tr v-for="(item,index) in lookUpList" :key="index">
+                                                        <td class="center">{{item.expTp | expTp}}</td>
+                                                        <td class="center" v-text="item.serialNo"></td>
+                                                        <td class="center">{{item.expSt | expSt}}</td>
+                                                        <td class="center" v-text="item.expTm.replace(/(\d{2})(\d{2})(\d{2})/g, '$1:$2:$3')"></td>
+                                                        <td>
+                                                            <a href="javascript:;" @click="downLoad(item)">下载</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <template v-else>
+                                                    <tr>
+                                                        <td class="center" v-text="'暂无数据'" colspan="8"></td>
+                                                    </tr>
+                                                </template>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--<p class="text-center" style="clear: both">-->
+                            <!--<button class="btn btn-sm btn-primary" @click="saveParam()">确定</button>-->
+                            <!--<button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>-->
+                            <!--</p>-->
+                        </div>
+                    </div>
+                </div>
+                <!-- DIALOG ENDS -->
+                <div class="form-inline" style="padding: 10px 0;">
+                    <!--<div class="form-group">-->
+                    <!--<label class="control-label">证件类型:</label>-->
+                    <!--<input type="text">-->
+                    <!--</div>-->
+                    <div class="form-group">
+                        <label class="control-label">产品代码:</label>
+                        <input type="text" v-model="fundId">
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询属性" @click="searchList()">
+                    </div>
+                    <!--<div class="form-group pull-right">-->
+                        <!--<input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">-->
+                    <!--</div>-->
+                    <!--<div class="form-group pull-right">-->
+                        <!--<input type="button" class="btn btn-sm btn-primary" value="下载" @click="downLoad()">-->
+                    <!--</div>-->
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+
+                </div>
+                <!--数据表-->
+                <table class="table table-bordered table-hover dataTable">
+                    <thead>
+                    <tr>
+                        <th class="center">任务ID</th>
+                        <th class="center">状态</th>
+                        <th class="center">任务时间</th>
+                        <th class="center">操作</th>
+                        <th class="center">操作详情</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="viewData.length>0">
+                        <tr v-for="(item,index) in viewData" :key="index">
+                            <td class="center" v-text="item.serialNo"></td>
+                            <td class="center">{{item.expSt | expSt}}</td>
+                            <td class="center">{{item.expDt.replace(/^(\d{4})(\d{2})(\d{2})$/, '$1/$2/$3')+' '+item.expTm.replace(/^(\d{2})(\d{2})(\d{2})$/, '$1:$2:$3')}}</td>
+                            <td class="center">
+                                <!--<a href="javascript:;">下载</a>-->
+                                <!--<a href="javascript:;">推送到系统</a>-->
+                                <input type="button" class="btn btn-sm btn-primary" value="下载" @click="downUp(item)">
+                                <input type="button" class="btn btn-sm btn-primary" value="推送到系统" @click="pushUp(item)">
+                                <input type="button" class="btn btn-sm btn-primary" value="重新导入查询" @click="againImport(item)">
+                            </td>
+                            <td class="center">
+                                <a href="javascript:;" @click="lookUp(item)">下载查看/</a>
+                                <a href="javascript:;" @click="lookUpPush(item)">推送查看</a>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'暂无数据'" colspan="10"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <div v-if="viewData.length>0"  class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+middleData.length+'页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in middleData.length" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /.main-content -->
+    </div>
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/bootstrap-multiselect.min.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/clientMgmt/labelApplication/customerQueryOut.js"></script>
+</body>
+</html>

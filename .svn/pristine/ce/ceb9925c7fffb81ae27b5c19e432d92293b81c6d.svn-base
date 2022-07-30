@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div {
+            padding: 10px 0;
+            text-align: right;
+        }
+
+        .cover {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(9, 10, 10, 0.527);
+            z-index: 999;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+                        <div class="cover" v-show="loadingShow" style="z-index: 1999;display: none;">
+                            <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                        </div><!-- loading动画 -->
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal" id="closeInfo" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                                @click='closeAccount'>确定
+                                            </button>
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- DIALOG ENDS -->
+
+                            <div class="form-inline">
+                                <div class="form-group left col-sm-4 col-md-4 col-lg-4" style="text-align: left;">
+                                    <label v-text='invtp.name' style="width:110px;text-align: right;"></label>
+                                    <select v-model='invtp.val' style="width:160px;">
+                                        <option :value="cItem.val" v-for='cItem of invtp.options' v-text='cItem.name'>
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="form-group left col-sm-4 col-md-4 col-lg-4" style="text-align: left;">
+                                    <label v-text='invnm.name' style="width:110px;text-align: right;"></label>
+                                    <input type="text" v-model.trim="invnm.val" style="width: 160px;" />
+                                </div>
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " value="查询"
+                                        @click='getCustInfo'>
+                                </div>
+                            </div>
+                            <div style="clear: both;"></div>
+                            <div class="form-inline">
+                                <div class="form-group left col-sm-4 col-md-4 col-lg-4" style="text-align: left;">
+                                    <label v-text='idtp.name' style="width:110px;text-align: right;"></label>
+                                    <select v-model='idtp.val' style="width:160px;">
+                                        <option :value="cItem.pmco" v-for='cItem of invnmList' v-text='cItem.pmnm'>
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="form-group left col-sm-4 col-md-4 col-lg-4" style="text-align: left;">
+                                    <label v-text='idno.name' style="width:110px;text-align: right;"></label>
+                                    <input type="text" v-model.trim="idno.val" style="width: 160px;" />
+                                </div>
+                            </div>
+                            <div style="clear: both;"></div>
+                            <div v-if='custInfo!==""'>
+                                <div style="border-bottom:.5px solid #eee"></div>
+                                <div class="form-inline">
+                                    <div class="form-group left col-sm-3 col-md-3 col-lg-3" style="text-align: left;">
+                                        <label style="width:110px;text-align: right;">客户号:</label>
+                                        <span>{{custInfo.custNo}}</span>
+                                    </div>
+                                    <div class="form-group left col-sm-3 col-md-3 col-lg-3" style="text-align: left;">
+                                        <label style="width:110px;text-align: right;">客户姓名:</label>
+                                        <span>{{custInfo.invnm}}</span>
+                                    </div>
+                                    <div class="form-group left col-sm-3 col-md-3 col-lg-3" style="text-align: left;">
+                                        <label style="width:110px;text-align: right;">开户证件号:</label>
+                                        <span>{{custInfo.idno}}</span>
+                                    </div>
+                                </div>
+                                <div style="clear: both;"></div>
+                                <div class="form-inline">
+                                    <div class="form-group left col-sm-3 col-md-3 col-lg-3" style="text-align: left;">
+                                        <label style="width:110px;text-align: right;">手机号码:</label>
+                                        <span>{{custInfo.mobile}}</span>
+                                    </div>
+                                    <div class="form-group left col-sm-3 col-md-3 col-lg-3" style="text-align: left;">
+                                        <label style="width:110px;text-align: right;">电子邮件:</label>
+                                        <span>{{custInfo.email}}</span>
+                                    </div>
+                                    <div class="form-group pull-right">
+                                        <% if(canShow||authorityList.includes('U')) { %>
+                                        <input type="button" class="btn btn-sm btn-primary " value="销户"
+                                            @click='tips'>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/customerService/accountMgm/closeAcco.js"></script>
+</body>
+
+</html>

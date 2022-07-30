@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div {
+            padding: 10px 0;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- DIALOG ENDS -->
+
+                            <div class="form-inline">
+
+                                <div class="form-group ">
+                                    <label style="width: 60px;">姓名：</label>
+                                    <input type="text" v-model.trim="invnm" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">身份证：</label>
+                                    <input type="text" v-model.trim="idno" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">手机号码:</label>
+                                    <input type="text" v-model.trim="mobileNo" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">核查结果：</label>
+                                    <select style="width: 140px;height:33px;" v-model='validResult'>
+                                        <option value="">全部</option>
+                                        <option value="Y">验证成功</option>
+                                        <option value="F">验证失败</option>
+                                        <option value="E">异常</option>
+                                        <option value="I">待查询</option>
+                                    </select>
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">验证时间：</label>
+                                    <td class="center" style="position: relative;">
+                                        <date-picker v-model='insertStartDate' :config="{format:'YYYY-MM-DD'}" style="width: 140px;">
+                                            <span class="input-group-addon" slot='right'>
+                                                <span class="glyphicon glyphicon-calendar"></span>
+                                            </span>
+                                        </date-picker>
+                                        -
+                                        <date-picker v-model='insertEndDate' :config="{format:'YYYY-MM-DD'}" style="width: 140px;">
+                                            <span class="input-group-addon" slot='right'>
+                                                <span class="glyphicon glyphicon-calendar"></span>
+                                            </span>
+                                        </date-picker>
+                                    </td>
+                                </div>
+
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " value="核查" @click="queryAll">
+                                </div>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--集奥核查结果
+                            </div>
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">序列号</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">客户姓名</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">证件号码</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">手机号码</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">验证结果</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">验证详细信息</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">操作时间</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">最后更新时间</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="GEOPage.tableData&&GEOPage.tableData.length>0">
+                                        <tr v-for="(item,index) in GEOPage.tableData" :key="index">
+                                            <td class="center" v-text='item.serialNo'></td>
+                                            <td class="center" v-text='item.invnm'></td>
+                                            <td class="center" v-text='item.idno'></td>
+                                            <td class="center" v-text='item.mobileno'></td>
+                                            <td class="center" v-text='item.validResult'></td>
+                                            <td class="center" v-text='item.validResultInfo'></td>
+                                            <td class="center" v-text='item.insertTime'></td>
+                                            <td class="center" v-text='item.updateTime'></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <div v-if="GEOPage.tableData.length>0" class="row"
+                                style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+GEOPage.totalPage+' 页'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                        <ul class="pagination">
+                                            <li class="paginate_button"
+                                                v-show="pageList.call(GEOPage).length<GEOPage.totalPage&&GEOPage.currentIndex>GEOPage.maxSpace">
+                                                <a href="javascript:;" v-text="'1...'"
+                                                    @click="toFirst.call(GEOPage)"></a>
+                                            </li>
+                                            <li :class="GEOPage.currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev.call(GEOPage)">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==GEOPage.currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in pageList.call(GEOPage)"
+                                                @click="changeIndex.call(GEOPage,value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li class="paginate_button"
+                                                v-show="pageList.call(GEOPage).length<GEOPage.totalPage&&GEOPage.totalPage-GEOPage.currentIndex>GEOPage.maxSpace">
+                                                <a href="javascript:;" v-text="'...'+GEOPage.totalPage"
+                                                    @click="toLast.call(GEOPage)"></a>
+                                            </li>
+                                            <li :class="GEOPage.currentIndex==GEOPage.totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next.call(GEOPage)">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--证通核查结果
+                            </div>
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">序列号</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">客户姓名</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">证件号码</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">手机号码</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">验证结果</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">验证详细信息</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">操作时间</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">最后更新时间</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="ECTPage.tableData&&ECTPage.tableData.length>0">
+                                        <tr v-for="(item,index) in ECTPage.tableData" :key="index">
+                                            <td class="center" v-text='item.serialNo'></td>
+                                            <td class="center" v-text='item.invnm'></td>
+                                            <td class="center" v-text='item.idno'></td>
+                                            <td class="center" v-text='item.mobileno'></td>
+                                            <td class="center" v-text='item.validResult'></td>
+                                            <td class="center" v-text='item.validResultInfo'></td>
+                                            <td class="center" v-text='item.insertTime'></td>
+                                            <td class="center" v-text='item.updateTime'></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+
+                            <div v-if="ECTPage.tableData.length>0" class="row"
+                                style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+ECTPage.totalPage+' 页'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                        <ul class="pagination">
+                                            <li class="paginate_button"
+                                                v-show="pageList.call(ECTPage).length<ECTPage.totalPage&&ECTPage.currentIndex>ECTPage.maxSpace">
+                                                <a href="javascript:;" v-text="'1...'"
+                                                    @click="toFirst.call(ECTPage)"></a>
+                                            </li>
+                                            <li :class="ECTPage.currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev.call(ECTPage)">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==ECTPage.currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in pageList.call(ECTPage)"
+                                                @click="changeIndex.call(ECTPage,value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li class="paginate_button"
+                                                v-show="pageList.call(ECTPage).length<ECTPage.totalPage&&ECTPage.totalPage-ECTPage.currentIndex>ECTPage.maxSpace">
+                                                <a href="javascript:;" v-text="'...'+ECTPage.totalPage"
+                                                    @click="toLast.call(ECTPage)"></a>
+                                            </li>
+                                            <li :class="ECTPage.currentIndex==ECTPage.totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next.call(ECTPage)">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/ace/assets/js/v-datetimepicker.js"></script>
+    <script src="/js/customerService/accountQuery/mobileRecordInspect.js"></script>
+</body>
+
+</html>

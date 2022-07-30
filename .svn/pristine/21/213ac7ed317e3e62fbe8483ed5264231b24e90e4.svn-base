@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        table tbody td {
+            vertical-align: middle !important;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--回复弹窗-->
+                <div class="modal" id="reply" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">留言回复</h4>
+                            </div>
+                            <div class="modal-body ">
+                                <div class="form-group" v-show="commentToItemTpByAddDialog==1">
+                                    <label class="control-label">基金经理:</label>
+                                    <select class="form-control" style="width: 200px;display: inline"
+                                            v-model="commentToItemIdByAddDialog">
+                                        <option v-for="(value,key) in commentToItemIdList" v-text="value"
+                                                :value="key"></option>
+                                    </select>
+                                </div>
+                                <textarea v-model="addReplyContext" cols="5" rows="10"
+                                          style="display:block;width: 100%;margin-top: 0.5rem" placeholder="留言内容：">
+                                </textarea>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-white btn-primary " data-dismiss="modal">取消
+                                </button>
+                                <button type="button" class="btn btn-primary btn-sm" @click="replying">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--修改弹窗-->
+                <div class="modal" id="modify" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">留言修改</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group" v-show="commentToItemTpByModifyDialog==1">
+                                    <label class="control-label">基金经理:</label>
+                                    <select class="form-control" style="width: 200px;display: inline"
+                                            v-model="commentToItemIdByModifyDialog">
+                                        <option v-for="(value,key) in commentToItemIdList" v-text="value"
+                                                :value="key"></option>
+                                    </select>
+                                </div>
+                                <textarea v-model="modifyReplyContext" cols="5" rows="10"
+                                          style="display:block;width: 100%;margin-top: 0.5rem" placeholder="留言内容：">
+                                </textarea>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-white btn-primary " data-dismiss="modal">取消
+                                </button>
+                                <button type="button" class="btn btn-primary btn-sm"
+                                        @click="modifying">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--查看弹窗-->
+                <div class="modal" id="checkDetail" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width: 60%">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">留言回复详情</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-inline" style="padding: 10px 0;">
+                                    <div class="form-group">
+                                        <label class="control-label">回复内容:</label>
+                                        <input type="text" v-model="replyContext_detail">
+                                    </div>
+                                </div>
+                                <div class="table-header">留言回复详情列表</div>
+                                <div style="margin-bottom: 0;height:400px; overflow-y: auto">
+                                    <table class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-4">回复内容</th>
+                                            <th class="center col-sm-2" v-show="commentToItemTpByModifyDialog==1">回复对象
+                                            </th>
+                                            <th class="center col-sm-2">回复时间</th>
+                                            <th class="center col-sm-1">操作人</th>
+                                            <th class="center col-sm-2">修改时间</th>
+                                            <th class="center col-sm-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="detailFilterData.length>0">
+                                            <tr v-for="(item,index) in detailFilterData" :key="index">
+                                                <td class="center" v-text='item.replyContext_desc'
+                                                    :title="item.replyContext"></td>
+                                                <td class="center" v-show="commentToItemTpByModifyDialog==1"
+                                                    v-text='item.fundManageId_desc'></td>
+                                                <td class="center" v-text='item.replyTime'></td>
+                                                <td class="center" v-text='item.modifyBy'></td>
+                                                <td class="center" v-text='item.updateTime'></td>
+                                                <td class="center">
+                                                    <a href="javascript:;" @click="deleteData(item)">删除</a>
+                                                    /
+                                                    <a href="javascript:;" @click="modifyData(item)">修改</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'没有数据'"
+                                                    :colspan="commentToItemTpByModifyDialog==1?6:5"></td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">返回</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--修改状态弹窗-->
+                <div class="modal" id="changeStatus" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">修改状态</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="open">确定</button>
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-inline" style="padding-top: 10px;">
+                    <div class="form-group">
+                        <label class="control-label">用户编号:</label>
+                        <input type="text" v-model="custNo">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">留言内容:</label>
+                        <input type="text" v-model="commentContext">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">对象类型:</label>
+                        <select class="form-control" style="width: 170px;display: inline" v-model="commentToItemTp">
+                            <option value="">全部</option>
+                            <option v-for="(item,index) in commentToItemTpList" v-text="item.desc"
+                                    :value="item.type"></option>
+                        </select>
+                    </div>
+                    <div class="form-group" v-show="commentToItemTp!=5">
+                        <label class="control-label">基金经理:</label>
+                        <select class="form-control" style="width: 170px;display: inline" v-model="commentToItemId">
+                            <option value="">全部</option>
+                            <option v-for="(value,key) in commentToItemIdList" v-text="value" :value="key"></option>
+                        </select>
+                    </div>
+                    <div class="form-group" v-show="commentToItemTp==5">
+                        <label class="control-label">实盘id:</label>
+                        <input type="text" v-model="commentToItemId">
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="input-group">
+                        <label class="control-label ">开始时间:&nbsp;&nbsp;</label>
+                        <input type="text" class="date-timepicker  " value="" id="startTime"/>
+                        <span class="input-group-addon " style="width: 34px; height: 34px; "><i
+                                class="fa fa-clock-o bigger-110"></i></span>
+                    </div>
+                    <div class="input-group">
+                        <label class="control-label ">结束时间:&nbsp;&nbsp;</label>
+                        <input type="text" class="date-timepicker  " value="" id="endTime"/>
+                        <span class="input-group-addon "
+                              style="width: 34px; height: 34px; position: relative;left:-1px;"><i
+                                class="fa fa-clock-o bigger-110"></i></span>
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                        <input type="button" class="btn btn-sm btn-primary" value="刷新" @click="refresh">
+                        <input type="button" class="btn btn-sm btn-danger" value="导出" @click="exportExcel">
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length" id="dynamic-table_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                    <thead>
+                    <tr>
+                        <th class="center">留言编号</th>
+                        <th class="center">用户编号</th>
+                        <th class="center">姓名</th>
+                        <th class="center">昵称</th>
+                        <th class="center">手机号</th>
+                        <th class="center">留言内容</th>
+                        <th class="center">留言对象</th>
+                        <th class="center">对象类型</th>
+                        <th class="center">留言状态</th>
+                        <th class="center">留言时间</th>
+                        <th class="center">公开人</th>
+                        <th class="center">公开时间</th>
+                        <th class="center">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="tableData.length>0">
+                        <tr v-for="(item,index) in tableData" :key="index">
+                            <td class="center" v-text='item.commentId'></td>
+                            <td class="center" v-text='item.custNo'></td>
+                            <td class="center" v-text='item.custName'></td>
+                            <td class="center" v-text='item.nickname'></td>
+                            <td class="center" v-text='item.mobileNo'></td>
+                            <td class="center" v-text='item.commentContext_desc' :title="item.commentContext"></td>
+                            <td class="center" v-text='item.commentToItemName_desc'></td>
+                            <td class="center" v-text='item.commentToItemTp_desc'></td>
+                            <td class="center" v-text='item.commentStatus_desc'></td>
+                            <td class="center" v-text='item.commentTime'></td>
+                            <td class="center" v-text='item.modifyBy'></td>
+                            <td class="center" v-text='item.updateTime'></td>
+                            <td class="center">
+                                <template v-if="item.commentToItemTp!=5">
+                                    <a href="javascript:;" @click='checkThis(item)'>查看</a>
+                                    /
+                                    <a href="javascript:;" @click='reply(item)'>回复</a>
+                                    /
+                                    <template v-if="item.commentStatus==0">
+                                        <a href="javascript:;" @click="showOpen(item,1,'公开')"
+                                           v-text="'公开'"></a>
+                                    </template>
+                                    <template v-else-if="item.commentStatus==1">
+                                        <a href="javascript:;" @click="showOpen(item,0,'隐藏')"
+                                           v-text="'隐藏'"></a>
+                                    </template>
+                                </template>
+                                <template v-else>
+                                    <a href="javascript:;" @click='checkThis(item)'>查看</a>
+                                    /
+                                    <template v-if="item.commentStatus==0">
+                                        <a href="javascript:;" @click="showOpen(item,1,'公开')"
+                                           v-text="'公开'"></a>
+                                    </template>
+                                    <template v-else-if="item.commentStatus==1">
+                                        <a href="javascript:;" @click="showOpen(item,2,'隐藏')"
+                                           v-text="'隐藏'"></a>
+                                    </template>
+                                    <template v-else-if="item.commentStatus==2">
+                                        <a href="javascript:;" @click="showOpen(item,1,'公开')"
+                                           v-text="'公开'"></a>
+                                    </template>
+                                    <template v-else-if="item.commentStatus==3">
+                                        <a href="javascript:;" @click="showOpen(item,0,'初审')"
+                                           v-text="'初审'"></a>
+                                    </template>
+                                </template>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="loadingStatus" colspan="13"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+
+                <!--底部页码-->
+                <div v-if="tableData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers"
+                             id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/messageCenter/leaveWordMgmt.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "returnCode":0,
+  "returnMsg":"调用成功",
+"data": [
+{
+"ymonth": "2018年08月",
+"faretype": "1",
+"fundnm": "和聚宝",
+"branchcode": "24701",
+"branchnm": "汇添富",
+"status": "N",
+"fbackremark": "沟通结论" 
+},
+{
+"ymonth": "2018年08月",
+"faretype": "2",
+"fundnm": "添富全额宝",
+"branchcode": "24702",
+"branchnm": "渤海银行",
+"status": "Y",
+"fbackremark": "沟通结论"
+},
+{
+"ymonth": "2018年08月",
+"faretype": "3",
+"fundnm": "添富全额宝",
+"branchcode": "24703",
+"branchnm": "理财通",
+"status": "U",
+"fbackremark": "沟通结论"
+}
+]
+}

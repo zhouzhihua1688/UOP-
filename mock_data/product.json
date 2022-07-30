@@ -1,0 +1,39 @@
+{
+	"retCode":"0000",
+	"retMsg":"调用成功",
+	"product":[
+		{	
+			"productID":"000330",
+			"productName":"现金宝",
+			"createTime":"2018/5/30",
+			"deadline":"2018/6/30",
+			"remind":"0",
+			"status":"1"
+		},
+		{	
+			"productID":"501188",
+			"productName":"战略配售基金",
+			"createTime":"2018/5/15",
+			"deadline":"2018/6/15",
+			"remind":"1",
+			"status":"2"
+		},
+		{	
+			"productID":"470030",
+			"productName":"汇添富理财30天A",
+			"createTime":"2018/5/15",
+			"deadline":"2018/6/15",
+			"remind":"0",
+			"status":"3"
+		},
+		{	
+			"productID":"002350",
+			"productName":"现金宝",
+			"createTime":"2018/5/30",
+			"deadline":"2018/6/30",
+			"remind":"1",
+			"status":"1"
+		}
+		
+	]
+}

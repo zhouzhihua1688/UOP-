@@ -1,0 +1,8 @@
+module.exports = function (app) {
+    require('./configSetting')(app);
+    require('./experienceGoldMgmt')(app);
+    require('./rewardSetting')(app);
+    require('./rewardQuery')(app);
+    require('./sendQuery')(app);
+    require('./sendMgmt')(app);
+};

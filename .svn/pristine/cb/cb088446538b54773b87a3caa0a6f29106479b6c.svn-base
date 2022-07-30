@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        #base label {
+            width: 144px;
+            text-align: right;
+        }
+
+        #restrict label {
+            width: 144px;
+            text-align: right;
+        }
+
+        #operation table tr td:nth-child(1) {
+            background-color: #eee;
+        }
+
+        #detail table tr td:nth-child(odd) {
+            background-color: #eee;
+        }
+
+        #operation table tr td:nth-child(2) input {
+            width: 100%;
+        }
+
+        #operation table tr td:nth-child(5) input {
+            width: 100%;
+        }
+
+        #operation table tr td:nth-child(4) {
+            background-color: #eee;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="modal" id="detail" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog" style="width: 1200px;">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                                &times;
+                                            </button>
+                                            <h4 class="modal-title inline">数据操作</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="form">
+                                                <table class="table table-bordered table-hover ">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="text-right">产品合同</td>
+                                                            <td class="text-left" colspan="2">
+                                                                <p v-text="fundDetail.attachcontract"></p>
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachcontractfile)'>{{fundDetail.attachcontractfile}}</a>
+                                                            </td>
+                                                            <td class="text-right">投资说明书</td>
+                                                            <td class="text-left" colspan="2">
+                                                                <p v-text="fundDetail.attachinvestexp"></p>
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachinvestexpfile)'>{{fundDetail.attachinvestexpfile}}</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-right">认购风险申明书</td>
+                                                            <td class="text-left" colspan="2">
+                                                                <p v-text="fundDetail.attachriskexp"></p>
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachriskexpfile)'>{{fundDetail.attachriskexpfile}}</a>
+                                                            </td>
+                                                            <td class="text-right">产品宣传册</td>
+                                                            <td class="text-left" colspan="2">
+                                                                <p v-text="fundDetail.attachpdtprom"></p>
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachpdtpromfile)'>{{fundDetail.attachpdtpromfile}}</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-right">保证金协议</td>
+                                                            <td class="text-left" colspan="2">
+                                                                <p v-text="fundDetail.deposit"></p>
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.depositfile)'>{{fundDetail.depositfile}}</a>
+                                                            </td>
+                                                            <td class="text-right">承诺函</td>
+                                                            <td class="text-left" colspan="2">
+                                                                <p v-text="fundDetail.commitment"></p>
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.commitmentfile)'>{{fundDetail.commitmentfile}}</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-right">补充协议</td>
+                                                            <td class="text-left" colspan="2">
+                                                                <p v-text="fundDetail.attachaddendum"></p>
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachaddendumfile)'>{{fundDetail.attachaddendumfile}}</a>
+                                                            </td>
+                                                            <td class="text-right">质押借款协议</td>
+                                                            <td class="text-left" colspan="2">
+                                                                <p v-text="fundDetail.attachpledge"></p>
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachpledgefile)'>{{fundDetail.attachpledgefile}}</a>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td class="text-right">Banner</td>
+                                                            <td class="text-left" colspan="2">
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachbanner)'>{{fundDetail.attachbanner}}</a>
+                                                            </td>
+                                                            <td class="text-right">Banner(手机)</td>
+                                                            <td class="text-left" colspan="2">
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachbannermob)'>{{fundDetail.attachbannermob}}</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-right">上传自定义详情(仅支持zip格式)</td>
+                                                            <td class="text-left" colspan="2">
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachcustomdetail)'>{{fundDetail.attachcustomdetail}}</a>
+                                                            </td>
+                                                            <td class="text-right">上传手机自定义详情(仅支持zip格式)</td>
+                                                            <td class="text-left" colspan="2">
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachcustomdetailm)'>{{fundDetail.attachcustomdetailm}}</a>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-right">一页通</td>
+                                                            <td class="text-left" colspan="2">
+                                                                <p v-text="fundDetail.onepage"></p>
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.onepagefile)'>{{fundDetail.onepagefile}}</a>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <p class="text-center">
+                                                <button class="btn btn-sm btn-primary" data-dismiss="modal">关闭
+                                                </button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal" id="operation" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog" style="width: 1200px;">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                                &times;
+                                            </button>
+                                            <h4 class="modal-title inline">数据操作</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="form">
+                                                <!--   <div class="form-group">
+                                               <label class="control-label dia-label">基金名称:</label>
+                                               <select id="fundListAdd" class="chosen-select form-control"
+                                                       data-placeholder="请选择">
+                                               </select>
+                                           </div> -->
+                                                <table class="table table-bordered table-hover ">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="text-right">产品合同</td>
+                                                            <td class="text-left">
+                                                                <input type="text" v-model="fundDetail.attachcontract">
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachcontractfile)'>{{fundDetail.attachcontractfile}}</a>
+                                                            </td>
+                                                            <td class="text-left">
+                                                                <input type="file" id='attachcontract'>
+                                                                <input type="button" value="上传文件"
+                                                                    @click='uploadFile("attachcontract")'>
+                                                                <input type="button" value="清除文件"
+                                                                    @click='clearFile(fundDetail.attachcontractfile,"attachcontractfile")'>
+                                                            </td>
+                                                            <td class="text-right">投资说明书</td>
+                                                            <td class="text-left">
+                                                                <input type="text" v-model="fundDetail.attachinvestexp">
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachinvestexpfile)'>{{fundDetail.attachinvestexpfile}}</a>
+                                                            </td>
+                                                            <td class="text-left">
+                                                                <input type="file" id='attachinvestexp'>
+                                                                <input type="button" value="上传文件"
+                                                                    @click='uploadFile("attachinvestexp")'>
+                                                                <input type="button" value="清除文件"
+                                                                    @click='clearFile(fundDetail.attachinvestexpfile,"attachinvestexpfile")'>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-right">认购风险申明书</td>
+                                                            <td class="text-left">
+                                                                <input type="text" v-model="fundDetail.attachriskexp">
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachriskexpfile)'>{{fundDetail.attachriskexpfile}}</a>
+                                                            </td>
+                                                            <td class="text-left">
+                                                                <input type="file" id='attachriskexp'>
+                                                                <input type="button" value="上传文件"
+                                                                    @click='uploadFile("attachriskexp")'>
+                                                                <input type="button" value="清除文件"
+                                                                    @click='clearFile(fundDetail.attachriskexpfile,"attachriskexpfile")'>
+                                                            </td>
+                                                            <td class="text-right">产品宣传册</td>
+                                                            <td class="text-left">
+                                                                <input type="text" v-model="fundDetail.attachpdtprom">
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachpdtpromfile)'>{{fundDetail.attachpdtpromfile}}</a>
+                                                            </td>
+                                                            <td class="text-left">
+                                                                <input type="file" id='attachpdtprom'>
+                                                                <input type="button" value="上传文件"
+                                                                    @click='uploadFile("attachpdtprom")'>
+                                                                <input type="button" value="清除文件"
+                                                                    @click='clearFile(fundDetail.attachpdtpromfile,"attachpdtpromfile")'>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-right">保证金协议</td>
+                                                            <td class="text-left">
+                                                                <input type="text" v-model="fundDetail.deposit">
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.depositfile)'>{{fundDetail.depositfile}}</a>
+                                                            </td>
+                                                            <td class="text-left">
+                                                                <input type="file" id='deposit'>
+                                                                <input type="button" value="上传文件"
+                                                                    @click='uploadFile("deposit")'>
+                                                                <input type="button" value="清除文件"
+                                                                    @click='clearFile(fundDetail.depositfile,"depositfile")'>
+                                                            </td>
+                                                            <td class="text-right">承诺函</td>
+                                                            <td class="text-left">
+                                                                <input type="text" v-model="fundDetail.commitment">
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.commitmentfile)'>{{fundDetail.commitmentfile}}</a>
+                                                            </td>
+                                                            <td class="text-left">
+                                                                <input type="file" id='commitment'>
+                                                                <input type="button" value="上传文件"
+                                                                    @click='uploadFile("commitment")'>
+                                                                <input type="button" value="清除文件"
+                                                                    @click='clearFile(fundDetail.commitmentfile,"commitmentfile")'>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-right">补充协议</td>
+                                                            <td class="text-left">
+                                                                <input type="text" v-model="fundDetail.attachaddendum">
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachaddendumfile)'>{{fundDetail.attachaddendumfile}}</a>
+                                                            </td>
+                                                            <td class="text-left">
+                                                                <input type="file" id='attachaddendum'>
+                                                                <input type="button" value="上传文件"
+                                                                    @click='uploadFile("attachaddendum")'>
+                                                                <input type="button" value="清除文件"
+                                                                    @click='clearFile(fundDetail.attachaddendumfile,"attachaddendumfile")'>
+                                                            </td>
+                                                            <td class="text-right">质押借款协议</td>
+                                                            <td class="text-left">
+                                                                <input type="text" v-model="fundDetail.attachpledge">
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachpledgefile)'>{{fundDetail.attachpledgefile}}</a>
+                                                            </td>
+                                                            <td class="text-left">
+                                                                <input type="file" id='attachpledge'>
+                                                                <input type="button" value="上传文件"
+                                                                    @click='uploadFile("attachpledge")'>
+                                                                <input type="button" value="清除文件"
+                                                                    @click='clearFile(fundDetail.attachpledgefile,"attachpledgefile")'>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-right" uploadbanner>Banner</td>
+                                                            <td class="text-left">
+                                                          
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachbanner)'>{{fundDetail.attachbanner}}</a>
+                                                            </td>
+                                                            <td class="text-left">
+                                                                <input type="file" id='attachbanner'>
+                                                                <input type="button" value="上传文件"
+                                                                    @click='uploadBanner("attachbanner")'>
+                                                                <input type="button" value="清除文件"
+                                                                    @click='clearFile(fundDetail.attachbanner,"attachbanner")'>
+                                                            </td>
+                                                            <td class="text-right" uploadbanner>Banner(手机)</td>
+                                                            <td class="text-left">
+                                                          
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachbannermob)'>{{fundDetail.attachbannermob}}</a>
+                                                            </td>
+                                                            <td class="text-left">
+                                                                <input type="file" id='attachbannermob'>
+                                                                <input type="button" value="上传文件"
+                                                                    @click='uploadBanner("attachbannermob")'>
+                                                                <input type="button" value="清除文件"
+                                                                    @click='clearFile(fundDetail.attachbannermob,"attachbannermob")'>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-right" uploadDetail>上传自定义详情(仅支持zip格式)</td>
+                                                            <td class="text-left">
+                                                                <!-- <input type="text" v-model="fundDetail.attachcustomdetail"
+                                                                disabled> -->
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachcustomdetail)'>{{fundDetail.attachcustomdetail}}</a>
+                                                            </td>
+                                                            <td class="text-left">
+                                                                <input type="file" id='attachcustomdetail'>
+                                                                <input type="button" value="上传文件"
+                                                                    @click='uploadDetail("attachcustomdetail")'>
+                                                                <input type="button" value="清除文件"
+                                                                    @click='clearFile(fundDetail.attachcustomdetail,"attachcustomdetail")'>
+                                                            </td>
+                                                            <td class="text-right" uploadDetail>上传手机自定义详情(仅支持zip格式)</td>
+                                                            <td class="text-left">
+                                                                <!-- <input type="text" v-model="fundDetail.attachcustomdetailm"
+                                                                disabled> -->
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.attachcustomdetailm)'>{{fundDetail.attachcustomdetailm}}</a>
+                                                            </td>
+                                                            <td class="text-left">
+                                                                <input type="file" id='attachcustomdetailm'>
+                                                                <input type="button" value="上传文件"
+                                                                    @click='uploadDetail("attachcustomdetailm")'>
+                                                                <input type="button" value="清除文件"
+                                                                    @click='clearFile(fundDetail.attachcustomdetailm,"attachcustomdetailm")'>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-right">一页通</td>
+                                                            <td class="text-left">
+                                                                <input type="text" v-model="fundDetail.onepage">
+                                                                <a href="javascript:;"
+                                                                    @click='download(fundDetail.onepagefile)'>{{fundDetail.onepagefile}}</a>
+                                                            </td>
+                                                            <td class="text-left">
+                                                                <input type="file" id='onepage'>
+                                                                <input type="button" value="上传文件"
+                                                                    @click='uploadFile("onepage")'>
+                                                                <input type="button" value="清除文件"
+                                                                    @click='clearFile(fundDetail.onepagefile,"onepagefile")'>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <p class="text-center">
+                                                <button class="btn btn-sm btn-primary" @click='saveData'>保存
+                                                </button>
+                                                <button class="btn btn-sm btn-default " data-dismiss="modal"
+                                                    aria-hidden="true">取消
+                                                </button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- DIALOG ENDS -->
+                            <div class="form-inline" style="padding: 10px 0;">
+                                <div class="form-group">
+                                    <label style="width: 60px;">基金名称:</label>
+                                    <select style="width: 100px;" v-model="classify">
+                                        <option value="ALL">全部</option>
+                                        <option value="6">专户</option>
+                                        <option value="9">子公司</option>
+                                        <option value="OTHER">其他</option>
+                                    </select>
+                                    <!-- <select style="width: 169px;" v-model="fundid"></select> -->
+
+                                    <vue-select :options='[{fundName:"请选择",fundId:""},...lineFundIdList]' 
+                                        v-model='qFundid' label='fundName' model='fundId'>
+                                    </vue-select>
+                                </div>
+
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " value="查询"
+                                        @click="getTableData(0)">
+                                </div>
+                            </div>
+
+
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!--分页器和快速查询-->
+                            <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                <div class="col-xs-6">
+                                    <div class="dataTables_length" id="dynamic-table_length">
+                                        <label>每页显示</label>
+                                        <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                            <option value="10">10</option>
+                                            <option value="20">20</option>
+                                            <option value="50">50</option>
+                                        </select>
+                                        <label>条</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">产品代码</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">基金名称</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">TA代码</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">基金类别</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">投资方向</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">是否上架</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">显示顺序</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="viewData.length>0">
+                                        <tr v-for="(item,index) in viewData" :key="index">
+                                            <td class="center" v-text='item.fundId'></td>
+                                            <td class="center" v-text='item.fundInfo? item.fundInfo.fundnm:""'></td>
+                                            <td class="center" v-text='item.fundInfo? item.fundInfo.tano:""'></td>
+                                            <td class="center"
+                                                v-text='item.fundExtension? item.fundExtension.fundtp:""'>
+                                            </td>
+                                            <td class="center"
+                                                v-text='item.fundExtension? item.fundExtension.investtype:""'>
+                                            </td>
+                                            <td class="center" v-text='item.fundDetail? item.fundDetail.onsaleflag: ""'>
+                                            </td>
+                                            <td class="center" v-text='item.fundInfo? item.fundInfo.displayorder:""'>
+                                            </td>
+                                            <td class="center">
+                                                <a href="javascript:;"
+                                                    @click='showFileData(item.fundId,"operation")'>修改</a>
+                                                <span style="margin:0 5px;">/</span>
+                                                <a href="javascript:;"
+                                                    @click='showFileData(item.fundId,"detail")'>详情</a>
+                                            </td>
+
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+
+                            <!--底部页码-->
+                            <div v-if="viewData.length>0" class="row"
+                                style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                        <ul class="pagination">
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                            </li>
+                                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in pageList" @click="changeIndex(value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'...'+middleData.length"
+                                                    @click="toLast"></a>
+                                            </li>
+                                            <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/lib/select.js"></script>
+    <script src="/js/businessMgmt/IPOMgmtEC/IPOUpload.js"></script>
+
+</body>
+
+</html>

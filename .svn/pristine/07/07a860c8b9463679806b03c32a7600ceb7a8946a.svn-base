@@ -1,0 +1,438 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').shareMgmt.sceneTemplate;
+
+module.exports = function(app) {
+	// 获取场景详情
+	app.post('/marketingActive/shareMgmt/sceneTemplate/getScenceDetail.ajax', (req, res, next) => {
+		let option = {
+			session: req.session,
+			url: apiUrl.getScenceDetail,
+			qs: {
+				id: req.body.id
+			},
+			timeout: 15000,
+			json: true
+		};
+		console.log('/marketingActive/shareMgmt/sceneTemplate/getScenceDetail.ajax option:', option);
+		request(option, (error, response, body) => {
+			console.log('/marketingActive/shareMgmt/sceneTemplate/getScenceDetail.ajax error:', error);
+			console.log('/marketingActive/shareMgmt/sceneTemplate/getScenceDetail.ajax statusCode:', response && response.statusCode);
+			console.log('/marketingActive/shareMgmt/sceneTemplate/getScenceDetail.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '数据获取失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode == '0') {
+				res.send({
+					error: 0,
+					msg: '调用成功',
+					data: result.body
+				});
+			} else {
+				res.send({
+					error: 1,
+					msg: '获取数据失败'
+				});
+			}
+		});
+	});
+	// 获取分享渠道列表
+	app.post('/marketingActive/shareMgmt/sceneTemplate/getShareChannel.ajax', (req, res, next) => {
+		let option = {
+			session: req.session,
+			url: apiUrl.getShareChannel,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/marketingActive/shareMgmt/sceneTemplate/getShareChannel.ajax option:', option);
+		request(option, (error, response, body) => {
+			console.log('/marketingActive/shareMgmt/sceneTemplate/getShareChannel.ajax error:', error);
+			console.log('/marketingActive/shareMgmt/sceneTemplate/getShareChannel.ajax statusCode:', response && response.statusCode);
+			console.log('/marketingActive/shareMgmt/sceneTemplate/getShareChannel.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '数据获取失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode == '0') {
+				res.send({
+					error: 0,
+					msg: '调用成功',
+					data: result.body
+				});
+			} else {
+				res.send({
+					error: 1,
+					msg: '获取数据失败'
+				});
+			}
+		});
+	});
+	// 获取列表数据
+	app.post('/marketingActive/shareMgmt/sceneTemplate/getList.ajax', (req, res, next) => {
+		let params = req.body;
+		let option = {
+			session: req.session,
+			url: apiUrl.getList,
+			qs: params,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/marketingActive/shareMgmt/sceneTemplate/getList.ajax option:', option);
+		request(option, (error, response, body) => {
+			console.log('/marketingActive/shareMgmt/sceneTemplate/getList.ajax error:', error);
+			console.log('/marketingActive/shareMgmt/sceneTemplate/getList.ajax statusCode:', response && response.statusCode);
+			console.log('/marketingActive/shareMgmt/sceneTemplate/getList.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '数据获取失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode == '0') {
+				res.send({
+					error: 0,
+					msg: '调用成功',
+					data: result.body
+				});
+			} else {
+				res.send({
+					error: 1,
+					msg: '获取数据失败'
+				});
+			}
+		});
+	});
+	// 删除分享模板
+	app.post('/marketingActive/shareMgmt/sceneTemplate/del.ajax', (req, res, next) => {
+		let option = {
+			session: req.session,
+			url: apiUrl.del,
+			body: {
+				id: req.body.id
+			},
+			timeout: 15000,
+			json: true
+		};
+		console.log('/marketingActive/shareMgmt/sceneTemplate/del.ajax option:', option);
+		request.post(option, (error, response, body) => {
+			console.log('/marketingActive/shareMgmt/sceneTemplate/del.ajax error:', error);
+			console.log('/marketingActive/shareMgmt/sceneTemplate/del.ajax statusCode:', response && response.statusCode);
+			console.log('/marketingActive/shareMgmt/sceneTemplate/del.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '删除失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode == '0') {
+				res.send({
+					error: 0,
+					msg: '调用成功',
+					data: null
+				});
+			} else {
+				res.send({
+					error: 1,
+					msg: '删除失败',
+					data: null
+				});
+			}
+		});
+	});
+	// 新增模板
+	app.post('/marketingActive/shareMgmt/sceneTemplate/add.ajax', (req, res, next) => {
+		// 新增模板内容
+		let addTemplateContent = function(item) {
+			item.modifyBy = req.session['loginInfo'].userid;
+			let option = {
+				session: req.session,
+				url: apiUrl.addTemplateContent,
+				body: item,
+				timeout: 15000,
+				json: true
+			};
+			return new Promise((resolve, reject) => {
+				console.log('/marketingActive/shareMgmt/sceneTemplate/add.ajax --addTemplateContent option:', option);
+				request.post(option, (error, response, body) => {
+					console.log('/marketingActive/shareMgmt/sceneTemplate/add.ajax --addTemplateContent error:', error);
+					console.log('/marketingActive/shareMgmt/sceneTemplate/add.ajax --addTemplateContent statusCode:',
+						response &&
+						response.statusCode);
+					console.log('/marketingActive/shareMgmt/sceneTemplate/add.ajax --addTemplateContent body:', body);
+					if (error) {
+						return reject('新增模板内容失败');
+					}
+					let result = typeof body === 'string' ? JSON.parse(body) : body;
+					if (result && result.returnCode == '0') {
+						return resolve(result.body);
+					} else {
+						return reject('新增模板内容失败');
+					}
+				});
+			});
+		};
+		// 新增模板
+		let addTemplate = function(addTemplateContentResultArr) {
+			let params = {};
+			params.shareTemplateName = req.body.shareTemplateName;
+			params.shareTemplateType = req.body.shareTemplateType;
+			params.needLogin = req.body.needLogin;
+			params.relateEventId = req.body.relateEventId;
+			params.shareEventCode = req.body.shareEventCode;
+			params.shareTemplateChannelList = addTemplateContentResultArr;
+			params.modifyBy = req.session['loginInfo'].userid;
+			params.deleteFlag = '0';
+			let option = {
+				session: req.session,
+				url: apiUrl.addTemplate,
+				body: params,
+				timeout: 15000,
+				json: true
+			};
+			return new Promise((resolve, reject) => {
+				console.log('/marketingActive/shareMgmt/sceneTemplate/add.ajax --addTemplate option:', JSON.stringify(option.body));
+				request.post(option, (error, response, body) => {
+					console.log('/marketingActive/shareMgmt/sceneTemplate/add.ajax --addTemplate error:', error);
+					console.log('/marketingActive/shareMgmt/sceneTemplate/add.ajax --addTemplate statusCode:', response &&
+						response.statusCode);
+					console.log('/marketingActive/shareMgmt/sceneTemplate/add.ajax --addTemplate body:', body);
+					if (error) {
+						return reject('新增模板失败');
+					}
+					let result = typeof body === 'string' ? JSON.parse(body) : body;
+					if (result && result.returnCode == '0') {
+						return resolve();
+					} else {
+						return reject('新增模板失败');
+					}
+				});
+			});
+		};
+
+		let templateContentArr = JSON.parse(req.body.templateInfoList);
+		Promise.all(templateContentArr.map(item => addTemplateContent(item))).then(addTemplateContentResultArr => {
+			addTemplate(addTemplateContentResultArr).then(() => {
+				res.send({
+					error: 0,
+					msg: '新增成功',
+					data: null
+				});
+			}).catch(error => {
+				res.send({
+					error: 1,
+					msg: '新增模板失败',
+					data: null
+				});
+			});
+		}).catch(error => {
+			res.send({
+				error: 1,
+				msg: '新增模板内容失败',
+				data: null
+			});
+		});
+	});
+	// 获取模板内容列表
+	app.post('/marketingActive/shareMgmt/sceneTemplate/getTemplateContentList.ajax', (req, res, next) => {
+		// 获取单个模板内容
+		let getTemplateContent = function(item) {
+			let option = {
+				session: req.session,
+				url: apiUrl.getTemplateContentList,
+				qs: {
+					shareNo: item.shareNo
+				},
+				timeout: 15000,
+				json: true
+			};
+			return new Promise((resolve, reject) => {
+				console.log(
+					'/marketingActive/shareMgmt/sceneTemplate/getTemplateContentList.ajax --getTemplateContent option:', option
+				);
+				request(option, (error, response, body) => {
+					console.log(
+						'/marketingActive/shareMgmt/sceneTemplate/getTemplateContentList.ajax --getTemplateContent error:',
+						error);
+					console.log(
+						'/marketingActive/shareMgmt/sceneTemplate/getTemplateContentList.ajax --getTemplateContent statusCode:',
+						response &&
+						response.statusCode);
+					console.log(
+						'/marketingActive/shareMgmt/sceneTemplate/getTemplateContentList.ajax --getTemplateContent body:', body);
+					if (error) {
+						return reject('获取模板内容失败');
+					}
+					let result = typeof body === 'string' ? JSON.parse(body) : body;
+					if (result && result.returnCode == '0') {
+						return resolve(result.body.rows[0]);
+					} else {
+						return reject('获取模板内容失败');
+					}
+				});
+			});
+		};
+
+		let shareTemplateChannel = JSON.parse(req.body.shareTemplateChannel);
+		Promise.all(shareTemplateChannel.map(item => getTemplateContent(item))).then(resultArr => {
+			res.send({
+				error: 0,
+				msg: '调用成功',
+				data: resultArr
+			});
+		}).catch(error => {
+			res.send({
+				error: 1,
+				msg: '获取模板内容失败',
+				data: null
+			});
+		});
+	});
+	// 编辑
+	app.post('/marketingActive/shareMgmt/sceneTemplate/update.ajax', (req, res, next) => {
+		// 新增模板内容
+		let addTemplateContent = function(item) {
+			item.modifyBy = req.session['loginInfo'].userid;
+			let option = {
+				session: req.session,
+				url: apiUrl.addTemplateContent,
+				body: item,
+				timeout: 15000,
+				json: true
+			};
+			return new Promise((resolve, reject) => {
+				console.log('/marketingActive/shareMgmt/sceneTemplate/update.ajax --addTemplateContent option:', option);
+				request.post(option, (error, response, body) => {
+					console.log('/marketingActive/shareMgmt/sceneTemplate/update.ajax --addTemplateContent error:', error);
+					console.log('/marketingActive/shareMgmt/sceneTemplate/update.ajax --addTemplateContent statusCode:',
+						response &&
+						response.statusCode);
+					console.log('/marketingActive/shareMgmt/sceneTemplate/update.ajax --addTemplateContent body:', body);
+					if (error) {
+						return reject('新增模板内容失败');
+					}
+					let result = typeof body === 'string' ? JSON.parse(body) : body;
+					if (result && result.returnCode == '0') {
+						return resolve(result.body);
+					} else {
+						return reject('新增模板内容失败');
+					}
+				});
+			});
+		};
+		// 修改模板内容
+		let updateTemplateContent = function(item) {
+			let params = {
+				id: item.id,
+				shareChannel: item.shareChannel,
+				shareTitle: item.shareTitle,
+				shareContent: item.shareContent,
+				sharePicUrl: item.sharePicUrl,
+				shareUrl: item.shareUrl,
+				modifyBy: req.session['loginInfo'].userid
+			};
+			let option = {
+				session: req.session,
+				url: apiUrl.updateTemplateContent,
+				body: params,
+				timeout: 15000,
+				json: true
+			};
+			return new Promise((resolve, reject) => {
+				console.log('/marketingActive/shareMgmt/sceneTemplate/update.ajax --updateTemplateContent option:', option);
+				request.post(option, (error, response, body) => {
+					console.log('/marketingActive/shareMgmt/sceneTemplate/update.ajax --updateTemplateContent error:', error);
+					console.log('/marketingActive/shareMgmt/sceneTemplate/update.ajax --updateTemplateContent statusCode:',
+						response &&
+						response.statusCode);
+					console.log('/marketingActive/shareMgmt/sceneTemplate/update.ajax --updateTemplateContent body:', body);
+					if (error) {
+						return reject('修改模板内容失败');
+					}
+					let result = typeof body === 'string' ? JSON.parse(body) : body;
+					if (result && result.returnCode == '0') {
+						return resolve({
+							shareChannel: item.shareChannel,
+							shareChannelDesc: null,
+							shareNo: item.shareNo
+						});
+					} else {
+						return reject('修改模板内容失败');
+					}
+				});
+			});
+		};
+
+		// 修改模板
+		let updateTemplate = function(updateTemplateContentResultArr) {
+			let params = {};
+			params.id = req.body.id;
+			params.shareTemplateName = req.body.shareTemplateName;
+			params.shareTemplateType = req.body.shareTemplateType;
+			params.needLogin = req.body.needLogin;
+			params.relateEventId = req.body.relateEventId;
+			params.shareEventCode = req.body.shareEventCode;
+			params.shareTemplateChannelList = updateTemplateContentResultArr;
+			params.modifyBy = req.session['loginInfo'].userid;
+			let option = {
+				session: req.session,
+				url: apiUrl.updateTemplate,
+				body: params,
+				timeout: 15000,
+				json: true
+			};
+			return new Promise((resolve, reject) => {
+				console.log('/marketingActive/shareMgmt/sceneTemplate/update.ajax --updateTemplate option:', option);
+				request.post(option, (error, response, body) => {
+					console.log('/marketingActive/shareMgmt/sceneTemplate/update.ajax --updateTemplate error:', error);
+					console.log('/marketingActive/shareMgmt/sceneTemplate/update.ajax --updateTemplate statusCode:', response &&
+						response.statusCode);
+					console.log('/marketingActive/shareMgmt/sceneTemplate/update.ajax --updateTemplate body:', body);
+					if (error) {
+						return reject('修改模板失败');
+					}
+					let result = typeof body === 'string' ? JSON.parse(body) : body;
+					if (result && result.returnCode == '0') {
+						return resolve();
+					} else {
+						return reject('修改模板失败');
+					}
+				});
+			});
+		};
+
+		let templateContentArr = JSON.parse(req.body.templateInfoList);
+		let needUpdateArr = templateContentArr.filter(item => item.id);
+		let needAddArr = templateContentArr.filter(item => !item.id);
+
+		Promise.all(needUpdateArr.map(item => updateTemplateContent(item)).concat(needAddArr.map(item =>
+			addTemplateContent(item)))).then(updateTemplateContentResultArr => {
+			updateTemplate(updateTemplateContentResultArr).then(() => {
+				res.send({
+					error: 0,
+					msg: '修改成功',
+					data: null
+				});
+			}).catch(error => {
+				res.send({
+					error: 1,
+					msg: '修改模板失败',
+					data: null
+				});
+			});
+		}).catch(error => {
+			res.send({
+				error: 1,
+				msg: '修改模板内容失败',
+				data: null
+			});
+		});
+	});
+};

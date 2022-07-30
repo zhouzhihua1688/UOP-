@@ -1,0 +1,79 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').sendCount.msgSearch;
+
+module.exports = function (app) {
+    app.post('/messageCenter/sendCount/msgSearch/search.ajax', (req, res, next) => {
+        let params = {};
+        req.body.phoneNum && (params.phoneNum = req.body.phoneNum);
+        req.body.ruleUser && (params.ruleUser = req.body.ruleUser);
+        params.beginTime = req.body.beginTime;
+        req.body.endTime && (params.endTime = req.body.endTime);
+        req.body.ruleSource && (params.ruleSource = req.body.ruleSource);
+        req.body.status && (params.status = req.body.status);
+        let option = {
+            pageUrl: '/messageCenter/sendCount/msgSearch/search.ajax',
+            req: req,
+            url: apiUrlList.search,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0 && Array.isArray(result.body)) {
+                result.body.forEach(item => {
+                    item.showChannelType = item.channelType;
+                    if (item.channelType == 'YDMW_YX') {
+                        item.showChannelType = '移动梦网(营销)';
+                    }
+                    if (item.channelType == 'YDMW_JY') {
+                        item.showChannelType = '移动梦网(交易)';
+                    }
+                    item.showStatus = item.status;
+                    if (item.status == 0) {
+                        item.showStatus = '开始';
+                    }
+                    if (item.status == 1) {
+                        item.showStatus = '免打扰';
+                    }
+                    if (item.status == 2) {
+                        item.showStatus = '失败';
+                    }
+                    if (item.status == 3) {
+                        item.showStatus = '成功';
+                    }
+                    if (item.status == 4) {
+                        item.showStatus = '无pushtoken';
+                    }
+                    if (item.status == 5) {
+                        item.showStatus = '遇到挡板未发送状态';
+                    }
+                    if (item.status == 6) {
+                        item.showStatus = '超过频次限额';
+                    }
+                    if (item.status == 7) {
+                        item.showStatus = '客户关闭设置';
+                    }
+                    if (item.status == 9) {
+                        item.showStatus = '已通过微信发送';
+                    }
+                    for (let prop in item) {
+                        if (!item[prop]) {
+                            item[prop] = '-';
+                        }
+                    }
+                });
+                res.send({error: 0, msg: '查询成功', data: result.body});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '查询失败'});
+            }
+        });
+    });
+};

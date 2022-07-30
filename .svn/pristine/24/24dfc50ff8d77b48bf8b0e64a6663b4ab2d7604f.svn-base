@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+
+        nav{
+            margin: 10px auto;
+            width: 80%;
+            padding: 10px;
+        }
+        .box{
+            position: relative;
+            padding: 10px;
+            margin-top: 30px ;
+            border: 1px solid #ccc;
+            width: 80%;
+        }
+        .box header{
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #636363;
+            font-size: 20px
+        }
+        .inbox{
+            display: flex;
+            margin-left: 80px;
+            justify-content: space-between;
+            position: relative;
+        }
+        select{
+            width: 170px;
+        }
+        .delType{
+            position: absolute;
+            right: 10px;
+            top: 10px;
+
+            color: #FFF!important;
+    border: 5px solid #D15B47;
+    border-radius: 0;
+    vertical-align: middle;
+    margin: 0;
+        }
+        .delFundList{
+            position: absolute;
+            left: -50px;
+            top: 0;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content" id="content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <!--消息提示弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                    <h4 class="modal-title"></h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <nav>
+                        <span>栏目类型 : </span>
+                        <vue-select v-model='type' :options='typeAll' label='typeName' model='typeValue'></vue-select><button
+                            class="btn btn-sm btn-primary" type="button" style='margin-left: 20px;' @click='addList'>新增基金类型</button>
+
+                        <div :is='item.compName' v-for="(item,index) in comps" :ind='index' @func='delList' :key="item.onlyId"></div>
+
+                    </nav>
+
+                    <button class="btn btn-sm btn-primary">打包下载</button>
+
+                </div><!-- /.page-content -->
+
+                <template id='newFund'>
+                    <!-- //新基金 -->
+                    <keep-alive>
+                        <div class='box'>
+                            <button class="btn-sm btn-danger delType" type="button" @click='del()'>
+                                删除本栏
+                            </button>
+                            <header>新基金</header>
+
+                            <p><span>栏目类型 &nbsp;&nbsp;&nbsp;&nbsp;: &nbsp;</span> <input type="text"></p>
+                            <p><span>栏目收益率 : &nbsp;&nbsp;</span><select v-model="yield">
+                                    <option :value="item.typeValue" v-for="(item,index) in yieldType">{{item.yieldTime}}</option>
+                                </select>
+                                <p>添加基金 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-sm btn-primary"
+                                        type="button" @click='addFund()'>+</button></p>
+                                <div class='inbox' v-for="(item,index) in funds">
+                                    <button class="btn btn-sm btn-danger delFundList" type="button" @click='delFundList(index)'
+                                        v-show='funds.length>=2'>
+                                        -
+                                    </button>
+                                    <p>基金代码:<input type="text" v-model="item.fundId"></p>
+                                    <p>自定义简称:<input type="text" v-model="item.fundName"></p>
+                                    <p>自定义链接:<input type="text" v-model="item.fundSrc"></p>
+
+                                </div>
+                        </div>
+                    </keep-alive>
+
+                </template>
+                <template id='commonFund'>
+                    <!--普通基金  -->
+                    <div class='box'>
+                        <button class="btn-sm btn-danger delType" type="button" @click='del()'>
+                            删除本栏
+                        </button>
+                        <header>普通基金</header>
+                        <p><span>栏目类型 &nbsp;&nbsp;&nbsp;&nbsp;: &nbsp;</span> <input type="text"></p>
+                        <p><span>栏目副标 &nbsp;&nbsp;&nbsp;&nbsp;: &nbsp;&nbsp;</span><select v-model="yield">
+                                <option :value="item.typeValue" v-for="(item,index) in yieldType">{{item.yieldTime}}</option>
+                            </select>
+                            <p>添加基金 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-sm btn-primary"
+                                    type="button" @click='addFund()'>+</button></p>
+                            <div class='inbox' v-for="(item,index) in funds">
+                                <button class="btn btn-sm btn-danger delFundList" type="button" @click='delFundList(index)'
+                                    v-show='funds.length>=2'>
+                                    -
+                                </button>
+                                <p>基金代码:<input type="text" v-model="item.fundId"></p>
+                                <p>自定义简称:<input type="text" v-model="item.fundName"></p>
+                                <p>自定义说明:<input type="text" v-model="item.fundExplain"></p>
+                                <p>自定义链接:<input type="text" v-model="item.fundSrc"></p>
+                            </div>
+                    </div>
+                </template>
+                <template id='atTimenFund'>
+                    <!-- 定开基金 -->
+                    <div class='box'>
+                        <button class="btn-sm btn-danger delType" type="button" @click='del()'>
+                            删除本栏
+                        </button>
+                        <header>定开基金</header>
+                        <p><span>栏目类型 &nbsp;&nbsp;&nbsp;&nbsp;: &nbsp;</span> <input type="text"></p>
+                        <p><span>栏目主标 &nbsp;&nbsp;&nbsp;&nbsp;: &nbsp;</span> <input type="text"></p>
+                        <p><span>栏目副标 &nbsp;&nbsp;&nbsp;&nbsp;: &nbsp; </span><select v-model="yield">
+                                <option :value="item.typeValue" v-for="(item,index) in yieldType">{{item.yieldTime}}</option>
+                            </select>
+                            <p>添加基金 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-sm btn-primary"
+                                    type="button" @click='addFund()'>+</button></p>
+                            <div class='inbox' v-for="(item,index) in funds">
+                                <button class="btn btn-sm btn-danger delFundList" type="button" @click='delFundList(index)'
+                                    v-show='funds.length>=2'>
+                                    -
+                                </button>
+                                <p>基金代码:<input type="text" v-model="item.fundId"></p>
+                                <p>自定义简称:<input type="text" v-model="item.fundName"></p>
+                                <p>自定义链接:<input type="text" v-model="item.fundSrc"></p>
+                            </div>
+                    </div>
+                </template>
+
+
+
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/lib/select.js"></script>
+    <script src="/js/publicConfig/automatedTool/recentProductList.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,122 @@
+//用户登录接口总配置
+let monitoringIP = '';
+
+if (global.envConfig.IPOReview) {
+    monitoringIP = global.envConfig.IPOReview;
+    // monitoringIP = 'http://10.50.113.25:8089/';
+} else {
+    monitoringIP = global.envConfig.inner_gateway;
+}
+
+
+module.exports = {
+    monitoring: {
+        indicator: {
+            productStatus: `${monitoringIP}/par/v1/new/monitor_report/fundgroup/single/info/calc-status/query`,
+            // labels: `${monitoringIP}/par/v1/monitor_report/monitor/product/relation/label/collection/query`,
+            labels: `${monitoringIP}/par/v1/monitor_report/label/monitor/report/label/query`,
+            // labelCollection: `${monitoringIP}/par/v1/monitor_report/monitor/specific/product/label/collection/query`,
+            collections: `${monitoringIP}/par/v1/monitor_report/monitor-info/collection/query`,
+            monitorIndex: `${monitoringIP}/par/v1/monitor_report/monitor-index/collection/query`,
+            // productInfo: `${monitoringIP}/par/v1/monitor_report/monitor/specific/product/query`,
+            addMonitor: `${monitoringIP}/par/v1/monitor_report/monitor-info/single/info/base/create`,
+            updateMonitor: `${monitoringIP}/par/v1/monitor_report/monitor-info/single/info/base/update`,
+            deleteMonitor: `${monitoringIP}/par/v1/monitor_report/monitor-info/single/info/base/delete`,
+            createIndex: `${monitoringIP}/par/v1/monitor_report/monitor-index/single/info/base/create`,
+            calc: `${monitoringIP}/par/v1/monitor_report/monitor-index/calc`,
+        },
+        indicatorPush: {
+            productStatus: `${monitoringIP}/par/v1/new/monitor_report/fundgroup/single/info/calc-status/query`,
+            // labels: `${monitoringIP}/par/v1/monitor_report/monitor/product/relation/label/collection/query`,
+            labels: `${monitoringIP}/par/v1/monitor_report/label/monitor/report/label/query`,
+            // labelCollection: `${monitoringIP}/par/v1/monitor_report/monitor/specific/product/label/collection/query`,
+            collections: `${monitoringIP}/par/v1/monitor_report/par/index/push/info/page/condition/query`,
+            monitorIndex: `${monitoringIP}/par/v1/monitor_report/monitor-index/collection/query`,
+            detailData: `${monitoringIP}/par/v1/monitor_report/par/index/push/condition/query`,
+            // productInfo: `${monitoringIP}/par/v1/monitor_report/monitor/specific/product/query`,
+            addMonitor: `${monitoringIP}/par/v1/monitor_report/product/index/push/info/insert`,
+            updateMonitor: `${monitoringIP}/par/v1/monitor_report/product/index/push/email/delete-then-insert`,
+            emailQuery:`${monitoringIP}/par/v1/monitor_report/par/index/push/email/condition/query`,
+            deleteMonitor: `${monitoringIP}/par/v1/monitor_report/product/index/push/info/delete/product`,
+            createIndex: `${monitoringIP}/par/v1/monitor_report/monitor-index/single/info/base/create`,
+            calc: `${monitoringIP}/par/v1/monitor_report/monitor-index/calc`,
+        },
+        forms: {
+            productIndexesFilePath:global.envConfig.productIndexesFilePath || './uploadFiles',
+            labelCollection: `${monitoringIP}/par/v1/monitor_report/monitor/specific/product/label/collection/query`,
+            // labels: `${monitoringIP}/par/v1/monitor_report/monitor/product/relation/label/collection/query`,
+            labels: `${monitoringIP}/par/v1/monitor_report/label/monitor/report/label/query`,
+            tableData: `${monitoringIP}/par/v1/monitor_report/monitor-detail/query/base/page`,
+            navExport: `${monitoringIP}/par/v1/monitor_report/product/nav/query/collections`,
+            monitorIndex: `${monitoringIP}/par/v1/monitor_report/monitor-index/collection/query`,
+            detailData: `${monitoringIP}/par/v1/monitor_report/monitor-detail/query/detail/collection`,
+            performanceTask: `${monitoringIP}/par/v1/monitor_report/prepare/product/performance/report`,
+            performanceStatus: `${monitoringIP}/par/v1/monitor_report/query/product/performance/report/status`,
+            monitorExport: `${monitoringIP}/par/v1/monitor_report/custom/product/monitor/index/calc/query/collection`,
+            inIndexs: `${monitoringIP}/par/v1/monitor_report/monitor-detail/query/fundgroup-index/detail/collection`,
+        },
+				reportForms:{
+					tableData: `${monitoringIP}/par/v1/monitor_report/bd/monitor/detail/query`,
+					labels: `${monitoringIP}/par/v1/monitor_report/label/monitor/report/label/query`,
+					monitorIndex: `${monitoringIP}/par/v1/monitor_report/monitor-index/collection/query`,
+					// productInfo: `${monitoringIP}/par/v1/monitor_report/monitor/specific/product/query`,
+					addMonitor: `${monitoringIP}/par/v1/monitor_report/batch/monitor/info/base/create`,
+					monitorQuery: `${monitoringIP}/par/v1/monitor_report/batch/monitor/index/query`,
+					// addMonitor: `${monitoringIP}/par/v1/monitor_report/monitor-info/single/info/base/create`,
+					createIndex: `${monitoringIP}/par/v1/monitor_report/monitor-index/single/info/base/create`,
+          calc: `${monitoringIP}/par/v1/monitor_report/monitor-index/calc`,
+				},
+        fundInfo: {
+            fundList: `${monitoringIP}/par/v1/monitor_report/fund/info/query/page`,
+            add: `${monitoringIP}/par/v1/monitor_report/fund/info/insert`,
+            del: `${monitoringIP}/par/v1/monitor_report/fund/info/delete`,
+            modify: `${monitoringIP}/par/v1/monitor_report/fund/info/update`,
+            queryDetail: `${monitoringIP}/par/v1/monitor_report/fund/all/info/query`,
+            labels: `${monitoringIP}/par/v1/monitor_report/label/monitor/report/label/query`,
+            channelAll: `${monitoringIP}/par/v1/new/monitor_report/channel/query/all`,
+            queryPosition:`${monitoringIP}/par/v1/monitor_report/channel/query/sale_position`,
+            queryInvestArea:`${monitoringIP}/par/v1/monitor_report/channel/query/invest_area`
+            // labels: `${monitoringIP}/par/v1/monitor_report/monitor/product/relation/label/collection/query`
+        },
+        thirdPartyGroup: {
+            collections: `${monitoringIP}/par/v1/new/monitor_report/query/base/all-valid/collections`,
+            exports: `${monitoringIP}/par/v1/new/monitor_report/query/fundgroup/base/information/collection`,
+            productStatus: `${monitoringIP}/par/v1/new/monitor_report/fundgroup/single/info/calc-status/query`,
+            labels: `${monitoringIP}/par/v1/monitor_report/label/monitor/report/label/query`,
+            // labels: `${monitoringIP}/par/v1/monitor_report/monitor/product/relation/label/collection/query`,
+            bazaarFund: `${monitoringIP}/par/v1/monitor_report/fund/all/info/abbr/query/fuzzy`,
+            channelAll: `${monitoringIP}/par/v1/new/monitor_report/channel/query/all`,
+            // bazaarFund: `http://10.50.114.160:8089/par/v1/monitor_report/fund/all/info/abbr/query/fuzzy`,
+            add: `${monitoringIP}/par/v1/new/monitor_report/fundgroup/single/info/base/create`,
+            modifyBaseInfo: `${monitoringIP}/par/v1/new/monitor_report/single/info/base/update`,
+            modifySourceInfo: `${monitoringIP}/par/v1/new/monitor_report/single/info/fundgroup-change/update`,
+            addySourceInfo: `${monitoringIP}/par/v1/new/monitor_report/fundgroup/single/info/fundgroup-change/create`,
+            queryStorage: `${monitoringIP}/par/v1/new/monitor_report/fundgroup/query/fundgroup-changinfo/all/collections`,
+            del: `${monitoringIP}/par/v1/new/monitor_report/delete/group/info/by-groupid`,
+            delStorage: `${monitoringIP}/par/v1/new/monitor_report/fundgroup/single/info/fundgroup-change/delete`,
+            indexStandard: `${monitoringIP}/par/v1/new/monitor_report/query/comparison/index/collections`,
+            syncGroup: `${monitoringIP}/par/v1/new/monitor_report/fundgroup/synchronous/from/company`
+        },
+        realTimeForms: {
+            labels: `${monitoringIP}/par/v1/monitor_report/label/monitor/report/label/query`,
+            tableData: `${monitoringIP}/par/v1/new/monitor_report/query/fundgroup/realtime/report/info`,
+            pieData: `${monitoringIP}/par/v1/new/monitor_report/query/fundgroup/change/detail/info`,
+            brokenLineData: `${monitoringIP}/par/v1/new/monitor_report/query/fundgroup/daily/nav/info`,
+            navExport: `${monitoringIP}/par/v1/monitor_report/product/nav/query/collections`
+        },
+        threeSidesLogs:{
+            tableData: `${monitoringIP}/par/v1/new/monitor_report/all/third/shift/fundgroup/query/collection`,
+            labels: `${monitoringIP}/par/v1/monitor_report/monitor/product/relation/label/collection/query`,
+            threeSidesGroup: `${monitoringIP}/par/v1/new/monitor_report/third/shift/groupId/query/collection`,
+            addOrModify: `${monitoringIP}/par/v1/new/monitor_report/third/shift/fundgroup/insert-or-update`,
+            detail: `${monitoringIP}/par/v1/new/monitor_report/third/shift/fundgroup/by/groupid/query/collection`,
+        },
+        targetYield:{
+            tableData: `${monitoringIP}/par/v1/new/monitor_report/target/profit/fundgroup/query`,
+            labels: `${monitoringIP}/par/v1/monitor_report/monitor/product/relation/label/collection/query`,
+            add: `${monitoringIP}/par/v1/new/monitor_report/target/profit/fundgroup/insert`,
+            modifyData: `${monitoringIP}/par/v1/new/monitor_report/target/profit/fundgroup/update`,
+            channelAll: `${monitoringIP}/par/v1/new/monitor_report/channel/query/all`,
+        }
+    },
+};

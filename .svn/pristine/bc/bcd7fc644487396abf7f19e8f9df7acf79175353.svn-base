@@ -1,0 +1,525 @@
+
+var vm = new Vue({
+    el: '#content',
+    data: function () {
+        return {
+  
+            tableData: [],
+            productData: [],
+
+            currentIndex: 0,
+            maxSpace: 5,
+            totalPage: 0,
+            pageMaxNum: 10,
+
+            currentIndex2: 0,
+            maxSpace2: 5,
+            totalPage2: 0,
+            pageMaxNum2: 10,
+            diaMsg: '',
+            loadingShow: false,  //loading动画
+            showText:'数据加载中...',
+            
+        //主页面所用字段
+            classifyList:[],//获取一二级分类数据
+            firstClassifyId:'',   //一级分类ID
+            secondClassifyId:'',  //二级分类ID
+            threeClassifyId:'',   //三级分类ID
+            allChecked:{'checked':true},    //全部
+            menuList:[], //三级分类
+            // menuList:[{'name':'定投','checked':true},
+            // {'name':'债基','checked':true},{'name':'FOF','checked':true},
+            // {'name':'回收+','checked':true},{'name':'其他','checked':true}],  //单个标签
+            modifyStatus:'1',
+            updateId:'',
+            bgIndex:'0',//用于背景颜色的切换
+       // 弹窗字段
+            categoryIdList:[],
+            singLableFirst:' ',   //关联标签
+            singLableSecond:' ',   //关联标签
+            flag:false,
+            // 添加修改弹窗里的材料熟悉类型---0-新增，1-现有材料关联
+            title:'',  //标题
+            description:'',// 素材描述 , 
+            mediaConfigMode:'',  //材料属性
+            materialProperty:[{value: '1',name: '现有材料',checked: false},{value: '0',name: '新增材料',checked: true}],
+
+            rightType:'', // 素材权限类型：00-公开材料，01-内部材料，03-一对一材料 
+            sourceType:'',//来源分类渠道：00-uop,01-微信，02-现金宝 
+            watermarkFlag:'',//水印标识：0-不打水印，1-添加水印
+            timelinessType:'',// 素材时效性：0-无，1-有 ,
+            timelinessCycleValue:'',// 素材时效性周期值
+            timelinessCycleType:'',// 素材时效性周期类型：1-日，2-月，3-周 ,
+            pushStatus:'0', // 素材上下架状态：0-下架，1上架 ,
+            
+            // 添加修改弹窗里的-类型
+            mediaType:'', //类型字段
+            typeList: [{value: 'file',name: '文件',checked: false}, 
+                {value: 'text', name: '文字',checked: false}, 
+                {value: 'image', name: '图片',checked: false}, 
+                {value: 'link',name: '链接',checked: false},
+                // {value: 'dynamics',name: '动态',checked: false}
+            ],
+            // 上传文件所用字段
+            fileUrl:'',  //添加弹窗里上传文件所用字段
+            uploadingFile: {   //上传文件
+                name: '',
+                progressRate: ''
+            },
+        }
+    },
+    mounted: function () {
+        var dialogs = ['info', 'del'];
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        $('.date-timepicker').datetimepicker({
+            format: 'YYYY-MM-DD', //use this option to display seconds
+            icons: {
+                time: 'fa fa-clock-o',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-arrows ',
+                clear: 'fa fa-trash',
+                close: 'fa fa-times'
+            }
+        }).next().on(ace.click_event, function () {
+            $(this).prev().focus();
+        });
+        // 获取一级二级分类
+        var _this=this;
+        var aa;
+        $.post({
+            url:'/contentMgmt/productMaterial/investPrefecture/classifyList.ajax',
+            // data:params,
+            success: function (result) {
+                if (result.error === 0) {
+                   _this.classifyList=result.data.body.filter(function(item){  //过滤拿到投教与策略的数据
+                        return item.categoryName=='投教与策略';
+                   })
+                   _this.classifyList.forEach(function(item){
+                        _this.firstClassifyId=item.categoryId; //获取一级分类Id;
+                        item.categoryConfigList.forEach(function(secondItem){
+                            if(secondItem.categoryName=='投教专区'){
+                               _this.secondClassifyId=secondItem.categoryId;  //获取二级分类id
+                               aa=secondItem.categoryId;
+                            }
+                        })
+                    })
+                    // 获三级分类
+                    $.post({
+                        url:'/contentMgmt/productMaterial/investPrefecture/threeClassifyList.ajax',
+                        data:{
+                            parentCategoryId:_this.secondClassifyId
+                        },
+                        success: function (result) {
+                            if (result.error === 0) {
+                                _this.menuList=result.data.body.ncmsContentCategoryConfigList.map(function(item){
+                                   item.checked=true;  //设置全部为true,选中
+                                   return item;
+                                });
+                                console.log( _this.menuList);
+                            }else {
+                                _this.showDialog('', 'info', false,result.msg);
+                            }
+                        }
+                    });
+                    _this.getTableData();
+                }else {
+                    _this.showDialog('', 'info', false,result.msg);
+                }
+            }
+           
+        }); 
+    },
+    computed: {
+        pageList: function () {
+            var arr = [];
+            if (this.totalPage <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex <= this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex <= this.maxSpace) {
+                var space = this.totalPage - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            } else {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        },
+    },
+    watch: {
+        pageMaxNum: function () {
+            this.getTableData(0);
+        },
+     
+    },
+    methods: {
+        // 切换主页面menuList背景颜色--选择标签
+        // 全选按钮
+        checkAll($event){
+            // return;
+            $event.preventDefault();
+            this.allChecked.checked= !this.allChecked.checked;
+            for (p in this.menuList) {
+                this.menuList[p].checked = this.allChecked.checked;
+            }
+        },
+        // 点击单个标签点击选中
+        checkSingle:function($event,index){
+            $event.preventDefault();
+            // this.bgIndex = index;   //背景索引
+            this.menuList[index].checked = !this.menuList[index].checked;
+            let checkAllFlag = true;
+            for (p in this.menuList) {
+                if(p =='checked') continue;
+                if(!this.menuList[p].checked){
+                    // 有一个没有选中，则全选也不选中
+                    checkAllFlag = false;
+                    break
+                }
+            }
+            this.allChecked.checked = checkAllFlag;
+        },
+        //添加修改弹窗里选择材料属性checkbox-单选
+        chooseSingle(index) {
+            var _this=this;
+            _this.materialProperty.forEach(item => {
+               item.checked = false;  
+            })
+            // 选中当前
+            _this.materialProperty[index].checked = true;
+            _this.mediaConfigMode=_this.materialProperty[index].value;
+        },
+        //添加修改弹窗里选择类型radio-单选
+        changeTypeList(item, index) {
+            var _this = this;
+            $.each(_this.typeList, function (index, item) {
+                item.checked = false;
+            })
+            _this.typeList[index].checked = true;
+            _this.mediaType = _this.typeList[index].value;
+        },
+         // 添加弹窗里选择上架状态
+        changeAddStatus() {
+            var _this = this;
+            if (_this.pushStatus == '0') {
+                _this.pushStatus = '1'
+            } else {
+                _this.pushStatus = '0'
+            }
+        },
+        // 添加弹窗里关联标签
+        chooseLableFirst:function(value){
+           this.singLableFirst=value;
+        },
+        chooseLableSecond:function(value){
+           this.singLableSecond=value;
+         },
+        // 主表格数据
+        getTableData: function (currentIndex) {
+            //   console.log(currentIndex);
+            var _this = this;
+            var params = {};
+            params.categoryId =_this.secondClassifyId; //分类ID
+            params.mediaType=_this.mediaType;   //类型，在弹窗现有材料才有
+           
+            // params.page = currentIndex + 1;
+            // params.size = this.pageMaxNum;
+            console.log(params);
+            // $(".cover").show();
+            _this.tableData=[];
+            $.post({
+                url: '/contentMgmt/productMaterial/investPrefecture/getTableData.ajax',
+                data: params,
+                success: function (result) {
+                    $(".cover").hide();
+                    if (result.error === 0) {
+                        _this.currentIndex = currentIndex;
+                        // _this.totalPage = Math.ceil(result.data.body.total / params.size);
+                        if(result.data.body.data) {
+                            _this.tableData = result.data.body.data?result.data.body.data:[];
+                        }else{
+                            _this.showText='暂无数据';
+                        }
+                    }
+                    else {
+                        $(".cover").hide();
+                        _this.tableData = [];
+                        _this.showText='暂无数据';
+                        _this.currentIndex = 0;
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+
+        },
+        // 新增修改弹窗
+        showAdd:function(){
+           var _this=this;
+           _this.modifyStatus=0;  //弹出新增弹窗
+           _this.categoryIdList =[];                //*分类
+           _this.mediaConfigMode='0';              //材料属性 --默认0-新增材料
+           _this.title ='';                      //标题
+           _this.description='';                // 描述 
+           _this.rightType='';                   // 素材权限类型：00-公开材料，01-内部材料，03-一对一材料 
+           _this.sourceType='';                   //来源分类渠道：00-uop,01-微信，02-现金宝 
+           _this.watermarkFlag='';                 //水印标识：0-不打水印，1-添加水印
+           _this.timelinessType='';                 // 素材时效性：0-无，1-有 ,
+           _this.timelinessCycleValue='';            // 素材时效性周期值
+           _this.timelinessCycleType='';           // 素材时效性周期类型：1-日，2-月，3-周 ,
+           _this.tagList=[];                      //关联标签
+           _this.mediaType ='';                   //上传文件类型
+           _this.pushStatus='0';                 // 素材上下架状态：0-下架，1上架 ,
+           $.each(_this.typeList, function (index, item) {  //清空文件类型
+            item.checked = false;
+           })
+
+           _this.showDialog('', 'add');
+        },
+        //点击选择内容-显示内容数据弹窗
+        showContent:function(){
+           var _this=this;   
+           _this.showDialog('add', 'contentShow',false);  
+        },
+        // 新增必填弹框
+        diaInfoCheck: function () {
+            var _this = this;
+            if (!_this.threeClassifyId) {
+                this.showDialog('add', 'info', true, '三级分类不能为空');
+                return false;
+            }
+            if (!_this.title) {
+                this.showDialog('add', 'info', true, '标题不能为空');
+                return false;
+            }
+            if (!_this.rightType) {
+                this.showDialog('add', 'info', true, '材料权限不能为空');
+                return false;
+            }
+            if (!_this.sourceType) {
+                this.showDialog('add', 'info', true, '渠道权限不能为空');
+                return false;
+            }
+            if (!_this.watermarkFlag) {
+                this.showDialog('add', 'info', true, '水印不能为空');
+                return false;
+            }
+            if (!_this.timelinessType) {
+                this.showDialog('add', 'info', true, '材料时效不能为空');
+                return false;
+            }
+            if (!_this.timelinessCycleValue) {
+                this.showDialog('add', 'info', true, '上架日不能为空');
+                return false;
+            }
+            if (!_this.mediaType) {
+                this.showDialog('add', 'info', true, '文件类型不能为空');
+                return false;
+            }
+            return true;
+        },
+        add:function(){
+          var _this=this;
+        //   if (this.diaInfoCheck()) {
+          var params={};
+          _this.categoryIdList=[];
+          _this.categoryIdList.push(_this.firstClassifyId,_this.secondClassifyId,_this.threeClassifyId);  
+          params.categoryIdList=_this.categoryIdList;          //*分类ID 一级，二级，三级
+          params.mediaConfigMode=_this.mediaConfigMode;        //材料属性
+          params.title =_this.title;                          //标题
+          params.description=_this.description;                // 描述 
+          params.rightType=_this.rightType;                   // 材料权限类型：00-公开材料，01-内部材料，03-一对一材料 
+          params.sourceType=_this.sourceType;                   //来源分类渠道：00-uop,01-微信，02-现金宝 
+          params.watermarkFlag=_this.watermarkFlag;                 //水印标识：0-不打水印，1-添加水印
+          params.timelinessType=_this.timelinessType;                 // 素材时效性：0-无，1-有 ,
+          params.timelinessCycleValue=_this.timelinessCycleValue;            // 素材时效性周期值
+          params.timelinessCycleType=_this.timelinessCycleType;           // 素材时效性周期类型：1-日，2-月，3-周 ,
+          params.tagList=[];                                             //关联标签
+          params.mediaType =_this.mediaType;                   //上传文件类型
+          params.pushStatus=_this.pushStatus;                 // 素材上下架状态：0-下架，1上架 ,
+          console.log(params);
+          let url='';
+          if(!_this.updateId){
+             url='/contentMgmt/productMaterial/investPrefecture/add.ajax'
+          }else{
+             url='/contentMgmt/productMaterial/investPrefecture/update.ajax'
+          }
+            $.post({
+                url:url,
+                data:params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.getTableData(0);
+                        _this.showDialog('add', 'info', false, result.msg);
+                    }else {
+                        _this.showDialog('add', 'info', false,result.msg);
+                    }
+                }
+            });
+        // }
+
+        },
+        // 修改数据
+        showUpdate:function (item) {
+            var _this=this;
+            _this.modifyStatus=1;
+            _this.updateId=item.Id;
+            _this.showDialog('', 'add');
+        },
+
+
+
+        //文件上传-有进度条
+        uploadsFile(e) {
+            var _this = this;
+            let file = e.target.files[0];
+            this.uploadingFile.name = file.name;
+            console.log("fileName===", file.name);
+            var formdata = new FormData(); //创建formdata对象
+            formdata.append('file', file);
+            $(".cover").show();
+            $.post({
+                url: '/contentMgmt/productMaterial/investPrefecture/uploadImg.ajax',
+                type: 'post',
+                dataType: 'json',
+                data: formdata,
+                processData: false,
+                contentType: false,
+                xhr: function () {
+                    var xhr = new XMLHttpRequest();
+                    //使用XMLHttpRequest.upload监听上传过程，注册progress事件，打印回调函数中的event事件
+                    xhr.upload.addEventListener('progress', function (e) {
+                        //loaded代表上传了多少
+                        //total代表总数为多少
+                        _this.uploadingFile.progressRate = (e.loaded / e.total) * 100 + '%';
+                        $('.g-progress').css('width', (e.loaded / e.total) * 100 + '%');
+                    })
+                    return xhr;
+                },
+                success: function (result) {
+                    if (result.error === 0) {
+                        $(".cover").hide();
+                        _this.fileUrl = result.data.imageUrl;
+                        console.log(result.data.imageUrl);
+                        //解决不能重复添加问题
+                        $('#uploadsFile').attr('type', 'text')
+                        $('#uploadsFile').attr('type', 'file')
+                        _this.showDialog('add', 'info', true, result.msg);
+                    } else {
+                        _this.showDialog('add', 'info', true, result.msg);
+                        //解决不能重复添加问题
+                        $('#uploadsFile').attr('type', 'text')
+                        $('#uploadsFile').attr('type', 'file')
+                    }
+                }
+            })
+                
+        },
+  
+        //主表格分页方法
+        prev: function () {
+            if (this.currentIndex <= 0) {
+                return;
+            }
+            this.getTableData1(this.currentIndex - 1);
+        },
+        next: function () {
+            if (this.currentIndex >= this.totalPage - 1) {
+                return;
+            }
+            this.getTableData1(this.currentIndex + 1);
+        },
+        changeIndex: function (index) {
+            this.getTableData1(index - 1);
+        },
+        toFirst: function () {
+            this.getTableData1(0);
+        },
+        toLast: function () {
+            this.getTableData1(this.totalPage - 1);
+        },
+  
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            }
+            else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            }
+            else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            }
+            else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+            else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        transformTime(createTime) {
+            let date = new Date(Number(createTime));
+            let year = date.getFullYear();
+            let month = date.getMonth() + 1;
+            let day = date.getDate();
+            let h = date.getHours()
+            let i = date.getMinutes()
+            let s = date.getSeconds();
+            month = month < 10 ? '0' + month : month;
+            day = day < 10 ? '0' + day : day;
+            if (h < 10) {
+                h = '0' + h;
+            }
+            if (i < 10) {
+                i = '0' + i;
+            }
+            if (s < 10) {
+                s = '0' + s;
+            }
+            let dateT = year + '-' + month + '-' + day + " " + h + ':' + i + ':' + s
+            return dateT
+        }
+    },
+    components: {
+        'date-picker': VueBootstrapDatetimePicker
+    },
+});

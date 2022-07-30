@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+    <style>
+        form.form {display: flex;justify-content: space-around; padding: 0px 20px;}
+        .columnField {width:360px}
+        .columnField .form-group { width: 100%;}
+        .columnField .form-group label { width: 150px; display: inline-block; text-align: right;}
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <!-- DIALOG BEGINS -->
+                        <!--编辑弹窗-->
+                        
+                        <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog" style="width:800px;">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title" style="display: inline">新增信息</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form class="form">
+                                            <div class="columnField">
+                                                <div class="form-group">
+                                                    <label class="control-label">渠道代码:</label>
+                                                    <input type="text" style="width:175px;"
+                                                           v-model.trim="channelCode" placeholder="必填"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">渠道名称:</label>
+                                                    <input type="text" style="width: 175px;"
+                                                           v-model.trim="channelName" placeholder="必填"/>
+                                                </div>
+                                                <!--<template v-if="!isUpdate">-->
+                                                <div class="form-group">
+                                                    <label class="control-label">branchCode:</label>
+                                                    <input type="text" style="width: 175px;"
+                                                           v-model.trim="branchCode" placeholder="必填"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">acceptMode:</label>
+                                                    <input type="text" style="width:175px;"
+                                                           v-model.trim="acceptMode" placeholder="必填"/>
+                                                </div>
+                                                <!--</template>-->
+                                                <div class="form-group">
+                                                    <label class="control-label">platformCode:</label>
+                                                    <input type="text" style="width:175px;" v-model.trim="platformCode" placeholder=""/>
+                                                </div>
+                                            </div>
+                                            <div class="columnField">
+                                                <div class="form-group">
+                                                    <label class="control-label">platformAppId:</label>
+                                                    <input type="text" style="width:175px;" v-model.trim="platformAppId"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">platformAppSecret:</label>
+                                                    <input type="text" style="width:175px;"
+                                                           v-model.trim="platformAppSecret"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">platformKindCode:</label>
+                                                    <input type="text" style="width:175px;" v-model.trim="platformKindCode"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">openOfficialAcct:</label>
+                                                    <input type="text" style="width:175px;" v-model.trim="openOfficialAcct"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="text-align:right">status:</label>
+                                                    <input type="text" style="width:175px;" v-model.trim="status" placeholder="0：有效，1：无效"/>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div style="clear:both"></div>
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" @click="saveParam()">保存</button>
+                                        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--修改弹窗-->
+                        <div class="modal" id="revise" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog" style="width:800px;">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title" style="display: inline">新增信息</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form class="form ">
+                                            <div class="columnField">
+                                                <div class="form-group">
+                                                    <label class="control-label">渠道代码:</label>
+                                                    <input type="text" style="width:175px;" disabled
+                                                           v-model.trim="channelCode"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">渠道名称:</label>
+                                                    <input type="text" style="width: 175px;"
+                                                           v-model.trim="channelName"/>
+                                                </div>
+                                                <!--<template v-if="!isUpdate">-->
+                                                <div class="form-group">
+                                                    <label class="control-label">branchCode:</label>
+                                                    <input type="text" style="width: 175px;"
+                                                           v-model.trim="branchCode"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">acceptMode:</label>
+                                                    <input type="text" style="width:175px;"
+                                                           v-model.trim="acceptMode"/>
+                                                </div>
+                                                <!--</template>-->
+                                                <div class="form-group">
+                                                    <label class="control-label">platformCode:</label>
+                                                    <input type="text" style="width:175px;" v-model.trim="platformCode"/>
+                                                </div>
+                                            </div>
+                                            <div class="columnField">
+                                                <div class="form-group">
+                                                    <label class="control-label">platformAppId:</label>
+                                                    <input type="text" style="width:175px;" v-model.trim="platformAppId"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">platformAppSecret:</label>
+                                                    <input type="text" style="width:175px;"
+                                                           v-model.trim="platformAppSecret"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">platformKindCode:</label>
+                                                    <input type="text" style="width:175px;" v-model.trim="platformKindCode"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label">openOfficialAcct:</label>
+                                                    <input type="text" style="width:175px;" v-model.trim="openOfficialAcct"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="text-align:right">status:</label>
+                                                    <input type="text" style="width:175px;" v-model.trim="status"/>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div style="clear:both"></div>
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" @click="update()">保存</button>
+                                        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--删除弹窗-->
+                        <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">删除用户</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确认删除此条数据?</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" @click="deleteParam">确定
+                                        </button>
+                                        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--提示信息弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- DIALOG ENDS -->
+                        <form class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group">
+                                <label class="control-label">渠道代码:</label>
+                                <input type="text" placeholder="请输入渠道代码" v-model.trim="channel_code"/>
+                            </div>
+                            <div class="form-group pull-right">
+                                <input type="button" class="btn btn-sm btn-primary" @click="getTableData(0)" value="查询">
+                                <% if(canShow||authorityList.includes('C')) { %>
+                                <input type="button" class="btn btn-sm btn-primary" @click="showAdd()" value="新建">
+                                <% } %>
+                            </div>
+                        </form>
+                        <div class="table-header">
+                            <%= cpage %>--表格数据
+                        </div>
+                        <!--分页器和快速查询-->
+                        <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                            <div class="col-xs-6">
+                                <div class="dataTables_length" id="dynamic-table_length">
+                                    <label>每页显示</label>
+                                    <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                        <option value="10">10</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="500">500</option>
+                                    </select>
+                                    <label>条</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!--数据表-->
+                        <table id="simple-table" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <!--<th class="center col-sm-1">-->
+                                <!--<label class="pos-rel">-->
+                                <!--<input type="checkbox" class="ace" :checked="checkAll" @click="allCheck"/>-->
+                                <!--<span class="lbl"></span>-->
+                                <!--</label>-->
+                                <!--</th>-->
+                                <th class="center">渠道代码</th>
+                                <th class="center">渠道名称</th>
+                                <th class="center">branchCode</th>
+                                <th class="center">acceptMode</th>
+                                <th class="center">platformCode</th>
+                                <th class="center">platformAppId</th>
+                                <th class="center">platformAppSecret</th>
+                                <th class="center">platformKindCode</th>
+                                <th class="center">openOfficialAcct</th>
+                                <th class="center">status</th>
+                                <th class="center">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="viewData.length>0">
+                                <tr v-for="(item,index) in viewData" :key="index"
+                                    :style="index%2==0?'background-color: #f9f9f9;':''">
+                                    <!--<td class="center">-->
+                                    <!--<label class="pos-rel">-->
+                                    <!--<input type="checkbox" class="ace" :checked="item.check"-->
+                                    <!--@click="check(item)"/>-->
+                                    <!--<span class="lbl"></span>-->
+                                    <!--</label>-->
+                                    <!--</td>-->
+                                    <td class="center" v-text="item.channelCode"></td>
+                                    <td class="center" v-text="item.channelName"></td>
+                                    <td class="center" v-text="item.branchCode"></td>
+                                    <td class="center" v-text="item.acceptMode"></td>
+                                    <td class="center" v-text="item.platformCode"></td>
+                                    <td class="center" v-text="item.platformAppId"></td>
+                                    <td class="center" v-text="item.platformAppSecret"></td>
+                                    <td class="center" v-text="item.platformKindCode"></td>
+                                    <td class="center" v-text="item.openOfficialAcct"></td>
+                                    <td class="center" v-text="item.status"></td>
+                                    <td class="center">
+                                        <% if(canShow||authorityList.includes('U')) { %>
+                                        <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                                        <% } %>
+                                        &nbsp;
+                                        <% if(canShow||authorityList.includes('D')) { %>
+                                        <a href="javascript:;" @click="showDelete(item)" class="red">删除</a>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'没有数据'" colspan="12"></td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                        <!--底部页码-->
+                        <div v-if="viewData.length>0" class="row"
+                             style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                            <div class="col-xs-2">
+                                <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                            </div>
+                            <div class="col-xs-10">
+                                <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                    <ul class="pagination">
+                                        <li class="paginate_button"
+                                            v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                            <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                        </li>
+                                        <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                            @click="prev">
+                                            <a href="javascript:;" v-text="'上一页'"></a>
+                                        </li>
+                                        <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                            v-for="value in pageList" @click="changeIndex(value)">
+                                            <a href="javascript:;" v-text="value"></a>
+                                        </li>
+                                        <li class="paginate_button"
+                                            v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                            <a href="javascript:;" v-text="'...'+middleData.length" @click="toLast"></a>
+                                        </li>
+                                        <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                            @click="next">
+                                            <a href="javascript:;" v-text="'下一页'"></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- PAGE CONTENT ENDS -->
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/js/operationMgmt/channelMgmt/externalChannel.js"></script>
+</body>
+</html>

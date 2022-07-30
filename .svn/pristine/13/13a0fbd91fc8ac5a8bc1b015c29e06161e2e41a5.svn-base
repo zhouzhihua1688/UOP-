@@ -1,0 +1,127 @@
+
+let tagMgmt = '';
+if (global.envConfig.tagMgmt) {
+    tagMgmt = global.envConfig.tagMgmt;
+} else {
+    tagMgmt = global.envConfig.inner_gateway;
+}
+tagMgmt += '/ncms/admin/v1';   
+// 基金经理
+let fundTag = '';
+if (global.envConfig.fundTag) {
+    fundTag = global.envConfig.fundTag;
+} else {
+    fundTag = global.envConfig.inner_gateway;
+}
+fundTag += '/productcenter/v1';
+
+// ess
+let ess = '';
+console.log('ess=',global.envConfig.ess);
+if (global.envConfig.ess) {
+	ess = global.envConfig.ess;
+} else {
+	ess = global.envConfig.inner_gateway;
+}
+ess += '/ess/v1';
+// 产品中心
+let productcenter = '';
+if (global.envConfig.productcenter) {
+	productcenter = global.envConfig.productcenter;
+} else {
+	productcenter = global.envConfig.inner_gateway;
+}
+productcenter += '/productcenter/v1';
+// common service
+let commonService = '';
+if (global.envConfig.commonService) {
+	commonService = global.envConfig.commonService;
+} else {
+	commonService = global.envConfig.inner_gateway;
+}
+commonService += '/common-services/v1';
+
+const devFilePath = global.envConfig.devFilePath;
+const uopStaticFilePath = global.envConfig.uopStaticFilePath;
+const uopStaticFilePath_url = global.envConfig.uopStaticFilePath_url;
+module.exports = {
+	  filePathExternal: uopStaticFilePath ? (uopStaticFilePath + '/contentMgmt') : (devFilePath + '/contentMgmt'),
+		filePafilePathExternalthUrl: uopStaticFilePath ? (uopStaticFilePath_url + '/contentMgmt') : (devFilePath + '/contentMgmt'),
+		// 产品列表
+		productData:{
+			// 一级页面
+			productList:{
+				// ess产品列表接口
+				tableData:`${ess}/fund/wechat/uop/fund-list`,
+				// 产品列表 ncms接口拼接ess
+				tableDataSplit:`${tagMgmt}/ncms/product-media/query-product-list`,
+				// 获取渠道权限列表
+				branchList:`${commonService}/branch/top`,
+				// 获取common service参数列表接口 现金宝分类，风险等级列表
+				commonParams:`${commonService}/param/params`,
+				// 产品信息查询新增修改
+				querySingleProductInfo:`${productcenter}/new/uop/touli/funds/single/info/query`,
+				productInsertOrUpdate:`${productcenter}/new/uop/touli/funds/single/insert-or-update`,
+				// 物料包增删改查
+				mediaPkbQuery:`${tagMgmt}/ncms/product-media-pkb/query`,
+				mediaPkbAdd:`${tagMgmt}/ncms/product-media-pkb/add-product-media-pkb`,
+				mediaPkbUpdate:`${tagMgmt}/ncms/product-media-pkb/update-product-media-pkb`,
+				mediaPkbDel:`${tagMgmt}/ncms/product-media-pkb/delete-product-media-pkb`
+			},
+			// 产品列表二级页面
+			productListMaterial:{
+				
+			}
+		},
+    // 投教策略
+    productMaterial:{
+        investPrefecture:{
+            getTableData: `${tagMgmt}/ncms/pitching-stategy/query-pitcing-stategy`,
+            add:`${tagMgmt}/ncms/pitching-stategy/add-pitching-stategy`, 
+            update:`${tagMgmt}/ncms/pitching-stategy/update-pitcing-stategy`, 
+            del:`${tagMgmt}/ncms/pitching-stategy/delete-pitching-stategy`,
+            classifyList:`${tagMgmt}/ncms/category-config/query-first-second-category`, 
+            threeClassifyList: `${tagMgmt}/ncms/category-config/query-list-by-id`,
+            getTagList: `${tagMgmt}/ncms/tag-category-config/query-list`,
+            getSecondTagList: `${tagMgmt}/ncms/tag-category-config/query-tagInfo-by-categoryId `, 
+            getManagerList: `${fundTag}/fundquery/fundmanager/allfundmanager `,   
+        }
+    },
+    contentClassifyMgmt:{
+        firstLevel:{
+            getTableData: `${tagMgmt}/ncms/category-config/query-list-by-id`,
+            add:`${tagMgmt}/ncms/category-config/add`,
+            update:`${tagMgmt}/ncms/category-config/update`,
+            deleteParam:`${tagMgmt}/ncms/category-config/delete`,
+        },
+        secondLevel:{
+            getTableData: `${tagMgmt}/ncms/category-config/query-list-by-id`,
+            add:`${tagMgmt}/ncms/category-config/add`,
+            update:`${tagMgmt}/ncms/category-config/update`,
+            deleteParam:`${tagMgmt}/ncms/category-config/delete`,
+            getCategoryIdList:`${tagMgmt}/ncms/category-config/query-list-by-id`,
+        },
+        threeLevel:{
+            getTableData: `${tagMgmt}/ncms/category-config/query-list-by-id`,
+            add:`${tagMgmt}/ncms/category-config/add`,
+            update:`${tagMgmt}/ncms/category-config/update`,
+            deleteParam:`${tagMgmt}/ncms/category-config/delete`,
+            getCategoryIdList:`${tagMgmt}/ncms/category-config/query-list-by-id`,
+        }
+    },
+    tagMgmt:{
+        tagClassifyMgmt:{
+            getTableData: `${tagMgmt}/ncms/tag-category-config/query-list`,
+            add:`${tagMgmt}/ncms/tag-category-config/add-tag-category`,
+            update:`${tagMgmt}/ncms/tag-category-config/update-tag-category`,
+            del:`${tagMgmt}/ncms/tag-category-config/delete-tag-category`,
+        },
+        tagContentMgmt:{
+            getTableData: `${tagMgmt}/ncms/tag-config/query-list`,
+            add:`${tagMgmt}/ncms/tag-config/add-tag-config`,
+            update:`${tagMgmt}/ncms/tag-config/update-tag-config`,
+            deleteParam:`${tagMgmt}/ncms/tag-config/delete-tag-config`,
+            getTagClassify:`${tagMgmt}/ncms/tag-category-config/query-list`,
+        }       
+    },
+};

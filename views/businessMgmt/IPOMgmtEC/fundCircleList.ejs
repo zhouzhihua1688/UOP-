@@ -1,0 +1,36 @@
+<div id="circleList" class="tab-pane ">
+        <table id="simple-table" class="table table-bordered table-hover dataTable">
+            <thead>
+                <tr>
+                    <th class="center col-sm-1 col-md-1 col-lg-1">渠道标志
+                    </th>
+                    <th class="center col-sm-1 col-md-1 col-lg-1">基金状态
+                    </th>
+                    <th class="center col-sm-1 col-md-1 col-lg-1">发行日期
+                    </th>
+                    <th class="center col-sm-1 col-md-1 col-lg-1">发行时间
+                    </th>
+                    <th class="center col-sm-1 col-md-1 col-lg-1">认购结束日期
+                    </th>
+                    <th class="center col-sm-1 col-md-1 col-lg-1">认购结束时间
+                    </th>
+                    <th class="center col-sm-1 col-md-1 col-lg-1">开放日期
+                    </th>
+                    <th class="center col-sm-1 col-md-1 col-lg-1">开放时间
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(item,index) in circleList">
+                    <td class="center"  v-html="item.accptmd"></td>
+                    <td class="center"  v-html="item.fundst"></td>
+                    <td class="center" v-html='item.issuedate' ></td>
+                    <td class="center"  v-html='item.issuetime'></td>
+                    <td class="center" v-html='item.dssubenddate'></td>
+                    <td class="center" v-html='item.dssubendtime'></td>
+                    <td class="center"  v-html='item.biddate'></td>
+                    <td class="center"  v-html='item.bidtime'></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>

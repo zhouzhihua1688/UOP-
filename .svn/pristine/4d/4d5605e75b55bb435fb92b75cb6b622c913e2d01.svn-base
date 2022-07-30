@@ -1,0 +1,74 @@
+// 接口总配置
+let shortLink = '';
+let alipayConfig = '';
+let ats_ng = global.envConfig.ATS_NG ? global.envConfig.ATS_NG : global.envConfig.inner_gateway;
+ats_ng += '/ats-ng/v1';
+
+if (global.envConfig.publicConfig) {
+    shortLink = global.envConfig.publicConfig.shortLink;
+    alipayConfig = global.envConfig.publicConfig.alipayConfig;
+} else {
+    shortLink = global.envConfig.inner_gateway;
+    alipayConfig = global.envConfig.inner_gateway;
+}
+let paramsMaintain = '';
+if (global.envConfig.paramsMaintain) {
+    paramsMaintain = global.envConfig.paramsMaintain;
+} else {
+    paramsMaintain = global.envConfig.inner_gateway;
+}
+let mobileBff = global.envConfig.mobileBff ? global.envConfig.mobileBff : global.envConfig.inner_gateway;
+mobileBff += '/mobile-bff/v1';
+let ess = global.envConfig.mobileBff ? global.envConfig.mobileBff : global.envConfig.inner_gateway;
+ess += '/ess/v1';
+
+module.exports = {
+    filePath: 'publicConfig',
+    shortLink: {
+        linkConfig: {
+            search: shortLink + '/common-services/v1/short-link-mappings',
+            del: shortLink + '/common-services/v1/short-link-mappings',
+            add: shortLink + '/common-services/v1/short-link-mappings',
+            update: shortLink + '/common-services/v1/short-link-mappings'
+        }
+    },
+    alipayConfig: {
+        miniConfig: {
+            inputData: alipayConfig + '/mini-alipay/v1/jokes'
+        }
+    },
+    paramsMaintain: {
+        maintain: {
+            initSelect: `${paramsMaintain}/common-services/v1/param/keys`,
+            tableList: `${paramsMaintain}/common-services/v1/param/params`,
+            modify: `${paramsMaintain}/common-services/v1/param/update`,
+            delete: `${paramsMaintain}/common-services/v1/param/delete`,
+            add: `${paramsMaintain}/common-services/v1/param/add`,
+        }
+    },
+    mobileMgmt: {
+        systemRefresh: {
+            refresh: `${mobileBff}/config/reddots`
+        }
+    },
+    AIPstrategyMgmt: {
+        planSetting: {
+            query: `${ats_ng}/standard/contract-query/contract-all`,
+            add: `${ats_ng}/standard/contract-operation/apply`,
+            update: `${ats_ng}/standard/contract-operation/target-modify`,
+            del: `${ats_ng}/standard/contract-operation/delete`
+        }
+    },
+	appSearchConfig: {
+		polyphoneConfig: {
+			query: `${ess}/manger/std-pinyin`,
+			add: `${ess}/manger/std-pinyin`,
+			del: `${ess}/manger/std-pinyin`
+		},
+		searchConfig: {
+			query: `${ess}/manger/app-function`,
+			add: `${ess}/manger/app-function`,
+			del: `${ess}/manger/app-function`
+		}
+	}
+};

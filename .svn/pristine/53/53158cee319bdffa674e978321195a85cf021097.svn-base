@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .tooltipTop {
+            position: absolute;
+            z-index: 99999;
+            top: -149%;
+            left: 0;
+            text-align: center;
+            background: #666;
+            color: #fff;
+            height: 50px;
+            line-height: 50px;
+            width: 169px;
+        }
+
+        #addNotice input,
+        #changeNotice input,
+        #changeNotice select,
+        #addNotice select {
+            width: 183px;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 新增弹窗 -->
+                            <div class="modal" id="addNotice" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="form-horizontal">
+                                            <div class="table-header" style="margin-bottom: 20px;">新增</div>
+
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    任务名称: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='taskDisplayName'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    任务分类: </label>
+                                                <div class="col-sm-9">
+                                                    <select v-model='categoryId'>
+                                                        <option :value="item.id" v-for="(item,index) in classifyAll">
+                                                            {{item.taskCategoryName}}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    任务排序:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='taskDisplayOrder'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    任务展示模式:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model='taskDisplayMode'>
+                                                        <option value="0">不展示</option>
+                                                        <option value="1">展示</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    任务触发方式:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model='taskTriggerTp'>
+                                                        <option value="0">异步消息</option>
+                                                        <option value="1">API触发</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    任务是否有效:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model='enable'>
+                                                        <option value="0">禁用</option>
+                                                        <option value="1">启用</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    分组配置:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model='groupId'>
+                                                        <option :value="item.groupId" v-for="(item, index) in groupList"
+                                                            :key="index">{{item.groupName}}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    任务说明:</label>
+                                                <div class="col-sm-9">
+                                                    <textarea cols="30" rows="3"
+                                                        v-model.trim='taskDescription'></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    APP跳转地址:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='jumpUrlApp'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    wap跳转地址:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='jumpUrlWap'>
+                                                </div>
+                                            </div>
+                                            <template v-for="(arr,index) in tempId">
+
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label">
+                                                        任务规则:</label>
+                                                    <div class="col-sm-9">
+                                                        <p>
+                                                            <select v-model.trim='tempId[index]' style='width: 169px;'>
+                                                                <option :value="items.templateId"
+                                                                    v-for="(items,indexs) in taskRuleAll">
+                                                                    {{items.templateName}}</option>
+                                                            </select>
+                                                            <button class='btn btn-sm btn-primary' @click='showFundId()'
+                                                                v-if='index==0'>+</button>
+                                                            <button class='btn btn-sm btn-danger'
+                                                                @click='delTempid(index)'
+                                                                v-if='tempId.length>1'>-</button>
+
+                                                            <template v-for="(condItem,condIndex) in conditionData"
+                                                                v-if='condIndex==index'>
+                                                                <template v-for="(val,key,ind) in condItem" v-if='key'>
+                                                                    <p style="position: relative;">
+                                                                        <template v-if='key=="eventCode"'>
+                                                                            <select v-model='condItem[key]'
+                                                                                style="width: 169px;">
+                                                                                <option value="">空</option>
+                                                                                <option :value="msg.code"
+                                                                                    v-for="(msg,msgIndex) in messageAll.eventCodes">
+                                                                                    {{msg.desc}}</option>
+                                                                            </select>
+                                                                            {{key | setName}}
+                                                                        </template>
+                                                                        <template v-else-if='key=="mipCycle"'>
+                                                                            <select v-model='condItem[key]'
+                                                                                style="width: 169px;">
+                                                                                <option value="">空</option>
+                                                                                <option :value="msg.code"
+                                                                                    v-for="(msg,msgIndex) in messageAll.mipCycles">
+                                                                                    {{msg.desc}}</option>
+                                                                            </select>
+                                                                            {{key | setName}}
+                                                                        </template>
+                                                                        <template v-else-if='key=="mipType"'>
+                                                                            <select v-model='condItem[key]'
+                                                                                style="width: 169px;">
+                                                                                <option value="">空</option>
+                                                                                <option :value="msg.code"
+                                                                                    v-for="(msg,msgIndex) in messageAll.mipTypes">
+                                                                                    {{msg.desc}}</option>
+                                                                            </select>
+                                                                            {{key | setName}}
+                                                                        </template>
+                                                                        <template v-else-if='key=="productCategory"'>
+                                                                            <select v-model='condItem[key]'
+                                                                                style="width: 169px;"
+                                                                                @change='setCategory(condItem,key,condIndex)'>
+                                                                                <option value="">空</option>
+                                                                                <option :value="msg.productCategoryId"
+                                                                                    v-for="(msg,msgIndex) in categoryAll">
+                                                                                    {{msg.productCategroyName}}</option>
+                                                                            </select>
+                                                                            {{key | setName}}
+                                                                        </template>
+                                                                        <template
+                                                                            v-else-if='key=="productType"&&condItem.productCategory!=""'>
+                                                                            <select v-model='condItem[key]'
+                                                                                style="width: 169px;">
+                                                                                <option value="">空</option>
+                                                                                <option :value="msg.productTypeId"
+                                                                                    v-for="(msg,msgIndex) in categoryAll[categoryIndex(condItem.productCategory)].productTypeInfo">
+                                                                                    {{msg.productTypeName}}</option>
+                                                                            </select>
+                                                                            {{key | setName}}
+                                                                        </template>
+                                                                        <template
+                                                                            v-else-if='key!="productCategory"&&key!="productType"&&key!="eventCode"&&key!="mipCycle"&&key!="mipType"'>
+                                                                            <div class="tooltipTop"
+                                                                                v-show="ind===enter">
+                                                                                {{setFundIdRemark(key)}}</div>
+                                                                            <input type="text" v-model='condItem[key]'
+                                                                                @mouseenter='enter=ind'
+                                                                                @mouseleave='enter=""'>
+                                                                            {{key | setName}}
+                                                                        </template>
+                                                                    </p>
+                                                                </template>
+                                                            </template>
+                                                        </p>
+
+                                                    </div>
+                                                </div>
+                                            </template>
+
+
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    开始时间:</label>
+                                                <div class="col-sm-9">
+                                                    <div class="input-group">
+                                                        <input type="text" ref="startTime" class="date-timepicker "
+                                                            style="width: 100%;">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    结束时间:</label>
+                                                <div class="col-sm-9">
+                                                    <div class="input-group">
+                                                        <input type="text" ref="endTime" class="date-timepicker "
+                                                            style="width: 100%;">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    任务频率:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model="taskFrequencyType">
+                                                        <option value="0">无</option>
+                                                        <option value="MM">每月</option>
+                                                        <option value="WW">每周</option>
+                                                        <option value="2W">每双周</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    关联奖励:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='awardPkgId'>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <div class="col-md-offset-3 col-md-9">
+                                                    <button class="btn btn-info" type="button" @click='add'>
+                                                        保存
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 查看修改弹窗 -->
+                            <div class="modal" id="changeNotice" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="form-horizontal">
+                                            <div class="table-header" style="margin-bottom: 20px;">查看</div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    任务名称: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='viewChange.taskDisplayName'
+                                                        :disabled='redactStatus'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    任务分类: </label>
+                                                <div class="col-sm-9">
+                                                    <select v-model='viewChange.categoryId' :disabled='redactStatus'>
+                                                        <option :value="item.id" v-for="(item,index) in classifyAll">
+                                                            {{item.taskCategoryName}}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    任务排序:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='viewChange.taskDisplayOrder'
+                                                        :disabled='redactStatus'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    任务展示模式:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model='viewChange.taskDisplayMode'
+                                                        :disabled='redactStatus'>
+                                                        <option value="0">不展示</option>
+                                                        <option value="1">展示</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    任务触发方式:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model='viewChange.taskTriggerTp' :disabled='redactStatus'>
+                                                        <option value="0">异步消息</option>
+                                                        <option value="1">API触发</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    任务是否有效:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model='viewChange.enable' :disabled='redactStatus'>
+                                                        <option value="0">禁用</option>
+                                                        <option value="1">启用</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    分组配置:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model='viewChange.groupId'  :disabled='redactStatus'>
+                                                        <option :value="item.groupId" v-for="(item, index) in groupList"
+                                                            :key="index">{{item.groupName}}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    任务说明:</label>
+                                                <div class="col-sm-9">
+                                                    <textarea cols="30" rows="3"
+                                                        v-model.trim='viewChange.taskDescription'
+                                                        :disabled='redactStatus'></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    APP跳转地址:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='viewChange.jumpUrlApp'
+                                                        :disabled='redactStatus'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    wap跳转地址:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='viewChange.jumpUrlWap'
+                                                        :disabled='redactStatus'>
+                                                </div>
+                                            </div>
+                                            <template v-for="(arr,index) in viewChange.tempId">
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label">
+                                                        任务规则:</label>
+                                                    <div class="col-sm-9">
+                                                        <p>
+                                                            <select v-model.trim='viewChange.tempId[index]'
+                                                                style='width: 169px;' :disabled='redactStatus'>
+                                                                <option :value="items.templateId"
+                                                                    v-for="(items,indexs) in taskRuleAll">
+                                                                    {{items.templateName}}</option>
+                                                            </select>
+                                                            <button class='btn btn-sm btn-primary'
+                                                                @click='showFundIdChange()' v-if='index==0'
+                                                                :disabled='redactStatus'>+</button>
+                                                            <button class='btn btn-sm btn-danger'
+                                                                @click='delTempidChange(index)'
+                                                                v-if='viewChange.tempId.length>1'
+                                                                :disabled='redactStatus'>-</button>
+                                                            <template
+                                                                v-for="(condItem,condIndex) in viewChange.conditionData"
+                                                                v-if='condIndex==index'>
+                                                                <template v-for="(val,key,ind) in condItem" v-if='key'>
+                                                                    <p style="position: relative;">
+
+                                                                        <template v-if='key=="eventCode"'>
+                                                                            <select v-model='condItem[key]'
+                                                                                style="width: 169px;"
+                                                                                :disabled='redactStatus'>
+                                                                                <option value="">空</option>
+                                                                                <option :value="msg.code"
+                                                                                    v-for="(msg,msgIndex) in messageAll.eventCodes">
+                                                                                    {{msg.desc}}</option>
+                                                                            </select>
+                                                                            {{key | setName}}
+                                                                        </template>
+                                                                        <template v-else-if='key=="mipCycle"'>
+                                                                            <select v-model='condItem[key]'
+                                                                                style="width: 169px;"
+                                                                                :disabled='redactStatus'>
+                                                                                <option value="">空</option>
+                                                                                <option :value="msg.code"
+                                                                                    v-for="(msg,msgIndex) in messageAll.mipCycles">
+                                                                                    {{msg.desc}}</option>
+                                                                            </select>
+                                                                            {{key | setName}}
+                                                                        </template>
+                                                                        <template v-else-if='key=="mipType"'>
+                                                                            <select v-model='condItem[key]'
+                                                                                style="width: 169px;"
+                                                                                :disabled='redactStatus'>
+                                                                                <option value="">空</option>
+                                                                                <option :value="msg.code"
+                                                                                    v-for="(msg,msgIndex) in messageAll.mipTypes">
+                                                                                    {{msg.desc}}</option>
+                                                                            </select>
+                                                                            {{key | setName}}
+                                                                        </template>
+                                                                        <template v-else-if='key=="productCategory"'>
+                                                                            <select v-model='condItem[key]'
+                                                                                style="width: 169px;"
+                                                                                :disabled='redactStatus'
+                                                                                @change='setViewChangeCategory(condItem,key,condIndex)'>
+                                                                                <option value="">空</option>
+                                                                                <option :value="msg.productCategoryId"
+                                                                                    v-for="(msg,msgIndex) in categoryAll">
+                                                                                    {{msg.productCategroyName}}</option>
+                                                                            </select>
+                                                                            {{key | setName}}
+                                                                        </template>
+                                                                        <template
+                                                                            v-else-if='key=="productType"&&condItem.productCategory!=""'>
+                                                                            <select v-model='condItem[key]'
+                                                                                style="width: 169px;"
+                                                                                :disabled='redactStatus'>
+                                                                                <option value="">空</option>
+                                                                                <option :value="msg.productTypeId"
+                                                                                    v-for="(msg,msgIndex) in categoryAll[categoryIndex(condItem.productCategory)].productTypeInfo">
+                                                                                    {{msg.productTypeName}}</option>
+                                                                            </select>
+                                                                            {{key | setName}}
+                                                                        </template>
+                                                                        <template
+                                                                            v-else-if='key!="productCategory"&&key!="productType"&&key!="eventCode"&&key!="mipCycle"&&key!="mipType"'>
+                                                                            <div class="tooltipTop"
+                                                                                v-show="ind===enter">
+                                                                                {{setFundIdRemark(key)}}</div>
+                                                                            <input type="text" v-model='condItem[key]'
+                                                                                :disabled='redactStatus'
+                                                                                @mouseenter='enter=ind'
+                                                                                @mouseleave='enter=""'
+                                                                                :placeholder="setFundIdRemark(key)">
+                                                                            {{key | setName}}
+                                                                        </template>
+                                                                    </p>
+                                                                </template>
+                                                            </template>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </template>
+
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    开始时间:</label>
+                                                <div class="col-sm-9">
+                                                    <div class="input-group">
+                                                        <input type="text" ref="startTimeX" :disabled='redactStatus'
+                                                            class="date-timepicker " style="width: 100%;">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    结束时间:</label>
+                                                <div class="col-sm-9">
+                                                    <div class="input-group">
+                                                        <input type="text" ref="endTimeX" :disabled='redactStatus'
+                                                            class="date-timepicker " style="width: 100%;">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    任务频率:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model="viewChange.taskFrequencyType"
+                                                        :disabled='redactStatus'>
+                                                        <option value="0">无</option>
+                                                        <option value="MM">每月</option>
+                                                        <option value="WW">每周</option>
+                                                        <option value="2W">每双周</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    关联奖励:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='viewChange.awardPkgId'
+                                                        :disabled='redactStatus'>
+                                                </div>
+                                            </div>
+
+                                            <div class="modal-footer">
+                                                <div class="col-md-offset-3 col-md-9">
+                                                    <button class="btn btn-info" v-show='redactStatus' type="button"
+                                                        @click='redactStatus=false'>
+                                                        修改
+                                                    </button>
+                                                    <button class="btn btn-info" type="button" v-show='!redactStatus'
+                                                        @click='changeDate'>
+                                                        保存
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--删除弹窗-->
+                            <!-- <div class="modal" id="deleteDialog" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4> 确定删除这条数据吗？</h4>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <div class="col-md-offset-3 col-md-9">
+                                                <button class="btn btn-info" type="button" @click='deleteData'>
+                                                    删除
+                                                </button>
+                                                <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                    取消
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> -->
+                            <!--覆盖提示信息弹窗-->
+                            <div class="modal" id="checkFiles" style="z-index: 9999;" tabindex="-1" role="dialog"
+                                aria-hidden="true" data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                                @click='fileUpload()'>覆盖
+                                            </button>
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 上传文件弹窗 -->
+                            <div class="modal" id="addfile" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="form-horizontal">
+                                            <div class="table-header" style="margin-bottom: 20px;">上传切片文件</div>
+
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    文件路径: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" class="col-sm-6" placeholder="请选择" disabled
+                                                        v-model.trim='filePath' />
+
+                                                    <input type="button" class="btn btn-sm btn-primary" id="uploadBtn"
+                                                        value="选择" @click='select'>
+
+                                                    <input type="button" value="上传" class="btn btn-sm btn-success"
+                                                        @click='checkFile'>
+
+                                                    <!-- <form id="updateForm" enctype="multipart/form-data"> -->
+                                                    <input id="uploadFileInput" style='display: none;'
+                                                        @input='showFileName' type="file" name="file" />
+                                                    <!-- </form> -->
+
+                                                </div>
+                                            </div>
+
+                                            <div class="modal-footer">
+                                                <div class="col-md-offset-3 col-md-9">
+
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                        data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- DIALOG ENDS -->
+                            <div class="form-inline" style="padding: 10px 0;">
+                                <div class="form-group ">
+                                    <label style="width: 60px;">任务ID:</label>
+                                    <input type="text" v-model.trim="taskId" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 60px;">任务名称:</label>
+                                    <input type="text" v-model.trim="taskDisplayNameQuery" />
+                                </div>
+
+                                <div class="form-group" style="margin-left: 5px;">
+                                    <input type="button" class="btn btn-sm btn-primary " value="查询" @click="queryData">
+                                </div>
+                                <div class="form-group pull-right" style='margin-left: 50px;'>
+                                    <input type="button" class="btn btn-sm btn-primary " value="新增任务"
+                                        @click="showDialog('', 'addNotice', false);">
+                                </div>
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-danger " value="上传切片文件"
+                                        @click="showDialog('', 'addfile', false);">
+
+                                    <input type="button" class="btn btn-sm btn-primary " style='margin-left: 50px;'
+                                        value="刷新任务" @click="refreshTask">
+                                </div>
+
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!--分页器和快速查询-->
+                            <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                <div class="col-xs-6">
+                                    <div class="dataTables_length" id="dynamic-table_length">
+                                        <label>每页显示</label>
+                                        <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                            <option value="10">10</option>
+                                            <option value="20">20</option>
+                                            <option value="50">50</option>
+                                        </select>
+                                        <label>条</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">任务ID</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">任务名称</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">任务分类</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">任务排序</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">是否展示</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="tableData.length>0">
+                                        <tr v-for="(item,index) in tableData" :key="index">
+                                            <td class="center" v-text='item.taskId'></td>
+                                            <td class="center" v-text='item.taskDisplayName'></td>
+                                            <td class="center" v-text='item.categoryId'></td>
+                                            <td class="center" v-text='item.taskDisplayOrder'></td>
+                                            <td class="center">{{item.taskDisplayMode==1? '展示' :'不展示'}}</td>
+                                            <td class="center" v-text='item.validStartTime'></td>
+                                            <td class="center" v-text='item.validEndTime'></td>
+                                            <td class="center" v-text='item.updateTime'></td>
+                                            <td class="center" v-text='item.modifyBy'></td>
+                                            <td class="center">
+                                                <a href="javascript:;" @click='showView(item.taskId)'>查看</a>
+                                                <span style="margin:0 5px;">/</span>
+                                                <a href="javascript:;" style="color: #f66;"
+                                                    @click='showData(item.taskId,item.taskDisplayMode)'>{{item.taskDisplayMode==1?
+                                                    '不展示' :'展示'}}</a>
+                                                <span style="margin:0 5px;">/</span>
+                                                <a href="javascript:;" @click='publish(item.taskId)'>发布</a>
+                                                <span style="margin:0 5px;">/</span>
+                                                <a href="javascript:;"
+                                                    @click='setEnable(item.taskId,item.enable,item.taskDisplayMode)'>{{item.enable==0?
+                                                    "启用":"禁用"}}</a>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+
+                            <!--底部页码-->
+                            <div v-if="tableData.length>0" class="row"
+                                style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                        <ul class="pagination">
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                            </li>
+                                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in pageList" @click="changeIndex(value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                            </li>
+                                            <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/js/thirdPartyOperation/common/ajaxfileupload.js"></script>
+    <script src="/js/marketingActive/taskManage/manage.js"></script>
+</body>
+
+</html>

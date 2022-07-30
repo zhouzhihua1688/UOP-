@@ -1,0 +1,584 @@
+vm = new Vue({
+    el: '#content',
+    data: {
+        //主页面相关数据
+        layoutName:'',
+        layoutId:'',
+        tableData: [],
+        templateData:[],
+        channelMenu:[],
+        templateIdList:[],
+        userId: '',
+        diaMsg: '',
+        previewPath: '',
+        loadingStatus: '数据获取中...',
+        isUpdate: false,
+        deleteId1:'',
+        deleteId2:'',
+        isUpdate1: false,
+        templateUpdateId:'',
+        loadingShow: false,
+        //dialog新增修改数据
+        dialayoutId: '',
+        diachannelId:'',
+        dialayoutName: '',
+        diaremark: '',
+        //templateDialog新增修改数据
+        diatemId:'',
+        diafuncmodName:'',
+        diarequestMethod:'',
+        diadataFrom:'',
+        dialoginFlag:'',
+        diatemplateRemark:'',
+        diaposition:'',
+        currentLayoutId:'',
+
+        currentFuncmodName:'',
+
+        searchChannelId:'',
+        //主表格分页数据
+        currentIndex: 0,
+        maxSpace: 5,
+        totalPage: 0,
+        pageMaxNum: 10
+    },
+    computed: {
+        pageList: function () {
+            var arr = [];
+            if (this.totalPage <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex <= this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex <= this.maxSpace) {
+                var space = this.totalPage - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            } else {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        }
+    },
+    watch: {
+        pageMaxNum: function () {
+            this.getTableData(0);
+        },
+        diatemId:{
+            handler:function (val,oldval) {
+                console.log(val);
+                var _this=this;
+                this.templateIdList.forEach(function (item) {
+                    if(val==item.temId){
+                        _this.currentFuncmodName=item.temName;
+                    }
+                })
+            }
+        }
+    },
+    mounted: function () {
+        var _this = this;
+        var dialogs = ['info', 'add','delete1','delete2','fresh','morenFresh'];
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        $('#temId').css('width', '200px').select2({});
+        $("#temId").on("select2:select", function (e) {
+            _this.diatemId = e.params.data.id;
+        });
+        // //获取渠道列表
+        // $.post({
+        //     url: '/recommendSystem/recommendSystemConfigMgmt/layoutConfigMgmt/channelMenu.ajax',
+        //     success: function (result) {
+        //         if (result.error === 0) {
+        //             if(result.data.rows.length>0){
+        //                 _this.channelMenu=result.data.rows;
+        //             }else{
+        //                 _this.showDialog('', 'info', false, '渠道列表暂无数据');
+        //             }
+
+        //         } else {
+        //             _this.showDialog('', 'info', false, result.msg);
+        //         }
+        //     }
+        // });
+        //获取templateID列表
+        $.post({
+            url: '/recommendSystem/recommendSystemConfigMgmt/layoutConfigMgmt/templateIdList.ajax',
+            success: function (result) {
+                if (result.error === 0) {
+                    if(result.data.rows.length>0){
+                        _this.templateIdList=result.data.rows;
+                    }else{
+                        _this.showDialog('', 'info', false, '模板列表暂无数据');
+                    }
+
+                } else {
+                    _this.showDialog('', 'info', false, result.msg);
+                }
+            }
+        });
+        this.getTableData(0);
+    },
+    methods: {
+        //getlist
+        getTableData: function (currentIndex) {
+            var params = {};
+            var _this = this;
+            params.pageNo = currentIndex + 1;
+            params.pageSize = this.pageMaxNum;
+            params.layoutName = this.layoutName;
+            params.layoutId = this.layoutId;
+            params.channelId=this.searchChannelId;
+            _this.loadingStatus = '数据获取中...';
+            $.post({
+                url: '/recommendSystem/recommendSystemConfigMgmt/layoutConfigMgmt/queryInfo.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        console.log(result);
+                        if (result.data.rows && result.data.rows.length > 0) {
+                            _this.userId = result.data.userId;
+                            _this.tableData = result.data.rows;
+                            _this.currentIndex = result.data.pageNum - 1;
+                            _this.totalPage = result.data.pages;
+                        } else {
+                            _this.tableData = [];
+                            _this.currentIndex = 0;
+                            _this.totalPage = 0;
+                            _this.loadingStatus = '没有数据';
+                        }
+												if (result.data.channelList) {
+													_this.channelMenu = result.data.channelList;
+													_this.searchChannelId = _this.channelMenu[0].channelId;
+												}
+                    } else {
+                        _this.tableData = [];
+                        _this.currentIndex = 0;
+                        _this.totalPage = 0;
+                        _this.showDialog('', 'info', false, result.msg);
+                        _this.loadingStatus = '没有数据';
+                    }
+                }
+            });
+        },
+        //get tamplateList
+        getTableDataTemplate: function () {
+            var _this=this;
+            $.post({
+                url: '/recommendSystem/recommendSystemConfigMgmt/layoutConfigMgmt/queryTemplateInfo.ajax',
+                data: {layoutId:_this.currentLayoutId},
+                success: function (result) {
+                    if (result.error === 0) {
+                        if (result.data.rows && result.data.rows.length > 0) {
+                            _this.templateData = result.data.rows;
+                        } else {
+                            _this.templateData = [];
+                        }
+
+                    } else {
+                        _this.templateData = [];
+                        _this.showDialog('templateConfig', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+        //新增活动配置
+        setAddData: function (obj) {
+            this.dialayoutId = obj.layoutId ? obj.layoutId : '';
+            this.dialayoutName = obj.layoutName ? obj.layoutName : '';
+            this.diaremark = obj.remark ? obj.remark : '';
+            this.diachannelId = obj.channelId ? obj.channelId : '';
+        },
+        setAddTemplateData: function (obj) {
+            this.diatemId = obj.temId ? obj.temId : '';
+            $("#temId").val(obj.temId ? obj.temId : '').trigger('change');
+            // this.diafuncmodName = obj.funcmodName ? obj.funcmodName : '';
+            this.diarequestMethod = obj.requestMethod ? obj.requestMethod : '';
+            this.diadataFrom = obj.dataFrom ? obj.dataFrom : '';
+            this.dialoginFlag = obj.loginFlag ? obj.loginFlag : '';
+            this.diatemplateRemark = obj.remark ? obj.remark : '';
+            this.diaposition = obj.position ? obj.position : '';
+        },
+        showAdd: function () {
+            this.isUpdate = false;
+            this.setAddData({channelId:this.channelMenu.length>0? this.channelMenu[0].channelId:''});
+            this.showDialog('', 'add');
+            $("#dialayoutId").removeAttr('disabled').css("background",'#fff');
+        },
+        showUpdate: function (item) {
+            this.isUpdate = true;
+            this.setAddData(item);
+            this.showDialog('', 'add');
+            $("#dialayoutId").attr('disabled','disabled').css("background",'#333')
+        },
+        showAddTemplate: function () {
+            this.isUpdate1 = false;
+            this.templateUpdateId='';
+            this.setAddTemplateData({loginFlag:'2'});
+            this.showDialog('templateConfig', 'addTemplate',true);
+            // $("#templateConfig").modal("hide");
+        },
+        showUpdateTemplate: function (item) {
+            this.isUpdate1 = true;
+            this.templateUpdateId=item.funcmodId;
+            this.setAddTemplateData(item);
+            this.showDialog('templateConfig', 'addTemplate',true);
+            // $("#templateConfig").modal("hide");
+        },
+        add: function () {
+            var _this = this;
+            var params = {};
+            if(this.dialayoutId==''||this.dialayoutName==''){
+                _this.showDialog('add', 'info', true, '布局ID，名称必须填写！');
+                return;
+            }
+            params.layoutId = this.dialayoutId;
+            params.layoutName = this.dialayoutName;
+            params.remark = this.diaremark;
+            params.channelId = this.diachannelId;
+            !this.isUpdate && (params.createBy = this.userId);
+            this.isUpdate && (params.modifyBy = this.userId);
+            var url = '/recommendSystem/recommendSystemConfigMgmt/layoutConfigMgmt/';
+            url += this.isUpdate ? 'update.ajax' : 'add.ajax';
+            $.post({
+                url: url,
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.getTableData(0);
+                    }
+                    _this.showDialog('add', 'info', false, result.msg);
+                }
+            });
+        },
+        addTemplate: function () {
+            var _this = this;
+            var params = {};
+            if(!this.diatemId){
+                _this.showDialog('addTemplate', 'info', true, '模板ID不能为空');
+                return false;
+            }
+            if(!this.currentFuncmodName){
+                _this.showDialog('addTemplate', 'info', true, '未获取到模板名称');
+                return false;
+            }
+            if(!this.diaposition){
+                _this.showDialog('addTemplate', 'info', true, '排序不能为空');
+                return false;
+            }
+            if(!this.diatemplateRemark){
+                _this.showDialog('addTemplate', 'info', true, '备注不能为空，神策统计使用');
+                return false;
+            }
+            params.temId = this.diatemId;
+            params.funcmodName = this.currentFuncmodName;
+            params.requestMethod = this.diarequestMethod;
+            params.dataFrom = this.diadataFrom;
+            params.loginFlag = this.dialoginFlag;
+            params.remark = this.diatemplateRemark;
+            params.position = this.diaposition;
+            params.layoutId = this.currentLayoutId;
+            !this.isUpdate1 && (params.createBy = this.userId);
+            this.isUpdate1 && (params.modifyBy = this.userId);
+            this.isUpdate1 && (params.funcmodId = this.templateUpdateId);
+            var url = '/recommendSystem/recommendSystemConfigMgmt/layoutConfigMgmt/';
+            url += this.isUpdate1 ? 'updateTemplate.ajax' : 'addTemplate.ajax';
+            $.post({
+                url: url,
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.getTableDataTemplate();
+                    }
+                    _this.showDialog('addTemplate', 'templateConfig', false);
+                }
+            });
+        },
+        //删除
+        deleteParams: function (item) {
+            this.deleteId1=item.layoutId;
+            this.showDialog('', 'delete1', false);
+        },
+        deleteConfirm:function () {
+            var _this = this;
+            $.post({
+                url: '/recommendSystem/recommendSystemConfigMgmt/layoutConfigMgmt/delete.ajax',
+                data: {layoutId: _this.deleteId1},
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('', 'info', false, '操作成功');
+                        _this.getTableData(0);
+                    } else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            })
+        },
+        //删除
+        deleteParamsTemplate: function (item) {
+            this.deleteId2=item.funcmodId;
+            this.showDialog('templateConfig', 'delete2', true);
+        },
+        deleteTemplateConfirm:function () {
+            var _this = this;
+            $.post({
+                url: '/recommendSystem/recommendSystemConfigMgmt/layoutConfigMgmt/deleteTemplate.ajax',
+                data: {funcmodId: _this.deleteId2},
+                success: function (result) {
+                    if (result.error === 0) {
+                        $("#delete2").modal('hide');
+                        _this.showDialog('templateConfig', 'info', true, '操作成功');
+                        _this.getTableDataTemplate();
+                    } else {
+                        $("#delete2").modal('hide');
+                        _this.showDialog('templateConfig', 'info', true, result.msg);
+                    }
+                }
+            })
+        },
+        showFresh:function () {
+            this.showDialog('', 'fresh', false);
+        },
+        // 客群布局刷新
+        fresh:function () {
+            var _this = this;
+            $.post({
+                url: '/recommendSystem/recommendSystemConfigMgmt/layoutConfigMgmt/fresh.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('', 'info', false, '刷新成功');
+                        // _this.getTableData(0);
+                    } else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            })
+        },
+        showMorenFresh:function () {
+            this.showDialog('', 'morenFresh', false);
+        },
+        // 客群布局刷新
+        morenFresh:function () {
+            var _this = this;
+            $.post({
+                url: '/recommendSystem/recommendSystemConfigMgmt/layoutConfigMgmt/morenFresh.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('morenFresh', 'info', false, '默认布局刷新成功');
+                    } else {
+                        _this.showDialog('morenFresh', 'info', false, result.msg);
+                    }
+                }
+            })
+        },
+        //模板配置
+        templateConfig:function (item) {
+            var _this=this;
+            _this.currentLayoutId=item.layoutId;
+            _this.getTableDataTemplate();
+            $("#templateConfig").modal('show');
+        },
+        //启用或禁用
+        enableOrDisable: function (item) {
+            var _this = this;
+            $.post({
+                url: '/recommendSystem/recommendSystemConfigMgmt/layoutConfigMgmt/enable.ajax',
+                data: {layoutId: item.layoutId,modifyBy:_this.userId},
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('', 'info', false, '操作成功');
+                        _this.getTableData(0);
+                    } else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            })
+        },
+        enableOrDisableTemplate: function (item) {
+            var _this = this;
+            $.post({
+                url: '/recommendSystem/recommendSystemConfigMgmt/layoutConfigMgmt/enableTemplate.ajax',
+                data: {funcmodId: item.funcmodId,modifyBy:_this.userId},
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('templateConfig', 'info', true, '操作成功');
+                        _this.getTableDataTemplate();
+                    } else {
+                        _this.showDialog('templateConfig', 'info', true, result.msg);
+                    }
+                }
+            })
+        },
+        //主表格分页方法
+        check: function (item) {
+            item.check = !item.check;
+        },
+        allCheck: function () {
+            var _this = this;
+            var flag = this.checkAll;
+            this.tableData.forEach(function (item) {
+                item.check = !flag;
+            });
+        },
+        prev: function () {
+            if (this.currentIndex <= 0) {
+                return;
+            }
+            this.getTableData(this.currentIndex - 1);
+        },
+        next: function () {
+            if (this.currentIndex >= this.totalPage - 1) {
+                return;
+            }
+            this.getTableData(this.currentIndex + 1);
+        },
+        changeIndex: function (index) {
+            this.getTableData(index - 1);
+        },
+        toFirst: function () {
+            this.getTableData(0);
+        },
+        toLast: function () {
+            this.getTableData(this.totalPage - 1);
+        },
+        //公共方法
+        showDialog: function (dia1, dia2, callback, msg) {
+            // 关掉dia1，打开dia2
+            // callback==false:在dia2关掉的时候，直接关掉
+            // callback==true:在dia2关掉的时候，重新打开dia1
+            this.diaMsg = (msg ? msg : '输入条件错误');
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            } else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            } else if (!callback) {
+                $('#' + dia1).modal('hide');
+                $('#' + dia2).off("hidden.bs.modal").modal('show');
+            } else {
+                if ($('#' + dia1).data('parentDlg')) {
+                    // dia1弹窗有父级弹窗，先去除关闭事件，关闭弹窗后，再恢复添加事件
+                    $('#' + dia1).off("hidden.bs.modal").modal('hide');
+                    $('#' + dia1).on("hidden.bs.modal", function () {
+                        $('#' + $('#' + dia1).data('parentDlg')).modal("show");
+                    });
+                } else {
+                    // dia1弹窗没有父级弹窗，直接关闭
+                    $('#' + dia1).modal('hide');
+                }
+                $('#' + dia2).off("hidden.bs.modal").on("hidden.bs.modal", function () {
+                    // dia2作为子弹窗，添加关闭事件，关闭弹窗时打开父级弹窗
+                    $('#' + dia1).modal("show");
+                    $('#' + dia2).data('parentDlg', dia1);
+                });
+                $('#' + dia2).modal('show');
+            }
+        },
+        inSelected: function (item, arr, prop) {
+            var _index = -1;
+            arr.forEach(function (value, index) {
+                if (item[prop] == value[prop]) {
+                    _index = index;
+                }
+            });
+            return _index;
+        },
+        formatTime: function (timestamp) {
+            var date = new Date(timestamp); //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var Y = date.getFullYear() + '-';
+            var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+            var D = (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) + ' ';
+            var h = (date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ':';
+            var m = (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()) + ':';
+            var s = (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds());
+            return Y + M + D + h + m + s;
+        },
+        overflowHide: function (val) {
+            var str='';
+            if(val){
+                str = val.toString();
+                if (str.length > 10) {
+                    str = str.substring(0, 10) + '...'
+                }
+            }else{
+                str='-'
+            }
+            return str;
+        },
+        stringTimeFat: function (val) {
+            if (val) {
+                if (val.length > 8) {
+                    return val.replace(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/g, '$1-$2-$3 $4:$5:$6')
+                } else {
+                    return val.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3')
+                }
+            } else {
+                return '-'
+            }
+        },
+        openTyString: function (val) {
+            if (val) {
+                switch (val) {
+                    case '0':
+                        val = '开放申赎';
+                        break;
+                    case '2':
+                        val = '暂停定投';
+                        break;
+                    case '4':
+                        val = '暂停交易';
+                        break;
+                    case '5':
+                        val = '暂停申购';
+                        break;
+                    case '6':
+                        val = '暂停赎回';
+                        break;
+                    case '7':
+                        val = '募集中';
+                        break;
+                    case '9':
+                        val = '封闭期';
+                        break;
+                    default:
+                        val = '-';
+                }
+            } else {
+                val = '-'
+            }
+            return val;
+        },
+          channelNameForId:function (val) {
+            var str='';
+            if(val){
+                this.channelMenu.forEach(function (item) {
+                    if(val==item.channelId){
+                        str=item.channelName;
+                    }
+                })
+            }else{
+                str='-'
+            }
+            return str;
+        }
+    }
+});

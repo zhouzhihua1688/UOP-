@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <!-- DIALOG BEGINS -->
+                        <!--编辑弹窗-->
+                        <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title" style="display: inline">更新信息</h4>
+                                    </div>
+                                    <div class="modal-body" style="text-align:center">
+                                        <form class="form " style="padding: 0 50px 0 24px;">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width:100px;">基金代码:</label>
+                                                    <input type="text" style="width:175px;"
+                                                           v-model.trim="fundid" placeholder="必填"/>
+                                                </div>
+                                                <!--<div class="form-group">-->
+                                                    <!--<label class="control-label" style="width:100px;">预计开放时间:</label>-->
+                                                    <!--<input type="text" style="width: 175px;"-->
+                                                           <!--v-model.trim="expectedOpenDate" placeholder="必填"/>-->
+                                                <!--</div>-->
+                                                <div class="form-group" style="margin-left:110px">
+                                                    <div class="input-group">
+                                                        <label class="control-label" style="width:100px;">预计开放时间:</label>
+                                                        <input type="text" id="expectedOpenDate" class="date-timepicker"
+                                                               style="width:140px;" >
+                                                        <span class="input-group-addon" style="width: 40px;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <!--<template v-if="!isUpdate">-->
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 100px;">开放类型说明:</label>
+                                                    <input type="text" style="width: 175px;"
+                                                           v-model.trim="expectedOpenAmend"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 100px;">内容补充说明:</label>
+                                                    <input type="text" style="width:175px;"
+                                                           v-model.trim="expectedOpenDesc"/>
+                                                </div>
+                                        </form>
+                                    </div>
+                                    <div style="clear:both"></div>
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" @click="saveParam()">保存</button>
+                                        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal" id="revise" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title" style="display: inline">更新信息</h4>
+                                    </div>
+                                    <div class="modal-body" style="text-align:center">
+                                        <form class="form " style="padding: 0 50px 0 24px;">
+                                            <div class="form-group">
+                                                <label class="control-label" style="width:100px;">基金代码:</label>
+                                                <input type="text" style="width:175px;"
+                                                       v-model.trim="fundid" placeholder="必填" disabled/>
+                                            </div>
+                                            <!--<div class="form-group">-->
+                                            <!--<label class="control-label" style="width:100px;">预计开放时间:</label>-->
+                                            <!--<input type="text" style="width: 175px;"-->
+                                            <!--v-model.trim="expectedOpenDate" placeholder="必填"/>-->
+                                            <!--</div>-->
+                                            <div class="form-group" style="margin-left:110px">
+                                                <div class="input-group">
+                                                    <label class="control-label" style="width:100px;">预计开放时间:</label>
+                                                    <input type="text" id="expectedOpenDates" ref="expectedOpenDates" class="date-timepicker"
+                                                           style="width:140px;">
+                                                    <span class="input-group-addon" style="width: 40px;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                </div>
+                                            </div>
+                                            <!--<template v-if="!isUpdate">-->
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 100px;">开放类型说明:</label>
+                                                <input type="text" style="width: 175px;"
+                                                       v-model.trim="expectedOpenAmend"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 100px;">内容补充说明:</label>
+                                                <input type="text" style="width:175px;"
+                                                       v-model.trim="expectedOpenDesc"/>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div style="clear:both"></div>
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" @click="update()">保存</button>
+                                        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--提示信息弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- DIALOG ENDS -->
+                        <form class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group">
+                                <label class="control-label">产品代码:</label>
+                                <input type="text" placeholder="请输入产品代码" v-model.trim="fundIds"/>
+                            </div>
+                            <div class="form-group pull-right">
+                                <input type="button" class="btn btn-sm btn-primary" @click="getTableData(0)" value="查询">
+                                <% if(canShow||authorityList.includes('U')) { %>
+                                <input type="button" class="btn btn-sm btn-primary" @click="syncParams()" value="同步更新" id="syncParams">
+                                <% } %>
+                                <% if(canShow||authorityList.includes('C')) { %>
+                                <input type="button" class="btn btn-sm btn-primary" @click="showAdd()" value="新建">
+                                <% } %>
+                                <input type="button" class="btn btn-sm btn-danger" value="导出" @click="exportAll()">
+                            </div>
+                        </form>
+                        <div class="table-header">
+                            <%= cpage %>--表格数据
+                        </div>
+                        <!--分页器和快速查询-->
+                        <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                            <div class="col-xs-6">
+                                <div class="dataTables_length" id="dynamic-table_length">
+                                    <label>每页显示</label>
+                                    <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                        <option value="10">10</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="500">500</option>
+                                    </select>
+                                    <label>条</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!--数据表-->
+                        <table id="simple-table" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <!--<th class="center col-sm-1">-->
+                                <!--<label class="pos-rel">-->
+                                <!--<input type="checkbox" class="ace" :checked="checkAll" @click="allCheck"/>-->
+                                <!--<span class="lbl"></span>-->
+                                <!--</label>-->
+                                <!--</th>-->
+                                <th class="center">基金代码</th>
+                                <th class="center">预计开放时间</th>
+                                <th class="center">开放类型说明</th>
+                                <th class="center">内容补充说明</th>
+                                <th class="center">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="viewData.length>0">
+                                <tr v-for="(item,index) in viewData" :key="index"
+                                    :style="index%2==0?'background-color: #f9f9f9;':''">
+                                    <!--<td class="center">-->
+                                    <!--<label class="pos-rel">-->
+                                    <!--<input type="checkbox" class="ace" :checked="item.check"-->
+                                    <!--@click="check(item)"/>-->
+                                    <!--<span class="lbl"></span>-->
+                                    <!--</label>-->
+                                    <!--</td>-->
+                                    <td class="center" v-text="item.fundid"></td>
+                                    <td class="center" v-text="item.expectedOpenDate"></td>
+                                    <td class="center" v-text="item.expectedOpenAmend"></td>
+                                    <td class="center" v-text="item.expectedOpenDesc"></td>
+                                    <td class="center">
+                                        <% if(canShow||authorityList.includes('U')) { %>
+                                        <a href="javascript:;" @click="showUpdate(item)">更新</a>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'没有数据'" colspan="12"></td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                        <!--底部页码-->
+                        <div v-if="viewData.length>0" class="row"
+                             style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                            <div class="col-xs-2">
+                                <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                            </div>
+                            <div class="col-xs-10">
+                                <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                    <ul class="pagination">
+                                        <li class="paginate_button"
+                                            v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                            <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                        </li>
+                                        <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                            @click="prev">
+                                            <a href="javascript:;" v-text="'上一页'"></a>
+                                        </li>
+                                        <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                            v-for="value in pageList" @click="changeIndex(value)">
+                                            <a href="javascript:;" v-text="value"></a>
+                                        </li>
+                                        <li class="paginate_button"
+                                            v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                            <a href="javascript:;" v-text="'...'+middleData.length" @click="toLast"></a>
+                                        </li>
+                                        <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                            @click="next">
+                                            <a href="javascript:;" v-text="'下一页'"></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- PAGE CONTENT ENDS -->
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/businessMgmt/businessParamConfig/productOpenDayMgmt.js"></script>
+</body>
+</html>

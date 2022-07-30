@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        #base label {
+            width: 144px;
+            text-align: right;
+        }
+
+        #restrict label {
+            width: 144px;
+            text-align: right;
+        }
+
+        table tr td:nth-child(odd) {
+            background-color: #eee;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .table_title_modify {
+            background: #438eb947
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div id="content">
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="modifyInfo" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                                @click='goback'>确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <table class="table table-bordered table-hover ">
+
+                            <tbody>
+                                <tr>
+                                    <td class="text-right">基金代码</td>
+                                    <td class="text-left" v-text='service_id'></td>
+                                    <td class="text-right">基金名称</td>
+                                    <td class="text-left" v-text='fundchinesenm'></td>
+                                    <td class="text-right">注册登记代码</td>
+                                    <td class="text-left" v-text='tano'></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">资金到账日期</td>
+                                    <td class="text-left">
+                                        <input type="text" v-model.trim="fundExtension.transferdays">
+                                    </td>
+                                    <td class="text-right">资金交付日期</td>
+                                    <td class="text-left">
+                                        <input type="text" v-model.trim="fundExtension.deliverydays">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">分红划款日期</td>
+                                    <td class="text-left">
+                                        <input type="text" v-model.trim="fundExtension.melonmddays">
+                                    </td>
+                                    <td class="text-right">申购划款日期</td>
+                                    <td class="text-left">
+                                        <input type="text" v-model.trim="fundExtension.biddays">
+                                    </td>
+                                </tr>
+                            </tbody>
+
+                        </table>
+
+                        <button type="button" class="btn btn-primary " style="left: 40%" @click='modify'>确定</button>
+                        <button type="button" class="btn btn-primary " style="left: 50%" @click='goback'>取消</button>
+
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/businessMgmt/IPOMgmtFD/IPOMgmtFundModify.js"></script>
+
+</body>
+
+</html>

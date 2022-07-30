@@ -1,0 +1,656 @@
+new Vue({
+    el: '#content',
+    data: {
+        //查询数据
+        appStrDt: '',
+        appEndDt: '',
+        checkDt: '',
+        // 主页面相关数据
+        tableData: [],
+        diaMsg: '',
+
+        //主表格分页数据
+        currentIndex: 0,
+        maxSpace: 5,
+        totalPage: 0,
+        pageMaxNum: 10,
+        userId: '',
+
+        qCheckFlg: '', //查询
+        qFundAcco: '', //查询
+        qIdNo: '', //查询
+        qFundId: '', //查询
+        //dialog资料审核radio
+        checkFlg: '',
+        checkFlg2: '',
+        radioValue1: '',
+        radioValue2: '',
+        other1: '',
+        other2: '',
+        firstData: null,
+        firstDataNum: '',
+        firstDataFlag: '',
+        secondData: null,
+        secondDataNum: '',
+        secondDataFlag: '',
+        secondShowFlag: true,
+        rejectCause1: '',
+        rejectCause2: '',
+        sendData: {
+            strDt: '',
+            endDt: '',
+            fundId: '',
+            branchCode: '',
+            intervalLimit: '',
+            maxDay: '',
+            maxSingle: '',
+            minSingle: '',
+            apkind: '',
+            custNo: '',
+            serialNo: '',
+        },
+
+        modifyS: false,
+        a620: {
+            imgPath: []
+        },
+        a621: {
+            imgPath: []
+        },
+    },
+    created: function () {
+        var _this = this;
+        // $.post({//img
+        //     url: '/businessMgmt/highFinancialMgmt/investAudit/images.ajax',
+        //     data: {
+        //         objectName: 'cifwebPQI_assetFiles_1023854832_20190301093102440_3.jpg'
+        //     },
+        //     success: function (result) {
+        //         console.log(result)
+        //         _this.imgPath = 'data:image/png;base64,' + result.base64Img
+
+        //     }
+        // });
+
+    },
+    mounted: function () {
+        var dialogs = ['info', '', '', ''];
+        var _this = this;
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        $('.date-timepicker').datetimepicker({
+            format: 'YYYY-MM-DD', //use this option to display seconds
+            icons: {
+                time: 'fa fa-clock-o',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-arrows ',
+                clear: 'fa fa-trash',
+                close: 'fa fa-times'
+            }
+        }).next().on(ace.click_event, function () {
+            $(this).prev().focus();
+        });
+        this.getTableData(0);
+    },
+    computed: {
+        pageList: function () {
+            var arr = [];
+            if (this.totalPage <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex <= this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex <= this.maxSpace) {
+                var space = this.totalPage - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            } else {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        },
+        checkAll: function () {
+            if (this.tableData.length == 0) {
+                return false;
+            }
+            for (var i = 0; i < this.tableData.length; i++) {
+                if (!this.tableData[i].check) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    },
+    watch: {
+        pageMaxNum: function () {
+            this.getTableData(0);
+        },
+        radioValue1: {
+            handler: function (val, oldval) {
+                if (val == '') { // radiobutton为“其他”
+                    // console.log("1this.other1=", this.other1)
+                    // console.log("1this.rejectCause1=", this.rejectCause1)
+                    this.rejectCause1 = this.other1;
+                } else { // radiobutton为xxx
+                    if (oldval == '') { // radiobutton从“其他”改变到xxx
+                        // console.log("2this.other1=", this.other1)
+                        // console.log("2this.rejectCause1=", this.rejectCause1)
+                        this.other1 = this.rejectCause1;
+                    }
+                    this.rejectCause1 = val;
+                }
+            }
+        },
+        radioValue2: {
+            handler: function (val, oldval) {
+                if (val == '') { // radiobutton为“其他”
+                    this.rejectCause2 = this.other2;
+                } else { // radiobutton为xxx
+                    if (oldval == '') { // radiobutton从“其他”改变到xxx
+                        this.other2 = this.rejectCause2;
+                    }
+                    this.rejectCause2 = val;
+                }
+            }
+        }
+    },
+    methods: {
+        getTableData: function (currentIndex) {
+            var params = {};
+            var _this = this;
+            params.idNo = this.qIdNo;
+            params.checkFlg = this.qCheckFlg;
+            params.fundAcco = this.qFundAcco;
+            params.pageNo = currentIndex + 1;
+            params.pageSize = this.pageMaxNum;
+            params.appStrDt = $('.appStrDt').val().split('-').join('');
+            params.appEndDt = $('.appEndDt').val().split('-').join('');
+            params.checkDt = $('.checkDt').val().split('-').join('');
+            // console.log(params);
+            $.post({
+                url: '/businessMgmt/highFinancialMgmt/investAudit/getList.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.tableData = result.data.pqiApps;
+                        _this.currentIndex = result.data.pageNum - 1;
+                        _this.totalPage = result.data.pages;
+                        _this.userId = result.data.userId;
+                    } else {
+                        _this.tableData = [];
+                        _this.currentIndex = 0;
+                        _this.totalPage = 0;
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            } else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            } else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            } else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            } else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        //主表格分页方法
+        check: function (item) {
+            item.check = !item.check;
+        },
+        allCheck: function () {
+            var _this = this;
+            var flag = this.checkAll;
+            this.tableData.forEach(function (item) {
+                item.check = !flag;
+            });
+        },
+        prev: function () {
+            if (this.currentIndex <= 0) {
+                return;
+            }
+            this.getTableData(this.currentIndex - 1);
+        },
+        next: function () {
+            if (this.currentIndex >= this.totalPage - 1) {
+                return;
+            }
+            this.getTableData(this.currentIndex + 1);
+        },
+        changeIndex: function (index) {
+            this.getTableData(index - 1);
+        },
+        toFirst: function () {
+            this.getTableData(0);
+        },
+        toLast: function () {
+            this.getTableData(this.totalPage - 1);
+        },
+        submitFirst: function () {
+            var _this = this;
+            var timestamp = new Date().getTime();
+            if (!this.checkFlg) {
+                this.showDialog('serial', 'info', true, '请选择审核状态');
+                return false;
+            }
+            var params = {};
+            params.serialNo = this.firstDataNum;
+            params.checkFlg = this.checkFlg;
+            params.checker = this.userId;
+            params.checkComment = this.rejectCause1;
+            params.accptMd = "EC";
+            this.firstData && (this.firstData.subApKind == 620002) && (params.strDt = this.formatTime(timestamp));
+            this.firstData && (this.firstData.subApKind == 620002) && (params.endDt = $(".validate1").val() ? $(".validate1").val().split('-').join('') : '');
+            console.log(params);
+            $.post({
+                url: '/businessMgmt/highFinancialMgmt/investAudit/submitAudit.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('serial', 'info', false, '审核成功');
+                        _this.getTableData(0);
+                    } else {
+                        _this.showDialog('serial', 'info', true, '审核失败');
+                    }
+                }
+            });
+
+        },
+        submitSecond: function () {
+            var _this = this;
+            var timestamp = new Date().getTime();
+            if (!this.checkFlg2) {
+                this.showDialog('serial', 'info', true, '请选择审核状态');
+                return false;
+            }
+            var params = {};
+            params.serialNo = this.secondDataNum;
+            params.checkFlg = this.checkFlg2;
+            params.checker = this.userId;
+            params.checkComment = this.rejectCause2;
+            params.accptMd = "EC";
+            this.secondData && (this.secondData.subApKind == 620002) && (params.strDt = this.formatTime(timestamp));
+            this.secondData && (this.secondData.subApKind == 620002) && (params.endDt = $(".validate2").val() ? $(".validate2").val().split('-').join('') : '');
+            $.post({
+                url: '/businessMgmt/highFinancialMgmt/investAudit/submitAudit.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('serial', 'info', false, '审核成功');
+                        _this.getTableData(0);
+                    } else {
+                        _this.showDialog('serial', 'info', true, '审核失败');
+                    }
+                }
+            });
+        },
+        serialNoDialog: function (val) {
+            this.showDialog('', 'serial', false);
+            this.secondShowFlag = true;
+            this.a621.imgPath = [];
+            this.a620.imgPath = [];
+            this.radioValue1 = '';
+            this.radioValue2 = '';
+            this.other1 = '';
+            this.other2 = '';
+            this.rejectCause1 = '';
+            this.rejectCause2 = '';
+            // this.flag=true;
+            $(".validate1").val('');
+            $(".validate2").val('');
+            var _this = this;
+            var params = {
+                serialNo: val.serialNo
+            };
+            $.post({
+                url: '/businessMgmt/highFinancialMgmt/investAudit/getSerialNo.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        // console.log(result.data.custAttchmnt);
+                        _this.firstData = result.data;
+                        _this.firstDataNum = result.data.serialNo;
+                        _this.firstDataFlag = result.data.checkFlg;
+                        _this.checkFlg = result.data.checkFlg;
+                        if (result.data.checkComment == '不符合家庭金融资产500万以上认定标准' || result.data.checkComment == '不符合投资经历2年以上认定标准' || result.data.checkComment == '证明材料不清晰' || result.data.checkComment == '证明材料未显示身份信息' || result.data.checkComment == '证明材料已过有效期' || result.data.checkComment == '不符合近3年本人平均收入不低于40万的认定标准') {
+                            _this.radioValue1 = result.data.checkComment;
+                        } else {
+                            _this.radioValue1 = '';
+                            _this.other1 = result.data.checkComment;
+                            _this.rejectCause1 = result.data.checkComment;
+                        }
+                        // _this.rejectCause1 = result.data.checkComment;
+                        var formatTime1 = result.data.pqiAssetEndDt ? result.data.pqiAssetEndDt.split('').slice(0, 4).join('') + '-' + result.data.pqiAssetEndDt.split('').slice(4, 6).join('') + '-' + result.data.pqiAssetEndDt.split('').slice(6, 8).join('') : '';
+                        $(".validate1").val(formatTime1);
+                        // console.log(_this.firstData.refSerialNo,'_this.firstData.refSerialNo');
+                        if (_this.firstData.refSerialNo) {
+                            var params2 = {
+                                serialNo: _this.firstData.refSerialNo
+                            };
+                            $.post({
+                                url: '/businessMgmt/highFinancialMgmt/investAudit/getSerialNo.ajax',
+                                data: params2,
+                                success: function (result) {
+                                    if (result.error === 0) {
+                                        _this.secondData = result.data;
+                                        _this.secondDataNum = result.data.serialNo;
+                                        _this.secondDataFlag = result.data.checkFlg;
+                                        _this.checkFlg2 = result.data.checkFlg;
+                                        if (result.data.checkComment == '不符合家庭金融资产500万以上认定标准' || result.data.checkComment == '不符合投资经历2年以上认定标准' || result.data.checkComment == '证明材料不清晰' || result.data.checkComment == '证明材料未显示身份信息' || result.data.checkComment == '证明材料已过有效期' || result.data.checkComment == '不符合近3年本人平均收入不低于40万的认定标准') {
+                                            _this.radioValue2 = result.data.checkComment;
+                                        } else {
+                                            _this.radioValue2 = '';
+                                            _this.other2 = result.data.checkComment;
+                                            _this.rejectCause2 = result.data.checkComment;
+                                        }
+                                        // _this.rejectCause2 = result.data.checkComment;
+                                        var formatTime2 = result.data.pqiAssetEndDt ? result.data.pqiAssetEndDt.split('').slice(0, 4).join('') + '-' + result.data.pqiAssetEndDt.split('').slice(4, 6).join('') + '-' + result.data.pqiAssetEndDt.split('').slice(6, 8).join('') : '';
+                                        $(".validate2").val(formatTime2);
+                                        result.data.custAttchmnt.forEach(function (item, ind) {
+                                            $.post({ //img
+                                                url: '/businessMgmt/highFinancialMgmt/investAudit/images.ajax',
+                                                data: {
+                                                    objectName: item.fileName
+                                                },
+                                                success: function (result) {
+                                                    // imgArr [ind]= 'data:image/jpeg;base64,' + result.base64Img;
+                                                    _this.a621.imgPath.push('data:image/jpeg;base64,' + result.data)
+                                                }
+                                            });
+                                        })
+
+                                        // if(result.data.refSerialNo){
+                                        //         _this.serialNoDialog(result.data.refSerialNo)
+                                        // }
+                                    } else {
+                                        _this.showDialog('', 'info', false, result.msg);
+                                    }
+                                }
+                            });
+                        } else {
+                            _this.secondShowFlag = false;
+                        }
+                        result.data.custAttchmnt.forEach(function (item, ind) {
+                            $.post({ //img
+                                url: '/businessMgmt/highFinancialMgmt/investAudit/images.ajax',
+                                data: {
+                                    objectName: item.fileName
+                                },
+                                success: function (result) {
+                                    // console.log(result);
+                                    // imgArr [ind]= 'data:image/jpeg;base64,' + result.base64Img;
+                                    _this.a620.imgPath.push('data:image/jpeg;base64,' + result.data)
+                                }
+                            });
+                        })
+
+                        // if(result.data.refSerialNo){
+                        //         _this.serialNoDialog(result.data.refSerialNo)
+                        // }
+                    } else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+            this.fullScreen()
+        },
+        //导出excel
+        exportExcel: function () {
+            if ($('.appStrDt').val() == '' || $('.appEndDt').val() == '') {
+                this.showDialog('', 'info', false, '必须选择开始结束日期');
+                return;
+            }
+            var url;
+            var startTime = $('.appStrDt').val().split('-').join('');
+            var endTime = $('.appEndDt').val().split('-').join('');
+            var checkDt = $('.checkDt').val().split('-').join('');
+            url = '/businessMgmt/highFinancialMgmt/investAudit/exportExcel.ajax?appStrDt=' + startTime + '&appEndDt=' + endTime + '&checkDt=' + checkDt + '&idNo=' + this.qIdNo + '&checkFlg=' + this.qCheckFlg + '&fundAcco=' + this.qFundAcco;;
+            window.location.href = url;
+        },
+        fullScreen: function () {
+            console.log(123);
+            var len = $("img[modal='zoomImg']").length;
+            var arrPic = new Array(); //定义一个数组
+            for (var i = 0; i < len; i++) {
+                arrPic[i] = $("img[modal='zoomImg']").eq(i).prop("src"); //将所有img路径存储到数组中
+            }
+            $("img[modal='zoomImg']").each(function () {
+                $(this).on("click", function () {
+                    //给body添加弹出层的html
+                    $("body").append("<div class=\"mask-layer\">" +
+                        "   <div class=\"mask-layer-black\"></div>" +
+                        "   <div class=\"mask-layer-container\">" +
+                        "       <div class=\"mask-layer-container-operate\">" +
+                        "           <button class=\"mask-prev btn-default-styles\" style=\"float: left\">上一张</button>" +
+                        "           <button class=\"mask-out btn-default-styles\">放大</button>" +
+                        "           <button class=\"mask-in btn-default-styles\">缩小</button>" +
+                        "           <button class=\"mask-clockwise btn-default-styles\">顺旋转</button>" +
+                        "           <button class=\"mask-counterclockwise btn-default-styles\">逆旋转</button>" +
+                        "           <button class=\"mask-close btn-default-styles\">关闭</button>" +
+                        "           <button class=\"mask-next btn-default-styles\" style=\"float: right\">下一张</button>" +
+                        "       </div>" +
+                        "       <div class=\"mask-layer-imgbox auto-img-center\"></div>" +
+                        "   </div>" +
+                        "</div>"
+                    );
+
+                    var $this = $(this);
+                    console.log($this);
+                    var img_index = $this.index(); //获取点击的索引值
+                    var num = img_index-1;
+
+                    function showImg() {
+                        $(".mask-layer-imgbox").append("<p><img src=\"\" alt=\"\"></p>");
+                        $(".mask-layer-imgbox img").prop("src", arrPic[num]); //给弹出框的Img赋值
+
+                        //图片居中显示
+                        var box_width = $(".auto-img-center").width(); //图片盒子宽度
+                        var box_height = $(".auto-img-center").height(); //图片高度高度
+                        var initial_width = $(".auto-img-center img").width(); //初始图片宽度
+                        var initial_height = $(".auto-img-center img").height(); //初始图片高度
+                        if (initial_width > initial_height) {
+                            $(".auto-img-center img").css("width", box_width);
+                            var last_imgHeight = $(".auto-img-center img").height();
+                            $(".auto-img-center img").css("margin-top", -(last_imgHeight - box_height) / 2);
+                        } else {
+                            $(".auto-img-center img").css("height", box_height);
+                            var last_imgWidth = $(".auto-img-center img").width();
+                            $(".auto-img-center img").css("margin-left", -(last_imgWidth - box_width) / 2);
+                        }
+
+                        //图片拖拽
+                        var $div_img = $(".mask-layer-imgbox p");
+                        //绑定鼠标左键按住事件
+                        $div_img.bind("mousedown", function (event) {
+                            event.preventDefault && event.preventDefault(); //去掉图片拖动响应
+                            //获取需要拖动节点的坐标
+                            var offset_x = $(this)[0].offsetLeft; //x坐标
+                            var offset_y = $(this)[0].offsetTop; //y坐标
+                            //获取当前鼠标的坐标
+                            var mouse_x = event.pageX;
+                            var mouse_y = event.pageY;
+                            //绑定拖动事件
+                            //由于拖动时，可能鼠标会移出元素，所以应该使用全局（document）元素
+                            $(".mask-layer-imgbox").bind("mousemove", function (ev) {
+                                // 计算鼠标移动了的位置
+                                var _x = ev.pageX - mouse_x;
+                                var _y = ev.pageY - mouse_y;
+                                //设置移动后的元素坐标
+                                var now_x = (offset_x + _x) + "px";
+                                var now_y = (offset_y + _y) + "px";
+                                //改变目标元素的位置
+                                $div_img.css({
+                                    top: now_y,
+                                    left: now_x
+                                });
+                            });
+                        });
+                        //当鼠标左键松开，接触事件绑定
+                        $(".mask-layer-imgbox").bind("mouseup", function () {
+                            $(this).unbind("mousemove");
+                        });
+
+                        //缩放
+                        var zoom_n = 1;
+                        $(".mask-out").click(function () {
+                            zoom_n += 0.1;
+                            $(".mask-layer-imgbox img").css({
+                                "transform": "scale(" + zoom_n + ")",
+                                "-moz-transform": "scale(" + zoom_n + ")",
+                                "-ms-transform": "scale(" + zoom_n + ")",
+                                "-o-transform": "scale(" + zoom_n + ")",
+                                "-webkit-": "scale(" + zoom_n + ")"
+                            });
+                        });
+                        $(".mask-in").click(function () {
+                            zoom_n -= 0.1;
+                            console.log(zoom_n)
+                            if (zoom_n <= 0.1) {
+                                zoom_n = 0.1;
+                                $(".mask-layer-imgbox img").css({
+                                    "transform": "scale(.1)",
+                                    "-moz-transform": "scale(.1)",
+                                    "-ms-transform": "scale(.1)",
+                                    "-o-transform": "scale(.1)",
+                                    "-webkit-transform": "scale(.1)"
+                                });
+                            } else {
+                                $(".mask-layer-imgbox img").css({
+                                    "transform": "scale(" + zoom_n + ")",
+                                    "-moz-transform": "scale(" + zoom_n + ")",
+                                    "-ms-transform": "scale(" + zoom_n + ")",
+                                    "-o-transform": "scale(" + zoom_n + ")",
+                                    "-webkit-transform": "scale(" + zoom_n + ")"
+                                });
+                            }
+                        });
+                        //旋转
+                        var spin_n = 0;
+                        $(".mask-clockwise").click(function () {
+                            spin_n += 90;
+                            $(".mask-layer-imgbox img").parent("p").css({
+                                "transform": "rotate(" + spin_n + "deg)",
+                                "-moz-transform": "rotate(" + spin_n + "deg)",
+                                "-ms-transform": "rotate(" + spin_n + "deg)",
+                                "-o-transform": "rotate(" + spin_n + "deg)",
+                                "-webkit-transform": "rotate(" + spin_n + "deg)"
+                            });
+                        });
+                        $(".mask-counterclockwise").click(function () {
+                            spin_n -= 90;
+                            $(".mask-layer-imgbox img").parent("p").css({
+                                "transform": "rotate(" + spin_n + "deg)",
+                                "-moz-transform": "rotate(" + spin_n + "deg)",
+                                "-ms-transform": "rotate(" + spin_n + "deg)",
+                                "-o-transform": "rotate(" + spin_n + "deg)",
+                                "-webkit-transform": "rotate(" + spin_n + "deg)"
+                            });
+                        });
+                        //关闭
+                        $(".mask-close").click(function () {
+                            $(".mask-layer").remove();
+                        });
+                        $(".mask-layer-black").click(function () {
+                            $(".mask-layer").remove();
+                        });
+                    }
+                    showImg();
+
+                    //下一张
+                    $(".mask-next").on("click", function () {
+                        $(".mask-layer-imgbox p img").remove();
+                        num++;
+                        if (num == len) {
+                            num = 0;
+                        }
+                        showImg();
+                    });
+                    //上一张
+                    $(".mask-prev").on("click", function () {
+                        $(".mask-layer-imgbox p img").remove();
+                        num--;
+                        if (num == -1) {
+                            num = len - 1;
+                        }
+                        showImg();
+                    });
+                })
+            });
+        },
+        formatTime: function (timestamp) {
+            var date = new Date(timestamp); //时间戳为10位需*1000，时间戳为13位的话不需乘1000
+            var Y = date.getFullYear();
+            var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1);
+            var D = (date.getDate() < 10 ? '0' + date.getDate() : date.getDate());
+            return Y + '' + M + '' + D;
+        },
+        formatStrTime: function (str) {
+            var s = null;
+            if (str) {
+                s = str.split('').slice(0, 4).join('') + '-' + str.split('').slice(4, 6).join('') + '-' + str.split('').slice(6, 8).join('');
+            } else {
+                s = '-'
+            }
+            return s;
+        }
+
+    },
+
+    filters: {
+        setApkind: function (val) {
+            if (val == '024') {
+                return '赎回';
+            } else if (val == '022') {
+                return '申购';
+            } else {
+                return val;
+            }
+        }
+    },
+    components: {
+        // 'date-picker': VueBootstrapDatetimePicker
+    }
+});

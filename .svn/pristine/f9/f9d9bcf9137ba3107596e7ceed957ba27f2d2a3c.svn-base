@@ -1,0 +1,39 @@
+<div class="channel">
+    <input type="button" class="btn-primary" id="prevChannel" value="<">
+    <div class="channel-nav">
+        <ul class="channel-sidebar">
+            <% channels.forEach(function(item) {%>
+            <% if (item.checked) { %>
+            <li class="selected">
+                <% } else { %>
+            <li>
+                <% } %>
+                <a href="<%= item.url + '/index.html' %>">
+                    <span><%= item.name  %></span>
+                </a>
+            </li>
+            <% }) %>
+        </ul>
+    </div>
+    <input type="button" class="btn-primary" id="nextChannel" value=">">
+</div>
+
+
+<!--<div class="sidebar h-sidebar" style="margin-top: 2px;position: relative;">-->
+    <!--<ul class="nav nav-list">-->
+        <!--<% channels.forEach(function(item) {%>-->
+        <!--<% if (item.checked) { %>-->
+        <!--<li class="active open hover">-->
+            <!--<% } else { %>-->
+        <!--<li class="hover">-->
+            <!--<% } %>-->
+            <!--<a href="<%= item.url + '/index.html' %>">-->
+                <!--<span class="menu-text"><%= item.name  %></span>-->
+            <!--</a>-->
+            <!--<b class="arrow"></b>-->
+        <!--</li>-->
+        <!--<% }) %>-->
+    <!--</ul>-->
+    <!--&lt;!&ndash; /.nav-list &ndash;&gt;-->
+<!--</div>-->
+<!--</div>-->

@@ -1,0 +1,664 @@
+const request = require('../../../local_data/requestWrapper');
+const fs = require('fs');
+const path = require('path');
+const formidable = require('formidable');
+const apiUrlList = require('../apiConfig').productData.productList;
+const baseUrl = '/contentMgmt/productData/productList';
+const apiConfig = require('../apiConfig');
+const filePathExternal = apiConfig.filePathExternal + '/productData';
+const filePathExternalReal = apiConfig.filePathExternal + '/productData/productList';
+const filePathExternalBak = apiConfig.filePathExternal + '/productData/productList/bak';
+const filePathExternal_url = apiConfig.filePafilePathExternalthUrl + '/productData/productList'; //返回给前端的路径
+module.exports = function (app) {
+	// 获取初始数据和查询
+	app.post(`${baseUrl}/getTableData.ajax`, (req, res, next) => {
+		// 获取ess部分列表主要数据
+		let getTableData = new Promise((resolve, reject) => {
+			let params = req.body;
+			let option = {
+				pageUrl: `${baseUrl}/getTableData.ajax---tableData`,
+				req,
+				url: apiUrlList.tableData,
+				body: params,
+				timeout: 15000,
+				json: true
+			};
+			request.post(option, (error, response, body) => {
+				if (error) {
+					return reject({
+						error: 1,
+						msg: '查询失败'
+					});
+				}
+				let result = typeof body === 'string' ? JSON.parse(body) : body;
+				if (result && result.returnCode === 0) {
+					return resolve({
+						error: 0,
+						msg: '查询成功',
+						data: result.body
+					});
+				} else if (result && result.returnCode != 9999) {
+					return reject({
+						error: 1,
+						msg: result.returnMsg
+					});
+				} else {
+					return reject({
+						error: 1,
+						msg: '查询失败'
+					});
+				}
+			});
+		})
+		getTableData.then((result) => {
+			let resultObj = result.data;
+			if (resultObj.fundInfoUopVos && resultObj.fundInfoUopVos.length > 0) {
+				let fundIdList = resultObj.fundInfoUopVos.map(item => item.fundId);
+				let fundIdListString = fundIdList.join(',');
+				getTableDataSplit(fundIdListString).then((result) => {
+					let splitData = result.data;
+					console.log('splitData', splitData);
+
+
+					resultObj.fundInfoUopVos.forEach(item => {
+						// item.modifyTime = '';
+						item.categoryCountList = [];
+						item.check = false;
+						splitData.forEach(citem => {
+							if (item.fundId === citem.productId) {
+								// item.modifyTime = citem.modifyTime;
+								item.categoryCountList = citem.categoryCountList;
+							}
+						})
+					});
+					return res.send({
+						error: 0,
+						msg: '查询成功',
+						data: resultObj
+					})
+				}, (error) => {
+					return res.send({
+						error: 1,
+						msg: error.msg,
+						data: null
+					});
+				})
+			} else {
+				return res.send({
+					error: 0,
+					msg: '查询成功',
+					data: resultObj
+				})
+			}
+		}, (error) => {
+			return res.send({
+				error: 1,
+				msg: error.msg,
+				data: null
+			});
+		})
+
+		// 获取ncms部分列表拼接数据
+		function getTableDataSplit(fundIdListString) {
+			return new Promise((resolve, reject) => {
+				let option = {
+					pageUrl: `${baseUrl}/getTableData.ajax---tableDataSplit`,
+					req,
+					url: apiUrlList.tableDataSplit,
+					qs: {
+						productIdList: fundIdListString
+					},
+					timeout: 15000,
+					json: true
+				};
+				request(option, (error, response, body) => {
+					if (error) {
+						return reject({
+							error: 1,
+							msg: '查询失败'
+						});
+					}
+					let result = typeof body === 'string' ? JSON.parse(body) : body;
+					if (result && result.returnCode === 0) {
+						return resolve({
+							error: 0,
+							msg: '查询成功',
+							data: result.body
+						});
+					} else if (result && result.returnCode != 9999) {
+						return reject({
+							error: 1,
+							msg: result.returnMsg
+						});
+					} else {
+						return reject({
+							error: 1,
+							msg: '查询失败'
+						});
+					}
+				});
+			})
+		}
+	});
+	// commonservice
+	// 获取渠道权限列表
+	app.post(`${baseUrl}/getbranchList.ajax`, (req, res, next) => {
+		let option = {
+			pageUrl: `${baseUrl}/getbranchList.ajax`,
+			req,
+			url: apiUrlList.branchList,
+			qs: {
+				group: "tfyj"
+			},
+			timeout: 15000,
+			json: true
+		};
+		request(option, (error, response, body) => {
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode === 0) {
+				return res.send({
+					error: 0,
+					msg: '查询成功',
+					data: result.body
+				});
+			} else if (result && result.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: result.returnMsg
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+		});
+	});
+	// 获取托管行
+	app.post(`${baseUrl}/getCustodianCode.ajax`, (req, res, next) => {
+		let option = {
+			pageUrl: `${baseUrl}/getCustodianCode.ajax`,
+			req,
+			url: apiUrlList.commonParams,
+			qs: {
+				pmst:'SYSTEM',
+				pmkey:'CUSTODIAN'
+			},
+			timeout: 15000,
+			json: true
+		};
+		request(option, (error, response, body) => {
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode === 0) {
+				return res.send({
+					error: 0,
+					msg: '查询成功',
+					data: result.body
+				});
+			} else if (result && result.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: result.returnMsg
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+		});
+	});
+	// 获取现金宝类型fundTp
+	app.post(`${baseUrl}/getxjbTp.ajax`, (req, res, next) => {
+		let option = {
+			pageUrl: `${baseUrl}/getxjbTp.ajax`,
+			req,
+			url: apiUrlList.commonParams,
+			qs: {
+				pmkey: "FUNDTP",
+				pmst: 'SYSTEM'
+			},
+			timeout: 15000,
+			json: true
+		};
+		request(option, (error, response, body) => {
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode === 0) {
+				return res.send({
+					error: 0,
+					msg: '查询成功',
+					data: result.body
+				});
+			} else if (result && result.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: result.returnMsg
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+		});
+	});
+	// 获取风险等级
+	app.post(`${baseUrl}/getRisklevel.ajax`, (req, res, next) => {
+		let option = {
+			pageUrl: `${baseUrl}/getRisklevel.ajax`,
+			req,
+			url: apiUrlList.commonParams,
+			qs: {
+				pmkey: "FUNDRISKLEVEL",
+				pmst: 'SYSTEM'
+			},
+			timeout: 15000,
+			json: true
+		};
+		request(option, (error, response, body) => {
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode === 0) {
+				return res.send({
+					error: 0,
+					msg: '查询成功',
+					data: result.body
+				});
+			} else if (result && result.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: result.returnMsg
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+		});
+	});
+	// 获取产品类型
+	app.post(`${baseUrl}/getfundTpList.ajax`, (req, res, next) => {
+		let option = {
+			pageUrl: `${baseUrl}/getfundTpList.ajax`,
+			req,
+			url: apiUrlList.commonParams,
+			qs: {
+				pmst: 'RICHWIN',
+				pmkey: 'PRODUCT_TYPE'
+			},
+			timeout: 15000,
+			json: true
+		};
+		request(option, (error, response, body) => {
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode === 0) {
+				return res.send({
+					error: 0,
+					msg: '查询成功',
+					data: result.body
+				});
+			} else if (result && result.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: result.returnMsg
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+		});
+	});
+	// 产品信息的新增或修改
+	app.post(`${baseUrl}/productAddOrUpdate.ajax`, (req, res, next) => {
+		let params = req.body;
+		let option = {
+			pageUrl: `${baseUrl}/productAddOrUpdate.ajax`,
+			req: req,
+			operateType: 2, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+			url: apiUrlList.productInsertOrUpdate,
+			body: params,
+			timeout: 15000,
+			json: true
+		};
+		request.post(option, (error, response, body) => {
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '保存失败',
+					data: null
+				});
+			}
+			if (body.returnCode === 0) {
+				res.send({
+					error: 0,
+					msg: '保存成功',
+					data: null
+				});
+			} else if (body && body.returnCode != 9999) {
+				res.send({
+					error: 1,
+					msg: body.returnMsg,
+					data: null
+				});
+			} else {
+				res.send({
+					error: 1,
+					msg: '保存失败',
+					data: null
+				});
+			}
+		});
+	});
+	// 单个查询产品信息
+	app.post(`${baseUrl}/singleQueryProductInfo.ajax`, (req, res, next) => {
+		let params = req.body;
+		let option = {
+			pageUrl: `${baseUrl}/singleQueryProductInfo.ajax`,
+			req,
+			url: apiUrlList.querySingleProductInfo,
+			qs: params,
+			timeout: 15000,
+			json: true
+		};
+		request(option, (error, response, body) => {
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '查询失败',
+					data: null
+				});
+			}
+			if (body.returnCode === 0) {
+				res.send({
+					error: 0,
+					msg: '查询成功',
+					data: body.body
+				});
+			} else if (body && body.returnCode != 9999) {
+				res.send({
+					error: 1,
+					msg: body.returnMsg,
+					data: null
+				});
+			} else {
+				res.send({
+					error: 1,
+					msg: '查询失败',
+					data: null
+				});
+			}
+		});
+	});
+	// 物料信息的增删改查
+	app.post(`${baseUrl}/mediaPkbQuery.ajax`, (req, res, next) => {
+		let params = req.body;
+		let option = {
+			pageUrl: `${baseUrl}/mediaPkbQuery.ajax`,
+			req,
+			url: apiUrlList.mediaPkbQuery,
+			qs: params,
+			timeout: 15000,
+			json: true
+		};
+		request(option, (error, response, body) => {
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '查询失败',
+					data: null
+				});
+			}
+			if (body.returnCode === 0) {
+				res.send({
+					error: 0,
+					msg: '查询成功',
+					data: body.body
+				});
+			} else if (body && body.returnCode != 9999) {
+				res.send({
+					error: 1,
+					msg: body.returnMsg,
+					data: null
+				});
+			} else {
+				res.send({
+					error: 1,
+					msg: '查询失败',
+					data: null
+				});
+			}
+		});
+	});
+	app.post(`${baseUrl}/mediaPkbAdd.ajax`, (req, res, next) => {
+		let params = req.body;
+		params.createBy = req.session.loginInfo.userid;
+		let option = {
+			pageUrl: `${baseUrl}/mediaPkbAdd.ajax`,
+			req,
+			url: apiUrlList.mediaPkbAdd,
+			body: params,
+			timeout: 15000,
+			json: true
+		};
+		request.post(option, (error, response, body) => {
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '查询失败',
+					data: null
+				});
+			}
+			if (body.returnCode === 0) {
+				res.send({
+					error: 0,
+					msg: '查询成功',
+					data: null
+				});
+			} else if (body && body.returnCode != 9999) {
+				res.send({
+					error: 1,
+					msg: body.returnMsg,
+					data: null
+				});
+			} else {
+				res.send({
+					error: 1,
+					msg: '查询失败',
+					data: null
+				});
+			}
+		});
+	});
+	app.post(`${baseUrl}/mediaPkbUpdate.ajax`, (req, res, next) => {
+		let params = req.body;
+		params.modifyBy = req.session.loginInfo.userid;
+		let option = {
+			pageUrl: `${baseUrl}/mediaPkbUpdate.ajax`,
+			req,
+			url: apiUrlList.mediaPkbUpdate,
+			body: params,
+			timeout: 15000,
+			json: true
+		};
+		request.post(option, (error, response, body) => {
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '查询失败',
+					data: null
+				});
+			}
+			if (body.returnCode === 0) {
+				res.send({
+					error: 0,
+					msg: '查询成功',
+					data: null
+				});
+			} else if (body && body.returnCode != 9999) {
+				res.send({
+					error: 1,
+					msg: body.returnMsg,
+					data: null
+				});
+			} else {
+				res.send({
+					error: 1,
+					msg: '查询失败',
+					data: null
+				});
+			}
+		});
+	});
+	app.post(`${baseUrl}/batchOperation.ajax`, (req, res, next) => {
+		let params = req.body;
+		console.log(JSON.stringify(params));
+		let option = {
+			pageUrl: `${baseUrl}/batchOperation.ajax`,
+			req,
+			url: apiUrlList.batchOperation,
+			body: params.batchPartList,
+			timeout: 15000,
+			json: true
+		};
+		request.post(option, (error, response, body) => {
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '操作失败',
+					data: null
+				});
+			}
+			if (body.returnCode === 0) {
+				res.send({
+					error: 0,
+					msg: '操作成功',
+					data: null
+				});
+			} else if (body && body.returnCode != 9999) {
+				res.send({
+					error: 1,
+					msg: body.returnMsg,
+					data: null
+				});
+			} else {
+				res.send({
+					error: 1,
+					msg: '操作失败',
+					data: null
+				});
+			}
+		});
+	});
+	//上传图片
+	app.post(`${baseUrl}/uploadImg.ajax`, (req, res, next) => {
+		// 以fundId作为独立文件夹存放
+		const fundId = req.query.fundId;
+		try {
+			!fs.existsSync(apiConfig.filePathExternal) && fs.mkdirSync(apiConfig.filePathExternal);
+			!fs.existsSync(filePathExternal) && fs.mkdirSync(filePathExternal);
+			!fs.existsSync(filePathExternalReal) && fs.mkdirSync(filePathExternalReal);
+			!fs.existsSync(filePathExternalBak) && fs.mkdirSync(filePathExternalBak);
+			let fundIdPath = filePathExternalReal+'/'+fundId;
+			let fundIdPathBack = filePathExternalBak+'/'+fundId;
+			let fundIdPathForWeb = filePathExternal_url+'/'+fundId;
+			!fs.existsSync(fundIdPath) && fs.mkdirSync(fundIdPath);
+			!fs.existsSync(fundIdPathBack) && fs.mkdirSync(fundIdPathBack);
+			let form = new formidable.IncomingForm();
+			form.uploadDir = filePathExternalReal;
+			form.keepExtensions = true;
+			form.parse(req, (err, fields, files) => {
+				console.log('数据接收完毕:', fields);
+				console.log('文件接收完毕:', files);
+				let originFilePath = path.resolve(files.file.path);
+				// 带后缀文件名
+				let originFileName = files.file.name;
+				// 不带后缀
+				let fileExtname = path.extname(originFileName); //文件扩展名
+				let simplifyName = originFileName.split(fileExtname)[0]; //不带扩展名的文件名
+				try {
+					if(fs.existsSync(path.resolve(fundIdPath,originFileName))){
+						const fileReName  = `${simplifyName}-${new Date().getTime()}${fileExtname}`;
+						// const fileReName  = `${simplifyName}-${currentCST()}${fileExtname}`;
+						const oldPath = path.resolve(fundIdPath,originFileName);
+						const newPath = path.resolve(fundIdPathBack,fileReName);
+						console.log('historyBakPath:',newPath);
+						console.log('historyBakName:',fileReName);
+						fs.renameSync(oldPath,newPath);
+					}
+					let reader = fs.createReadStream(originFilePath);
+					let writer = fs.createWriteStream(`${fundIdPath}/${originFileName}`);
+					console.log('uploadFilePath:', `${fundIdPath}/${originFileName}`);
+					reader.pipe(writer);
+					writer.on('finish', () => {
+						// 写入成功后执行
+						try {
+							fs.unlinkSync(originFilePath);
+							res.send({
+								error: 0,
+								msg: '上传成功',
+								data: {
+									imageUrl: `${fundIdPathForWeb}/${originFileName}`
+								}
+							});
+						} catch (error) {
+							console.log('writer inner--------', error);
+							fs.unlinkSync(originFilePath);
+							res.send({
+								error: 1,
+								msg: error,
+								data: null
+							});
+						}
+					});
+				} catch (error) {
+					console.log('writer outter--------', error);
+					fs.unlinkSync(originFilePath);
+					res.send({
+						error: 1,
+						msg: error,
+						data: null
+					});
+				}
+			});
+		} catch (error) {
+			console.log(`${baseUrl}/uploadImg.ajax -------- 文件上传失败error:`, error);
+			res.send({
+				error: 0,
+				msg: '上传失败',
+				data: null
+			});
+		}
+	});
+}

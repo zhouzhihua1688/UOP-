@@ -1,0 +1,56 @@
+
+let tagMgmt = '';
+if (global.envConfig.tagMgmt) {
+    tagMgmt = global.envConfig.tagMgmt;
+} else {
+    tagMgmt = global.envConfig.inner_gateway;
+}
+tagMgmt += '/ncms/admin/v1';
+
+module.exports = {
+    // 投教策略
+    productMaterial:{
+        investPrefecture:{
+            add:`${tagMgmt}/ncms/pitching-stategy/add-pitching-stategy`, 
+            classifyList:`${tagMgmt}/ncms/category-config/query-first-second-category`, 
+            threeClassifyList: `${tagMgmt}/ncms/category-config/query-list-by-id`,
+        }
+    },
+    contentClassifyMgmt:{
+        firstLevel:{
+            getTableData: `${tagMgmt}/ncms/category-config/query-list-by-id`,
+            add:`${tagMgmt}/ncms/category-config/add`,
+            update:`${tagMgmt}/ncms/category-config/update`,
+            deleteParam:`${tagMgmt}/ncms/category-config/delete`,
+        },
+        secondLevel:{
+            getTableData: `${tagMgmt}/ncms/category-config/query-list-by-id`,
+            add:`${tagMgmt}/ncms/category-config/add`,
+            update:`${tagMgmt}/ncms/category-config/update`,
+            deleteParam:`${tagMgmt}/ncms/category-config/delete`,
+            getCategoryIdList:`${tagMgmt}/ncms/category-config/query-list-by-id`,
+        },
+        threeLevel:{
+            getTableData: `${tagMgmt}/ncms/category-config/query-list-by-id`,
+            add:`${tagMgmt}/ncms/category-config/add`,
+            update:`${tagMgmt}/ncms/category-config/update`,
+            deleteParam:`${tagMgmt}/ncms/category-config/delete`,
+            getCategoryIdList:`${tagMgmt}/ncms/category-config/query-list-by-id`,
+        }
+    },
+    tagMgmt:{
+        tagClassifyMgmt:{
+            getTableData: `${tagMgmt}/ncms/tag-category-config/query-list`,
+            add:`${tagMgmt}/ncms/tag-category-config/add-tag-category`,
+            update:`${tagMgmt}/ncms/tag-category-config/update-tag-category`,
+            deleteParam:`${tagMgmt}/ncms/tag-category-config/delete-tag-category`,
+        },
+        tagContentMgmt:{
+            getTableData: `${tagMgmt}/ncms/tag-config/query-list`,
+            add:`${tagMgmt}/ncms/tag-config/add-tag-config`,
+            update:`${tagMgmt}/ncms/tag-config/update-tag-config`,
+            deleteParam:`${tagMgmt}/ncms/tag-config/delete-tag-config`,
+            getTagClassify:`${tagMgmt}/ncms/tag-category-config/query-list`,
+        }       
+    },
+};

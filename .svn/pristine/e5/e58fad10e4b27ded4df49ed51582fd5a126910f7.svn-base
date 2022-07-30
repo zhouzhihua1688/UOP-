@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <style>
+        table tbody td {
+            vertical-align: middle !important;
+            word-wrap: break-word;
+        }
+        .chosen-single {
+            height: 34px !important;
+            line-height: 34px !important;
+            border-radius: 0 !important;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--查看实盘详情-->
+                <div class="modal" id="details" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:700px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding:10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">实盘详情</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding: 0 20px;">
+                                    <div style="float:left">
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:28px">创建日期:</label>
+                                            <input type="text" style="width:150px;"
+                                                   v-model.trim="this.detailInfo.createDate" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:45px">实盘id:</label>
+                                            <input type="text" style="width:150px;"
+                                                   v-model.trim="this.detailInfo.firmOfferId" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:28px">实盘名称:</label>
+                                            <input type="text" style="width:150px;"
+                                                   v-model.trim="this.detailInfo.firmOfferName" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">实盘投资理念:</label>
+                                            <input type="text" style="width:150px;"
+                                                   v-model.trim="this.detailInfo.firmOfferDesc" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">实盘投资风格:</label>
+                                            <input type="text" style="width:150px;"
+                                                   v-model.trim="this.detailInfo.firmOfferType" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:55px">关注:</label>
+                                            <input type="text" style="width:150px;"
+                                                   v-model.trim="this.detailInfo.likeCount" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:26px">最新资产:</label>
+                                            <input type="text" style="width:150px;"
+                                                   v-model.trim="this.detailInfo.totalAmt" disabled/>
+                                        </div>
+                                    </div>
+                                    <div style="float:right">
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:55px">跟投:</label>
+                                            <input type="text" style="width:150px;"
+                                                   v-model.trim="this.detailInfo.followCount" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:42px">留言数:</label>
+                                            <input type="text" style="width:150px;"
+                                                   v-model.trim="this.detailInfo.followInvestCount" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-5px">主理人custNo:</label>
+                                            <input type="text" style="width:150px;"
+                                                   v-model.trim="this.detailInfo.custNo" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:15px">主理人姓名:</label>
+                                            <input type="text" style="width:150px;"
+                                                   v-model.trim="this.detailInfo.custInfo.custName" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:15px">主理人昵称:</label>
+                                            <input type="text" style="width:150px;"
+                                                   v-model.trim="this.detailInfo.custInfo.nickname" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:28px;">实盘状态:</label>
+                                            <template v-if="this.detailInfo.status=='0'">
+                                                <input type="text" style="width:150px;" :value="'初始化'" disabled/>
+                                            </template>
+                                            <template v-else-if="this.detailInfo.status=='2'">
+                                                <input type="text" style="width:150px;" :value="'申请公开'" disabled/>
+                                            </template>
+                                            <template v-else-if="this.detailInfo.status=='3'">
+                                                <input type="text" style="width:150px;" :value="'不公开'" disabled/>
+                                            </template>
+                                            <template v-else-if="this.detailInfo.status=='4'">
+                                                <input type="text" style="width:150px;" :value="'申请失败'" disabled/>
+                                            </template>
+                                            <template v-else-if="this.detailInfo.status=='6'">
+                                                <input type="text" style="width:150px;" :value="'公开'" disabled/>
+                                            </template>
+                                            <template v-else-if="this.detailInfo.status=='9'">
+                                                <input type="text" style="width:150px;" :value="'解散'" disabled/>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div style="clear: both;"></div>
+                                    <div>
+                                        <label class="control-label" style="width: 85px;vertical-align: top;text-align: right;">成分基金:</label>
+                                        <textarea cols="60" rows="6" v-text="detailInfo.showFundDetail" disabled></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <% if(canShow||authorityList.includes('U')) { %>
+                                <template v-if="this.detailInfo.status==6||this.detailInfo.status==2">
+                                    <button class="btn btn-sm btn-primary" @click="goPublicPage">不公开</button>
+                                </template>
+                                <template v-else>
+                                    <button class="btn btn-sm btn-primary" @click="goPublicPage">公开</button>
+                                </template>
+                                <% } %>
+                                <button class="btn btn-sm btn-primary" style="margin:0 5px" @click="goMessagePage">
+                                    查看留言
+                                </button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">关闭</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!--2021-03-02修改-->
+                <div v-for="(item,index) in statisticalList" :key="index" class="form-inline" style="height:90px;padding:20px 30px;color:#000;background:#F5F5F5;margin-top:10px">
+                    <div>
+                        <label class="control-label">实盘总金额：</label>
+                        <span><em v-text="item.firmOfferTotalAmt?item.firmOfferTotalAmt:'---'"></em>元</span>
+                    </div>
+                    <div style="margin-top:10px">
+                        <label class="control-label">有效的实盘数：</label>
+                        <span style="padding-right:150px"><em v-text="item.validFirmOfferCount?item.validFirmOfferCount:'---'"></em>个</span>
+
+                        <label class="control-label">有资产的实盘数：</label>
+                        <span style="padding-right:150px"><em v-text="item.assetFirmOfferCount?item.assetFirmOfferCount:'---'"></em>个</span>
+
+                        <label class="control-label">有实盘的客户数：</label>
+                        <span style="padding-right:150px"><em v-text="item.firmOfferCustCount?item.firmOfferCustCount:'---'"></em>个</span>
+
+                        <label class="control-label">有实盘资产的客户数：</label>
+                        <span style="padding-right:150px"><em v-text="item.firmOfferAssetCustCount?item.firmOfferAssetCustCount:'---'"></em>个</span>
+                    </div>
+                </div>
+                <!--2021-03-02修改-->
+
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label">实盘ID:</label>
+                        <input type="text" v-model="firmOfferId" style="width: 120px;">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">实盘名称:</label>
+                        <input type="text" v-model="firmOfferName" style="width: 120px;">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">主理人ID:</label>
+                        <input type="text" v-model="custNo" style="width: 120px;">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">
+                            实盘状态:</label>
+                        <select id="firmOfferStatus" multiple class="chosen-select form-control hidden"
+                                data-placeholder="请选择">
+                            <option value="0">初始化</option>
+                            <option value="2">申请公开</option>
+                            <option value="3">不公开</option>
+                            <option value="4">申请失败</option>
+                            <option value="6">公开</option>
+                            <option value="9">解散</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">
+                            组合类型:</label>
+                        <select name="" class="text-left" style="width:100px" v-model="groupType">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length" id="dynamic-table_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                    <thead>
+                    <tr>
+                        <th class="center">实盘id</th>
+                        <th class="center">实盘名称</th>
+                        <th class="center">状态</th>
+                        <th class="center">最新资产</th>
+                        <th style="cursor: pointer;"
+                            :class="{center:true,sorting:rankField=='yield_last_day',sorting_desc:rankField=='yield_last_day'}"
+                            @click="changeRankField('yield_last_day')">日涨跌
+                        </th>
+                        <th style="cursor: pointer;"
+                            :class="{center:true,sorting:rankField=='yield_last_month',sorting_desc:rankField=='yield_last_month'}"
+                            @click="changeRankField('yield_last_month')">近1月
+                        </th>
+                        <th style="cursor: pointer;"
+                            :class="{center:true,sorting:rankField=='yield_last_quarter',sorting_desc:rankField=='yield_last_quarter'}"
+                            @click="changeRankField('yield_last_quarter')">近3月
+                        </th>
+                        <th style="cursor: pointer;"
+                            :class="{center:true,sorting:rankField=='yield_last_half_year',sorting_desc:rankField=='yield_last_half_year'}"
+                            @click="changeRankField('yield_last_half_year')">近6月
+                        </th>
+                        <th style="cursor: pointer;"
+                            :class="{center:true,sorting:rankField=='yield_last_year',sorting_desc:rankField=='yield_last_year'}"
+                            @click="changeRankField('yield_last_year')">近一年
+                        </th>
+                        <th style="cursor: pointer;"
+                            :class="{center:true,sorting:rankField=='yield_since',sorting_desc:rankField=='yield_since'}"
+                            @click="changeRankField('yield_since')">成立以来
+                        </th>
+                        <th style="cursor: pointer;"
+                            :class="{center:true,sorting:rankField=='score',sorting_desc:rankField=='score'}"
+                            @click="changeRankField('score')">1月评分
+                        </th>
+                        <th style="cursor: pointer;"
+                            :class="{center:true,sorting:rankField=='three_months_score',sorting_desc:rankField=='three_months_score'}"
+                            @click="changeRankField('three_months_score')">3月评分
+                        </th>
+                        <th style="cursor: pointer;"
+                            :class="{center:true,sorting:rankField=='six_months_score',sorting_desc:rankField=='six_months_score'}"
+                            @click="changeRankField('six_months_score')">6月评分
+                        </th>
+                        <th style="cursor: pointer;"
+                            :class="{center:true,sorting:rankField=='one_year_score',sorting_desc:rankField=='one_year_score'}"
+                            @click="changeRankField('one_year_score')">一年评分
+                        </th>
+                        <th class="center">最后更新日</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="tableData.length>0">
+                        <tr v-for="(item,index) in tableData" :key="index">
+                            <td class="center" v-text="item.firmOfferId"></td>
+                            <td class="center">
+                                <a href="javascript:void(0);" v-text="item.firmOfferName"
+                                   @click="checkParams(item)"></a>
+                            </td>
+                            <td class="center" v-text="item.firmOfferStatus_show"></td>
+                            <td class="center" v-text="item.totalAmt"></td>
+                            <td :class="{
+                            center:true,
+                            red:Number(item.yieldLastDay.replace(/%/g,''))&&item.yieldLastDay.replace(/%/g,'')>0,
+                            green:Number(item.yieldLastDay.replace(/%/g,''))&&item.yieldLastDay.replace(/%/g,'')<0}"
+                                v-text="item.yieldLastDay"></td>
+                            <td :class="{
+                            center:true,
+                            red:Number(item.yieldLastMonth.replace(/%/g,''))&&item.yieldLastMonth.replace(/%/g,'')>0,
+                            green:Number(item.yieldLastMonth.replace(/%/g,''))&&item.yieldLastMonth.replace(/%/g,'')<0}"
+                                v-text="item.yieldLastMonth"></td>
+                            <td :class="{
+                            center:true,
+                            red:Number(item.yieldLastQuarter.replace(/%/g,''))&&item.yieldLastQuarter.replace(/%/g,'')>0,
+                            green:Number(item.yieldLastQuarter.replace(/%/g,''))&&item.yieldLastQuarter.replace(/%/g,'')<0}"
+                                v-text="item.yieldLastQuarter"></td>
+                            <td :class="{
+                            center:true,
+                            red:Number(item.yieldLastHalfYear.replace(/%/g,''))&&item.yieldLastHalfYear.replace(/%/g,'')>0,
+                            green:Number(item.yieldLastHalfYear.replace(/%/g,''))&&item.yieldLastHalfYear.replace(/%/g,'')<0}"
+                                v-text="item.yieldLastHalfYear"></td>
+                            <td :class="{
+                            center:true,
+                            red:Number(item.yieldLastYear.replace(/%/g,''))&&item.yieldLastYear.replace(/%/g,'')>0,
+                            green:Number(item.yieldLastYear.replace(/%/g,''))&&item.yieldLastYear.replace(/%/g,'')<0}"
+                                v-text="item.yieldLastYear"></td>
+                            <td :class="{
+                            center:true,
+                            red:Number(item.yieldSince.replace(/%/g,''))&&item.yieldSince.replace(/%/g,'')>0,
+                            green:Number(item.yieldSince.replace(/%/g,''))&&item.yieldSince.replace(/%/g,'')<0}"
+                                v-text="item.yieldSince"></td>
+                            <td :class="{
+                            center:true,
+                            red:Number(item.scoreLastMonth.replace(/%/g,''))&&item.scoreLastMonth.replace(/%/g,'')>0,
+                            green:Number(item.scoreLastMonth.replace(/%/g,''))&&item.scoreLastMonth.replace(/%/g,'')<0}"
+                                v-text="item.scoreLastMonth"></td>
+                            <td :class="{
+                            center:true,
+                            red:Number(item.scoreLastQuarter.replace(/%/g,''))&&item.scoreLastQuarter.replace(/%/g,'')>0,
+                            green:Number(item.scoreLastQuarter.replace(/%/g,''))&&item.scoreLastQuarter.replace(/%/g,'')<0}"
+                                v-text="item.scoreLastQuarter"></td>
+                            <td :class="{
+                            center:true,
+                            red:Number(item.scoreLastHalfYear.replace(/%/g,''))&&item.scoreLastHalfYear.replace(/%/g,'')>0,
+                            green:Number(item.scoreLastHalfYear.replace(/%/g,''))&&item.scoreLastHalfYear.replace(/%/g,'')<0}"
+                                v-text="item.scoreLastHalfYear"></td>
+                            <td :class="{
+                            center:true,
+                            red:Number(item.scoreLastYear.replace(/%/g,''))&&item.scoreLastYear.replace(/%/g,'')>0,
+                            green:Number(item.scoreLastYear.replace(/%/g,''))&&item.scoreLastYear.replace(/%/g,'')<0}"
+                                v-text="item.scoreLastYear"></td>
+                            <td class="center" v-text="item.showUpdateTime"></td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'没有数据'" colspan="15"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+
+                <!--底部页码-->
+                <div v-if="tableData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers"
+                             id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/messageCenter/firmOfferRank.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,453 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').vipGrade.privilege;
+const filePath = require('../apiConfig').filePath;
+const delFilePath = require('../apiConfig').delFilePath;
+const filePathUrl = require('../apiConfig').filePathUrl;
+const formidable = require('formidable');
+const path = require('path');
+const fs = require('fs');
+module.exports = function (app) {
+
+    // 获取  初始数据和查询
+    app.post('/clientMgmt/vipGrade/privilege/getList.ajax', (req, res, next) => {
+        let params = req.body,
+            userName = req.session.loginInfo.username;
+        let option = {
+            session: req.session,
+            url: apiUrl.dataList,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('userName', userName)
+        console.log('/clientMgmt/vipGrade/privilege/getList.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/clientMgmt/vipGrade/privilege/getList.ajax error:', error);
+            console.log('/clientMgmt/vipGrade/privilege/getList.ajax statusCode:', response && response.statusCode);
+            console.log('/clientMgmt/vipGrade/privilege/getList.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body,
+                    userName
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+
+    // 修改
+    app.post('/clientMgmt/vipGrade/privilege/dataChange.ajax', (req, res, next) => {
+        try {
+            if (!fs.existsSync(filePath)) {
+                fs.mkdirSync(filePath)
+            }
+        } catch (error) {
+            console.log('/clientMgmt/vipGrade/privilege/dataChange.ajax  文件夹不存在', error)
+            return res.send({
+                error: 1,
+                msg: '上传失败，文件夹不存在',
+                data: null
+            });
+        }
+        let form = new formidable.IncomingForm();
+        form.uploadDir = filePath;
+        form.keepExtensions = true; //保留文件后缀名
+
+        form.parse(req, (err, fields, files) => {
+
+            console.log('参数表管理页面表单接收完毕:', fields);
+            console.log('参数表管理页面表单文件接收完毕:', files);
+            var time = new Date().getTime()
+
+            if (files.file != undefined) {
+                var firstName = files.file.name.substring(0, files.file.name.lastIndexOf('.'))
+                var lastName = files.file.name.substr(files.file.name.lastIndexOf('.'))
+
+                var fileName = `${firstName}_${time}${lastName}`
+
+                var joinPathUrl = filePathUrl + "/" + fileName
+                try {
+                    fs.renameSync(files.file.path, form.uploadDir + "/" + fileName) //文件改名
+                    files.file.path = form.uploadDir + "/" + fileName //文件改名
+                } catch (error) {
+                    console.log('/clientMgmt/vipGrade/privilege/dataChange.ajax  文件改名失败', error)
+
+                    return res.send({
+                        error: 1,
+                        msg: '上传失败',
+                        data: '上传失败'
+                    });
+                }
+            }
+            if (files.file) {
+                var ext = path.parse(files.file.path).ext
+                ext = ext.toLocaleLowerCase();
+                console.log('ext', ext)
+                if (ext != '.png' && ext != '.jpg' && ext != '.gif') {
+                    fs.unlink(files.file.path, function (e) {
+                        if (e) {
+                            console.log('/clientMgmt/vipGrade/privilege/dataChange.ajax  文件删除失败', e)
+                        }
+                    })
+                    return res.send({
+                        error: 1,
+                        msg: '上传失败,只能上传png、jpg、gif格式图片',
+                        data: '上传失败'
+                    });
+                }
+
+            }
+
+            console.log('joinPathUrl=', joinPathUrl)
+
+            if (err) {
+                return res.send({
+                    error: 1,
+                    msg: '上传失败',
+                    data: '上传失败'
+                });
+            } else {
+                let params = fields;
+                if (files.file != undefined) {
+                    params.iconUrl = joinPathUrl
+                }
+                let option = {
+                    session: req.session,
+                    url: apiUrl.dataChange,
+                    body: params,
+                    timeout: 15000,
+                    json: true
+                };
+                console.log('/clientMgmt/vipGrade/privilege/dataChange.ajax option:', option);
+                request.post(option, (error, response, body) => {
+                    console.log('/clientMgmt/vipGrade/privilege/dataChange.ajax error:', error);
+                    console.log('/clientMgmt/vipGrade/privilege/dataChange.ajax statusCode:', response && response.statusCode);
+                    console.log('/clientMgmt/vipGrade/privilege/dataChange.ajax body:', body);
+                    if (error) {
+                        if (files.file != undefined) {
+                            fs.unlink(files.file.path, function (e) {
+                                if (e) {
+                                    console.log('/clientMgmt/vipGrade/privilege/dataChange.ajax  文件删除失败', e)
+                                }
+                            })
+                        }
+                        return res.send({
+                            error: 1,
+                            msg: '修改失败'
+                        });
+                    }
+                    let result = typeof body === 'string' ? JSON.parse(body) : body;
+                    if (result && result.returnCode == 0) {
+                        res.send({
+                            error: 0,
+                            msg: '修改成功',
+                            data: result.body
+                        });
+                    } else if (result && result.returnCode == 9999) {
+                        if (files.file != undefined) {
+                            fs.unlink(files.file.path, function (e) {
+                                if (e) {
+                                    console.log('/clientMgmt/vipGrade/privilege/dataChange.ajax  文件删除失败', e)
+                                }
+                            })
+                        }
+                        res.send({
+                            error: 1,
+                            msg: '修改失败'
+                        });
+                    } else {
+                        if (files.file != undefined) {
+                            fs.unlink(files.file.path, function (e) {
+                                if (e) {
+                                    console.log('/clientMgmt/vipGrade/privilege/dataChange.ajax  文件删除失败', e)
+                                }
+                            })
+                        }
+                        res.send({
+                            error: 1,
+                            msg: result.returnMsg
+                        });
+                    }
+                });
+            }
+
+        });
+
+
+
+
+
+
+
+
+
+    });
+    // 删除
+    app.post('/clientMgmt/vipGrade/privilege/dataDelete.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.dataDelete,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/clientMgmt/vipGrade/privilege/dataDelete.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/clientMgmt/vipGrade/privilege/dataDelete.ajax error:', error);
+            console.log('/clientMgmt/vipGrade/privilege/dataDelete.ajax statusCode:', response && response.statusCode);
+            console.log('/clientMgmt/vipGrade/privilege/dataDelete.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '调用失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '调用失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+
+
+    //新增
+    app.post('/clientMgmt/vipGrade/privilege/dataAdd.ajax', (req, res, next) => {
+        try {
+            if (!fs.existsSync(filePath)) {
+                fs.mkdirSync(filePath)
+            }
+        } catch (error) {
+            console.log('文件夹不存在', error)
+            return res.send({
+                error: 1,
+                msg: '上传失败，文件夹不存在',
+                data: null
+            });
+        }
+        let form = new formidable.IncomingForm();
+        form.uploadDir = filePath;
+        form.keepExtensions = true; //保留文件后缀名
+
+        form.parse(req, (err, fields, files) => {
+
+            console.log('参数表管理页面表单接收完毕:', fields);
+            console.log('参数表管理页面表单文件接收完毕:', files);
+
+            if (files.file != undefined) {
+                var time = new Date().getTime()
+                var firstName = files.file.name.substring(0, files.file.name.lastIndexOf('.'))
+                var lastName = files.file.name.substr(files.file.name.lastIndexOf('.'))
+                var fileName = `${firstName}_${time}${lastName}`
+                var joinPathUrl = filePathUrl + "/" + fileName
+                try {
+                    console.log('/clientMgmt/vipGrade/privilege/dataAdd.ajax   原文件名', files.file.path)
+                    console.log('/clientMgmt/vipGrade/privilege/dataAdd.ajax   新文件名', form.uploadDir + "/" + fileName)
+
+                    fs.renameSync(files.file.path, form.uploadDir + "/" + fileName) //文件改名
+                    files.file.path = form.uploadDir + "/" + fileName //文件改名
+                } catch (error) {
+                    console.log('/clientMgmt/vipGrade/privilege/dataAdd.ajax  文件改名失败', error)
+                    return res.send({
+                        error: 1,
+                        msg: '上传失败',
+                        data: '上传失败'
+                    });
+                }
+                var ext = path.parse(files.file.path).ext
+                ext = ext.toLocaleLowerCase();
+                console.log('ext', ext)
+                if (files.file) {
+                    if (ext != '.png' && ext != '.jpg' && ext != '.gif') {
+                        fs.unlink(files.file.path, function (e) {
+                            if (e) {
+                                console.log('/clientMgmt/vipGrade/privilege/dataAdd.ajax  文件删除失败', e)
+                            }
+                        })
+                        return res.send({
+                            error: 1,
+                            msg: '上传失败,只能上传png、jpg、gif格式图片',
+                            data: '上传失败'
+                        });
+                    }
+                }
+
+            }
+            console.log('joinPathUrl=', joinPathUrl);
+            if (err) {
+
+                return res.send({
+                    error: 1,
+                    msg: '上传失败',
+                    data: '上传失败'
+                });
+            } else {
+                let params = fields;
+                if (files.file != undefined) {
+                    params.iconUrl = joinPathUrl
+                } else {
+                    params.iconUrl = ''
+                }
+                let option = {
+                    session: req.session,
+                    url: apiUrl.dataAdd,
+                    body: params,
+                    timeout: 15000,
+                    json: true
+                };
+                console.log('/clientMgmt/vipGrade/privilege/dataAdd.ajax option:', option);
+                request.post(option, (error, response, body) => {
+                    console.log('/clientMgmt/vipGrade/privilege/dataAdd.ajax error:', error);
+                    console.log('/clientMgmt/vipGrade/privilege/dataAdd.ajax statusCode:', response && response.statusCode);
+                    console.log('/clientMgmt/vipGrade/privilege/dataAdd.ajax body:', body);
+                    if (error) {
+                        if(files.file != undefined){
+                            fs.unlink(files.file.path, function (e) {
+                                if (e) {
+                                    console.log('/clientMgmt/vipGrade/privilege/dataAdd.ajax  文件删除失败', e)
+                                }
+                            })//删除文件
+                        }
+                        return res.send({
+                            error: 1,
+                            msg: '新增失败'
+                        });
+                    }
+                    let result = typeof body === 'string' ? JSON.parse(body) : body;
+                    if (result && result.returnCode == 0) {
+                        res.send({
+                            error: 0,
+                            msg: '新增成功',
+                            data: result.body
+                        });
+                    } else if (result && result.returnCode == 9999) {
+                        if(files.file != undefined){
+                            fs.unlink(files.file.path, function (e) {
+                                if (e) {
+                                    console.log('/clientMgmt/vipGrade/privilege/dataAdd.ajax  文件删除失败', e)
+                                }
+                            })//删除文件
+                        }
+                        res.send({
+                            error: 1,
+                            msg: '新增失败'
+                        });
+                    } else {
+                        if(files.file != undefined){
+                            fs.unlink(files.file.path, function (e) {
+                                if (e) {
+                                    console.log('/clientMgmt/vipGrade/privilege/dataAdd.ajax  文件删除失败', e)
+                                }
+                            })//删除文件
+                        }
+                        res.send({
+                            error: 1,
+                            msg: result.returnMsg
+                        });
+                    }
+                });
+            }
+
+        });
+    });
+    //文件修改后移动到del文件夹
+    app.post('/clientMgmt/vipGrade/privilege/del.ajax', (req, res, next) => {
+        let params = req.body;
+        console.log('filePath', filePath)
+        console.log('delFilePath', delFilePath)
+        console.log('req.body', req.body)
+        try {
+            if (!fs.existsSync(delFilePath)) {
+                fs.mkdirSync(delFilePath)
+            }
+        } catch (error) {
+            console.log('/clientMgmt/vipGrade/privilege/del.ajax  del文件夹不存在', error)
+            return res.send({
+                error: 1,
+                msg: '上传失败，文件夹不存在',
+                data: '上传失败，文件夹不存在'
+            });
+        }
+        var fileName = path.parse(params.oldPath).base;
+        console.log('/clientMgmt/vipGrade/privilege/del.ajax  fileName', path.join(filePath, fileName))
+        console.log('/clientMgmt/vipGrade/privilege/del.ajax  delFilePath', path.join(delFilePath, fileName))
+        try {
+            if (fileName) {
+                fs.renameSync(path.join(filePath, fileName), path.join(delFilePath, fileName)) //文件移动
+            }
+            return res.send('');
+        } catch (error) {
+            console.log('/clientMgmt/vipGrade/privilege/del.ajax  文件移动失败', error)
+            return res.send('');
+        }
+
+    });
+    // // 查询单个数据
+    // app.post('/clientMgmt/vipGrade/privilege/dataQueryId.ajax', (req, res, next) => {
+    //     let params = req.body;
+    //     let option = {
+    //         session: req.session,
+    //         url: apiUrl.dataQueryId,
+    //         qs: params,
+    //         timeout: 15000,
+    //         json: true
+    //     };
+    //     console.log('/clientMgmt/vipGrade/privilege/dataQueryId.ajax option:', option);
+    //     request(option, (error, response, body) => {
+    //         console.log('/clientMgmt/vipGrade/privilege/dataQueryId.ajax error:', error);
+    //         console.log('/clientMgmt/vipGrade/privilege/dataQueryId.ajax statusCode:', response && response.statusCode);
+    //         console.log('/clientMgmt/vipGrade/privilege/dataQueryId.ajax body:', body);
+    //         if (error) {
+    //             return res.send({
+    //                 error: 1,
+    //                 msg: '查询失败'
+    //             });
+    //         }
+    //         let result = typeof body === 'string' ? JSON.parse(body) : body;
+    //         if (result && result.returnCode == '0') {
+    //             res.send({
+    //                 error: 0,
+    //                 msg: '查询成功',
+    //                 data: result.body
+    //             });
+    //         } else {
+    //             res.send({
+    //                 error: 1,
+    //                 msg: '查询失败'
+    //             });
+    //         }
+    //     });
+    // });
+};

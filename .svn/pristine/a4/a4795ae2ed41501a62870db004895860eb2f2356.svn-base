@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/css/cronGen.css">
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--编辑弹窗-->
+                <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">新建内容配置</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form " style="padding: 0 50px 0 24px;">
+                                    <div class="form-group" >
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            模型名称:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diamodelName"/>
+                                    </div>
+                                    <div class="form-group" >
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            模型描述:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diamodelDesc"/>
+                                    </div>
+                                    <div class="form-group" >
+                                        <div class="input-group">
+                                            <label class="control-label " style="width: 150px;  text-align: right;">开始时间:</label>
+                                            <input type="text" id="startTime" class="date-timepicker" style="width: 145px; margin-left: 2px;"> <span class="input-group-addon" style="width: 16%;"><i class="fa fa-clock-o bigger-110"></i></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" >
+                                        <div class="input-group">
+                                            <label class="control-label " style="width: 150px;  text-align: right;">结束时间:</label>
+                                            <input type="text" id="endTime" class="date-timepicker" style="width: 145px; margin-left: 2px;"> <span class="input-group-addon" style="width: 16%;"><i class="fa fa-clock-o bigger-110"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center">
+                                <button class="btn btn-sm btn-primary" @click="add">保存</button>
+                                <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--模型子块数据展示弹窗-->
+                <div class="modal" id="blockTable" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog" style="width: 80%;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <div class="form-inline text-left" style="padding: 10px 0;">
+                                    <div class="form-group ">
+                                        <input type="button" class="btn btn-sm btn-primary" value="新增内容" @click="showAddBlock">
+                                    </div>
+                                </div>
+
+                                <div class="table-header text-left">
+                                    模型子块表格数据
+                                </div>
+                                <!--分页器和快速查询-->
+                                <div class="row text-left" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                    <div class="col-xs-6">
+                                        <div class="dataTables_length" id="dynamic-table_length1">
+                                            <label>每页显示</label>
+                                            <select class="input-sm" name="pageMaxNum1" v-model.trim="pageMaxNum1">
+                                                <option value="10">10</option>
+                                                <option value="20">20</option>
+                                                <option value="50">50</option>
+                                            </select>
+                                            <label>条</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--数据表-->
+                                <table id="simple-table1" class="table table-bordered table-hover dataTable">
+                                    <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">子块ID</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">子块名称</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">子块描述</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">级数</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">触发类型</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">生效类型</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">任务定时器</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">触达类型</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">触达内容</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">目标用户组</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">触发工作节点值</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">创建时间</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">创建人</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">是否启用</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <template v-if="blockTableData.length>0">
+                                        <tr v-for="(item,index) in blockTableData" :key="index">
+                                            <td class="center" v-text='item.blockId'></td>
+                                            <td class="center" v-text='item.blockName'></td>
+                                            <td class="center" v-text='item.blockDesc'></td>
+                                            <td class="center" v-text='item.stepNumber'></td>
+                                            <td class="center" v-text='triggerTypeTransLate(item.triggerType)'></td>
+                                            <td class="center" v-text='takeEffectTypeTransLate(item.takeEffectType)'></td>
+                                            <td class="center" v-text='item.triggerCron'></td>
+                                            <td class="center" v-text='triggerTargetTypeTranslate(item.triggerTargetType)'></td>
+                                            <td class="center" v-text='overflowHide(item.translateContent)' :title="item.translateContent"></td>
+                                            <td class="center" v-text='item.targetUserGroups'></td>
+                                            <td class="center" v-text='item.triggerBussinessNodeKeys'></td>
+                                            <td class="center" v-text='stringTimeFat(item.createTime)'></td>
+                                            <td class="center" v-text='stringTimeFat(item.updateTime)'></td>
+                                            <td class="center" v-text='item.createBy'></td>
+                                            <td class="center" v-text='item.modifyBy'></td>
+                                            <td class="center" v-text='item.enable==0?"禁用":"启用"'></td>
+                                            <td class="center" >
+                                                <a href="javascript:;" @click="showUpdateBlock(item)" >修改</a>/<a href="javascript:;" @click="isEnableOk(item)" v-text="item.enable=='0'?'启用':'禁用'"></a>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="loadingStatus1" colspan="16"></td>
+                                        </tr>
+                                    </template>
+                                    </tbody>
+                                </table>
+                                <!--底部页码-->
+                                <div v-if="blockTableData.length>0" class="row"
+                                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                    <div class="col-xs-2">
+                                        <div class="dataTables_info" v-text="'共 '+totalPage1+' 页'"></div>
+                                    </div>
+                                    <div class="col-xs-10">
+                                        <div class="dataTables_paginate paging_simple_numbers"
+                                             id="dynamic-table_paginate1">
+                                            <ul class="pagination">
+                                                <li class="paginate_button"
+                                                    v-show="pageList1.length<totalPage1&&currentIndex1>maxSpace1">
+                                                    <a href="javascript:;" v-text="'1...'" @click="toFirst1"></a>
+                                                </li>
+                                                <li :class="currentIndex1==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                    @click="prev1">
+                                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                                </li>
+                                                <li :class="value==currentIndex1+1?'paginate_button active':'paginate_button'"
+                                                    v-for="value in pageList1" @click="changeIndex1(value)">
+                                                    <a href="javascript:;" v-text="value"></a>
+                                                </li>
+                                                <li class="paginate_button"
+                                                    v-show="pageList1.length<totalPage1&&totalPage1-currentIndex1>maxSpace1">
+                                                    <a href="javascript:;" v-text="'...'+totalPage1" @click="toLast1"></a>
+                                                </li>
+                                                <li :class="currentIndex1==totalPage1-1?'paginate_button next disabled':'paginate_button next'"
+                                                    @click="next1">
+                                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--模型子块编辑弹窗-->
+                <div class="modal" id="addBlock" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">新建模型子块内容</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form " style="padding: 0 50px 0 24px;">
+                                    <div class="form-group" >
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            模型子块名称:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diablockName"/>
+                                    </div>
+                                    <div class="form-group" >
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            模型子块描述:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diablockDesc"/>
+                                    </div>
+                                    <div class="form-group" >
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            级数:</label>
+                                        <input type="text" style="width: 60%;" v-model.trim="diastepNumber" disabled/>
+                                    </div>
+                                    <div class="form-group" >
+                                        <label class="control-label" style="width: 150px;text-align: right">触发类型:</label>
+                                        <!--<select name="" id="" v-model="diatriggerType">-->
+                                            <!--<option v-for="item in nodeTypeList" :value="item.nodeTypeId" v-text="item.nodeTypeName"></option>-->
+                                        <!--</select>-->
+                                        <select name="" id="" v-model="diatriggerType">
+                                            <option value="1" >节点触发</option>
+                                            <option value="2" >非节点触发</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" >
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            生效类型:</label>
+                                        <template v-if="diatriggerType=='1'">
+                                            <select name="" id="" v-model="diatakeEffectType">
+                                                <option value="00">实时生效</option>
+                                            </select>
+                                        </template>
+                                        <template v-else>
+                                            <select name="" id="" v-model="diatakeEffectType">
+                                                <option value="00">实时生效</option>
+                                                <option value="01">定时单次生效</option>
+                                                <option value="02">定时区间生效</option>
+                                                <option value="03">定时周期生效</option>
+                                            </select>
+                                        </template>
+
+                                    </div>
+                                    <div class="form-group" >
+
+                                        <template v-if="diatriggerType=='1'">
+                                            <label class="control-label" style="width: 150px;text-align: right">触达类型:</label>
+                                            <select name="" id="" v-model="diatriggerTargetType">
+                                                <option value="2" >消息中心</option>
+                                                <option value="3" >奖励系统</option>
+                                            </select>
+                                        </template>
+                                       <template v-else-if="diatriggerType=='2'">
+                                           <label class="control-label" style="width: 150px;text-align: right">触达类型:</label>
+                                           <select name="" id="" v-model="diatriggerTargetType">
+                                               <option value="1" >推荐系统</option>
+                                               <option value="2" >消息中心</option>
+                                               <option value="3" >奖励系统</option>
+                                           </select>
+                                       </template>
+                                    </div>
+                                    <div class="form-group" >
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            触达内容:</label>
+                                        <!--<input type="text" style="width: 60%;" v-model.trim="diatriggerTargetContent"/>-->
+                                        <template v-if="diatriggerTargetType=='1'">
+                                            <select name="" id="" v-model="diatriggerTargetContent" style="width: 200px;">
+                                                <option v-for="item in recommendList" :value="item.id" v-text="item.recomdDesc"></option>
+                                            </select>
+                                        </template>
+                                        <template v-else-if="diatriggerTargetType=='2'">
+                                            <select name="" id="" v-model="diatriggerTargetContent" style="width: 200px;">
+                                                <option v-for="item in messageCenterList" :value="item.ruleId" v-text="item.ruleName"></option>
+                                            </select>
+                                        </template>
+                                        <template v-else>
+                                            <select name="" id="" v-model="diatriggerTargetContent" style="width: 200px;">
+                                                <option v-for="item in awardMgmtList" :value="item.id" v-text="item.awardsPkgName"></option>
+                                            </select>
+                                        </template>
+                                        <input type="button" class="btn btn-sm btn-primary" value="新增" @click="openTab">
+                                        <input type="button" class="btn btn-sm btn-primary" value="刷新" @click="freshNode">
+                                    </div>
+                                    <div class="form-group" >
+                                        <label class="control-label" style="width: 150px;text-align: right">
+                                            目标用户组:</label>
+                                        <select name="diatargetUserGroups" id="diatargetUserGroups" class="diatargetUserGroups" data-placeholder='请选择目标用户组' multiple>
+                                            <option value=""></option>
+
+                                        </select>
+                                        <!--<input type="text" style="width: 60%;" v-model.trim="diatargetUserGroups"/>-->
+                                    </div>
+                                    <template v-if="diatriggerType!=='2'">
+                                        <div class="form-group" >
+                                        <label class="control-label" style="width: 150px;text-align: right">触发节点类型:</label>
+                                        <select name="" id="" v-model="nodeType" style="width: 60%;">
+                                            <option v-for="item in nodeTypeList" :value="item.nodeTypeId" v-text="item.nodeTypeName"></option>
+                                        </select>
+                                        </div>
+                                        <div class="form-group" >
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                触发节点:</label>
+                                            <select name="" id="" v-model="diatriggerBussinessNodeKeys" style="width: 60%;">
+                                                <option v-for="item in nodeConfigList" :value="item.nodeValue" v-text="item.nodeName"></option>
+                                            </select>
+                                        </div>
+
+                                    </template>
+                                    <div v-show="diatriggerType!=='1'">
+                                        <label id="cronLabel" class="control-label" style="width: 150px;text-align: right">任务定时器:</label>
+                                        <input id="cron" />
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center">
+                                <button class="btn btn-sm btn-primary" @click="addSubContent">保存</button>
+                                <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--发布提示弹窗-->
+                <div class="modal" id="releaseModelOk" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">发布操作</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确定发布操作吗?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" @click="releaseModel">确定</button>
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--下线提示弹窗-->
+                <div class="modal" id="offlineModelOk" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">下线操作</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确定下线操作吗?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" @click="offlineModel">确定</button>
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--刷新提示弹窗-->
+                <div class="modal" id="refreshCurrentOk" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">当前数据刷新操作</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确定该数据刷新操作吗?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" @click="refreshCurrent">确定</button>
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--子块刷新操作-->
+                <div class="modal" id="refreshOk" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">子块刷新操作</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确定子块刷新操作吗?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" @click="refresh">确定</button>
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--启用禁用操作-->
+                <div class="modal" id="isEnableOk" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">启用禁用操作</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确定执行该操作?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal" @click="isEnable">确定</button>
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--主页面-->
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label">模型名称:</label>
+                        <input type="text" v-model.trim="modelName">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">模型描述:</label>
+                        <input type="text" v-model.trim="modelDesc">
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                        <input type="button" class="btn btn-sm btn-primary" value="新增内容" @click="showAdd">
+                        <input type="button" class="btn btn-sm btn-primary" value="子块刷新" @click="refreshOk">
+
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length" id="dynamic-table_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                    <thead>
+                    <tr>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">模型名称</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">模型ID</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">模型描述</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">发布状态</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">创建时间</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">创建人</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="tableData.length>0">
+                        <tr v-for="(item,index) in tableData" :key="index">
+                            <td class="center" v-text='item.modelName'></td>
+                            <td class="center" v-text='item.modelId'></td>
+                            <td class="center" v-text='item.modelDesc'></td>
+                            <td class="center" v-text='item.releaseStatus=="0"? "未发布":"已发布"'></td>
+                            <td class="center" v-text='stringTimeFat(item.startTime)'></td>
+                            <td class="center" v-text='stringTimeFat(item.endTime)'></td>
+                            <td class="center" v-text='stringTimeFat(item.createTime)'></td>
+                            <td class="center" v-text='stringTimeFat(item.updateTime)'></td>
+                            <td class="center" v-text='item.createBy'></td>
+                            <td class="center" v-text='item.modifyBy'></td>
+                            <td class="center" >
+                                <a href="javascript:;" @click="showUpdate(item)" >修改</a>/<a href="javascript:;" @click="checkSubBlock(item)">查看</a><span v-show="item.releaseStatus=='0'">/<a href="javascript:;" @click="releaseModelOk(item)" >发布</a></span><span v-show="item.releaseStatus=='1'">/<a href="javascript:;" @click="offlineModelOk(item)">下线</a></span>/<a href="javascript:;" @click="refreshCurrentOk(item)">刷新</a>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="loadingStatus" colspan="11"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <div v-if="tableData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers"
+                             id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<!--<script src="/js/lib/zh-cn.js"></script>-->
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/lib/cronGen.min.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/automatedOperation/modelMgmt/modelConfigMgmt.js"></script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').redPacketSettingMgmt.redPacketType;
+module.exports = function (app) {
+    // 查询
+    app.post('/awardMgmt/redPacketSettingMgmt/redPacketType/query.ajax', (req, res, next) => {
+        let params = {};
+        params.pageNo = req.body.pageNo;
+        params.pageSize = req.body.pageSize;
+        let option = {
+            pageUrl: '/awardMgmt/redPacketSettingMgmt/redPacketType/query.ajax',
+            req: req,
+            url: apiUrlList.query,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        request.get(option, (error, response, body) => {
+            if (error) {
+                return res.send({error: 1, msg: '操作失败', data: null});
+            }
+            if (body.returnCode == 0 && Array.isArray(body.body.rows)) {
+                let resultArr = body.body.rows.map(item => {
+                    let obj = {};
+                    obj.envelopNo = item.envelopNo;
+                    obj.name = item.envelopName;
+                    obj.summary = item.summary;
+                    obj.grantMode = item.grantMode;
+                    switch (item.grantMode) {
+                        case 0:
+                            obj.grantMode_show = '固定金额';
+                            obj.value_show = item.envelopValue;
+                            break;
+                        case 1:
+                            obj.grantMode_show = '随机金额';
+                            obj.value_show = item.minValue + '-' + item.maxValue;
+                            break;
+                        case 2:
+                            obj.grantMode_show = '外部传入';
+                            obj.value_show = '-';
+                            break;
+                        default:
+                            obj.grantMode_show = item.grantMode;
+                    }
+                    obj.value = item.envelopValue;
+                    obj.maxValue = item.maxValue;
+                    obj.minValue = item.minValue;
+                    obj.validType = item.validType;
+                    switch (item.validType) {
+                        case 0:
+                            obj.validType_show = '相对时间';
+                            obj.validDuration = item.validDuration;
+                            obj.absoluteStartTime = '-';
+                            obj.absoluteExpireTime = '-';
+                            break;
+                        case 1:
+                            obj.validType_show = '绝对时间';
+                            obj.validDuration = '-';
+                            obj.absoluteStartTime = item.absoluteStartTime;
+                            obj.absoluteExpireTime = item.absoluteExpireTime;
+                            break;
+                        default:
+                            obj.validType_show = item.validType;
+                            obj.validDuration = item.validDuration;
+                            obj.absoluteStartTime = item.absoluteStartTime;
+                            obj.absoluteExpireTime = item.absoluteExpireTime;
+                    }
+                    obj.branchCode = item.branchCode;
+                    obj.useModeType = item.useModeType;
+                    switch (item.useModeType) {
+                        case 0:
+                            obj.useModeType_show = '手动领取';
+                            break;
+                        case 1:
+                            obj.useModeType_show = '自动充值或购买';
+                            break;
+                        default:
+                            obj.useModeType_show = item.useModeType;
+                    }
+                    obj.envelopType = item.envelopType;
+                    switch (item.envelopType) {
+                        case 1:
+                            obj.envelopType_show = '普通红包';
+                            break;
+                        case 2:
+                            obj.envelopType_show = '活动红包';
+                            break;
+                        case 3:
+                            obj.envelopType_show = '微信红包';
+                            break;
+                        case 4:
+                            obj.envelopType_show = '空间红包';
+                            break;
+                        case 5:
+                            obj.envelopType_show = '礼券红包';
+                            break;
+                        case 9:
+                            obj.envelopType_show = '第三方红包';
+                            break;
+                        default:
+                            obj.envelopType_show = item.envelopType;
+                    }
+                    obj.isAnswer = item.isAnswer;
+                    obj.isAnswer_show = item.isAnswer ? '是' : '否';
+                    obj.isFrozen = item.isFrozen;
+                    obj.isFrozen_show = item.isFrozen ? '是' : '否';
+                    obj.creater = item.creater;
+                    obj.updater = item.updater;
+                    return obj;
+                });
+                res.send({
+                    error: 0,
+                    msg: '查询成功',
+                    data: {
+                        total: body.body.total,
+                        pages: body.body.pages,
+                        body: resultArr
+                    }
+                });
+            }
+            else if (body.returnCode != 0 && body.returnCode != 9999) {
+                res.send({error: 1, msg: body.returnMsg, data: null});
+            }
+            else {
+                res.send({error: 1, msg: '查询失败', data: null});
+            }
+        });
+    });
+    // 新增
+    app.post('/awardMgmt/redPacketSettingMgmt/redPacketType/add.ajax', (req, res, next) => {
+        let params = {};
+        params.envelopName = req.body.name;
+        params.summary = req.body.summary;
+        params.grantMode = Number(req.body.grantMode);
+        if(params.grantMode === 2 && req.body.envelopNo){
+            params.envelopNo = req.body.envelopNo;
+        }
+        params.envelopValue = Number(req.body.value);
+        params.minValue = Number(req.body.value_min);
+        params.maxValue = Number(req.body.value_max);
+        params.validType = Number(req.body.validType);
+        params.validDuration = Number(req.body.validDuration);
+        params.absoluteStartTime = req.body.absoluteStartTime === '' ? null : req.body.absoluteStartTime;
+        params.absoluteExpireTime = req.body.absoluteExpireTime === ''? null : req.body.absoluteExpireTime;
+        params.branchCode = req.body.branchCode;
+        params.isAnswer = req.body.isAnswer == 'true';
+        params.isFrozen = req.body.isFrozen == 'true';
+        params.useModeType = Number(req.body.useModeType);
+        params.envelopType = Number(req.body.envelopType);
+        params.creater = req.session.loginInfo.username;
+        let option = {
+            pageUrl: '/awardMgmt/redPacketSettingMgmt/redPacketType/add.ajax',
+            req: req,
+            operateType: 1, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrlList.add,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({error: 1, msg: '操作失败', data: null});
+            }
+            if (body.returnCode == 0) {
+                res.send({error: 0, msg: '添加成功', data: null});
+            }
+            else if (body.returnCode != 0 && body.returnCode != 9999) {
+                res.send({error: 1, msg: body.returnMsg, data: null});
+            }
+            else {
+                res.send({error: 1, msg: '添加失败', data: null});
+            }
+        });
+    });
+    // 修改
+    app.post('/awardMgmt/redPacketSettingMgmt/redPacketType/update.ajax', (req, res, next) => {
+        let params = {};
+        params.envelopNo = req.body.envelopNo;
+        params.envelopName = req.body.name;
+        params.summary = req.body.summary;
+        params.grantMode = Number(req.body.grantMode);
+        params.envelopValue = Number(req.body.value);
+        params.minValue = Number(req.body.value_min);
+        params.maxValue = Number(req.body.value_max);
+        params.validType = Number(req.body.validType);
+        params.validDuration = Number(req.body.validDuration);
+        params.absoluteStartTime = req.body.absoluteStartTime === '' ? null : req.body.absoluteStartTime;
+        params.absoluteExpireTime = req.body.absoluteExpireTime === ''? null : req.body.absoluteExpireTime;
+        params.branchCode = req.body.branchCode;
+        params.isAnswer = req.body.isAnswer == 'true';
+        params.isFrozen = req.body.isFrozen == 'true';
+        params.useModeType = Number(req.body.useModeType);
+        params.envelopType = Number(req.body.envelopType);
+        params.updater = req.session.loginInfo.username;
+        let option = {
+            pageUrl: '/awardMgmt/redPacketSettingMgmt/redPacketType/update.ajax',
+            req: req,
+            operateType: 2, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrlList.update,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({error: 1, msg: '操作失败', data: null});
+            }
+            if (body.returnCode == 0) {
+                res.send({error: 0, msg: '修改成功', data: null});
+            }
+            else if (body.returnCode != 0 && body.returnCode != 9999) {
+                res.send({error: 1, msg: body.returnMsg, data: null});
+            }
+            else {
+                res.send({error: 1, msg: '修改失败', data: null});
+            }
+        });
+    });
+    // 删除
+    app.post('/awardMgmt/redPacketSettingMgmt/redPacketType/del.ajax', (req, res, next) => {
+        let params = {};
+        params.envelopNo = req.body.envelopNo;
+        params.updater = req.session.loginInfo.username;
+        let option = {
+            pageUrl: '/awardMgmt/redPacketSettingMgmt/redPacketType/del.ajax',
+            req: req,
+            operateType: 3, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrlList.del,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({error: 1, msg: '操作失败', data: null});
+            }
+            if (body.returnCode == 0) {
+                res.send({error: 0, msg: '删除成功', data: null});
+            }
+            else if (body.returnCode != 0 && body.returnCode != 9999) {
+                res.send({error: 1, msg: body.returnMsg, data: null});
+            }
+            else {
+                res.send({error: 1, msg: '删除失败', data: null});
+            }
+        });
+    });
+};

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <link rel="stylesheet" href="/css/chosen.min.css">
+
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .chosen-single {
+            height: 34px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .conponents {
+            display: none;
+        }
+    </style>
+
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <!-- --------------------------------------------- -->
+                    <template id="children">
+                        <div class="conponents">
+                            <!-- DIALOG ENDS -->
+                            <div class="form-inline" style="padding: 10px 0;">
+                                <div class="form-group">
+                                    <label style="width: 60px;">基金ID:</label>
+                                    <select-chosen v-model='fundId' :list='fundList'>
+                                    </select-chosen>
+                                </div>
+                                <!-- <div class="form-group">
+                                    <label style="width: 60px;">复核状态:</label>
+                                    <select style="width: 169px;">
+                                        <option value="">全部</option>
+                                        <option value="0">已复核</option>
+                                        <option value="2">待复核</option>
+                                        <option value="9">复核驳回</option>
+                                    </select>
+                                </div> -->
+                                <slot name='status'></slot>
+
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " value="查询"
+                                        @click='getTableData'>
+                                </div>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!--分页器和快速查询-->
+                            <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                <div class="col-xs-6">
+                                    <div class="dataTables_length" id="dynamic-table_length">
+                                        <label>每页显示</label>
+                                        <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                            <option value="10">10</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                            <option value="500">500</option>
+                                        </select>
+                                        <label>条</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <slot name='table' :data='viewData'></slot>
+
+                            <!--底部页码-->
+                            <div v-if="viewData.length>0" class="row"
+                                style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                        <ul class="pagination">
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                            </li>
+                                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in pageList" @click="changeIndex(value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'...'+middleData.length"
+                                                    @click="toLast"></a>
+                                            </li>
+                                            <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    <!-- --------------------------------------------- -->
+                    <div class="row" id="content">
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!--通过弹窗-->
+                            <div class="modal" id="operateDialog" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4>确定要通过该数据的申请吗？</h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-sm btn-primary" @click='dataPass'
+                                                style="margin-right: 50px;">通过</button>
+                                            <button type="button" class="btn btn-default btn-sm"
+                                                data-dismiss="modal">取消</button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--驳回弹窗-->
+                            <div class="modal" id="failDialog" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">请填写驳回原因</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <textarea  rows="10" style="resize: none;width: 100%;"
+                                                v-model='operateData.remark'></textarea>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-sm btn-danger" @click='dataFail'
+                                                style="margin-right: 50px;">驳回</button>
+                                            <button type="button" class="btn btn-default btn-sm"
+                                                data-dismiss="modal">取消</button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tabbable">
+                                <ul class="nav nav-tabs padding-12 tab-color-blue background-blue" id="myTab4">
+                                    <li class="active">
+                                        <!-- <a data-toggle="tab" href="#local">本地数据</a> -->
+                                        <a data-toggle="tab" href="#local">经办数据</a>
+                                    </li>
+                                    <li>
+                                        <!-- <a data-toggle="tab" href="#line">线上数据</a> -->
+                                        <a data-toggle="tab" href="#line">已生效数据</a>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content">
+                                    <line-component id='line'>
+                                        <table id="simple-table" class="table table-bordered table-hover dataTable"
+                                            slot='table' slot-scope="viewData">
+                                            <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">基金ID</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">渠道标志</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">基金状态</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">发行时间</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">认购结束时间</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">开放时间</th>
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template v-if="viewData.data.length>0">
+                                                    <tr v-for="(item,index) in viewData.data" :key="index">
+                                                        <td class="center">{{item.fundid }}
+                                                        </td>
+                                                        <td class="center">{{item.accptmd | accptmdText(accptmdList)}}
+                                                        </td>
+                                                        <td class="center">{{item.fundst | fundstText(fundstList)}}</td>
+                                                        <td class="center">
+                                                            {{item.issuedate | formatDateTime}}&nbsp;&nbsp;{{item.issuetime | formatDateTime}}
+                                                        </td>
+                                                        <td class="center">
+                                                            {{item.dssubenddate | formatDateTime}}&nbsp;&nbsp;{{item.dssublastendtime | formatDateTime}}
+                                                        </td>
+                                                        <td class="center">
+                                                            {{item.biddate | formatDateTime}}&nbsp;&nbsp;{{item.bidtime | formatDateTime}}
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <template v-else>
+                                                    <tr>
+                                                        <td class="center" v-text="'没有数据'" colspan="13"></td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </line-component>
+                                    <local-component id='local' class="active" ref="localComponent">
+                                        <div class="form-group" slot='status'>
+                                            <label style="width:100px;text-align: right;">复核状态:</label>
+                                            <select style="width: 169px;" v-model='statusForParent'>
+                                                <option value="">全部</option>
+                                                <option value="0">已复核</option>
+                                                <option value="2">待复核</option>
+                                                <option value="9">复核驳回</option>
+                                            </select>
+                                        </div>
+                                        <table id="simple-table" class="table table-bordered table-hover dataTable"
+                                            slot='table' slot-scope="viewData">
+                                            <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">基金ID</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">基金名称</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">渠道标志</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">基金状态</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">发行时间</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">认购结束时间</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">开放时间</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">操作类型</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">状态</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">操作人</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">驳回备注</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template v-if="viewData.data.length>0">
+                                                    <tr v-for="(item,index) in viewData.data" :key="index">
+                                                        <td class="center">
+                                                            {{item.content.after.fundid}}
+                                                        </td>
+                                                        <td class="center">
+                                                            {{item.content.after.fundName}}
+                                                        </td>
+                                                        <td class="center">
+                                                            {{item.content.after.accptmd | accptmdText(accptmdList)}}
+                                                        </td>
+                                                        <template v-if='item.operate===2&&item.status!==0'>
+                                                            <td class="center">
+                                                                <p>
+                                                                    {{item.content.before.fundst | fundstText(fundstList)}}
+                                                                </p>
+                                                                <p class="blue">
+                                                                    {{item.content.after.fundst | fundstText(fundstList)}}
+                                                                </p>
+                                                            </td>
+                                                            <td class="center">
+                                                                <p>
+                                                                    {{item.content.before.issuedate | formatDateTime}}
+                                                                    {{item.content.before.issuetime | formatDateTime}}
+                                                                </p>
+                                                                <p class="blue">
+                                                                    {{item.content.after.issuedate | formatDateTime}}
+                                                                    {{item.content.after.issuetime | formatDateTime}}
+                                                                </p>
+                                                            </td>
+                                                            </td>
+                                                            <td class="center">
+                                                                <p>
+                                                                    {{item.content.before.dssubenddate | formatDateTime}}
+                                                                    {{item.content.before.dssublastendtime | formatDateTime}}
+                                                                </p>
+                                                                <p class="blue">
+                                                                    {{item.content.after.dssubenddate | formatDateTime}}
+                                                                    {{item.content.after.dssublastendtime | formatDateTime}}
+                                                                </p>
+                                                            </td>
+                                                            <td class="center">
+                                                                <p>
+                                                                    {{item.content.before.biddate | formatDateTime}}
+                                                                    {{item.content.before.bidtime | formatDateTime}}</p>
+                                                                <p class="blue">
+                                                                    {{item.content.after.biddate | formatDateTime}}
+                                                                    {{item.content.after.bidtime | formatDateTime}}</p>
+                                                            </td>
+                                                        </template>
+                                                        <template v-else>
+                                                            <td class="center">
+                                                                {{item.content.after.fundst | fundstText(fundstList)}}
+                                                            </td>
+                                                            <td class="center">
+                                                                {{item.content.after.issuedate | formatDateTime}}
+                                                                {{item.content.after.issuetime | formatDateTime}}
+                                                            </td>
+                                                            </td>
+                                                            <td class="center">
+                                                                {{item.content.after.dssubenddate | formatDateTime}}
+                                                                {{item.content.after.dssublastendtime | formatDateTime}}
+                                                            </td>
+                                                            <td class="center">
+                                                                {{item.content.after.biddate | formatDateTime}}
+                                                                {{item.content.after.bidtime | formatDateTime}}
+                                                            </td>
+                                                        </template>
+                                                        <td class="center" :class="operateColor(item.operate)">
+                                                            {{item.operate | formatOperate(operateList)}}
+                                                        </td>
+                                                        <td class="center" :class='statusColor(item.status)'>
+                                                            {{item.status | formatStatus(statusList)}}
+                                                        </td>
+                                                        <td class="center">{{item.operator }}
+                                                        </td>
+                                                        <td class="center">{{item.remark }}
+                                                        </td>
+                                                        <td class="center">
+                                                            <a href="javascript:;" v-if='item.status===2'
+                                                                @click='showLocalOperate(item,2)'>通过</a>
+                                                            &nbsp;
+                                                            <a href="javascript:;" class="red" v-if='item.status===2'
+                                                                @click='showLocalOperate(item,3)'>驳回</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <template v-else>
+                                                    <tr>
+                                                        <td class="center" v-text="'没有数据'" colspan="13"></td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </local-component>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/ace/assets/js/v-datetimepicker.js"></script>
+    <script src="/ace/assets/js/chosen.jquery.min.js"></script>
+    <script src="/js/businessMgmt/IPOMgmtOCReview/publishReview.js"></script>
+
+</body>
+
+</html>

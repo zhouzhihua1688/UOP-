@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div {
+            padding: 10px 0;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal" id="openOrCloseTips" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                                @click='openOrClose'>确定
+                                            </button>
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- DIALOG ENDS -->
+
+                            <div class="form-inline">
+
+                                <div class="form-group ">
+                                    <label style="width: 80px;">客户姓名:</label>
+                                    <input type="text" v-model.trim="invnm" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">证件类型：</label>
+                                    <select v-model='idtp'>
+                                        <option value="0">身份证</option>
+                                        <option value="1">中国护照</option>
+                                        <option value="2">军官证</option>
+                                        <option value="3">士兵证</option>
+                                        <option value="4">港澳居民来往内地通行证</option>
+                                        <option value="5">户口本</option>
+                                        <option value="6">外籍护照</option>
+                                        <option value="7">其他</option>
+                                        <option value="8">文职证</option>
+                                        <option value="9">警官证</option>
+                                        <option value="A">台胞证</option>
+                                        <option value="B">外国人永久居留证</option>
+                                        <option value="C">港澳台居民居住证</option>
+                                        <option value="M">非实名客户</option>
+                                    </select>
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">证件号码:</label>
+                                    <input type="text" v-model.trim="idno" />
+                                </div>
+
+
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " value="查询" @click="getCustInfoByIdNo(invnm, idtp, idno)">
+                                </div>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--客户信息
+                            </div>
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">客户号</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">客户名称</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">证件号码</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">手机号码</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">开通状态</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="tableData&&tableData.length>0">
+                                        <tr v-for="(item,index) in tableData" :key="index">
+                                            <td class="center" v-text='item.custno'></td>
+                                            <td class="center" v-text='item.invnm'></td>
+                                            <td class="center" v-text='item.idno'></td>
+                                            <td class="center" v-text='item.mobileno'></td>
+                                            <td class="center" :class="item.status=='1'?'green':'red'">
+                                                {{item.status | statusText}}</td>
+                                            <td class="center">
+                                                <% if(canShow||authorityList.includes('U')) { %>
+                                                <a href="javascript:;" @click='openOrCloseTips(item.status)'>
+                                                    {{item.status=='1'?'关闭':'开通'}}
+                                                </a>
+                                                <% } %> 
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+
+
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/customerService/accountMgm/custDevice.js"></script>
+</body>
+
+</html>

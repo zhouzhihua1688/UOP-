@@ -1,0 +1,724 @@
+new Vue({
+    el: '#content',
+    data: {
+        // 主页面相关数据
+        // 规则编号
+        id: '',
+        // 产品
+        product: "",
+        // 保存弹窗产品
+        saveproduct: "",
+        // 业务类型
+        serialno: '',
+        fundid: '',
+        fundids: '',
+        detailtype: '',
+        accptmd: '',
+        userId: '',
+        classify: 'ALL',
+        remark: "",
+        status: "",
+        // 查询
+        // groupids:"",
+        // groupidList:"",
+        isUpdate: false,
+        //隐藏假分页节点元素
+        showMysql: false,
+        updateId: '',
+        tableData: [],
+        serviceDate: [],
+        diaMsg: '',
+        //主表格分页数据
+        totalPage: 0,
+        currentIndex: 0,
+        maxSpace: 5,
+        pageMaxNum: '10',
+        condition: '',
+        currentIndex2: 0,
+        // 全选
+        allCheck: false,
+        // 以下操作Mysql数据库参数
+        // 复核状态
+        reviewStatus: 2,
+        // 数据库id
+        mysqlId: "",
+        // 数据类型(0:业务,1:Mysql数据库)
+        type: "1",
+        mysqlStatus: '',
+        mysqlProduct: "",
+        delete_flag: "",
+        // 获取数据库产品所有ID
+        arrId: [],
+        oneId: '',
+        operator: "",
+        // 对比数据
+        tableData2: [],
+        // 驳回备注
+        revise_remark: '',
+        update_timestamp: "",
+        selectOption: {//选项
+            lineFundIdList: [],//线上基金名称查询
+            localFundIdList: [],//本地基金名称查询
+        },
+        checkData: [],
+    },
+
+    created: function () {
+        // this.select2()
+    },
+    mounted: function () {
+        var dialogs = ['info', 'del', 'add', "update", "revise", 'reviewReject'];
+        var _this = this;
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        // 时间插件
+        $('.date-timepicker').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm:ss',//use this option to display seconds
+            icons: {
+                time: 'fa fa-clock-o',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-arrows ',
+                clear: 'fa fa-trash',
+                close: 'fa fa-times'
+            }
+        }).next().on(ace.click_event, function () {
+            $(this).prev().focus();
+        });
+        //下拉列表自带搜索功能---业务查询框
+        var fundArr = ['fundNameList1', 'fundNameList2'];
+        fundArr.forEach(function (value) {
+            $('#' + value).chosen({
+                search_contains: true,
+                // disable_search: true,
+                no_results_text: '未找到相关产品信息',
+                disable_search_threshold: 6,
+                width: '170px'
+            });
+        });
+        $('#fundNameList1').on('change', function (e, params) {
+            _this.fundid = params ? params.selected : '';
+        });
+        $('#fundNameList2').on('change', function (e, params) {
+            _this.fundids = params ? params.selected : '';
+        });
+        this.getTableData(0, this.type);
+        this.getFundList();
+    },
+
+    computed: {
+        //主表格分页
+        middleData: function () {
+            var middleData = [];
+            var filterData = [];
+            var pageMaxNum = parseInt(this.pageMaxNum);
+            var _this = this;
+            this.tableData.forEach(function (jsonObj) {
+                var valueArr = [];
+                for (var prop in jsonObj) {
+                    valueArr.push(jsonObj[prop]);
+                }
+                for (var i = 0, len = valueArr.length; i < len; i++) {
+                    if (valueArr[i]) {
+                        if (valueArr[i].toString().indexOf(_this.condition) != -1) {
+                            filterData.push(jsonObj);
+                            break;
+                        }
+                    }
+                }
+            });
+            if (filterData.length <= pageMaxNum) {
+                middleData.push(filterData);
+                return middleData;
+            }
+            else {
+                var i = 0;
+                while ((i + 1) * pageMaxNum < filterData.length) {
+                    middleData.push(filterData.slice(i * pageMaxNum, (i + 1) * pageMaxNum));
+                    i++;
+                }
+                middleData.push(filterData.slice(i * pageMaxNum, filterData.length));
+                return middleData;
+            }
+        },
+        viewData: function () {
+            var currentIndex = parseInt(this.currentIndex);
+            return this.middleData[currentIndex];
+        },
+        pageList: function () {
+            var arr = [];
+            if (this.middleData.length <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            else if (this.currentIndex <= this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            }
+            else if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex <= this.maxSpace) {
+                var space = this.middleData.length - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            else {
+                for (var i = 0; i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        },
+    },
+
+    watch: {
+        // 真分页
+        // pageMaxNum: function () {
+        //     this.getTableData(0, this.type);
+        // },
+        // 假分页
+        watch: {
+            pageMaxNum: function () {
+                this.currentIndex = 0;
+                this.getTableData(0, this.type)
+            },
+            condition: function () {
+                this.currentIndex = 0;
+            }
+        },
+    },
+    methods: {
+        // // 获取服务端数据
+        // getServiceData: function (currentIndex, type) {
+        //     var _this = this;
+        //     var params = {};
+        //     //传过去的状态参数
+        //     params.type = type;
+        //     console.log(type)
+        //     if (type == 0) {
+        //         this.isUpdate = true;  //显示业务分页
+        //         this.showMysql = false//显示数据库分页
+        //         $.post({
+        //             url: '/businessMgmt/combinationProductConfig/productTradeReview/getServiceData.ajax',
+        //             data: params,
+        //             success: function (result) {
+        //                 if (result.error === 0) {
+        //                     _this.tableData = result.data.tableData;
+        //                 }
+        //                 else {
+        //                     _this.tableData = [];
+        //                     _this.showDialog('', 'info', false, result.msg);
+        //                 }
+        //             }
+        //         });
+        //     }
+        // },
+        // // 获取经办数据
+        // getTableData: function (currentIndex, type) {
+        //     var _this = this;
+        //     var params = {};
+        //     //传过去的状态参数
+        //     params.type = type;
+        //     console.log("type", type)
+        //     if (type == 1) {
+        //         var _this = this;
+        //         //分页切换
+        //         this.isUpdate = false;
+        //         this.showMysql = true;
+        //         this.currentIndex2 = 0;
+        //         params.reviewStatus = this.reviewStatus;
+        //         $.post({
+        //             url: '/businessMgmt/combinationProductConfig/productTradeReview/getTableData.ajax',
+        //             data: params,
+        //             success: function (result) {
+        //                 if (result.error === 0) {
+        //                     _this.tableData = result.data;
+        //                     console.log(_this.tableData)
+        //                 }
+        //                 else {
+        //                     _this.showDialog('', 'info', false, result.msg);
+        //                 }
+        //             }
+        //         });
+        //     }
+        // },
+        // 2021-04-15添加小箭头时间排序
+        sorting: function (event, params) {
+            var el = event.target;
+            $(el).siblings('.sorting').removeClass('sorting_desc').removeClass('sorting_asc')
+            if ($(el).hasClass('sorting_asc') === false) {
+                this.tableData.sort(function (a, b) {
+                    // return (a[params + 'date'] + a[params + 'time']) - (b[[params + 'date']] + b[params + 'time']);
+                    return (a[params + 'date'].replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/, '$1$2$3$4$5$6')) - (b[[params + 'date']].replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/, '$1$2$3$4$5$6'));
+                })
+                $(el).removeClass('sorting_desc')
+                $(el).addClass('sorting_asc')
+            } else if ($(el).hasClass('sorting_desc') === false) {
+                this.tableData.sort(function (a, b) {
+                    // return (b[[params + 'date']] + b[params + 'time']) - (a[params + 'date'] + a[params + 'time']);
+                    return (b[[params + 'date']].replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/, '$1$2$3$4$5$6')) - (a[params + 'date'].replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/, '$1$2$3$4$5$6'));
+                })
+                $(el).removeClass('sorting_asc')
+                $(el).addClass('sorting_desc')
+            }
+        },
+        // 查询基金列表
+        getFundList: function (classify) {
+            var _this = this;
+            $.post({//基金名称查询
+                url: '/businessMgmt/pauseTradeMgmt/pauseTradeReview/collection.ajax',
+                data: {
+                    fundTypeCustomized: classify || 'ALL'
+                },
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.selectOption.lineFundIdList = result.data
+                        _this.addOption = result.data
+
+                        // 下拉列表
+                        // var str = '<option value="">全部</option>';
+                        var str = '<option value=""></option>';
+                        _this.selectOption.lineFundIdList.forEach(function (item) {
+                            str += '<option value="' + item.fundId + '">' + item.fundId + '-' + item.fundName + '</option>';
+                        });
+                        var fundArr2 = ['fundNameList1', 'fundNameList2'];
+                        fundArr2.forEach(function (value) {
+                            $('#' + value).html(value === '' ? ('<option value="">全部基金</option>' + str) : str);
+                            $('#' + value).trigger('chosen:updated');
+                        });
+
+                    } else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        fundType: function (classify) {
+            var _this = this;
+            _this.getFundList(classify)
+        },
+        // 获取表格数据
+        getTableData: function (currentIndex, type) {
+            var _this = this;
+            var nowdate = new Date()
+
+            var y = nowdate.getFullYear()
+            var m = nowdate.getMonth() + 1
+            m = m < 10 ? '0' + m : m
+            var d = nowdate.getDate();
+            d = d < 10 ? ('0' + d) : d;
+            var checkTime = y + "" + m + "" + d;
+            var params = {};
+            //传过去的状态参数
+            params.type = type;
+            console.log(params)
+            // 获取业务数据
+            if (type == 0) {
+                this.isUpdate = true;  //显示业务端分页
+                this.showMysql = false//显示假分页
+                // params.pageNo = currentIndex + 1;
+                // params.pageSize = this.pageMaxNum;
+                this.currentIndex = 0;
+                params.fundId = this.fundids;
+                params.startdate = this.$refs.startdate.value.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1$2$3');
+                console.log(params)
+                $.post({
+                    url: '/businessMgmt/pauseTradeMgmt/pauseTradeReview/getTableData.ajax',
+                    data: params,
+                    success: function (result) {
+                        if (result.error === 0) {
+                            _this.tableData = result.data.tableData.sort(function (a, b) {
+                                return a.startdate < b.startdate ? 1 : -1
+                            }).filter(function (item) {
+                                return item.startdate >= params.startdate;   //根据开始时间>选择的开始时间&&
+                            })
+                            // _this.tableData = result.data.tableData.filter(function (item) {
+                            //     return item.groupid.indexOf(params.groupid) > -1
+                            // })
+                        }
+                        else {
+                            _this.tableData = [];
+                            _this.showDialog('', 'info', false, "请输入基金代码查询!");
+                        }
+                    }
+                });
+            }
+            // 获取本地数据
+            if (type == 1) {
+                var _this = this;
+                // 真假分页切换
+                this.isUpdate = false;
+                this.showMysql = true;
+                this.currentIndex = 0;
+                params.reviewStatus = this.reviewStatus; //复核状态
+                params.fundid = this.fundids;
+                params.startdate = this.$refs.startdate.value.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1$2$3');
+                console.log(params)
+                $.post({
+                    url: '/businessMgmt/pauseTradeMgmt/pauseTradeReview/getTableData.ajax',
+                    data: params,
+                    success: function (result) {
+                        if (result.error === 0) {
+                            _this.tableData = result.data.sort(function (a, b) {
+                                return a.startdate < b.startdate ? 1 : -1
+                            }).filter(function (item) {
+                                return item.startdate >= params.startdate;   //根据开始时间》选择的开始时间&&//开始时间点从现在到未来的方式进行排序
+                            });
+                        }
+                        else {
+                            _this.showDialog('', 'info', false, result.msg);
+
+                        }
+                    }
+                });
+            }
+        },
+
+        // 模拟点击
+        select: function () {
+            document.getElementById("type0").click();
+        },
+        select2: function () {
+            document.getElementById("type1").click();
+        },
+        // Mysql审核通过---执行数据库和业务接口新增,修改,删除数据操作
+        reviewPass: function (item) {
+            var _this = this;
+            var params = {};
+            params.type = this.type;
+            params.myqsql = item.mySQLId; //数据表字段id
+            params.delete_flag = item.delete_flag //当前状态
+            params.operator = item.operator
+            // 产品参数
+            params.id = item.id
+            // params.product = item.mysqlProduct;
+            params.serialno = item.serialno;
+            params.fundid = item.fundid;
+            params.detailtype = item.detailtype;
+            params.accptmd = item.accptmd;
+            params.status = item.status;
+            params.stoptype = item.stoptype;
+            params.startdate = item.startdate;
+            params.starttime = item.starttime;
+            params.enddate = item.enddate;
+            params.endtime = item.endtime;
+
+            params.operate = item.operate;
+            params.reviewerTime = moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss");//复核时间
+            params.updateTime = moment(item.update_timestamp).format("YYYY-MM-DD HH:mm:ss");
+
+            var date = item.startdate + item.starttime //开始日期
+            var overtime = item.enddate + item.endtime //结束日期
+
+            if (this.type == 1) {
+                if (params.operate != 1 && params.operate != 3) {
+
+                    $.post({
+                        url: '/businessMgmt/pauseTradeMgmt/pauseTradeReview/getTableData.ajax',
+                        data: {
+                            type: 0,
+                            fundId: item.fundid
+                        },
+                        success: function (result) {
+                            if (result.error === 0) {
+                                _this.checkDate = result.data.tableData.filter(function (itemAccptmd) {
+                                    return item.accptmd == itemAccptmd.accptmd;
+                                });
+                                var List = _this.checkDate.map(function (item) {
+                                    item.startdate = item.startdate + item.starttime;
+                                    item.enddate = item.enddate + item.endtime;
+                                    return item;
+                                })
+                                for (var i = 0; i < List.length; i++) {
+                                    console.log(List[i].startdate)
+                                    if(item.serialno === List[i].serialno) continue;
+                                    if ((date >= List[i].startdate && date <= List[i].enddate) && overtime >= List[i].enddate) {
+                                        console.log("数据一:当前开始时间>业务开始,小于业务结束时间，结束时间>业务结束时间")
+                                        return _this.showDialog('', 'info', true, '基金' + List[i].fundid+'与业务数据('+List[i].startdate+'---'+List[i].enddate+')时间段冲突');
+                                    }
+                                    if (date <= List[i].startdate && (overtime <= List[i].enddate && overtime >= List[i].startdate)) {
+                                        console.log("数据二:当前开始时间小于业务开始时间,结束时间>业务开始,小于业务结束")
+                                        return _this.showDialog('', 'info', true, '基金' + List[i].fundid + '与业务数据('+List[i].startdate+'---'+List[i].enddate+')时间段冲突');
+                                    }
+                                    if ((date >= List[i].startdate && date <= List[i].enddate) && (overtime >= List[i].startdate && overtime <= List[i].enddate)) {
+                                        console.log("数据四:当前时间段在业务数据内")
+                                        return _this.showDialog('', 'info', true, '基金' + List[i].fundid + '与业务数据('+List[i].startdate+'---'+List[i].enddate+')时间段冲突');
+                                    }
+                                    if (date <= List[i].startdate && overtime >= List[i].enddate) {
+                                        console.log("数据五:业务数据在当前时间段内")
+                                        return _this.showDialog('', 'info', true, '基金' + List[i].fundid + '与业务数据('+List[i].startdate+'---'+List[i].enddate+')时间段冲突');
+                                    }
+                                }
+                                $.post({
+                                    url: '/businessMgmt/pauseTradeMgmt/pauseTradeReview/reviewPass.ajax',
+                                    data: params,
+                                    success: function (result) {
+                                        if (result.error === 0) {
+                                            _this.getTableData(0, params.type);
+                                        }
+                                        _this.showDialog('', 'info', false, result.msg);
+                                    }
+                                })
+                            }
+                            else {
+                                _this.checkData = [];
+                                _this.showDialog('', 'info', false, result.msg);
+                            }
+                        }
+                    });
+                } else if (params.operate == 3) {
+                    $.post({
+                        url: '/businessMgmt/pauseTradeMgmt/pauseTradeReview/reviewPass.ajax',
+                        data: params,
+                        success: function (result) {
+                            if (result.error === 0) {
+                                _this.getTableData(0, params.type);
+                            }
+                            _this.showDialog('', 'info', false, result.msg);
+                        }
+                    })
+                } else {
+                    $.post({
+                        url: '/businessMgmt/pauseTradeMgmt/pauseTradeReview/getTableData.ajax',
+                        data: {
+                            type: 0,
+                            fundId: item.fundid
+                        },
+                        success: function (result) {
+                            if (result.error === 0) {
+                                _this.checkDate = result.data.tableData.filter(function (itemAccptmd) {
+                                    return item.accptmd == itemAccptmd.accptmd;
+                                });
+                                if (_this.checkDate.length > 0) {
+                                    var List = _this.checkDate.map(function (item) {
+                                        item.startdate = item.startdate + item.starttime;
+                                        item.enddate = item.enddate + item.endtime;
+                                        return item;
+                                    })
+                                    for (var i = 0; i < List.length; i++) {
+                                        console.log(List[i].startdate)
+                                        if ((date >= List[i].startdate && date <= List[i].enddate) && overtime >= List[i].enddate) {
+                                            console.log("数据一:当前开始时间>业务开始,小于业务结束时间，结束时间>业务结束时间")
+                                            return _this.showDialog('', 'info', true, '基金' + List[i].fundid + '与业务数据('+List[i].startdate+'---'+List[i].enddate+')时间段冲突');
+                                        }
+                                        if (date <= List[i].startdate && (overtime <= List[i].enddate && overtime >= List[i].startdate)) {
+                                            console.log("数据二:当前开始时间小于业务开始时间,结束时间>业务开始,小于业务结束")
+                                            return _this.showDialog('', 'info', true, '基金' + List[i].fundid + '与业务数据('+List[i].startdate+'---'+List[i].enddate+')时间段冲突');
+                                        }
+                                        if ((date >= List[i].startdate && date <= List[i].enddate) && (overtime >= List[i].startdate && overtime <= List[i].enddate)) {
+                                            console.log("数据四:当前时间段在业务数据内")
+                                            return _this.showDialog('', 'info', true, '基金' + List[i].fundid + '与业务数据('+List[i].startdate+'---'+List[i].enddate+')时间段冲突');
+                                        }
+                                        if (date <= List[i].startdate && overtime >= List[i].enddate) {
+                                            console.log("数据五:业务数据在当前时间段内")
+                                            return _this.showDialog('', 'info', true, '基金' + List[i].fundid + '与业务数据('+List[i].startdate+'---'+List[i].enddate+')时间段冲突');
+                                        }
+                                    }
+                                    $.post({
+                                        url: '/businessMgmt/pauseTradeMgmt/pauseTradeReview/SavePass.ajax',
+                                        data: params,
+                                        success: function (result) {
+                                            if (result.error === 0) {
+                                                _this.getTableData(0, params.type);
+                                            }
+                                            _this.showDialog('', 'info', false, result.msg);
+                                        }
+                                    });
+                                } else {
+                                    $.post({
+                                        url: '/businessMgmt/pauseTradeMgmt/pauseTradeReview/SavePass.ajax',
+                                        data: params,
+                                        success: function (result) {
+                                            if (result.error === 0) {
+                                                _this.getTableData(0, params.type);
+                                            }
+                                            _this.showDialog('', 'info', false, result.msg);
+                                        }
+                                    });
+                                }
+
+                            }
+                            else {
+                                _this.checkData = [];
+                                _this.showDialog('', 'info', false, result.msg);
+                            }
+                        }
+                    });
+
+                }
+            }
+        },
+
+        // Mysql审核驳回
+        rejects: function (item) {
+            var _this = this;
+
+            this.itemData = JSON.stringify(item);
+            this.revise_remark = '';
+            this.showDialog('', 'reviewReject', false);
+            this.myqsql = item.mySQLId; //数据表字段id
+            this.operator = item.operator; //数据表字段id
+            this.update_timestamp = item.update_timestamp;
+            console.log(this.itemData)
+        },
+        reviewReject: function (item) {
+            var _this = this;
+            // var params = {};
+            var params = JSON.parse(this.itemData);
+            params.type = this.type;
+            params.myqsql = this.myqsql; //数据表字段id
+            params.operator = this.operator
+
+            params.reviewerTime = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");//复核时间
+            params.update_timestamp = moment(this.update_timestamp).format("YYYY-MM-DD HH:mm:ss");
+            params.revise_remark = this.revise_remark;
+            console.log(params)
+            $.post({
+                url: '/businessMgmt/pauseTradeMgmt/pauseTradeReview/reviewReject.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.getTableData(0, params.type);
+                    }
+                    _this.showDialog('reviewReject', 'info', false, result.msg);
+                }
+            });
+        },
+
+        //公共方法
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            }
+            else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            }
+            else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            }
+            else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+            else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+
+        // // 单选
+        // check: function (index) {
+        //     index.check = !index.check;
+        // },
+        // // 用户全选
+        // selectAll: function (allCheck) {
+        //     var _this = this;
+        //     //如果父级被选中，那么子集循环，全被给checked=true
+        //     if (!allCheck) {
+        //         _this.tableData.forEach(function (item) {
+        //             item.check = true;
+        //         });
+        //     } else {
+        //         //相反，如果没有被选中，子集应该全部checked=false
+        //         _this.tableData.forEach(function (item) {
+        //             item.check = false;
+        //         });
+        //     }
+        // },
+        //主表格真分页方法
+
+
+        //主表格假分页方法
+        prev: function () {
+            this.currentIndex <= 0 ? 0 : this.currentIndex--;
+        },
+        next: function () {
+            this.currentIndex >= this.middleData.length - 1 ? this.middleData.length - 1 : this.currentIndex++;
+        },
+        changeIndex: function (index) {
+            this.currentIndex = index - 1;
+        },
+        toFirst: function () {
+            this.currentIndex = 0;
+        },
+        toLast: function () {
+            this.currentIndex = this.middleData.length - 1;
+        },
+    },
+    // 类型状态
+    filters: {
+        actionType: function (item) {
+            if (item) {
+                return item.replace(/01/g, '申购').replace(/02/g, '赎回').replace(/03/g, '定投').replace(/04/g, '调仓').replace(/05/g, '解散')
+                    .replace(/06/g, '标准转出').replace(/07/g, '自定义转出').replace(/08/g, '标准转入').replace(/09/g, '自定义转入');
+            }
+        },
+        startTime: function (item) {
+            if (item) {
+                return item.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3')
+            }
+        },
+        endTime: function (item) {
+            if (item) {
+                return item.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3')
+            }
+        },
+        accptmd: function (value) {
+            if (value == 0) {
+                return '柜台'
+            } else if (value == 2) {
+                return '网上'
+            } else if (value == 7) {
+                return '企业版'
+            } else if (value == 6) {
+                return '第三方'
+            } else {
+                return value;
+            }
+        },
+        detailtype: function (value) {
+            if (value == 11) {
+                return '暂停定投'
+            } else if (value == "00") {
+                return '暂停交易'
+            } else if (value == "01") {
+                return '暂停申购'
+            } else if (value == "02") {
+                return '暂停赎回'
+            } else {
+                return value;
+            }
+        }
+    }
+});

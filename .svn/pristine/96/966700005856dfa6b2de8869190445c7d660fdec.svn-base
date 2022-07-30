@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 新增弹窗 -->
+                            <div class="modal" id="addNotice" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="form-horizontal">
+                                            <div class="table-header" style="margin-bottom: 20px;">新增</div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    等级名称: </label>
+
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='gradeName'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    等级排序: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='seqNo'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    会员等级代码: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='gradeCode'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    进度条颜色: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='progressColor'
+                                                        style="float: left;"><span
+                                                        :style='{backgroundColor:progressColor}'
+                                                        style="margin-left: 20px;;float: left;;width: 34px;height: 34px;border: 1px solid #ccc"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    等级文案颜色: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='gradeDescColor'
+                                                        style="float: left;"><span
+                                                        :style='{backgroundColor:gradeDescColor}'
+                                                        style="margin-left: 20px;;float: left;;width: 34px;height: 34px;border: 1px solid #ccc"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    状态: </label>
+                                                <div class="col-sm-9">
+                                                    <select v-model.trim='status' style="width: 169px">
+                                                        <option value="0">初始化</option>
+                                                        <option value="1">生效</option>
+                                                        <option value="2">删除</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    财富值范围: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='wealthStr' placeholder='开始值'>
+                                                    -
+                                                    <input type="text" v-model.trim='wealthEnd' placeholder='结束值'>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    图标地址:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" class="col-sm-6" placeholder="请选择" disabled
+                                                        v-model.trim='backgroundImage' />
+                                                    <input type="button" class="btn btn-sm btn-primary" id="uploadBtn"
+                                                        value="选择" @click='select'>
+                                                    <template v-if='anew'>
+                                                        <form id="updateForm" enctype="multipart/form-data">
+                                                            <input id="uploadFileInput" type="file" name="file"
+                                                                style="display: none" @change='showFileName' />
+                                                        </form>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    备注: </label>
+                                                <div class="col-sm-9">
+                                                    <textarea cols="30" rows="3" v-model.trim='remark'></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <div class="col-md-offset-3 col-md-9">
+                                                    <button class="btn btn-info" type="submit" @click='add'>
+                                                        保存
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 查看修改弹窗 -->
+                            <div class="modal" id="changeNotice" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="form-horizontal">
+                                            <div class="table-header" style="margin-bottom: 20px;">查看</div>
+
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    等级名称: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='viewChange.gradeName'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    等级排序: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='viewChange.seqNo'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    会员等级代码: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='viewChange.gradeCode'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    进度条颜色: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='viewChange.progressColor'
+                                                        style="float: left;"><span
+                                                        :style='{backgroundColor:viewChange.progressColor}'
+                                                        style="margin-left: 20px;;float: left;;width: 34px;height: 34px;border: 1px solid #ccc"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    等级文案颜色: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='viewChange.gradeDescColor'
+                                                        style="float: left;"><span
+                                                        :style='{backgroundColor:viewChange.gradeDescColor}'
+                                                        style="margin-left: 20px;;float: left;;width: 34px;height: 34px;border: 1px solid #ccc"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    状态: </label>
+                                                <div class="col-sm-9">
+                                                    <select v-model.trim='viewChange.status' style="width: 169px">
+                                                        <option value="0">初始化</option>
+                                                        <option value="1">生效</option>
+                                                        <option value="2">删除</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    财富值范围: </label>
+                                                <div class="col-sm-9">
+
+                                                    <input type="text" v-model.trim='viewChange.wealthStr'
+                                                        placeholder='最小值'>
+                                                    -
+                                                    <input type="text" v-model.trim='viewChange.wealthEnd'
+                                                        placeholder='最大值'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    banner图片地址:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" class="col-sm-6" placeholder="请选择" disabled
+                                                        v-model.trim='viewChange.backgroundImage' />
+                                                    <input type="button" class="btn btn-sm btn-primary" id="uploadBtn"
+                                                        value="选择" @click='select("change")'>
+                                                    <template v-if='anew'>
+                                                        <form id="updateForm" enctype="multipart/form-data">
+                                                            <input id="uploadFileInputCge" type="file" name="file"
+                                                                key='1' style="display: none" @change='showFileName' />
+                                                        </form>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    备注: </label>
+                                                <div class="col-sm-9">
+                                                    <textarea cols="30" rows="3"
+                                                        v-model.trim='viewChange.remark'></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <div class="col-md-offset-3 col-md-9">
+                                                    <button class="btn btn-info" type="button" @click='changeDate'>
+                                                        保存
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--删除弹窗-->
+                            <div class="modal" id="deleteDialog" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4> 确定删除这条数据吗？</h4>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <div class="col-md-offset-3 col-md-9">
+                                                <button class="btn btn-info" type="button" @click='deleteData'>
+                                                    删除
+                                                </button>
+                                                <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                    取消
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--特权弹窗-->
+                            <div class="modal" id="privilegeDialog" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog" style=" width: 850px;">
+                                    <div class="modal-content">
+                                        <div class="form-horizontal">
+                                            <div class="table-header" style="margin-bottom: 20px;">等级特权</div>
+
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    当前等级: </label>
+                                                <div class="col-sm-9">
+                                                    <p style="line-height: 35px">{{addGradeId}}</p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    对应特权: </label>
+                                                <div class="col-sm-9">
+                                                    <!-- <p v-for="(item,index) in privilegeAll" style="line-height: 35px">
+                                                        <input type="checkbox" class="ace" v-model="item.checked"
+                                                            :checked='item.checked' />
+                                                        <span class="lbl"></span>
+                                                        <span>特权ID:{{item.privilegeId}}</span><span
+                                                            style="margin: 0 20px;">特权名称:{{item.privilegeName}}</span> -->
+                                                    <table>
+                                                        <tr v-for="(item,index) in privilegeAll" style="height: 30px;">
+                                                            <td> <input type="checkbox" class="ace"
+                                                                    v-model="item.checked" :checked='item.checked' />
+                                                                <span class="lbl"></span></td>
+                                                            <td style="width: 190px;">特权ID:&nbsp;<i
+                                                                    style="color: #912;font-style: normal">{{item.privilegeId}}</i>
+                                                            </td>
+                                                            <td style="width: 190px;">名称:&nbsp;<i
+                                                                    style="color: #912;font-style: normal">{{item.privilegeName}}</i>
+                                                            </td>
+                                                            <td style="width: 190px;">说明:&nbsp;<i
+                                                                    style="color: #912;font-style: normal">{{item.description}}</i>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                    </p>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="modal-footer">
+                                                <div class="col-md-offset-3 col-md-9">
+
+                                                    <button class="btn btn-info" type="button" @click='addGradeIdList'>
+                                                        保存
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- DIALOG ENDS -->
+                            <div class="form-inline" style="padding: 10px 0;overflow: hidden;">
+                                <!-- <div class="form-group ">
+                                    <label style="width: 60px;">切点ID:</label>
+                                    <input type="text" v-model.trim="queryId" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 60px;">切点Key:</label>
+                                    <input type="text" v-model.trim="queryKey" />
+                                </div> -->
+
+                                <!-- <div class="form-group" style="margin-left: 5px;">
+                                    <input type="button" class="btn btn-sm btn-primary " value="查询" @click="queryData">
+                                </div> -->
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " value="新增会员"
+                                        @click="addDialog">
+                                </div>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!--分页器和快速查询-->
+                            <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                <div class="col-xs-6">
+                                    <div class="dataTables_length">
+                                        <label>每页显示</label>
+                                        <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                            <option value="10">10</option>
+                                            <option value="20">20</option>
+                                            <option value="50">50</option>
+                                        </select>
+                                        <label>条</label>
+                                    </div>
+                                </div>
+                                <!-- <div class="col-xs-6">
+                                    <div id="dynamic-table_filter" class="dataTables_filter">
+                                        <label>快速查询:</label>
+                                        <input type="text" class="input-sm" v-model="condition">
+                                    </div>
+                                </div> -->
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">等级ID</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">等级名称</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">等级代码</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">财富开始值</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">财富结束值</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">图片地址</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">对应权益</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="viewData.length>0">
+                                        <tr v-for="(item,index) in viewData" :key="index">
+                                            <td class="center" v-text='item.gradeId'></td>
+                                            <td class="center" v-text='item.gradeName'></td>
+                                            <td class="center" v-text='item.seqNo'></td>
+                                            <td class="center" v-text='item.gradeCode'></td>
+                                            <td class="center" v-text='item.wealthStr'></td>
+                                            <td class="center" v-text='item.wealthEnd'></td>
+                                            <td class="center" v-text='item.backgroundImage'></td>
+                                            <td class="center"><a href="javascript:;"
+                                                    @click='lookPrivilege(item.gradeId)'>查看特权</a></td>
+                                            <td class="center">
+                                                <a href="javascript:;" @click='showView(item.gradeId)'>查看</a>
+                                                <span style="margin:0 5px;">/</span>
+                                                <a href="javascript:;" style="color: #f66;"
+                                                    @click='deleteDialog(item.gradeId,item.backgroundImage)'>删除</a>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+
+                            <!--底部页码-->
+                            <div v-if="viewData.length>0" class="row"
+                                style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                        <ul class="pagination">
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                            </li>
+                                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in pageList" @click="changeIndex(value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li class="paginate_button"
+                                                v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'...'+middleData.length"
+                                                    @click="toLast"></a>
+                                            </li>
+                                            <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/thirdPartyOperation/common/ajaxfileupload.js"></script>
+    <script src="/js/clientMgmt/vipGrade/member.js"></script>
+</body>
+
+</html>

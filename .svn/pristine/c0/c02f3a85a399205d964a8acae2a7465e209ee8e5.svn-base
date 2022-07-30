@@ -1,0 +1,76 @@
+module.exports = [
+    {
+        "menuId": "10",
+        "parentMenuId": "",
+        "hasSubmenu": true,
+        "page": false,
+        "type": "2",
+        "name": "客户管理",
+        "url": "/clientMgmt"
+    },
+    {
+        "menuId": "10-1",
+        "parentMenuId": "10",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "会员等级",
+        "url": "/clientMgmt/vipGrade"
+    },
+    {
+        "menuId": "10-1-1",
+        "parentMenuId": "10-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "会员等级管理",
+        "url": "/clientMgmt/vipGrade/member.html"
+    },
+
+    {
+        "menuId": "10-1-3",
+        "parentMenuId": "10-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "等级特权管理",
+        "url": "/clientMgmt/vipGrade/privilege.html"
+    },
+    {
+        "menuId": "10-1-4",
+        "parentMenuId": "10-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "特权手动发放",
+        "url": "/clientMgmt/vipGrade/privilegeHand.html"
+    },
+    {
+        "menuId": "10-1-5",
+        "parentMenuId": "10-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "特权来源管理",
+        "url": "/clientMgmt/vipGrade/source.html"
+    },
+    
+    {
+        "menuId": "10-2",
+        "parentMenuId": "10",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "白名单",
+        "url": "/clientMgmt/whiteList"
+    },
+    {
+        "menuId": "10-2-1",
+        "parentMenuId": "10-2",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "白名单设置",
+        "url": "/clientMgmt/whiteList/setting.html"
+    },
+];

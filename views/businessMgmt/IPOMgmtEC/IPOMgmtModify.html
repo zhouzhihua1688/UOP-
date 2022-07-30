@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        #base label {
+            width: 144px;
+            text-align: right;
+        }
+
+        #restrict label {
+            width: 144px;
+            text-align: right;
+        }
+
+        table tr td:nth-child(odd) {
+            background-color: #eee;
+        }
+
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .table_title_modify {
+            background: #438eb947
+        }
+
+        .dateBox {
+            display: inline-block;
+            width: 40%;
+            padding: 0;
+            margin: 0;
+        }
+
+        p>.form-control {
+            width: 50%;
+            float: left;
+            position: relative;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="modifyInfo" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                                @click='goback'>确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <table class="table table-bordered table-hover ">
+                            <thead>
+                                <tr>
+                                    <th class="center table_title_modify" colspan="6">上架管理</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-right">是否上架</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.onsaleflag">
+                                            <option value="">请选择</option>
+                                            <option value="1">是</option>
+                                            <option value="0">否</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">上架时间</td>
+                                    <td class="text-left">
+                                        <p>
+                                            <date-picker v-model="fundDetail.onsaledate"
+                                                :config="{format:'YYYY-MM-DD'}">
+                                            </date-picker>
+                                            <date-picker v-model="fundDetail.onsaletime" :config="{format:'HH:mm:ss'}">
+                                            </date-picker>
+                                        </p>
+
+                                    </td>
+                                    <td class="text-right">募集结束时间</td>
+                                    <td class="text-left">
+                                        <!-- <input type="text" style="width: 100%" v-model="fundDetail.onsaleenddate"> -->
+                                        <date-picker v-model="fundDetail.onsaleenddate" :config="{format:'YYYY-MM-DD'}">
+                                        </date-picker>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">是否展示募集结束时间</td>
+                                    <td class="text-left" colspan="6">
+                                        <select style="width: 184px;" v-model="fundDetail.isShowOnsaleEnddate">
+                                            <option value="0">不展示</option>
+                                            <option value="1">展示</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <thead>
+                                <tr>
+                                    <th class="center table_title_modify" colspan="6"> 基本信息配置 </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-right">产品简称</td>
+                                    <td class="text-left">
+                                        <input type="text" style="width: 100%" v-model="fundInfo.fundnm">
+                                    </td>
+                                    <td class="text-right">显示顺序</td>
+                                    <td class="text-left">
+                                        <input type="text" style="width: 100%" v-model="fundInfo.displayorder">
+                                    </td>
+                                    <td class="text-right">投资方向</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundExtension.investtype">
+                                            <option value="">请选择</option>
+                                            <option :value="item.pmco" v-if='item.pmco!="******"'
+                                                v-for="(item,index) in selectOption.investtypeList">
+                                                {{item.pmnm}}</option>
+                                        </select>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">产品期限</td>
+                                    <td class="text-left">
+                                        <input type="text" style="width: 40%" v-model="fundDetail.fundperiod">
+                                        <select style="width: 20%" v-model="fundDetail.fundperiodunit">
+                                            <option value="天">天</option>
+                                            <option value="月">个月</option>
+                                            <option value="年">年</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">收益类型</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.expectincomedesc">
+                                            <option value="">请选择</option>
+                                            <option value="业绩报酬计提基准">业绩报酬计提基准</option>
+                                            <option value="预期年化收益率">预期年化收益率</option>
+                                            <option value="基准年化收益率">基准年化收益率</option>
+                                            <option value="浮动收益">浮动收益</option>
+                                            <option value="业绩基准">业绩基准</option>
+                                            <option value="业绩比较基准">业绩比较基准</option>
+                                            <option value="业绩基准费后">业绩基准费后</option>
+                                            <option value="区间年化收益率">区间年化收益率</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">预期收益</td>
+                                    <td class="text-left">
+                                        <input type="text" style="width: 100%" v-model="fundInfo.yield">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">期限拆分</td>
+                                    <td class="text-left">
+                                        <input type="text" style="width: 100%" v-model="fundDetail.fundperiodsplit">
+                                    </td>
+                                    <td class="text-right">是否支持转场内</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundExtension.trancustodyFlg">
+                                            <option value="0">不支持</option>
+                                            <option value="1">支持</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">基金支持定投类型配置</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.mipType">
+                                            <option value="0">全部</option>
+                                            <option value="1">经典</option>
+                                            <option value="2">智慧</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">是否推荐</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.isrecommend">
+                                            <option value="N">否</option>
+                                            <option value="Y">是</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">推荐标签</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.recommendtype">
+                                            <option value="0">即将开售</option>
+                                            <option value="1">下轮预告</option>
+                                            <option value="2">疯狂抢购</option>
+                                            <option value="3">最后疯狂</option>
+                                            <option value="4">新品推荐</option>
+                                            <option value="5">无</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">是否支持续约</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.renewtag">
+                                            <option value="0">不续约</option>
+                                            <option value="1">续约</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">申购开放日期</td>
+                                    <td class="text-left" style="position: relative">
+                                        <date-picker v-model="fundDetail.purchaseOpendDate"
+                                            :config="{format:'YYYY-MM-DD'}">
+                                        </date-picker>
+                                    </td>
+                                    <td class="text-right">赎回开放日期</td>
+                                    <td class="text-left" colspan="3" style="position: relative;">
+                                        <date-picker v-model="fundDetail.redeemOpendDate"
+                                            :config="{format:'YYYY-MM-DD'}">
+                                        </date-picker>
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <td class="text-right">营销信息 </td>
+                                    <td class="text-left" colspan="3">
+                                        <input type="text" style="width: 100%" v-model="fundDetail.recommendintro"></td>
+                                    <td class="text-right">预约赎回功能提前开放</td>
+                                    <td class="text-left">
+                                        <input type="text" style="width: 90%"
+                                            v-model="fundDetail.reservedtahead4opendt">天
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">净值公布类型 </td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.navpubtype">
+                                            <option value="0">不公布净值</option>
+                                            <option value="1">仅公布收益率</option>
+                                            <option value="2">仅公布净值</option>
+                                            <option value="3">公布净值和收益率</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">信息披露对象</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.openflag">
+                                            <option value="0">仅对持有人披露</option>
+                                            <option value="1">对所有人披露</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">是否允许申购撤单</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.allowbidcancel">
+                                            <option value="0">允许</option>
+                                            <option value="1">不允许</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">产品大类</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.fundtypeBig">
+                                            <option value="F">固收类</option>
+                                            <option value="R">权益类</option>
+                                            <option value="V">货币类</option>
+                                            <option value="O">其他</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">备案日</td>
+                                    <td class="text-left">
+                                        <input type="text" style="width: 100%" v-model="fundDetail.recordday"></td>
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                            <thead>
+                                <tr>
+                                    <th class="center  table_title_modify" colspan="6">产品详情</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-right">详情模板</td>
+                                    <td class="text-left" colspan="6">
+                                        <select style="width: 140px;" v-model="fundDetail.detailtemplate">
+                                            <option value="0">固定模板</option>
+                                            <option value="1">自定义上传模板</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">杠杆分级</td>
+                                    <td class="text-left" colspan="6">
+                                        <textarea cols="80" rows="3" v-model="fundDetail.capitallevel"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">适合人群</td>
+                                    <td class="text-left" colspan="6">
+                                        <textarea cols="80" rows="3" v-model="fundDetail.targetcustomer"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">购买限制</td>
+                                    <td class="text-left" colspan="6">
+                                        <input type="text" style="width: 586px" v-model="fundDetail.quotaDesc">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">参与退出规则</td>
+                                    <td class="text-left" colspan="6">
+                                        <textarea cols="80" rows="3" v-model="fundDetail.fundopenruledesc"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">托管人</td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundExtension.trusteename">
+                                    </td>
+                                    <td class="text-right">认购费</td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundExtension.subrate">
+                                    </td>
+                                    <td class="text-right">申购费</td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundExtension.currentrate">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">违约退出费率</td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundExtension.breakcontractratio">
+                                    </td>
+                                    <td class="text-right">固定管理费</td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundExtension.managerratio">
+                                    </td>
+                                    <td class="text-right">托管费</td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundExtension.trusteeratio">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">客户服务费</td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundExtension.custserviceratio">
+                                    </td>
+                                    <td class="text-right">投资经理</td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundExtension.investbroker">
+                                    </td>
+                                    <td class="text-right">退出费</td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundExtension.quitrate">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">业绩提成</td>
+                                    <td class="text-left" colspan="6">
+                                        <textarea v-model="fundDetail.achievementdata" cols="80" rows="3"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">风险准备金</td>
+                                    <td class="text-left" colspan="6">
+                                        <textarea v-model="fundDetail.riskreserveamt" cols="80" rows="3"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">收益分配</td>
+                                    <td class="text-left" colspan="6">
+                                        <textarea v-model="fundDetail.incomedistbute" cols="80" rows="3"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">投资目标</td>
+                                    <td class="text-left" colspan="6">
+                                        <textarea cols="80" rows="3" v-model="fundDetail.investtarget"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">投资范围</td>
+                                    <td class="text-left" colspan="6">
+                                        <textarea cols="80" rows="3" v-model="fundDetail.investscope"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">产品在线签约的风险提示</td>
+                                    <td class="text-left" colspan="6">
+                                        <textarea cols="80" rows="3" v-model="fundDetail.onsignriskinfo"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">协议风险配置</td>
+                                    <td class="text-left" colspan="6">
+                                        <textarea cols="80" rows="3" v-model="fundDetail.contract"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">文案配置</td>
+                                    <td class="text-left" colspan="6">
+                                        <textarea cols="80" rows="3" v-model="fundDetail.tips"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">止损要求</td>
+                                    <td class="text-left">
+                                        <input type="text" style="width: 100%" v-model="fundDetail.stoplossdes">
+                                    </td>
+                                    <td class="text-right">保有量归属电商</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.ecflag">
+                                            <option value="N">否</option>
+                                            <option value="Y">是</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">份额详细模板</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.balancedetailtemplate">
+                                            <option value="1">7天系列</option>
+                                            <option value="2">91天系列</option>
+                                            <option value="3">净值波动形</option>
+                                            <option value="4">现金添利系列(47)</option>
+                                            <option value="5">天房类产品</option>
+                                            <option value="6">现金添利系列(H1)</option>
+                                            <option value="7">固收无总收益</option>
+                                            <option value="8">净值波动型T+1</option>
+                                            <option value="9">天房类产品(多期)</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">客户手工输入风险揭示</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.onsignriskinputtag">
+                                            <option value="0">不需要</option>
+                                            <option value="1">需要</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">CRM推送的产品到期日</td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundDetail.crmenddate">
+                                    </td>
+                                    <td class="text-right">修改到期日 </td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundDetail.crmenddatedesc">
+                                    </td>
+                                </tr>
+                                <!-- <tr>
+                                    <td class="text-right">产品合同</td>
+                                    <td class="text-left" colspan="2"><input type="file"><button>清除文件</button></td>
+                                    <td class="text-right">投资说明书</td>
+                                    <td class="text-left" colspan="2"><input type="file"><button>清除文件</button></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">认购风险申明书</td>
+                                    <td class="text-left" colspan="2"><input type="file"><button>清除文件</button></td>
+                                    <td class="text-right">产品宣传册</td>
+                                    <td class="text-left" colspan="2"><input type="file"><button>清除文件</button></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">保证金协议</td>
+                                    <td class="text-left" colspan="2"><input type="file"><button>清除文件</button></td>
+                                    <td class="text-right">承诺函</td>
+                                    <td class="text-left" colspan="2"><input type="file"><button>清除文件</button></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">补充协议</td>
+                                    <td class="text-left" colspan="2"><input type="file"><button>清除文件</button></td>
+                                    <td class="text-right">质押借款协议</td>
+                                    <td class="text-left" colspan="2"><input type="file"><button>清除文件</button></td>
+                                </tr>
+
+                                <tr>
+                                    <td class="text-right">Banner</td>
+                                    <td class="text-left" colspan="2"><input type="file"><button>清除文件</button></td>
+                                    <td class="text-right">Banner(手机)</td>
+                                    <td class="text-left" colspan="2"><input type="file"><button>清除文件</button></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">上传自定义详情(仅支持zip格式)</td>
+                                    <td class="text-left" colspan="2"><input type="file"><button>清除文件</button></td>
+                                    <td class="text-right">上传手机自定义详情(仅支持zip格式)</td>
+                                    <td class="text-left" colspan="2"><input type="file"><button>清除文件</button></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">一页通</td>
+                                    <td class="text-left" colspan="2"><input type="file"><button>清除文件</button></td>
+                                </tr> -->
+                            </tbody>
+                            <thead>
+                                <tr>
+                                    <th class="center  table_title_modify" colspan="6">公募基金信息</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-right">产品链接</td>
+                                    <td class="text-left" colspan="6">
+                                        <input type="text" style="width: 100%" v-model="fundDetail.url">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">投资建议 </td>
+                                    <td class="text-left" colspan="6">
+                                        <textarea cols="80" rows="3" v-model="fundDetail.suggestion"></textarea>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <thead>
+                                <tr>
+                                    <th class="center  table_title_modify" colspan="6">质押信息配置</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-right">质押类型</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.pledgetype">
+                                            <option value="0">不可以</option>
+                                            <option value="1">可以</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">质押可贷比例</td>
+                                    <td class="text-left">
+                                        <input type="text" v-model="fundDetail.pledgeratio" style="width: 100%">
+                                    </td>
+                                    <td class="text-right">最长借款期限（天）</td>
+                                    <td class="text-left">
+                                        <input type="text" v-model="fundDetail.lendingperiod" style="width: 100%">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">禁止质押开始时间</td>
+                                    <td class="text-left" style="position: relative;">
+                                        <!-- <input type="text" v-model="fundDetail.pssbanbegindate" style="width: 100%"> -->
+                                        <!-- <input type="text" v-model="fundDetail.pssbanbegintime" style="width: 100%"> -->
+                                        <p>
+                                            <date-picker v-model="fundDetail.pssbanbegindate"
+                                                :config="{format:'YYYY-MM-DD'}">
+                                            </date-picker>
+                                            <date-picker v-model="fundDetail.pssbanbegintime"
+                                                :config="{format:'HH:mm:ss'}">
+                                            </date-picker>
+                                        </p>
+                                    </td>
+                                    <td class="text-right">禁止质押截止时间</td>
+                                    <td class="text-left" style="position: relative;">
+                                        <!-- <input type="text" v-model="fundDetail.pssbanenddate" style="width: 100%"> -->
+                                        <!-- <input type="text" v-model="fundDetail.pssbanendtime" style="width: 100%"> -->
+                                        <p>
+                                            <date-picker v-model="fundDetail.pssbanenddate"
+                                                :config="{format:'YYYY-MM-DD'}">
+                                            </date-picker>
+                                            <date-picker v-model="fundDetail.pssbanendtime"
+                                                :config="{format:'HH:mm:ss'}">
+                                            </date-picker>
+                                        </p>
+                                    </td>
+                                    <td class="text-right">贷款日利率</td>
+                                    <td class="text-left">
+                                        <input type="text" v-model="fundDetail.lenddayrate" style="width: 100%">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">参考年利率</td>
+                                    <td class="text-left">
+                                        <input type="text" style="width: 100%" v-model="fundDetail.refyearrate">
+                                    </td>
+                                    <td class="text-right">预警线</td>
+                                    <td class="text-left">
+                                        <input type="text" style="width: 100%" v-model="fundDetail.psswarnposition">
+                                    </td>
+                                    <td class="text-right">平仓线</td>
+                                    <td class="text-left">
+                                        <input type="text" style="width: 100%" v-model="fundDetail.psscloseposition">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">罚息日利率</td>
+                                    <td class="text-left" colspan="6">
+                                        <input type="text" v-model="fundDetail.penaltydayrate" style="width: 140px">
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                            <thead>
+                                <tr>
+                                    <th class="center  table_title_modify" colspan="6">活动信息配置</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-right">活动类型</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.activitytype">
+                                            <option value="">无</option>
+                                            <option value="1">0元购</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">活动开始时间</td>
+                                    <td class="text-left" style="position: relative;">
+                                        <!-- <input type="text" style='width:100%' v-model="fundDetail.activitybegindate"> -->
+                                        <date-picker v-model="fundDetail.activitybegindate"
+                                            :config="{format:'YYYY-MM-DD HH:mm:ss'}">
+                                        </date-picker>
+                                    </td>
+                                    <td class="text-right">活动结束时间</td>
+                                    <td class="text-left" style="position: relative;">
+                                        <!-- <input type="text" style='width:100%' v-model="fundDetail.activityenddate"> -->
+                                        <date-picker v-model="fundDetail.activityenddate"
+                                            :config="{format:'YYYY-MM-DD HH:mm:ss'}">
+                                        </date-picker>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <thead>
+                                <tr>
+                                    <th class="center  table_title_modify" colspan="6">高端理财产品信息配置</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-right">产品购买状态</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.onsalestatus">
+                                            <option value="0">系统默认</option>
+                                            <option value="1">我要预约</option>
+                                            <!--  option value="2" >抢先预览</option-->
+                                            <option value="3">已售罄</option>
+                                            <option value="4">查看详情</option>
+                                            <option value="5">本轮已售罄</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">可购买客户</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.salecusttype">
+                                            <option value="0">全部客户</option>
+                                            <option value="1">老客户</option>
+                                            <option value="2">新客户</option>
+                                            <option value="3">身份证客户</option>
+                                            <option value="4">私人银行用户</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">倒计时显示配置</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.countdownflag">
+                                            <option value="0">不显示</option>
+                                            <option value="1">显示</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">轮播显示配置</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.ispaly">
+                                            <option value="0">显示</option>
+                                            <option value="1">不显示</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">倒计时文案</td>
+                                    <td class="text-left">
+                                        <input type="text" style="width: 100%" v-model="fundDetail.countdowndesc">
+                                    </td>
+                                    <td class="text-right">倒计时结束时间</td>
+                                    <td class="text-left" style="position: relative;">
+                                        <p>
+                                            <date-picker v-model="fundDetail.countdownenddate"
+                                                :config="{format:'YYYY-MM-DD'}">
+                                            </date-picker>
+                                            <date-picker v-model="fundDetail.countdownendtime"
+                                                :config="{format:'HH:mm:ss'}">
+                                            </date-picker>
+                                        </p>
+                                        <!-- <input type="text" v-model="fundDetail.countdownenddate"> -->
+                                        <!-- <input type="text" v-model="fundDetail.countdownendtime"> -->
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">剩余额度显示</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.remainamttag">
+                                            <option value="0">显示</option>
+                                            <option value="1">不显示</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">流水号通道显示</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.reservecodetag">
+                                            <option value="0">显示</option>
+                                            <option value="1">不显示</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">开抢标志</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.rushbuytag">
+                                            <option value="0">显示</option>
+                                            <option value="1">不显示</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">开抢文案</td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundDetail.rushbuydesc">
+                                    </td>
+                                    <td class="text-right">开抢时间</td>
+                                    <td class="text-left" style="position: relative;">
+                                        <p>
+                                            <date-picker v-model="fundDetail.rushbuydate"
+                                                :config="{format:'YYYY-MM-DD'}">
+                                            </date-picker>
+                                            <date-picker v-model="fundDetail.rushbuytime" :config="{format:'HH:mm:ss'}">
+                                            </date-picker>
+                                        </p>
+                                        <!-- <input type="text" style="width: 100%" v-model="fundDetail.rushbuytime"> -->
+                                        <!-- <input type="text" style="width: 100%" v-model="fundDetail.rushbuydate"> -->
+                                    </td>
+                                    <td class="text-right">预期收益率（营销信息）</td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundDetail.expectyield">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">份额起息日</td>
+                                    <td class="text-left" style="position: relative;">
+                                        <!-- <input type="text" style="width: 100%" v-model="fundDetail.sharecarrydate"> -->
+                                        <date-picker v-model="fundDetail.sharecarrydate"
+                                            :config="{format:'YYYY-MM-DD'}">
+                                        </date-picker>
+                                    </td>
+                                    <td class="text-right">份额到期日</td>
+                                    <td class="text-left"  style="position: relative;">
+                                        <!-- <input type="text" style="width: 100%" v-model="fundDetail.sharenextcarrydate"> -->
+                                        <date-picker v-model="fundDetail.sharenextcarrydate"
+                                        :config="{format:'YYYY-MM-DD'}">
+                                    </date-picker>
+                                    </td>
+                                    <td class="text-right">购买人数限制</td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundDetail.buyerlimitnum">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">赎回极差控制开关</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.needredeemrangetag">
+                                            <option value="1">关闭赎回极差控制</option>
+                                            <option value="0">打开赎回极差控制</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">赎回极差</td>
+                                    <td class="text-left">
+                                        <input type="text" style="width: 100%" v-model="fundDetail.redeemrangeamt">
+                                    </td>
+                                    <td class="text-right">适合人群</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.targetcustomerselect">
+                                            <option value="0">安逸型</option>
+                                            <option value="1">保守型</option>
+                                            <option value="2">稳健型</option>
+                                            <option value="3">成长型</option>
+                                            <option value="4">积极型</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">份额明细中的预期收益率</td>
+                                    <td class="text-left"><input type="text" style="width: 100%"
+                                            v-model="fundDetail.balancerefyielddesc">
+                                    </td>
+                                    <td class="text-right">产品期数类型</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.singletermtag">
+                                            <option value="0">单期产品</option>
+                                            <option value="1">多期产品</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-right">产品到期TA操作</td>
+                                    <td class="text-left">
+                                        <select style="width: 100%" v-model="fundDetail.actionwhenmatured">
+                                            <option value="0">到期强赎</option>
+                                            <option value="1">到期续存</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <!-- <tr>
+                                            <td class="text-right">高端产品类型</td>
+                                            <td class="text-left">
+                                                <select style="width: 100%" v-model="fundDetail.">
+
+                                                </select>
+                                            </td>
+                                            <td class="text-right">是否面向特定客户</td>
+                                            <td class="text-left" colspan="3"><select
+                                                    style="width: 100%"></select></td>
+                                        </tr> -->
+                                <tr>
+                                    <td class="text-right">客户持有份额的备注说明</td>
+                                    <td class="text-left" colspan="6">
+                                        <textarea cols="80" v-model="fundDetail.sharedetailremark" rows="3"></textarea>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+                        <button type="button" class="btn btn-primary " style="left: 40%" @click='modify'>确定</button>
+                        <button type="button" class="btn btn-primary " style="left: 50%" @click='goback'>取消</button>
+
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/ace/assets/js/vue-datetimepicker.js"></script>
+    <script src="/js/businessMgmt/IPOMgmtEC/IPOMgmtModify.js"></script>
+
+</body>
+
+</html>

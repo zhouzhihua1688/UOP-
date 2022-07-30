@@ -1,0 +1,55 @@
+[
+	{
+		"_comment": "UAA-->web，获取userlist，item中的id是UAA生成的user_id",
+		"list_items": [
+			{
+				"name": "admin",
+				"id": "user_id_uaa",
+				"role_list": [ "role_id_uaa1" ]
+			},
+			{
+				"name": "chenlin",
+				"id": "user_id_uaa",
+				"role_list": [ "role_id_uaa1", "role_id_uaa2" ]
+			},
+			{
+				"name": "mazhuo",
+				"id": "user_id_uaa",
+				"role_list": [
+					"role_id_uaa1", "role_id_uaa12", "role_id_uaa13"
+				]
+			},
+			{
+				"name": "xiaoming",
+				"id": "user_id_uaa",
+				"role_list": []
+			}
+		]
+	},
+
+
+	{
+		"_comment": "web-->UAA，新增user对应的role_list",
+		"name": "三方运营-admin",
+		"ids": ["user_id_uaa", "user_id_uaa2"],
+		"role_list": [ "role_id_uaa1", "role_id_uaa2" ]
+	},
+
+
+	{
+		"_comment": "web-->UAA，删除user对应的role_list",
+		"name": "消息中心-admin",
+		"id": "user_id_uaa"
+	},
+
+
+	{
+		"_comment": "web-->UAA，修改user对应的role_list",
+		"name": "三方运营-一般人员",
+		"id": "role_id_uaa13",
+		"role_list": [
+			"role_id_uaa1", "role_id_uaa12", "role_id_uaa13"
+		]
+	}
+
+]

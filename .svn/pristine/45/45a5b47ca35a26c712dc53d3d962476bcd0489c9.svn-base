@@ -1,0 +1,48 @@
+{
+  "returnCode":0,
+  "returnMsg":"调用成功",
+"SummarDate": [
+{
+"ymonth": "201808",
+"status": "N",
+"totaltailfarereal": 6765454.23,
+"totalservicefarereal": 564654646.23,
+"totalfare": 6546465.23,
+"remark": "复核说明3",
+"checktime": 1539227893000,
+"operater": "复核人3",
+"inserttime": 1539227893000,
+"updatetime": null,
+"attach1": "查看",
+"attach2": null
+},
+{
+"ymonth": "201807",
+"status": "D",
+"totaltailfarereal": 6765454.23,
+"totalservicefarereal": 564654646.23,
+"totalfare": 6546465.23,
+"remark": "复核说明1",
+"checktime": 1539227893000,
+"operater": "复核人1",
+"inserttime": 1539227893000,
+"updatetime": null,
+"attach1": "查看",
+"attach2": null
+},
+{
+"ymonth": "201806",
+"status": "P",
+"totaltailfarereal": 6765454.23,
+"totalservicefarereal": 564654646.23,
+"totalfare": 6546465.23,
+"remark": "复核说明2",
+"checktime": 1539227907000,
+"operater": "复核人2",
+"inserttime": 1539227907000,
+"updatetime": null,
+"attach1": "查看",
+"attach2": null
+}
+]
+}

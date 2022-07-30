@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .table>tbody>tr>td * {
+            margin: 0;
+            padding: 0;
+        }
+
+        table tr td:nth-child(odd),
+        #add table tr td:nth-child(odd) {
+            background-color: #eee;
+        }
+
+        table tr td:nth-child(odd),
+        #add table tr td:nth-child(odd) {
+            background-color: #eee;
+        }
+
+
+        .tab-content p {
+            display: inline-block
+        }
+
+        span.modify {
+            color: blue;
+            padding-left: 20px;
+        }
+
+        span.del {
+            color: red;
+            text-decoration: line-through;
+        }
+
+        span.add {
+            color: green;
+            /* text-decoration:line-through; */
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-html="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--后退信息弹窗-->
+                            <div class="modal" id="goBackInfo" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-html="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                                @click='goBack'>确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--复核提示弹窗-->
+                            <div class="modal" id="reviewInfo" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-html="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" @click='review'>确定
+                                            </button>
+                                            <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <!-- 开始 -->
+                                <tr>
+                                    <td class="text-right" style="width: 200px;">最低认购金额</td>
+                                    <td class="text-left" v-html='contrast(approve.minsubamt,onLine.minsubamt)'></td>
+                                    <td class="text-right" style="width: 200px;">最高认购金额</td>
+                                    <td class="text-left" v-html='contrast(approve.maxsubamt,onLine.maxsubamt)'></td>
+                                    <td class="text-right" style="width: 200px;">最低赎回份额</td>
+                                    <td class="text-left" v-html='contrast(approve.minredamt,onLine.minredamt)'></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right" style="width: 200px;">最低申购金额</td>
+                                    <td class="text-left" v-html='contrast(approve.minbidamt,onLine.minbidamt)'></td>
+                                    <td class="text-right" style="width: 200px;">最高申购金额</td>
+                                    <td class="text-left" v-html='contrast(approve.maxbidamt,onLine.maxbidamt)'></td>
+                                    <td class="text-right" style="width: 200px;">最低转换份额</td>
+                                    <td class="text-left" v-html='contrast(approve.minconvamt,onLine.minconvamt)'></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right" style="width: 200px;">最低定投金额</td>
+                                    <td class="text-left" v-html='contrast(approve.minrspamt,onLine.minrspamt)'></td>
+                                    <td class="text-right" style="width: 200px;">最低持有份额</td>
+                                    <td class="text-left" v-html='contrast(approve.minholdamt,onLine.minholdamt)'></td>
+                                    <td class="text-right" style="width: 200px;">最低追加申购金额</td>
+                                    <td class="text-left" v-html='contrast(approve.minaddamt,onLine.minaddamt)'></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right" style="width: 200px;">最低追加认购金额</td>
+                                    <td class="text-left" v-html='contrast(approve.minaddsubamt,onLine.minaddsubamt)'>
+                                    </td>
+                                    <td class="text-right" style="width: 200px;">金额级差</td>
+                                    <td class="text-left" v-html='contrast(approve.rangeamt,onLine.rangeamt)'></td>
+                                </tr>
+                            </table>
+                            <div style="display: flex;;justify-content: center;margin-top: 10px;">
+                                <template v-if="getUrlParam('fundStatus')==='N'">
+                                    <input type="button" class="btn btn-sm btn-primary" value="通过"
+                                        @click='showReviewDialog("S","通过")' style='margin-right:30px;'>
+                                    <input type="button" class="btn btn-sm btn-danger" value="驳回"
+                                        @click='showReviewDialog("F","驳回")' style='margin-right:30px;'>
+                                </template>
+                                <button type="button" class="btn btn-primary btn-sm " @click='goBack'>返回</button>
+                            </div>
+
+                        </div>
+
+                    </div><!--  style='margin-right:50px;'/.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/businessMgmt/IPOMgmtOCReview/IPOLimitDetail.js"></script>
+
+</body>
+
+</html>

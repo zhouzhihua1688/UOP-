@@ -1,0 +1,263 @@
+const request = require('./../../../local_data/requestWrapper');
+const obs = require('./../../../local_data/request_obs');
+const XLSX = require('xlsx');
+//console.log(obs);
+const apiUrl = require('../apiConfig').highFinancialMgmt.investAudit;
+module.exports = function (app) {
+
+    // 获取  初始数据和查询
+    app.post('/businessMgmt/highFinancialMgmt/investAudit/getList.ajax', (req, res, next) => {
+        let params = req.body,
+            userId = req.session.loginInfo.userid
+        let option = {
+            req,
+            url: apiUrl.getList,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/highFinancialMgmt/investAudit/getList.ajax option:', {
+            ...option,
+            req: '#'
+        });
+        request.post(option, (error, response, body) => {
+            console.log('/businessMgmt/highFinancialMgmt/investAudit/getList.ajax error:', error);
+            console.log('/businessMgmt/highFinancialMgmt/investAudit/getList.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/highFinancialMgmt/investAudit/getList.ajax body:', {
+                ...body,
+                ['body']: '*****'
+            });
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                result.body.userId = userId;
+                result.body.pages = Math.ceil(result.body.total / params.pageSize); //最大页码
+                result.body.pageNum = params.pageNo //当前页
+                res.send({
+                    error: 0,
+                    msg: '查询成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+
+
+    // 获取  审核信息
+    app.post('/businessMgmt/highFinancialMgmt/investAudit/getSerialNo.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            pageUrl: '/businessMgmt/highFinancialMgmt/investAudit/getSerialNo.ajax',
+            req,
+            url: apiUrl.getSerialNo,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                res.send({
+                    error: 0,
+                    msg: '查询成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+
+
+    // 预览图片
+    app.post('/businessMgmt/highFinancialMgmt/investAudit/images.ajax', (req, res, next) => {
+        let params = req.body;
+        if (params.objectName && params.objectName.slice(0, 6) == 'cifweb') {
+            params.container = 'privateQualifiedInvestor';
+        }
+        let option = {
+            body: params,
+        };
+        console.log('/businessMgmt/highFinancialMgmt/investAudit/images.ajax option:', option);
+        obs(option).then(body => {
+            body.on('response', function (response) {
+                // console.log('-------response---------',response,'-------response---------');
+                if (response.statusCode !== 200) {
+                    res.send({
+                        error: 1,
+                        msg: '图片获取失败',
+                        data: null
+                    });
+                } else {
+                    let chunks = [];
+                    body.on('data', function (chunk) {
+                        chunks.push(chunk);
+                    });
+                    body.on('end', function (err) {
+                        let data = Buffer.concat(chunks);
+                        let base64Img = data.toString('base64');
+                        res.send({
+                            error: 0,
+                            msg: '图片获取成功',
+                            data: base64Img
+                        });
+                    })
+                }
+            });
+        }).catch((error) => {
+            res.send({
+                error: 1,
+                msg: '图片获取失败',
+                data: null
+            });
+        })
+    });
+
+    //提交审核
+    app.post('/businessMgmt/highFinancialMgmt/investAudit/submitAudit.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            pageUrl: '/businessMgmt/highFinancialMgmt/investAudit/submitAudit.ajax',
+            req,
+            operateType: 2, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrl.submitAudit,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.put(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                res.send({
+                    error: 0,
+                    msg: '查询成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+    // 导出
+    app.get('/businessMgmt/highFinancialMgmt/investAudit/exportExcel.ajax', (req, res, next) => {
+        var params = req.query;
+        params.pageNo = '1';
+        params.pageSize = '9999';
+        let option = {
+            pageUrl: '/businessMgmt/highFinancialMgmt/investAudit/exportExcel.ajax',
+            req,
+            url: apiUrl.getList,
+            body: params,
+            timeout: 60000,
+            json: true
+        };
+        // request(option).pipe(res);
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '操作失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            // console.log(result);
+            if (result && result.returnCode == 0) {
+                let data = result.body.pqiApps;
+                if (data && Array.isArray(data) && data.length > 0) {
+                    console.log("----------", data)
+                    var arr = [
+                        ['客户姓名', '证件类型', '证件号码', '申请日期', '处理日期', '状态', '审核员', '驳回原因']
+                    ];
+                    data.forEach(function (item) {
+                        if (item.checkFlg == 'Y') {
+                            item.showCheckFlg = '已审核';
+                        } else if (item.checkFlg == 'U') {
+                            item.showCheckFlg = '未审核';
+                        } else if (item.checkFlg == 'F') {
+                            item.showCheckFlg = '审核失败';
+                        } else if (item.checkFlg == 'I') {
+                            item.showCheckFlg = '审核中';
+                        } else {
+                            item.showCheckFlg = '已过期';
+                        }
+                        item.showApplyDate = item.applyDate ? item.applyDate.split('').slice(0, 4).join('') + '-' + item.applyDate.split('').slice(4, 6).join('') + '-' + item.applyDate.split('').slice(6, 8).join('') : '-';
+                        item.showVerifyDate = item.verifyDate ? item.verifyDate.split('').slice(0, 4).join('') + '-' + item.verifyDate.split('').slice(4, 6).join('') + '-' + item.verifyDate.split('').slice(6, 8).join('') : '-';
+                        arr.push([item.invNm, item.idTpName, item.idNo, item.showApplyDate, item.showVerifyDate, item.showCheckFlg, item.checkerID, item.checkComment])
+                    });
+                    const stream = require('stream');
+                    const book = XLSX.utils.book_new();
+                    const sheet = XLSX.utils.aoa_to_sheet(arr);
+                    XLSX.utils.book_append_sheet(book, sheet, "test");
+                    const fileContents = XLSX.write(book, {
+                        type: 'buffer',
+                        bookType: 'xlsx',
+                        bookSST: false
+                    });
+                    let readStream = new stream.PassThrough();
+                    readStream.end(fileContents);
+                    var myDate = new Date();
+                    var mytime = myDate.toLocaleDateString();
+                    let fileName = mytime + ".xlsx";
+                    res.set('Content-disposition', 'attachment; filename=' + fileName);
+                    res.set('Content-Type', 'text/plain');
+                    readStream.pipe(res);
+                } else {
+                    res.send('没有数据');
+                }
+            } else if (result && result.returnCode != 9999) {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+        });
+    });
+};

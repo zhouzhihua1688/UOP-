@@ -1,0 +1,390 @@
+
+new Vue({
+    el: '#content',
+    data: {
+        // 主页面相关数据
+        unfreezeList: [],
+        freezeList: [],
+        frozenReason: [],//冻结原因  对应关系
+        custInfo: [],//客户基本信息
+        userLabel: [],//客户标签信息
+        custAsset: [],//客户资产信息
+        switchInfo: [],//安全中心数据
+        tiedCard: [],//客户绑卡信息
+        userHistory: [],//客户历史冻结记录
+        tradeRecords: [],//客户交易流水
+        diaMsg: '',
+
+        //主表格分页数据
+        currentIndex: 0,
+        maxSpace: 5,
+        totalPage: 0,
+        pageMaxNum: 1000,
+
+        // 查询
+        custNo: '',//1005703921
+        pageNo: 1,
+        pageSize: 1000,
+        queryCustNo: '',
+        operateData: [],
+        directData: [],
+        event: '',
+        loading: false
+
+    },
+    created: function () {
+        $.post({
+            url: '/customerService/accountQuery/custInfo/frozenReason.ajax',
+            success: function (result) {
+                if (result.error === 0) {
+                    this.frozenReason = result.data;
+                } else {
+                    this.showDialog("", "info", false, result.msg)
+                }
+            }.bind(this)
+        });
+    },
+    mounted: function () {
+        var dialogs = ['info', 'unfreezeList', 'freezeList', 'freezeInfo', 'freezeDirect'];
+        var _this = this;
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        // this.getTableData(0);
+    },
+    computed: {
+        pageList: function () {
+            var arr = [];
+            if (this.totalPage <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex <= this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex <= this.maxSpace) {
+                var space = this.totalPage - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            } else {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        }
+    },
+    watch: {
+        pageMaxNum: function () {
+            this.getTableData(0);
+        }
+    },
+    methods: {
+        getTableData: function (currentIndex) {
+            if (this.custNo === '') {
+                return this.showDialog('', 'info', false, '请输入客户号')
+            }
+            this.loading = true;
+            this.queryCustNo = this.custNo
+            var params = {
+                custNo: this.custNo,
+                pageNo: this.pageNo,
+                pageSize: this.pageSize
+            };
+            $.post({
+                url: '/customerService/accountQuery/custInfo/getInfo.ajax',
+                data: params,
+                success: function (result) {
+                    this.loading = false;
+                    if (result.error === 0) {
+                        this.custInfo = result.data.custInfo ? [result.data.custInfo] : [];
+                        this.userLabel = result.data.userLabel ? [result.data.userLabel] : [];
+                        this.custAsset = result.data.custAsset ? result.data.custAsset : [];
+                        this.switchInfo = result.data.switchInfo ? [result.data.switchInfo] : [];
+                        this.tiedCard = result.data.tiedCard;//客户绑卡信息
+                        this.userHistory = result.data.userHistory;//客户历史冻结记录
+                        this.tradeRecords = result.data.tradeRecords;//客户交易流水
+                        this.showDialog("", "info", false, result.msg)
+                    } else {
+                        this.currentIndex = 0;
+                        this.totalPage = 0;
+                        this.showDialog("", "info", false, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+        updataTableData: function (currentIndex) {
+
+            var params = {
+                custNo: this.queryCustNo,
+                pageNo: this.pageNo,
+                pageSize: this.pageSize
+            };
+            $.post({
+                url: '/customerService/accountQuery/custInfo/getInfo.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        this.custInfo = result.data.custInfo ? [result.data.custInfo] : [];
+                        this.userLabel = result.data.userLabel ? [result.data.userLabel] : [];
+                        this.custAsset = result.data.custAsset ? result.data.custAsset : [];
+                        this.switchInfo = result.data.switchInfo ? [result.data.switchInfo] : [];
+                        this.tiedCard = result.data.tiedCard;//客户绑卡信息
+                        this.userHistory = result.data.userHistory;//客户历史冻结记录
+                        this.tradeRecords = result.data.tradeRecords;//客户交易流水
+                    } else {
+                        this.currentIndex = 0;
+                        this.totalPage = 0;
+                        this.showDialog("", "info", false, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            } else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            } else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            } else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            } else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        //主表格分页方法
+
+
+        prev: function () {
+            if (this.currentIndex <= 0) {
+                return;
+            }
+            this.getTableData(this.currentIndex - 1);
+        },
+        next: function () {
+            if (this.currentIndex >= this.totalPage - 1) {
+                return;
+            }
+            this.getTableData(this.currentIndex + 1);
+        },
+        changeIndex: function (index) {
+            this.getTableData(index - 1);
+        },
+        toFirst: function () {
+            this.getTableData(0);
+        },
+        toLast: function () {
+            this.getTableData(this.totalPage - 1);
+        },
+        getUnfreezeList: function () {
+            if (this.queryCustNo === '') {
+                return this.showDialog('', 'info', false, '请先查询数据')
+            }
+            this.loading = true;
+            var params = {
+                custNo: this.queryCustNo
+            };
+            $.post({
+                url: '/customerService/accountQuery/custInfo/unfreezeList.ajax',
+                data: params,
+                success: function (result) {
+                    this.loading = false;
+                    if (result.error === 0) {
+                        this.unfreezeList = result.data.map(function (item) {
+                            item.check = false;
+                            return item;
+                        });
+                        this.showDialog("", "unfreezeList")
+                    } else {
+                        this.unfreezeList = [];
+                        this.showDialog("", "info", false, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+        getFreezeList: function () {
+            if (this.queryCustNo === '') {
+                return this.showDialog('', 'info', false, '请先查询数据')
+            }
+            this.loading = true;
+            var params = {
+                custNo: this.queryCustNo
+            };
+            $.post({
+                url: '/customerService/accountQuery/custInfo/freezeList.ajax',
+                data: params,
+                success: function (result) {
+                    this.loading = false;
+                    if (result.error === 0) {
+                        this.freezeList = result.data.map(function (item) {
+                            item.check = false;
+                            return item;
+                        });
+                        this.showDialog("", "freezeList")
+                    } else {
+                        this.unfreezeList = [];
+                        this.showDialog("", "info", false, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+        // active: function (item) {
+        //     this.$set(item, 'check', !item.check)
+        // }
+        freeze: function () {
+            this.operateData.forEach(function (item) {
+                delete item.check
+            })
+
+            var params = {
+                custNo: this.queryCustNo,
+                branches: this.operateData
+            };
+            $.post({
+                url: '/customerService/accountQuery/custInfo/frozen.ajax',
+                data: params,
+                success: function (result) {
+                    this.loading = false;
+                    if (result.error === 0) {
+                        this.operateData = [];
+                        this.updataTableData()
+                        this.showDialog("freezeInfo", "info", false, result.msg)
+                    } else {
+                        this.showDialog("freezeInfo", "info", false, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+        unfreeze: function () {
+            this.operateData.forEach(function (item) {
+                delete item.check
+            })
+            var params = {
+                custNo: this.queryCustNo,
+                branches: this.operateData
+            };
+            $.post({
+                url: '/customerService/accountQuery/custInfo/unfreeze.ajax',
+                data: params,
+                success: function (result) {
+                    this.loading = false;
+                    if (result.error === 0) {
+                        this.operateData = [];
+                        this.updataTableData()
+                        this.showDialog("freezeInfo", "info", false, result.msg)
+                    } else {
+                        this.showDialog("freezeInfo", "info", false, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+        confirmOperate: function () {
+            this.loading = true;
+            if (this.event === 'unfreezeList') {
+                return this.freeze();
+            }
+            this.unfreeze()
+        },
+        operate: function (list) {
+            var branches = [];
+            this[list].forEach(function (item) {
+                if (item.check) {
+                    branches.push(item)
+                }
+            }, this)
+            if (branches.length === 0) {
+                return this.showDialog(list, "info", true, '请选择渠道')
+            }
+            this.operateData = branches
+            this.event = list
+            this.showDialog(list, "freezeInfo", false, '确定执行该操作吗？')
+        },
+        direct: function () {
+            if (this.queryCustNo === '') {
+                return this.showDialog('', 'info', false, '请先查询数据')
+            }
+            return this.showDialog('', 'freezeDirect')
+
+        },
+        freezeDirect: function () {
+            this.loading = true;
+            var params = {
+                branches: [{
+                    allowUnfreezeSelf: "",
+                    branchCode: "247",
+                    custNo: this.queryCustNo,
+                    idno: this.custInfo[0].idno,
+                    invnm: "",
+                    reason: "直销交易冻结",
+                    reasonCommont: "",
+                    status: "",
+                    tradeFrozen: ""
+                }],
+                custNo: this.queryCustNo
+            }
+            $.post({
+                url: '/customerService/accountQuery/custInfo/frozen.ajax',
+                data: params,
+                success: function (result) {
+                    this.loading = false;
+                    if (result.error === 0) {
+                        this.operateData = [];
+                        this.updataTableData()
+                        this.showDialog("freezeDirect", "info", false, result.msg)
+                    } else {
+                        this.showDialog("freezeDirect", "info", false, result.msg)
+                    }
+                }.bind(this)
+            });
+        }
+    },
+    filters: {
+        chineseCardType: function (value) {
+            if (value == '1') {
+                return '信用卡';
+            }
+            if (value == '0') {
+                return '借记卡';
+            }
+            return value;
+        },
+        chineseApplyst: function (applyst, payst) {
+            if (applyst = 'S' || (applyst == 'N' && payst == 'Y')) {
+                return '成功';
+            } else {
+                return '失败';
+            }
+        }
+    }
+});

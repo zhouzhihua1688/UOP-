@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+        <!-- inline styles related to this page -->
+        <style>
+            .table>tbody>tr>td {
+                vertical-align: middle;
+            }
+
+            .form-inline>div {
+                padding: 10px 0;
+                text-align: right;
+            }
+
+            .form-inline span {
+                text-align: left;
+            }
+        </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+        <div class="main-container ace-save-state" id="main-container">
+            <% include ../../common/sidebar.html %>
+                <% include ../../common/left-menu.html %>
+                    <div class="main-content">
+                        <div class="main-content-inner">
+                            <div class="page-content">
+                                <% include ../../common/breadcrumb.html %>
+                                    <% include ../../common/ace-settings-container.html %>
+                                        <div class="row" id="content">
+
+
+                                            <div class="col-xs-12">
+                                                <!--提示信息弹窗-->
+                                                <div class="modal" id="info" tabindex="-1" role="dialog"
+                                                    aria-hidden="true" data-backdrop="static">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header" style="padding: 10px;">
+                                                                <button type="button" class="close" data-dismiss="modal"
+                                                                    aria-hidden="true">×
+                                                                </button>
+                                                                <h4 class="modal-title">提示信息</h4>
+                                                            </div>
+                                                            <div class="modal-body text-center">
+                                                                <h4 v-text="diaMsg"></h4>
+                                                            </div>
+                                                            <p class="text-center">
+                                                                <button type="button" class="btn btn-primary btn-sm"
+                                                                    data-dismiss="modal">确定
+                                                                </button>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--删除账号管理的提示信息-->
+                                                <div class="modal" id="del" tabindex="-1" role="dialog"
+                                                    aria-hidden="true" data-backdrop="static">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header" style="padding: 10px;">
+                                                                <button type="button" class="close" data-dismiss="modal"
+                                                                    aria-hidden="true">×
+                                                                </button>
+                                                                <h4 class="modal-title">删除提示信息</h4>
+                                                            </div>
+                                                            <div class="modal-body text-center">
+                                                                <h4 v-text="diaMsg"></h4>
+                                                            </div>
+                                                            <p class="text-center">
+                                                                <button class="btn btn-info btn-sm" type="button"
+                                                                    @click='del'>
+                                                                    确定
+                                                                </button>
+                                                                <button type="button" class="btn btn-danger btn-sm"
+                                                                    data-dismiss="modal">
+                                                                    取消
+                                                                </button>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal" id="add" tabindex="-1" role="dialog"
+                                                    aria-hidden="true" data-backdrop="static">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header" style="padding: 10px;">
+                                                                <button type="button" class="close" data-dismiss="modal"
+                                                                    aria-hidden="true">×
+                                                                </button>
+                                                                <h4 class="modal-title">{{modifyStatus?'修改':'新增'}}</h4>
+                                                            </div>
+                                                            <div class="form-horizontal" style="padding-top: 20px;">
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        账号名称:</label>
+                                                                    <div class="col-sm-4">
+                                                                        <input type="text"
+                                                                            v-model='operateData.nickname'
+                                                                            placeholder="30字以内">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        封面图片:</label>
+                                                                    <div class="col-sm-8">
+                                                                        <upload v-model='operateData.avatarImage' />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        认证头衔:</label>
+                                                                    <div class="col-sm-4">
+                                                                        <input type="text" v-model='operateData.title'>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        账号说明:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <textarea cols="50" rows="3"
+                                                                            placeholder="最多300字"
+                                                                            v-model='operateData.authorDesc'></textarea>
+                                                                    </div>
+                                                                </div>
+                                                                <!-- // 9568 -->
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        账号权重:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <input type="text" v-model='operateData.weight'>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-sm-3 control-label">
+                                                                        文章是否可分享:</label>
+                                                                    <div class="col-sm-9">
+                                                                        <select  v-model="operateData.isShare">
+                                                                            <option value="1">是</option>
+                                                                            <option value="0">否</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <p class="text-center">
+                                                                <button class="btn btn-info btn-sm" type="button"
+                                                                    @click='add' v-show='!modifyStatus'>
+                                                                    确定
+                                                                </button>
+                                                                <button class="btn btn-info btn-sm" type="button"
+                                                                    @click='modify' style='margin-right: 50px;'
+                                                                    v-show='modifyStatus'>
+                                                                    修改
+                                                                </button>
+                                                                <button type="button" class="btn btn-danger btn-sm"
+                                                                    data-dismiss="modal">
+                                                                    取消
+                                                                </button>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+
+                                                <!-- DIALOG ENDS -->
+                                                <div class="tabbable">
+                                                    <ul class="nav nav-tabs padding-12 tab-color-blue background-blue">
+                                                        <li class="active">
+                                                            <a data-toggle="tab" href="#accountPage">账号管理</a>
+                                                        </li>
+                                                        <li>
+                                                            <a data-toggle="tab" href="#mailManagePage">邮箱管理</a>
+                                                        </li>
+                                                    </ul>
+                                                    <div class="tab-content">
+                                                        <div id="accountPage" class="tab-pane in active">
+                                                            <div class="form-inline" style="padding: 10px 0;">
+
+                                                                <div class="form-group ">
+                                                                    <label style="width: 80px;">账号名称</label>
+                                                                    <input type="text" v-model='nickname'>
+                                                                </div>
+
+                                                                <div class="form-group pull-right">
+                                                                    <input type="button" class="btn btn-sm btn-primary "
+                                                                        value="新增" @click="showAdd">
+                                                                </div>
+                                                                <div class="form-group pull-right"
+                                                                    style="margin-right:30px;">
+                                                                    <input type="button" class="btn btn-sm btn-primary "
+                                                                        value="查询" @click="getTableData(0)">
+                                                                </div>
+                                                            </div>
+                                                            <div class="table-header">
+                                                                账号列表
+                                                            </div>
+                                                            <!--分页器和快速查询-->
+                                                            <div class="row"
+                                                                style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                                                <div class="col-xs-6">
+                                                                    <div class="dataTables_length"
+                                                                        id="dynamic-table_length">
+                                                                        <label>每页显示</label>
+                                                                        <select class="input-sm" name="pageMaxNum"
+                                                                            v-model.trim="pageMaxNum">
+                                                                            <option value="10">10</option>
+                                                                            <option value="50">50</option>
+                                                                            <option value="100">100</option>
+                                                                            <option value="500">500</option>
+                                                                        </select>
+                                                                        <label>条</label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <!--数据表-->
+                                                            <div style="width: 100%;">
+                                                                <table id="simple-table"
+                                                                    class="table table-bordered table-hover dataTable">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th
+                                                                                class="center col-sm-1 col-md-1 col-lg-1">
+                                                                                ID</th>
+                                                                            <th
+                                                                                class="center col-sm-2 col-md-2 col-lg-2">
+                                                                                头像</th>
+                                                                            <th
+                                                                                class="center col-sm-2 col-md-2 col-lg-2">
+                                                                                账号名称</th>
+                                                                            <th
+                                                                                class="center col-sm-2 col-md-2 col-lg-2">
+                                                                                认证头衔</th>
+                                                                            <th
+                                                                                class="center col-sm-2 col-md-2 col-lg-2">
+                                                                                账号说明</th>
+                                                                            <th
+                                                                                class="center col-sm-1 col-md-1 col-lg-1">
+                                                                                文章数</th>
+                                                                            <th
+                                                                                class="center col-sm-1 col-md-1 col-lg-1">
+                                                                                状态</th>
+                                                                            <th
+                                                                                class="center col-sm-2 col-md-2 col-lg-2">
+                                                                                操作</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <template v-if="tableData.length>0">
+                                                                            <tr v-for="(item,index) in tableData"
+                                                                                :key="index">
+                                                                                <td class="center" v-text='item.id'>
+                                                                                </td>
+                                                                                <td class="center"
+                                                                                    v-text='item.avatarImage'></td>
+                                                                                <td class="center"
+                                                                                    v-text='item.nickname'></td>
+                                                                                <td class="center" v-text='item.title'>
+                                                                                </td>
+                                                                                <td class="center" v-text='item.authorDesc'>
+                                                                                </td>
+                                                                                <td class="center blue"
+                                                                                    style="cursor: pointer;"
+                                                                                    @click='goTo(item)'
+                                                                                    v-text='item.articleCount'></td>
+                                                                                <td class="center">
+                                                                                    {{item.status?"正常":"禁用"}}</td>
+                                                                                <td class="center">
+                                                                                    <a href="javascript:;"
+                                                                                        @click='updateStatus(item)'>{{item.status?"禁用":"正常"}}</a>
+                                                                                    &nbsp;
+                                                                                    <a href="javascript:;"
+                                                                                        @click='showDetail(item)'>修改</a>
+                                                                                    <% if(canShow||authorityList.includes('U'))
+                                                                                        { %>
+                                                                                        &nbsp;
+                                                                                        <a href="javascript:;"
+                                                                                            class="red"
+                                                                                            @click="deleteDialog(item)">删除</a>
+                                                                                        <% } %>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </template>
+                                                                        <template v-else>
+                                                                            <tr>
+                                                                                <td class="center" v-text="'没有数据'"
+                                                                                    colspan="11"></td>
+                                                                            </tr>
+                                                                        </template>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            <!--底部页码-->
+                                                            <div v-if="tableData.length>0" class="row"
+                                                                style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                                                <div class="col-xs-2">
+                                                                    <div class="dataTables_info"
+                                                                        v-text="'共 '+totalPage+' 页'"></div>
+                                                                </div>
+                                                                <div class="col-xs-10">
+                                                                    <div class="dataTables_paginate paging_simple_numbers"
+                                                                        id="dynamic-table_paginate">
+                                                                        <ul class="pagination">
+                                                                            <li class="paginate_button"
+                                                                                v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                                                                <a href="javascript:;" v-text="'1...'"
+                                                                                    @click="toFirst"></a>
+                                                                            </li>
+                                                                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                                                @click="prev">
+                                                                                <a href="javascript:;"
+                                                                                    v-text="'上一页'"></a>
+                                                                            </li>
+                                                                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                                                v-for="value in pageList"
+                                                                                @click="changeIndex(value)">
+                                                                                <a href="javascript:;"
+                                                                                    v-text="value"></a>
+                                                                            </li>
+                                                                            <li class="paginate_button"
+                                                                                v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                                                                <a href="javascript:;"
+                                                                                    v-text="'...'+totalPage"
+                                                                                    @click="toLast"></a>
+                                                                            </li>
+                                                                            <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                                                                @click="next">
+                                                                                <a href="javascript:;"
+                                                                                    v-text="'下一页'"></a>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <!--邮箱管理页面-->
+                                                        <div id="mailManagePage" class="tab-pane in">
+                                                            <true-page></true-page>
+                                                        </div>
+
+                                                    </div>
+                                                </div><!-- /.row -->
+                                            </div><!-- /.page-content -->
+                                        </div>
+                            </div><!-- /.main-content -->
+                            <!----------------全局组件－－－－－－－－－－－－-->
+                            <template id="truePage">
+                                <div>
+                                    <!--删除邮箱管理的提示信息-->
+                                    <div class="modal" id="del2" tabindex="-1" role="dialog" aria-hidden="true"
+                                        data-backdrop="static">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header" style="padding: 10px;">
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                        aria-hidden="true">×
+                                                    </button>
+                                                    <h4 class="modal-title">删除提示信息</h4>
+                                                </div>
+                                                <div class="modal-body text-center">
+                                                    <h4 v-text="diaMsg"></h4>
+                                                </div>
+                                                <p class="text-center">
+                                                    <button class="btn btn-info btn-sm" type="button" @click='del2'>
+                                                        确定
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                        data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal" id="add2" tabindex="-1" role="dialog" aria-hidden="true"
+                                        data-backdrop="static">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header" style="padding: 10px;">
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                        aria-hidden="true">×
+                                                    </button>
+                                                    <h4 class="modal-title">{{modifyStatus?'修改':'新增'}}邮箱关联
+                                                    </h4>
+                                                </div>
+                                                <div class="form-horizontal" style="padding-top: 20px;">
+                                                    <div class="form-group">
+                                                        <label class="col-sm-3 control-label">
+                                                            邮箱地址:</label>
+                                                        <div class="col-sm-4">
+                                                            <input type="text" v-model='operateData2.mailAddress' placeholder="请输入有效邮箱地址">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="col-sm-3 control-label">
+                                                            关联账号:</label>
+                                                        <div class="col-sm-4">
+                                                            <select v-model='operateData2.innerAccount'>
+                                                                <option value="">请选择</option>
+                                                                <option :value="item.id" v-for='item in accountList'>
+                                                                    {{item.nickname}}</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p class="text-center">
+                                                    <button class="btn btn-info btn-sm" type="button" @click='add2'
+                                                        v-show='!modifyStatus'>
+                                                        确定
+                                                    </button>
+                                                    <button class="btn btn-info btn-sm" type="button" @click='modify2'
+                                                        style='margin-right: 50px;' v-show='modifyStatus'>
+                                                        修改
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                        data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-inline" style="padding: 10px 0;">
+
+                                        <div class="form-group ">
+                                            <label style="width: 80px;">账号名称</label>
+                                            <input type="text" v-model='innerAccount'>
+                                        </div>
+                                        <div class="form-group ">
+                                            <label style="width: 80px;">邮箱地址</label>
+                                            <input type="text" v-model='mailAddress'>
+                                        </div>
+
+                                        <div class="form-group pull-right">
+                                            <input type="button" class="btn btn-sm btn-primary " value="新增"
+                                                @click="showAdd2">
+                                        </div>
+                                        <div class="form-group pull-right" style="margin-right:30px;">
+                                            <input type="button" class="btn btn-sm btn-primary " value="查询"
+                                                @click="getTableData(0)">
+                                        </div>
+                                    </div>
+                                    <div class="table-header">
+                                        邮箱列表
+                                    </div>
+                                    <!--分页器和快速查询-->
+                                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                        <div class="col-xs-6">
+                                            <div class="dataTables_length" id="dynamic-table_length">
+                                                <label>每页显示</label>
+                                                <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                                    <option value="10">10</option>
+                                                    <option value="50">50</option>
+                                                    <option value="100">100</option>
+                                                    <option value="500">500</option>
+                                                </select>
+                                                <label>条</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--数据表-->
+                                    <div style="width: 100%;">
+                                        <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                            <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">ID</th>
+                                                    <th class="center col-sm-2 col-md-2 col-lg-2">邮箱地址</th>
+                                                    <th class="center col-sm-2 col-md-2 col-lg-2">账号名称</th>
+                                                    <th class="center col-sm-2 col-md-1 col-lg-2">创建时间</th>
+                                                    <th class="center col-sm-2 col-md-1 col-lg-2">修改时间</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template v-if="tableData.length>0">
+                                                    <tr v-for="(item,index) in tableData" :key="index">
+                                                        <td class="center" v-text='item.id'></td>
+                                                        <td class="center" v-text='item.mail'></td>
+                                                        <td class="center" v-text='item.authorId'></td>
+                                                        <td class="center" v-text='item.createTime'></td>
+                                                        <td class="center" v-text='item.updateTime'></td>
+                                                        <td class="center">
+                                                            <a href="javascript:;" @click='showDetail2(item)'>修改</a>
+                                                            <% if(canShow||authorityList.includes('U')) { %>
+                                                                &nbsp;
+                                                                <a href="javascript:;" class="red"
+                                                                    @click="deleteDialog2(item)">删除</a>
+                                                                <% } %>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <template v-else>
+                                                    <tr>
+                                                        <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <!--底部页码-->
+                                    <div v-if="tableData.length>0" class="row"
+                                        style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                        <div class="col-xs-2">
+                                            <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                                        </div>
+                                        <div class="col-xs-10">
+                                            <div class="dataTables_paginate paging_simple_numbers"
+                                                id="dynamic-table_paginate">
+                                                <ul class="pagination">
+                                                    <li class="paginate_button"
+                                                        v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                                        <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                                    </li>
+                                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                        @click="prev">
+                                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                                    </li>
+                                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                        v-for="value in pageList" @click="changeIndex(value)">
+                                                        <a href="javascript:;" v-text="value"></a>
+                                                    </li>
+                                                    <li class="paginate_button"
+                                                        v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                                        <a href="javascript:;" v-text="'...'+totalPage"
+                                                            @click="toLast"></a>
+                                                    </li>
+                                                    <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                                        @click="next">
+                                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <!----------------全局组件－－－－－－－－－－－－-->
+                            <% include ../../common/footer.html %>
+                        </div><!-- /.main-container -->
+                        <% include ../../common/basic-scripts.html %>
+                            <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+                            <script src="/js/lib/vue.js"></script>
+                            <script src="/js/messageCenter/socialMgmt/account.js"></script>
+</body>
+
+</html>

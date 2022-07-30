@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/select2.min.css" />
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+
+        .cover {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(9, 10, 10, 0.527);
+            z-index: 999;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <!-- DIALOG BEGINS -->
+                        <!-- loading动画 -->
+                        <div class="cover" v-show="loadingShow" style="z-index: 1999;display: none;">
+                            <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                        </div><!-- loading动画 -->
+                        <!--编辑弹窗-->
+                        <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title" style="display: inline">新建奖励卡配置</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form " style="padding: 0 50px 0 24px;">
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">奖励卡名称:</label>
+                                                <input type="text" style="width: 60%;" v-model="diaRewardCardNm"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">奖励卡渠道:</label>
+                                                <select class="form-control" style="width: 60%;display: inline;"
+                                                        v-model="diaChannelNo">
+                                                    <option value=""></option>
+                                                    <option v-for="(item,index) in diaChannelNoList" :value="item.channelNo"
+                                                            v-text="item.channelNm"></option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">奖励卡图标地址:</label>
+                                                <!--<input type="text" style="width: 60%;" v-model="diaRewardCardPic"/>-->
+                                                <input type="text" id="uploadInput" placeholder="请选择"
+                                                       style="width: 37%;" disabled/>
+                                                <input type="button" class="btn btn-sm btn-primary" id="uploadBtn"
+                                                       value="选择">
+                                                <input type="button" class="btn btn-sm btn-primary" @click="uploadPic"
+                                                       value="上传">
+                                                <input id="uploadFileInput" type="file" name="file"
+                                                       style="display: none"
+                                                       class="upload"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">奖励类型:</label>
+                                                <select class="form-control" style="width: 60%;display: inline;"
+                                                        v-model="diaAwardTypeId">
+                                                    <option value=""></option>
+                                                    <option v-for="(item,index) in diaAwardTypeIdList" :value="item.id"
+                                                            v-text="item.typeNm"></option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right">奖励卡对应奖励:</label>
+                                                <input type="text" style="width: 60%;" v-model="diaAwardCardValue"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="" class="control-label" style="width: 150px;text-align: right;margin-left:-10px">消息规则:</label>
+                                                <!-- <div> -->
+                                                    <span style="display: inline-block;width: 7px;font-size: 0;"></span>
+                                                    <select  id="msgCenter" name="msgCenter" class="select2" data-placeholder="search..." >
+                                                        <option v-for="(msgItem,msgIndex) in msgRuleList" :value="msgItem.ruleId" :key="msgIndex" v-text="msgItem.ruleName"></option>
+                                                    </select>
+                                                    <a href="javascript:;" class="btn btn-minier btn-success" style="line-height: 22px;"  @click="jumpOtherPage('msg')">+新建</a>
+                                                    <a href="javascript:;" class="btn btn-minier btn-danger" style="line-height: 22px;" @click="refreshList('msg')">刷新</a>    
+                                                <!-- </div> -->
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label"
+                                                       style="width: 150px;text-align: right">备注:</label>
+                                                <input type="text" style="width: 60%;" v-model="diaRemark"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" @click="add">保存</button>
+                                        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--删除弹窗-->
+                        <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">删除奖励卡配置</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确认删除该奖励卡配置?</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" @click="deleteData">确定
+                                        </button>
+                                        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--提示信息弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- DIALOG ENDS -->
+                        <div class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group">
+                                <label class="control-label">奖励卡编号:</label>
+                                <input v-model="rewardCardNo" type="text"/>
+                            </div>
+                            <div class="form-group pull-right">
+                                <input type="button" class="btn btn-sm btn-primary" @click="getTableData(0)" value="查询">
+                                <% if(canShow||authorityList.includes('C')) { %>
+                                <input type="button" class="btn btn-sm btn-primary" @click="showAdd" value="新建">
+                                <% } %>
+                            </div>
+                        </div>
+                        <div class="table-header">
+                            <%= cpage %>--表格数据
+                        </div>
+                        <!--分页器和快速查询-->
+                        <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                            <div class="col-xs-6">
+                                <div class="dataTables_length" id="dynamic-table_length">
+                                    <label>每页显示</label>
+                                    <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                        <option value="10">10</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="500">500</option>
+                                    </select>
+                                    <label>条</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!--数据表-->
+                        <table id="simple-table" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1">奖励卡ID</th>
+                                <th class="center col-sm-1">奖励卡编号</th>
+                                <th class="center col-sm-1">奖励卡名称</th>
+                                <th class="center col-sm-2">奖励卡图表地址</th>
+                                <th class="center col-sm-1">奖励卡通道号</th>
+                                <th class="center col-sm-1">奖励类型</th>
+                                <th class="center col-sm-1">奖励卡对应奖励</th>
+                                <th class="center col-sm-1">修改人</th>
+                                <th class="center col-sm-2">修改时间</th>
+                                <th class="center col-sm-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="tableData.length>0">
+                                <tr v-for="(item,index) in tableData" :key="index"
+                                    :style="index%2==0?'background-color: #f9f9f9;':''">
+                                    <td class="center" v-text="item.id"></td>
+                                    <td class="center" v-text="item.rewardCardNo"></td>
+                                    <td class="center" v-text="item.rewardCardNm"></td>
+                                    <td class="center" v-text="item.rewardCardPic"></td>
+                                    <td class="center" v-text="item.channelNo"></td>
+                                    <td class="center" v-text="item.awardTypeName"></td>
+                                    <td class="center" v-text="item.awardCardValue"></td>
+                                    <td class="center" v-text="item.modifyBy"></td>
+                                    <td class="center" v-text="item.updateTime"></td>
+                                    <td class="center">
+                                        <% if(canShow||authorityList.includes('U')) { %>
+                                        <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                                        <% } %>
+                                        &nbsp;
+                                        <% if(canShow||authorityList.includes('D')) { %>
+                                        <a class="red" href="javascript:;" @click="showDelete(item.id)">删除</a>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'没有数据'" colspan="10"></td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                        <!--底部页码-->
+                        <div v-if="tableData.length>0" class="row"
+                             style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                            <div class="col-xs-2">
+                                <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                            </div>
+                            <div class="col-xs-10">
+                                <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                    <ul class="pagination">
+                                        <li class="paginate_button"
+                                            v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                            <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                        </li>
+                                        <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                            @click="prev">
+                                            <a href="javascript:;" v-text="'上一页'"></a>
+                                        </li>
+                                        <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                            v-for="value in pageList" @click="changeIndex(value)">
+                                            <a href="javascript:;" v-text="value"></a>
+                                        </li>
+                                        <li class="paginate_button"
+                                            v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                            <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                        </li>
+                                        <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                            @click="next">
+                                            <a href="javascript:;" v-text="'下一页'"></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- PAGE CONTENT ENDS -->
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/select2.min.js"></script>
+<script src="/js/lib/ajaxfileupload.js"></script>
+<script src="/js/awardMgmt/awardSetting/cardSetting.js"></script>
+</body>
+
+</html>

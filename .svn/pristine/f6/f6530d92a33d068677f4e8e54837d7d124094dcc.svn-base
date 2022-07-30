@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+</head>
+
+<body class="no-skin">
+
+    <% include ../../common/header.html %>
+
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--删除弹窗-->
+                            <div class="modal" id="deleteInfo" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                            <h4 class="modal-title">删除</h4>
+                                        </div>
+                                        <p>
+                                            <div class="modal-body text-center">
+                                                <h4 v-text="diaMsg"></h4>
+                                            </div>
+                                        </p>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-danger btn-sm " @click='confirmDelete'>确定</button>
+                                            <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 新增选择弹窗 -->
+                            <div class="modal" id="select" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+
+                                <div class="modal-dialog" style="width: 70%;">
+                                    <div class="modal-content">
+                                        <div class="table-header" style="margin-bottom: 20px;">选择机构</div>
+                                        <div class="modal-body text-center" style="overflow-y: scroll;height:500px;">
+                                            <div class="table-responsive">
+                                                <!--数据表-->
+                                                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="center">
+                                                                <!-- <label class="pos-rel">
+                                                                            <input type="checkbox" class="ace"  />
+                                                                            <span class="lbl"></span>
+                                                                        </label> -->
+                                                            </th>
+                                                            <th class="center col-md-1">序号</th>
+                                                            <th class="center col-md-3">机构名称</th>
+                                                            <th class="center col-md-3">发布开始时间</th>
+                                                            <th class="center col-md-3">发布结束时间</th>
+                                                            <th class="center col-md-1">维护编号</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <template v-if="addTableData.length>0">
+                                                            <tr v-for="(item,index) in addTableData" :key='index'>
+                                                                <td class="center">
+                                                                    <label class="pos-rel">
+                                                                        <input type="checkbox" class="ace" :checked="item.check"
+                                                                            @click="addSelectCheck(index)" />
+                                                                        <span class="lbl"></span>
+                                                                    </label>
+                                                                </td>
+                                                                <td class="center " v-text="index+1"></td>
+                                                                <td class="center " v-text="item.companyName"></td>
+                                                                <td class="center " v-text="item.startTime"></td>
+                                                                <td class="center " v-text="item.endTime"></td>
+                                                                <td class="center" v-text='item.id'></td>
+
+                                                            </tr>
+                                                        </template>
+                                                        <template v-else>
+                                                            <tr>
+                                                                <td class="center" v-text="'没有数据'" colspan="9"></td>
+                                                            </tr>
+                                                        </template>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <!--底部页码-->
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-danger btn-sm " @click='addSelect'
+                                                data-dismiss="modal">确定</button>
+                                            <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 新增弹窗 -->
+                            <div class="modal" id="addNotice" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form class="form-horizontal">
+                                            <div class="table-header" style="margin-bottom: 20px;">新增机构公告</div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    公告内容<span class="required">*</span> </label>
+                                                <div class="col-sm-9">
+                                                    <textarea type="text" ref='addContent' placeholder="请输入内容" class="input-xlarge"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3" for="startTime">
+                                                    发布开始时间<span class="required">*</span> </label>
+                                                <div class="col-sm-9">
+                                                    <input id="startTime" name="startTime" ref='addStartTime' type="text"
+                                                        class="date-timepicker pull-left " placeholder="请输入开始时间">
+                                                    <span class="input-group-addon pull-left" style="width:34px;height: 34px;padding: 9px 9px; ">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3" for="startTime">
+                                                    发布结束时间<span class="required">*</span> </label>
+                                                <div class="col-sm-9">
+                                                    <input id="startTime" name="startTime" ref='addEndTime' type="text"
+                                                        class="date-timepicker pull-left " placeholder="请输入开始时间">
+                                                    <span class="input-group-addon pull-left" style="width:34px;height: 34px;padding: 9px 9px; ">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    维护编号<span class="required">*</span> </label>
+                                                    <div class="tags col-lg-5" style="margin-left: 12px;min-height: 42px;">
+                                                    <span class="tag" v-for="(item,index) in addSign">
+                                                        {{item}}
+                                                        <!-- <button class="close" @click.prevent.stop="">×</button> -->
+                                                    </span>
+                                                </div>
+                                                <button class="btn btn-info" type="button" @click="showDialog('addNotice', 'select', true);">
+                                                    选择
+                                                </button>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <div class="col-md-offset-3 col-md-9">
+                                                    <button class="btn btn-info" type="button" @click='add'>
+                                                        保存
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 修改弹窗 -->
+                            <div class="modal" id="compileNotice" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form class="form-horizontal">
+                                            <div class="table-header" style="margin-bottom: 20px;">修改机构公告</div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    公告内容<span class="required">*</span> </label>
+                                                <div class="col-sm-9">
+                                                    <textarea type="text" placeholder="请输入内容" ref='compileContent'
+                                                        class="input-xlarge"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3" for="startTime">
+                                                    开始时间<span class="required">*</span> </label>
+                                                <div class="col-sm-9">
+                                                    <input id="startTime" name="compileStartTime" ref='compileStartTime'
+                                                        type="text" class="date-timepicker pull-left " placeholder="请输入开始时间">
+                                                    <span class="input-group-addon pull-left" style="width:34px;height: 34px;padding: 9px 9px; ">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3" for="startTime">
+                                                    结束时间<span class="required">*</span> </label>
+                                                <div class="col-sm-9">
+                                                    <input id="startTime" name="compileEndTime" ref='compileEndTime'
+                                                        type="text" class="date-timepicker pull-left " placeholder="请输入开始时间">
+                                                    <span class="input-group-addon pull-left" style="width:34px;height: 34px;padding: 9px 9px; ">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    维护编号<span class="required">*</span> </label>
+                                                <div class="tags col-lg-5" style="margin-left: 12px;min-height: 42px;">
+                                                    <span class="tag" v-for="(item,index) in addSign">
+                                                        {{item}}
+                                                        <!-- <button class="close" @click.prevent.stop="">×</button> -->
+                                                    </span>
+                                                </div>
+                                                <button class="btn btn-info" type="button" @click="showDialog('compileNotice', 'select', true);">
+                                                    选择
+                                                </button>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <div class="col-md-offset-3 col-md-9">
+                                                    <button class="btn btn-info" type="button" @click='keepNotice'>
+                                                        保存
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- DIALOG ENDS -->
+                            <div class="form-inline" style="padding: 10px 0;">
+                                <input type="text" class="form-control" placeholder="请输入公告内容" v-model='query'>
+                                <button type="button" class="btn btn-sm btn-primary" @click='queryNotice'>搜索</button>
+                                <button type="button" class="btn btn-sm btn-primary pull-right" style="margin-left: 10px;"
+                                    @click='deleteNotice'>删除</button>
+                                <button type="button" class="btn btn-sm btn-primary pull-right" @click="addGetTable">新增</button>
+                            </div>
+
+
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!--分页器和快速查询-->
+
+                            <!--数据表-->
+                            <div class="table-responsive">
+                                <!--数据表-->
+                                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th class="center">
+                                                <label class="pos-rel">
+                                                    <input type="checkbox" class="ace" :checked="allCheck" @click="selectAll" />
+                                                    <span class="lbl"></span>
+                                                </label>
+                                            </th>
+                                            <th class="center col-md-1">序号</th>
+                                            <th class="center col-md-3">公告内容</th>
+                                            <th class="center col-md-3">发布开始时间</th>
+                                            <th class="center col-md-3">发布结束时间</th>
+                                            <!-- <th class="center col-md-1">维护编号</th> -->
+                                            <th class="center col-md-1">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template v-if="tableData.length>0">
+                                            <tr v-for="(item,index) in tableData">
+                                                <td class="center">
+                                                    <label class="pos-rel">
+                                                        <input type="checkbox" class="ace" :checked="item.check" @click="select(index)" />
+                                                        <span class="lbl"></span>
+                                                    </label>
+                                                </td>
+                                                <td class="center" v-text='index+1'></td>
+                                                <td class="center" v-text='item.content'></td>
+                                                <td class="center" v-text='item.releaseStartTime'></td>
+                                                <td class="center" v-text='item.releaseEndTime'></td>
+                                                <!-- <td class="center" v-text='item.id'></td> -->
+                                                <td class="center">
+                                                    <a href="javascript:;" @click.prevent.shop='compileNotice(item.id,item.content,item.releaseStartTime,item.releaseEndTime)'>
+                                                        修改</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'没有数据'" colspan="9"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!--底部页码-->
+                            <div v-if="tableData.length>0" class="row" style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+total+' 页'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers">
+
+                                        <ul class="pagination">
+                                            <li style="margin-left: 20px;">
+                                                <select name="records" v-model="records">
+                                                    <option value="10">10</option>
+                                                    <option value="20">20</option>
+                                                    <option value="50">50</option>
+                                                </select>
+                                            </li>
+                                            <li class="paginate_button" v-show="pageList.length<total&&currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                            </li>
+                                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in pageList" @click="changeIndex(value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li class="paginate_button" v-show="pageList.length<total&&total-currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'...'+total" @click="toLast"></a>
+                                            </li>
+                                            <li :class="currentIndex==total-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- PAGE CONTENT ENDS -->
+                        </div><!-- /.col -->
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+
+        <% include ../../common/footer.html %>
+
+    </div><!-- /.main-container -->
+
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/js/cashMgmt/livingPay/companyNotice.js"></script>
+    <script>
+        $('.date-timepicker').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm:ss', //use this option to display seconds
+            icons: {
+                time: 'fa fa-clock-o',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-arrows ',
+                clear: 'fa fa-trash',
+                close: 'fa fa-times'
+            }
+        }).next().on(ace.click_event, function () {
+            $(this).prev().focus();
+        });
+    </script>
+</body>
+
+</html>

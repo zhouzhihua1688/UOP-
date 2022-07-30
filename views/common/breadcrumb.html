@@ -1,0 +1,16 @@
+<div class="breadcrumbs ace-save-state" id="breadcrumbs" style="margin:0">
+    <ul class="breadcrumb">
+        <li>
+            <i class="ace-icon fa fa-home home-icon"></i>
+            <a href="javascript:;"><%= cchannel %></a>
+        </li>
+        <% if (menu) {%>
+        <li>
+            <a href="javascript:;"><%= cmenu %></a>
+        </li>
+            <% if (page) {%>
+            <li class="active"><%= cpage %></li>
+            <% } %>
+        <% } %>
+    </ul><!-- /.breadcrumb -->
+</div>

@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache,must-revalidate">
+<meta http-equiv="expires" content="0">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datepicker3.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap24.css"/>
+    <style>
+        .show {
+            display: none;
+        }
+
+        .hide {
+            display: block;
+        }
+        [v-cloak]{
+            display: none!important;
+        }
+
+        .px100{
+            width: 100px;
+        }
+
+        input.error{
+            color: red;
+        }
+
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../left-menu.html %>
+    <div class="main-content">
+
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!--提示信息弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--删除PSP信息框-->
+                        <div class="modal" id="showDeletePsp" tabindex="-1"  aria-hidden="true" data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" >×</button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <h4 style="text-indent:2em"> 您确定删除
+                                            渠道编号：<span style="" v-text="delPspConfirm.partnerid"></span>
+                                            ,产品编号：<span v-text="delPspConfirm.fundid"></span>
+                                            的记录吗？
+                                        </h4>
+
+                                    </div>
+                                    <p class="text-center" >
+                                        <button type="button" class="btn btn-primary btn-sm"  data-dismiss="modal" @click.prevent="deletePsp">确定</button>
+                                        <button class="btn btn-sm " style=" margin-left:30px;color:#ccc" data-dismiss="modal" class="close" aria-hidden="true">取消</button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--删除HOP信息框-->
+                        <div class="modal" id="showDeleteHop" tabindex="-1"  aria-hidden="true" data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" >×</button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <h4 style="text-indent:2em"> 您确定删除
+                                            销售机构代码：<span style="" v-text="delHopConfirm.distributorCode"></span>
+                                            ,渠道编号：<span v-text="delHopConfirm.branchCode"></span>
+                                            ,产品ID：<span v-text="delHopConfirm.fundId"></span>
+                                            的记录吗？
+                                        </h4>
+
+                                    </div>
+                                    <p class="text-center" >
+                                        <button type="button" class="btn btn-primary btn-sm"  data-dismiss="modal" @click.prevent="deleteHop">确定</button>
+                                        <button class="btn btn-sm " style=" margin-left:30px;color:#ccc" data-dismiss="modal" class="close" aria-hidden="true">取消</button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--删除投顾输出信息框-->
+                        <div class="modal" id="showDeleteIao" tabindex="-1"  aria-hidden="true" data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" >×</button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <h4 style="text-indent:2em"> 您确定删除
+                                            合作方销售机构代码：<span style="" v-text="delIaoConfirm.partnerAgencyNo"></span>
+                                            ,合作方销售机构网点：<span v-text="delIaoConfirm.partnerBranchCode"></span>
+                                            ,策略代码：<span v-text="delIaoConfirm.groupId"></span>
+                                            的记录吗？
+                                        </h4>
+
+                                    </div>
+                                    <p class="text-center" >
+                                        <button type="button" class="btn btn-primary btn-sm"  data-dismiss="modal" @click.prevent="deleteIao">确定</button>
+                                        <button class="btn btn-sm " style=" margin-left:30px;color:#ccc" data-dismiss="modal" class="close" aria-hidden="true">取消</button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--删除fisp产品信息框-->
+                        <div class="modal" id="showDeleteFisp" tabindex="-1"  aria-hidden="true" data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" >×</button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <h4 style="text-indent:2em"> 您确定删除
+                                            合作方销售机构代码：<span style="" v-text="delFispConfirm.distributorCode"></span>
+                                            ,合作方销售机构网点：<span v-text="delFispConfirm.branchCode"></span>
+                                            ,产品编号：<span v-text="delFispConfirm.fundId"></span>
+                                            的记录吗？
+                                        </h4>
+
+                                    </div>
+                                    <p class="text-center" >
+                                        <button type="button" class="btn btn-primary btn-sm"  data-dismiss="modal" @click.prevent="deleteFisp">确定</button>
+                                        <button class="btn btn-sm " style=" margin-left:30px;color:#ccc" data-dismiss="modal" class="close" aria-hidden="true">取消</button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--添加PSP 页面-->
+                        <div class="modal" id="showAddPsp" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content" >
+                                    <form id="addPspForm">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                                &times;
+                                            </button>
+                                            <h4 class=" modal-title" style="display: inline">新增</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <!--psp新增页面-->
+                                            <div class="form">
+                                                <!--根据系统切换新增页面-->
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">系统:</label>
+                                                    <select v-model="addSystem">
+                                                        <option v-for=" (item,index) in systems " :value="item" :key="index">{{item}}</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">渠道代码:</label>
+                                                    <input type="text" name="partnerid"  v-model="pspForm.partnerid"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">产品ID:</label>
+                                                    <input type="text" v-model="pspForm.fundid" name="fundid"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">产品名称:</label>
+                                                    <input type="text" v-model="pspForm.fundname" name="fundname"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">TANO:</label>
+                                                    <input type="text" v-model="pspForm.tano" name="tano"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">状态:</label>
+                                                    <select  v-model="pspForm.status" name="status">
+                                                        <option value="1" selected="selected">有效</option>
+                                                        <option value="R">认购</option>
+                                                        <option value="0">无效</option>
+                                                    </select>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">分红方式:</label>
+                                                    <input type="text" v-model="pspForm.melonmd" name="melonmd"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <p class="text-center">
+
+                                            <button class="btn btn-sm btn-primary px100"   @click.prevent="addPsp">添加PSP</button>
+                                            <button class="btn btn-sm px100" style=" margin-left:30px;color:#ccc" data-dismiss="modal" class="close" aria-hidden="true">取消</button>
+                                        </p>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <!--添加HOP 页面-->
+                        <div class="modal" id="showAddHop" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content" >
+                                    <form id="addHopForm">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                                &times;
+                                            </button>
+                                            <h4 class=" modal-title" style="display: inline">新增</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="form">
+
+                                                <!--根据系统切换新增页面-->
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">系统:</label>
+                                                    <select v-model="addSystem">
+                                                        <option v-for=" (item,index) in systems " :value="item" :key="index">{{item}}</option>
+                                                    </select>
+                                                </div>
+                                                <!--hop新增页面-->
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">渠道编号:</label>
+                                                    <input type="text"  v-model="hopForm.branchCode" name="branchCode"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">产品ID:</label>
+                                                    <input type="text" v-model="hopForm.fundId" name="fundId"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">销售机构代码:</label>
+                                                    <input type="text" v-model="hopForm.distributorCode" name="distributorCode"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">TANO:</label>
+                                                    <input type="text" v-model="hopForm.taNo" name="taNo"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">状态:</label>
+                                                    <select  v-model="hopForm.status" name="status">
+                                                        <option value="N" selected="selected">有效</option>
+                                                        <option value="C">无效</option>
+                                                    </select>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-sm btn-primary px100" @click.prevent="addHop">添加HOP</button>
+                                            <button class="btn btn-sm px100" style=" margin-left:30px;color:#ccc" data-dismiss="modal" class="close" aria-hidden="true">取消</button>
+                                        </p>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--添加投顾输出页面-->
+                        <div class="modal" id="showAddIao" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content" >
+                                    <form id="addIaoForm">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                                &times;
+                                            </button>
+                                            <h4 class=" modal-title" style="display: inline">新增</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="form">
+
+                                                <!--根据系统切换新增页面-->
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">系统:</label>
+                                                    <select v-model="addSystem">
+                                                        <option v-for=" (item,index) in systems " :value="item" :key="index">{{item}}</option>
+                                                    </select>
+                                                </div>
+                                                <!--hop新增页面-->
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">合作方销售机构代码:</label>
+                                                    <input type="text"  v-model="iaoForm.partnerAgencyNo" name="partnerAgencyNo"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">合作方销售机构网点:</label>
+                                                    <input type="text" v-model="iaoForm.partnerBranchCode" name="partnerBranchCode"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">策略代码:</label>
+                                                    <input type="text" v-model="iaoForm.groupId" name="groupId"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">合作方策略代码:</label>
+                                                    <input type="text" v-model="iaoForm.partnerGroupId" name="partnerGroupId"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">状态:</label>
+                                                    <select  v-model="iaoForm.status" name="status">
+                                                        <option value="N" selected="selected">有效</option>
+                                                        <option value="C">无效</option>
+                                                    </select>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-sm btn-primary px100" @click.prevent="addIao">添加投顾输出</button>
+                                            <button class="btn btn-sm px100" style=" margin-left:30px;color:#ccc" data-dismiss="modal" class="close" aria-hidden="true">取消</button>
+                                        </p>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--添加Fisp 页面-->
+                        <div class="modal" id="showAddFisp" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content" >
+                                    <form id="addFispForm">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                                &times;
+                                            </button>
+                                            <h4 class=" modal-title" style="display: inline">新增</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="form">
+
+                                                <!--根据系统切换新增页面-->
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">系统:</label>
+                                                    <select v-model="addSystem">
+                                                        <option v-for=" (item,index) in systems " :value="item" :key="index">{{item}}</option>
+                                                    </select>
+                                                </div>
+                                                <!--fisp新增页面-->
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">销售机构代码:</label>
+                                                    <input type="text" v-model="fispForm.distributorCode" name="distributorCode"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">渠道编号:</label>
+                                                    <input type="text"  v-model="fispForm.branchCode" name="branchCode"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">产品ID:</label>
+                                                    <input type="text" v-model="fispForm.fundId" name="fundId"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">TANO:</label>
+                                                    <input type="text" v-model="fispForm.taNo" name="taNo"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">状态:</label>
+                                                    <select  v-model="fispForm.status" name="status">
+                                                        <option value="N" selected="selected">有效</option>
+                                                        <option value="C">无效</option>
+                                                    </select>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-sm btn-primary px100" @click.prevent="addFisp">添加Fisp</button>
+                                            <button class="btn btn-sm px100" style=" margin-left:30px;color:#ccc" data-dismiss="modal" class="close" aria-hidden="true">取消</button>
+                                        </p>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--更新PSP 页面-->
+                        <div class="modal" id="showUpdatePsp" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content" style="width:700px;height:400px">
+                                    <form id="updatePspForm">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                                &times;
+                                            </button>
+                                            <h4 class=" modal-title" style="display: inline">更新</h4>
+                                        </div>
+                                        <div class="modal-body" style="padding:10px 30px ">
+                                            <div class="form">
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">渠道代码:</label>
+                                                    <input type="text" v-model="pspForm.partnerid" name="partnerid" readonly="true"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100" >产品ID:</label>
+                                                    <input type="text" v-model="pspForm.fundid" name="fundid" readonly="true"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">产品名称:</label>
+                                                    <input type="text" v-model="pspForm.fundname" name="fundname"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">TANO:</label>
+                                                    <input type="text" v-model="pspForm.tano" name="tano"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100" >状态:</label>
+                                                    <select  v-model="pspForm.status" name="status">
+                                                        <option value="1" selected="selected">有效</option>
+                                                        <option value="R">认购</option>
+                                                        <option value="0">无效</option>
+                                                    </select>
+                                                    <!--                                                <input type="text" v-model="status"/>-->
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">分红方式:</label>
+                                                    <input type="text" v-model="pspForm.melonmd" name="melonmd"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">操作人:</label>
+                                                    <input type="text" v-model="pspForm.updateby" name="updateBy"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button id="update" class="btn btn-sm btn-primary px100"   @click="updatePsp">更新</button>
+                                            <button class="btn btn-sm px100 " style=" margin-left:30px;color:#ccc" data-dismiss="modal" class="close" aria-hidden="true">取消</button>
+                                        </p>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <!--更新Hop 页面-->
+                        <div class="modal" id="showUpdateHop" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content" >
+                                    <form id="updateHopForm">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                                &times;
+                                            </button>
+                                            <h4 class=" modal-title" style="display: inline">更新</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="form">
+
+                                                <!--hop更新页面-->
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">渠道编号:</label>
+                                                    <input type="text"  v-model="hopForm.branchCode" name="branchCode" readonly="true"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">产品ID:</label>
+                                                    <input type="text" v-model="hopForm.fundId" name="fundId" readonly="true"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">销售机构代码:</label>
+                                                    <input type="text" v-model="hopForm.distributorCode" name="distributorCode"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">TANO:</label>
+                                                    <input type="text" v-model="hopForm.taNo" name="taNo"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">状态:</label>
+                                                    <select  v-model="hopForm.status" name="status">
+                                                        <option value="N" selected="selected">有效</option>
+                                                        <option value="C">无效</option>
+                                                    </select>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-sm btn-primary px100" @click.prevent="updateHop">更新HOP</button>
+                                            <button class="btn btn-sm px100" style=" margin-left:30px;color:#ccc" data-dismiss="modal" class="close" aria-hidden="true">取消</button>
+                                        </p>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--更新投顾输出页面-->
+                        <div class="modal" id="showUpdateIao" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content" >
+                                    <form id="updateIaoForm">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                                &times;
+                                            </button>
+                                            <h4 class=" modal-title" style="display: inline">更新</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="form">
+
+                                                <!--hop更新页面-->
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">合作方销售机构代码:</label>
+                                                    <input type="text"  v-model="iaoForm.partnerAgencyNo" name="partnerAgencyNo" readonly="true"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">合作方销售机构网点:</label>
+                                                    <input type="text" v-model="iaoForm.partnerBranchCode" name="partnerBranchCode" readonly="true"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">策略代码:</label>
+                                                    <input type="text" v-model="iaoForm.groupId" name="groupId" readonly="true"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">合作方策略代码:</label>
+                                                    <input type="text" v-model="iaoForm.partnerGroupId" name="partnerGroupId" />
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">状态:</label>
+                                                    <select  v-model="iaoForm.status" name="status">
+                                                        <option value="N" selected="selected">有效</option>
+                                                        <option value="C">无效</option>
+                                                    </select>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-sm btn-primary px100" @click.prevent="updateIao">更新投顾输出</button>
+                                            <button class="btn btn-sm px100" style=" margin-left:30px;color:#ccc" data-dismiss="modal" class="close" aria-hidden="true">取消</button>
+                                        </p>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--更新fisp页面-->
+                        <div class="modal" id="showUpdateFisp" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content" >
+                                    <form id="updateFispForm">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                                &times;
+                                            </button>
+                                            <h4 class=" modal-title" style="display: inline">更新</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="form">
+
+                                                <!--hop更新页面-->
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">销售机构代码:</label>
+                                                    <input type="text" v-model="fispForm.distributorCode" name="distributorCode"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">渠道编号:</label>
+                                                    <input type="text"  v-model="fispForm.branchCode" name="branchCode" readonly="true"/>
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">产品ID:</label>
+                                                    <input type="text" v-model="fispForm.fundId" name="fundId" readonly="true"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">产品名称:</label>
+                                                    <input type="text" v-model="fispForm.fundName" name="fundName" readonly="true"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">TANO:</label>
+                                                    <input type="text" v-model="fispForm.taNo" name="taNo"/>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+                                                <div class="form-group" style="margin-left:28px">
+                                                    <label class="control-label px100">状态:</label>
+                                                    <select  v-model="fispForm.status" name="status">
+                                                        <option value="N" selected="selected">有效</option>
+                                                        <option value="C">无效</option>
+                                                    </select>
+                                                    <!--<input type="button" class="btn btn-sm btn-primary right" click="search" value="从CRM导入">-->
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-sm btn-primary px100" @click.prevent="updateFisp">更新Fisp</button>
+                                            <button class="btn btn-sm px100" style=" margin-left:30px;color:#ccc" data-dismiss="modal" class="close" aria-hidden="true">取消</button>
+                                        </p>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 查询窗口 -->
+                        <form class="form-inline" style="padding: 10px 0;">
+
+                            <div class="form-group">
+                                <label class="control-label">系统:</label>
+                                <select v-model="system">
+                                    <option v-for=" (item,index) in systems " :value="item" :key="index">{{item}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">渠道代码:</label>
+                                <input type="text" v-model="s_partnerid">
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">产品ID:</label>
+                                <input type="text" v-model="s_fundid">
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">状态:</label>
+                                <select v-model="s_status">
+                                    <option value="" >全部</option>
+                                    <option v-for="item in statusList" :key="item.code" :value = "item.code">{{item.msg}}</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group pull-right">
+                                <input type="button" class="btn btn-sm btn-primary" value="查询" @click="search">
+                            </div>
+
+                            <div class="form-group pull-right " style="margin-right: 10px">
+                                <input type="button" class="btn btn-sm btn-primary " value="添加" @click="showAdd">
+                            </div>
+
+                            <div class="form-group pull-right"  style="margin-right: 10px">
+                                <input type="button" class="btn btn-sm btn-primary" value="导出" @click='exportExcel'>
+                            </div>
+
+                        </form>
+
+                        <div class="table-header">
+                            <%= cpage %>--表格数据
+                        </div>
+                        <!--分页器和快速查询-->
+                        <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                            <div class="col-xs-6">
+                                <div class="dataTables_length" id="dynamic-table_length">
+                                    <label>每页显示</label>
+                                    <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                        <option value="10">10</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="500">500</option>
+                                    </select>
+                                    <label>条</label>
+                                </div>
+                            </div>
+                            <div class="col-xs-6">
+                                <div id="dynamic-table_filter" class="dataTables_filter">
+                                    <label>快速查询:</label>
+                                    <input type="text" class="input-sm" v-model="condition">
+                                </div>
+                            </div>
+                        </div>
+                        <div></div>
+                        <!--数据表-->
+                        <table class="table table-bordered table-hover dataTable"  id="simple-table"  >
+                            <thead>
+                            <!--psp表头-->
+                            <tr v-if ="system==='psp'">
+
+                                <th class="center">序号</th>
+                                <th class="center">渠道编号</th>
+                                <th class="center">渠道名称</th>
+                                <th class="center" >产品ID</th>
+                                <th class="center">产品名称</th>
+                                <th class="center">TANO</th>
+                                <th class="center">状态</th>
+                                <th class="center">分红方式</th>
+                                <th class="center">操作人</th>
+                                <th class="center">更新时间</th>
+                                <th class="center " style="white-space:nowrap">操作</th>
+                            </tr>
+                            <!--hop表头-->
+                            <tr v-else-if="system==='hop'">
+                                <th class="center">序号</th>
+                                <th class="center">渠道编号</th>
+                                <th class="center">渠道名称</th>
+                                <th class="center" >产品ID</th>
+                                <th class="center">产品名称</th>
+                                <th class="center">销售机构代码</th>
+                                <th class="center">TANO</th>
+                                <th class="center">状态</th>
+                                <th class="center">操作人</th>
+                                <th class="center">更新时间</th>
+                                <th class="center " style="white-space:nowrap">操作</th>
+                            </tr>
+
+                            <!--投顾输出表头-->
+                            <tr v-else-if="system==='iao'">
+                                <th class="center">序号</th>
+                                <th class="center">合作方销售机构代码</th>
+                                <th class="center">合作方销售机构网点</th>
+                                <th class="center" >策略代码</th>
+                                <th class="center" >合作方策略代码</th>
+                                <th class="center">状态</th>
+                                <th class="center">操作人</th>
+                                <th class="center">更新时间</th>
+                                <th class="center " style="white-space:nowrap">操作</th>
+                            </tr>
+
+                            <!--fisp表头-->
+                            <tr v-else-if="system==='fisp'">
+                                <th class="center">序号</th>
+                                <th class="center">销售机构代码</th>
+                                <th class="center">渠道编号</th>
+                                <th class="center" >产品ID</th>
+                                <th class="center" >产品名称</th>
+                                <th class="center">TANO</th>
+                                <th class="center">状态</th>
+                                <th class="center">操作人</th>
+                                <th class="center">更新时间</th>
+                                <th class="center " style="white-space:nowrap">操作</th>
+                            </tr>
+
+                            </thead>
+                            <tbody>
+
+                            <!--psp数据表-->
+                            <template v-if="viewData.length>0 &&system==='psp'">
+                                <tr v-for="(item,index) in viewData" :key="index">
+
+                                    <td class="center col-md-1" v-text="index+1"></td>
+                                    <td class="center col-md-1" v-text="item.partnerid"></td>
+                                    <td class="center col-md-1" v-text="item.partnerName"></td>
+                                    <td class="center col-md-1" v-text="item.fundid" ></td>
+                                    <td class="center col-md-1" v-text="item.fundname" style="white-space:nowrap"></td>
+                                    <td class="center col-md-1" v-text="item.tano"></td>
+                                    <td class="center col-md-1" style="white-space:nowrap">
+                                        <template v-if="item.status=='1'">
+                                            <span style="color: green">有效</span>
+                                        </template>
+                                        <template v-else-if="item.status=='R'">
+                                            <span style="color: blue">认购</span>
+                                        </template>
+                                        <template v-else >
+                                            <span style="color: red">无效</span>
+                                        </template>
+                                    </td>
+                                    <td class="center col-md-1" v-text="item.melonmd"></td>
+                                    <td class="center col-md-1" v-text="item.updateby"></td>
+                                    <td class="center col-md-1" v-text="formatTime(item.updatetime)"></td>
+                                    <td class="center col-md-1 " style="white-space:nowrap">
+                                        <a href="javascript:;" @click="showUpdatePsp(item)">更新</a>
+                                        <a style="color: #ff0000" href="javascript:;" @click="todelPsp(item.partnerid,item.fundid)">删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <!--hop数据表-->
+                            <template v-else-if="viewData.length>0 &&system==='hop'">
+                                <tr v-for="(item,index) in viewData" :key="index">
+                                    <td class="center col-md-1" v-text="index+1"></td>
+                                    <td class="center col-md-1" v-text="item.branchCode"></td>
+                                    <td class="center col-md-1" v-text="item.partnerName"></td>
+                                    <td class="center col-md-1" v-text="item.fundId"></td>
+                                    <td class="center col-md-1" v-text="item.fundName" ></td>
+                                    <td class="center col-md-1" v-text="item.distributorCode" style="white-space:nowrap"></td>
+                                    <td class="center col-md-1" v-text="item.taNo"></td>
+                                    <td class="center col-md-1" style="white-space:nowrap">
+                                        <template v-if="item.status=='N'">
+                                            <span style="color: green">有效</span>
+                                        </template>
+                                        <template v-else >
+                                            <span style="color: red">无效</span>
+                                        </template>
+                                    </td>
+                                    <td class="center col-md-1" v-text="item.userNm"></td>
+                                    <td class="center col-md-1" v-text="formatTime(item.updateTimestamp)"></td>
+                                    <td class="center col-md-1 " style="white-space:nowrap">
+                                        <a href="javascript:;" @click="showUpdateHop(item)">更新</a>
+                                        <a style="color: red" href="javascript:;" @click="todelHop(item.distributorCode,item.branchCode,item.fundId)">删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <!--投顾输出数据表-->
+                            <template v-else-if="viewData.length>0 &&system==='iao'">
+                                <tr v-for="(item,index) in viewData" :key="index">
+                                    <td class="center col-md-1" v-text="index+1"></td>
+                                    <td class="center col-md-1" v-text="item.partnerAgencyNo"></td>
+                                    <td class="center col-md-1" v-text="item.partnerBranchCode"></td>
+                                    <td class="center col-md-1" v-text="item.groupId"></td>
+                                    <td class="center col-md-1" v-text="item.partnerGroupId"></td>
+                                    <td class="center col-md-1" style="white-space:nowrap">
+                                        <template v-if="item.status=='N'">
+                                            <span style="color: green">有效</span>
+                                        </template>
+                                        <template v-else >
+                                            <span style="color: #ff0000">无效</span>
+                                        </template>
+                                    </td>
+                                    <td class="center col-md-1" v-text="item.userNm"></td>
+                                    <td class="center col-md-1" v-text="formatTime(item.updateTimestamp)"></td>
+                                    <td class="center col-md-1 " style="white-space:nowrap">
+                                        <a href="javascript:;" @click="showUpdateIao(item)">更新</a>
+                                        <a style="color: red" href="javascript:;" @click="todelIao(item.partnerBranchCode,item.partnerBranchCode,item.groupId)">删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <!--fisp数据表-->
+                            <template v-else-if="viewData.length>0 &&system==='fisp'">
+                                <tr v-for="(item,index) in viewData" :key="index">
+                                    <td class="center col-md-1" v-text="index+1"></td>
+                                    <td class="center col-md-1" v-text="item.distributorCode" style="white-space:nowrap"></td>
+                                    <td class="center col-md-1" v-text="item.branchCode"></td>
+                                    <td class="center col-md-1" v-text="item.fundId"></td>
+                                    <td class="center col-md-1" v-text="item.fundName" ></td>
+                                    <td class="center col-md-1" v-text="item.taNo"></td>
+                                    <td class="center col-md-1" style="white-space:nowrap">
+                                        <template v-if="item.status=='N'">
+                                            <span style="color: green">有效</span>
+                                        </template>
+                                        <template v-else >
+                                            <span style="color: red">无效</span>
+                                        </template>
+                                    </td>
+                                    <td class="center col-md-1" v-text="item.userNm"></td>
+                                    <td class="center col-md-1" v-text="formatTime(item.updateTimestamp)"></td>
+                                    <td class="center col-md-1 " style="white-space:nowrap">
+                                        <a href="javascript:;" @click="showUpdateFisp(item)">更新</a>
+                                        <a style="color: red" href="javascript:;" @click="todelFisp(item.distributorCode,item.branchCode,item.fundId)">删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                </tr>
+                            </template>
+                            </tbody>
+
+                        </table>
+                        <!--底部页码-->
+                        <div v-if="viewData.length>0" class="row"
+                             style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                            <div class="col-xs-2">
+                                <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                            </div>
+                            <div class="col-xs-10">
+                                <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                    <ul class="pagination">
+                                        <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                            @click="prev">
+                                            <a href="javascript:;" v-text="'上一页'"></a>
+                                        </li>
+                                        <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                            v-for="value in middleData.length" @click="changeIndex(value)">
+                                            <a href="javascript:;" v-text="value"></a>
+                                        </li>
+                                        <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                            @click="next">
+                                            <a href="javascript:;" v-text="'下一页'"></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- PAGE CONTENT ENDS -->
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+
+            </div><!-- /.page-content -->
+        </div>
+
+
+    </div><!-- /.main-content -->
+
+    <% include ../../common/footer.html %>
+
+</div><!-- /.main-container -->
+
+<% include ../../common/basic-scripts.html %>
+
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<!-- inline scripts related to this page -->
+<script src="/ace/assets/js/jquery-ui.custom.min.js"></script>
+<script src="/ace/assets/js/jquery.ui.touch-punch.min.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/ace/assets/js/spinbox.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datepicker.min.js"></script>
+<script src="/ace/assets/js/autosize.min.js"></script>
+<script src="/ace/assets/js/jquery.inputlimiter.min.js"></script>
+<script src="/ace/assets/js/jquery.maskedinput.min.js"></script>
+<script src="/ace/assets/js/markdown.min.js"></script>
+<script src="/ace/assets/js/bootstrap-markdown.min.js"></script>
+<script src="/ace/assets/js/jquery.hotkeys.index.min.js"></script>
+<script src="/ace/assets/js/bootstrap-wysiwyg.min.js"></script>
+<script src="/ace/assets/js/bootbox.js"></script>
+<script src="/ace/assets/js/jquery.validate.min.js"></script>
+<script src="/js/thirdPartyOperation/common/richTextBox.js"></script>
+<script src="/js/thirdPartyOperation/products/pspfund.js"></script>
+<script src="/js/lib/xlsx.core.min.js"></script>
+</body>
+
+</html>

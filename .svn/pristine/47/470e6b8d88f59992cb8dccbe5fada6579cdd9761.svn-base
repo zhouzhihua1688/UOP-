@@ -1,0 +1,243 @@
+const request = require('./../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').investmentAccount.indicatorMonitoring;
+const investTableName = 'uop_log_invest';
+module.exports = function (app) {
+    // 查询规则列表
+    app.post('/investmentMgmt/investmentAccount/indicatorMonitoring/query.ajax', (req, res, next) => {
+        let option = {
+            pageUrl: '/investmentMgmt/investmentAccount/indicatorMonitoring/query.ajax',
+            req,
+            url: apiUrl.query,
+            qs: req.body,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({error: 1, msg: '查询失败'});
+            }
+            if (body.returnCode == 0 && Array.isArray(body.body.records)) {
+                body.body.records.forEach(item => {
+                    item.check = false;
+                });
+                return res.send({error: 0, msg: '查询成功', data: body.body.records});
+            } else if (body.returnCode != 9999) {
+                return res.send({error: 1, msg: body.returnMsg, data: null});
+            } else {
+                return res.send({error: 1, msg: '查询失败', data: null});
+            }
+        });
+    });
+    // 查询规则ID
+    app.post('/investmentMgmt/investmentAccount/indicatorMonitoring/queryRuleList.ajax', (req, res, next) => {
+        let option = {
+            pageUrl: '/investmentMgmt/investmentAccount/indicatorMonitoring/queryRuleList.ajax',
+            req,
+            url: apiUrl.queryRuleList,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({error: 1, msg: '查询失败'});
+            }
+            if (body.returnCode == 0 && Array.isArray(body.body.rules)) {
+                return res.send({error: 0, msg: '查询成功', data: body.body.rules});
+            } else if (body.returnCode != 9999) {
+                return res.send({error: 1, msg: body.returnMsg, data: null});
+            } else {
+                return res.send({error: 1, msg: '查询失败', data: null});
+            }
+        });
+    });
+    // 查询组合Id
+    app.post('/investmentMgmt/investmentAccount/indicatorMonitoring/queryGroupIdList.ajax', (req, res, next) => {
+				let params = {}
+				params.groupId = "ALL";
+				let option = {
+						req,
+						pageUrl: '/investmentMgmt/investmentAccount/indicatorMonitoring/queryGroupIdList.ajax',
+						session: req.session,
+						qs: params,
+						url: apiUrl.labels,
+						timeout: 15000,
+						json: true
+				};
+			   request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '操作失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode == 0) {
+								let resultData= result.body.filter((item)=>{
+										return item.isInvestment=='Y'&&(item.fundgroupType=='13'||item.fundgroupType=='14'||item.fundgroupType=='15'||item.fundgroupType=='16'||item.fundgroupType=='17')
+								});
+                return res.send({
+                    error: 0,
+                    msg: '获取成功',
+                    data: resultData
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '获取失败'
+                });
+            }
+        });
+    });
+    // 查看弹窗
+    app.post('/investmentMgmt/investmentAccount/indicatorMonitoring/getDetail.ajax', (req, res, next) => {
+        let list1 = new Promise((resolve, reject) => {
+            let option = {
+                pageUrl: '/investmentMgmt/investmentAccount/indicatorMonitoring/getDetail.ajax',
+                req,
+                url: apiUrl.getDetailList1,
+                qs: {
+                    balanceSerialNo: req.body.balanceSerialNo,
+                    containDetail: true
+                },
+                timeout: 15000,
+                json: true
+            };
+            request(option, (error, response, body) => {
+                if (error) {
+                    return reject({message: '查询持有详情失败'});
+                }
+                if (body.returnCode == 0 && body.body && Array.isArray(body.body.fundGroupDetails)) {
+                    resolve(body.body.fundGroupDetails);
+                } else if (body.returnCode != 9999) {
+                    return reject({message: body.returnMsg});
+                } else {
+                    return reject({message: '查询持有详情失败'});
+                }
+            });
+        });
+
+        let list2 = new Promise((resolve, reject) => {
+            let option = {
+                pageUrl: '/investmentMgmt/investmentAccount/indicatorMonitoring/getDetail.ajax',
+                req,
+                url: apiUrl.getDetailList2,
+                qs: {
+                    groupId: req.body.groupId
+                },
+                timeout: 15000,
+                json: true
+            };
+            request(option, (error, response, body) => {
+                if (error) {
+                    return reject({message: '查询标准组合失败'});
+                }
+                if (body.returnCode == 0 && body.body && Array.isArray(body.body)) {
+                    resolve(body.body[0].detailList);
+                } else if (body.returnCode != 9999) {
+                    return reject({message: body.returnMsg});
+                } else {
+                    return reject({message: '查询标准组合失败'});
+                }
+            });
+        });
+
+        Promise.all([list1, list2]).then(([list1, list2]) => {
+            return res.send({error: 0, msg: 'success', data: {list1, list2}});
+        }).catch(error => {
+            return res.send({error: 1, msg: error.message, data: null});
+        });
+
+    });
+    // 单次调仓
+    app.post('/investmentMgmt/investmentAccount/indicatorMonitoring/transfer.ajax', (req, res, next) => {
+        let option = {
+            pageUrl: '/investmentMgmt/investmentAccount/indicatorMonitoring/transfer.ajax',
+            operateType: 2, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            req,
+            url: apiUrl.transfer,
+            body: {
+                balanceSerialNo: req.body.balanceSerialNo,
+                custNo: req.body.custNo,
+                recordDate: req.body.date,
+                arAcct: req.body.arAcct,
+                groupId: req.body.groupId,
+                ruleId: req.body.ruleId,
+                branchCode: '247',
+                accptMd: '2',
+                transPosMode: '1' // 标准调仓
+            },
+            timeout: 15000,
+            json: true,
+            investBody:{
+                balanceSerialNo: req.body.balanceSerialNo,
+                custNo: req.body.custNo,
+                recordDate: req.body.date,
+                arAcct: req.body.arAcct,
+                groupId: req.body.groupId,
+                ruleId: req.body.ruleId,
+                branchCode: '247',
+                accptMd: '2'
+            },
+            mappingKeyWords:'indicatorMonitoring'
+        };
+        request.post(option, (error, response, body) => {
+            sysLogger(option.operateType, req, option, body, investTableName);
+            if (error) {
+                return res.send({error: 1, msg: '调仓失败'});
+            }
+            if (body.returnCode == 0) {
+                return res.send({error: 0, msg: '调仓成功', data: body.body});
+            } else if (body.returnCode != 9999) {
+                return res.send({error: 1, msg: body.returnMsg, data: null});
+            } else {
+                return res.send({error: 1, msg: '调仓失败', data: null});
+            }
+        });
+    });
+    // 批量调仓
+    app.post('/investmentMgmt/investmentAccount/indicatorMonitoring/batchTransfer.ajax', (req, res, next) => {
+        let option = {
+            pageUrl: '/investmentMgmt/investmentAccount/indicatorMonitoring/batchTransfer.ajax',
+            operateType: 2, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            req,
+            url: apiUrl.batchTransfer,
+            body: JSON.parse(req.body.transferData),
+            timeout: 15000,
+            json: true,
+            investBody:JSON.parse(req.body.transferData),
+            mappingKeyWords:'indicatorMonitoring'
+        };
+        request.post(option, (error, response, body) => {
+            sysLogger(option.operateType, req, option, body, investTableName);
+            if (error) {
+                return res.send({error: 1, msg: '批量调仓失败'});
+            }
+            if (body.returnCode == 0) {
+                var resultBody = body.body;
+                var wrongcustNo = [];
+                var msg = '';
+                if(resultBody && resultBody.length>0){
+                    resultBody.forEach(function (item) {
+                        //errorCode不为0表示调仓失败                               
+                        if (item.errorCode == null || item.errorCode != 0) {
+                            if(item.custNo){
+                                wrongcustNo.push(item.custNo);
+                            }
+                        }                                
+                    })
+                }
+                msg = wrongcustNo.length >0 ? '调仓不成功或部分失败的客户：'+ wrongcustNo.join(',') : '批量调仓成功';
+                return res.send({error: 0, msg: msg, data: body.body});
+            } else if (body.returnCode != 9999) {
+                return res.send({error: 1, msg: body.returnMsg, data: null});
+            } else {
+                return res.send({error: 1, msg: '批量调仓失败', data: null});
+            }
+        });
+    });
+};

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        table tbody td {
+            vertical-align: middle !important;
+            word-wrap: break-word;
+        }
+        .page-content {padding-bottom: 0}
+        iframe {border: 0;}
+    </style>
+</head>
+<body class="no-skin">
+<% include ../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../common/sidebar.html %>
+    <% include ../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../common/breadcrumb.html %>
+                <% include ../common/ace-settings-container.html %>
+                <!-- <iframe src="http://tabserver/trusted/9D1ObyqDQmSIOyQpKdy4Sw==:dg62gCsSE0QRArXNTOp6mlJ5/views/workbookQ4/SalesQ4?:embed=yes" width="800" height="600"></iframe> -->
+                <!-- <iframe src="<%=tableauServer%>/trusted/<%=tableauTicket%>/views/fici/FICI_3?:origin=card_share_link&:embed=n" width="800" height="600"></iframe>  -->
+                <!-- <iframe src="https://pie.htffund.com/trusted/hCr0lAt9R9GiIUa9FeKhQA==:K0wLyxZYT1ERByy2t6yjkd99/views/34/sheet1_1/admin/9ad35a9e-e67c-4573-a2ba-ac4998b16285?:display_count=n&:showVizHome=n&:origin=viz_share_link?:embed=yes" width="800" height="600"></iframe>  -->
+                <!-- <script src="https://pie.htffund.com/javascripts/api/tableau-2.min.js?2369b27d29de9aef86ea"></script>
+                <object class="tableauViz" width="800" height="600" style="display:block;"> 
+                    <param name="name" value="34/sheet1_1/admin/9ad35a9e-e67c-4573-a2ba-ac4998b16285?:display_count=n&:showVizHome=n&:origin=viz_share_link" /> 
+                    <param name="ticket" value="_OgNtV7-SQmIO7YnFTiHqw==:Dwm7uYLOFHQYdh-A6GCm2z4i" /> 
+                </object>  -->
+                <div id="tableauContent">
+                    <!-- <%=tableauTicket%> -->
+                    <iframe :src="tableauSrc" width="100%" height="600"></iframe> 
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+</div><!-- /.main-container -->
+<% include ../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script>
+new Vue({
+    el: '#content',
+    data: {
+        // ticket: 'doSEhNvzSBW0dg5NMFS7Rw==:Yf3uW_UhkDz_5nylOFvsq8Ks',
+        ticket: '<%=tableauTicket%>',
+        // viewUrl: '/views/fici/FICI_3?:origin=card_share_link&:embed=n',
+        // viewUrl: '/views/34/sheet1_1/admin/9ad35a9e-e67c-4573-a2ba-ac4998b16285?:display_count=n&:showVizHome=n&:origin=viz_share_link',
+        // tabserver: 'http://172.26.254.30:8000',
+        // tabserver: 'https://pie.htffund.com',
+        tabserver: '<%=tableauServer%>',
+        // viewUrl: '/views/34/sheet1_1/admin/9ad35a9e-e67c-4573-a2ba-ac4998b16285?:display_count=n&:showVizHome=n&:origin=viz_share_link?:embed=yes',
+        viewUrl: '<%=tableauViewUrl%>',
+    },
+    computed: {
+        tableauSrc: function(){
+            return this.tabserver + '/trusted/' + this.ticket + this.viewUrl;
+        }
+    },
+    mounted: function () {
+        this.iframeResize();
+        window.onresize = function(){
+            this.iframeResize();
+        }.bind(this)
+    },
+    methods: {
+        iframeResize: function () {
+            $('iframe').height($(window).height() - $('#tableauContent').offset().top - 5);
+        }
+    },
+})
+</script>
+<!-- 
+<script src="/js/systemMgmt/systemLogMgmt/logMgmt.js"></script> 
+-->
+</body>
+</html>
+

@@ -1,0 +1,9 @@
+//产品开放总路由
+module.exports = function (app) {
+    // 页面菜单
+    require('./contactMaintain')(app);
+    require('./fileInteraction')(app);
+    require('./partnerSelling')(app);
+    require('./closeCheck')(app);
+    require('./partnerTradeAssist')(app);
+};

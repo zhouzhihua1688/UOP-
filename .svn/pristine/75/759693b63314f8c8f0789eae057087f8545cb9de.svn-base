@@ -1,0 +1,399 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').IPOMgmtEC.fundChangeHandle;
+const pool = require('../apiConfig').mysqlPool;
+const tableName = 'bm_ipo_fundtransform'
+module.exports = function (app) {
+    // 获取  基金名称查询数据
+    app.post('/businessMgmt/IPOMgmtEC/fundChangeHandle/collection.ajax', (req, res, next) => {
+        let userId = req.session.loginInfo.userid;
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.collection,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/collection.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/collection.ajax error:', error);
+            console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/collection.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/collection.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                result.body.userId = userId;
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+        });
+    });
+
+
+    // 获取  线上初始数据和查询
+    app.post('/businessMgmt/IPOMgmtEC/fundChangeHandle/getLineList.ajax', (req, res, next) => {
+        let params = req.body;
+        let userId = req.session.loginInfo.userid;
+        let option = {
+            session: req.session,
+            url: `${apiUrl.getLineList}${params.fundid}/convert/query`,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/getLineList.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/getLineList.ajax error:', error);
+            console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/getLineList.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/getLineList.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body,
+                    userId
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+        });
+    });
+
+    // 获取  本地初始数据和查询
+    app.post('/businessMgmt/IPOMgmtEC/fundChangeHandle/getLocalList.ajax', (req, res, next) => {
+        let params = req.body;
+        let userId = req.session.loginInfo.userid;
+
+        pool.getConnection(function (err, connection) {
+            if (err) {
+                console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/getLocalList.ajax  链接失败', err)
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            console.log('params', params)
+            var $sql = `SELECT * FROM ${tableName} WHERE delete_flag='F';`;
+            if (params.fundid != '' || params.status != '') {
+                $sql = `SELECT * FROM ${tableName} WHERE delete_flag='F'${params.fundid == '' ? '' : `AND JSON_EXTRACT(content, '$.fundid')='${params.fundid}'`}${params.status == '' ? '' : '&&status=' + params.status};`
+            }
+            connection.query($sql, function (err, data) {
+                connection.release()
+                if (err) {
+                    console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/getLocalList.ajax', err)
+                    return res.send({
+                        error: 1,
+                        msg: '查询失败'
+                    });
+                } else {
+                    data.forEach(element => {
+                        element.content = JSON.parse(element.content)
+                        element.fundid = element.content.fundid
+                        element.ofundid = element.content.ofundid
+                        element.update_timestamp = formatTimeStamp(element.update_timestamp)
+                        delete element.content
+                    });
+                    res.send({
+                        error: 0,
+                        msg: '查询成功',
+                        data,
+                        userId
+                    });
+                }
+            })
+
+        })
+    });
+
+
+    // 删除线上数据
+    app.post('/businessMgmt/IPOMgmtEC/fundChangeHandle/deleteFund.ajax', (req, res, next) => {
+        let params = req.body;
+        let userid = req.session.loginInfo.userid;
+        console.log('params', params)
+        pool.getConnection(function (err, connection) {
+            if (err) {
+                console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/deleteFund.ajax  链接失败', err)
+                return;
+            }
+            connection.query(`SELECT local_id FROM ${tableName} WHERE delete_flag='F'&&status<>'0' && service_id='${params.serialno}';`, function (err, data) {
+                if (err) {
+                    console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/deleteFund.ajax', err)
+                    return res.send({
+                        error: 1,
+                        msg: '操作数据库失败'
+                    });
+                } else {
+                    if (data.length) {
+                        return res.send({
+                            error: 1,
+                            msg: '本地已存在该数据，请勿重复操作',
+                            data: null
+                        });
+                    } else {
+                        let $sql = `insert into ${tableName} set ?;`
+                        let $sql_params = {
+                            content: JSON.stringify({
+                                fundid: params.fundid,
+                                ofundid: params.ofundid
+                            }),
+                            creator: userid,
+                            operator: userid,
+                            service_id: params.serialno,
+                            status: 1,
+                            delete_flag: 'F',
+                            operate: 3
+                        }
+                        connection.query($sql, $sql_params, function (err, data) {
+                            connection.release()
+                            if (err) {
+                                console.log(err)
+                                return res.send({
+                                    error: 1,
+                                    msg: '操作数据库失败'
+                                });
+                            } else {
+                                console.log('data', data)
+                                if (data.affectedRows != 0) {
+                                    return res.send({
+                                        error: 0,
+                                        msg: '已添加到本地库，等待提交',
+                                        data: '已添加到本地库，等待提交'
+                                    });
+                                }
+                                return res.send({
+                                    error: 1,
+                                    msg: '失败',
+                                    data: null
+                                });
+                            }
+                        })
+                    }
+                }
+            })
+
+        })
+    });
+    // 撤销本地数据
+    app.post('/businessMgmt/IPOMgmtEC/fundChangeHandle/backout.ajax', (req, res, next) => {
+        let params = req.body;
+        console.log('params', params)
+        pool.getConnection(function (err, connection) {
+            if (err) {
+                console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/backout.ajax  链接失败', err)
+                return;
+            }
+            connection.query(`DELETE FROM ${tableName} WHERE local_id=${params.local_id}&&update_timestamp='${params.update_timestamp}'`, function (err, data) {
+                connection.release()
+                if (err) {
+                    console.log(err)
+                    return res.send({
+                        error: 1,
+                        msg: '操作数据库失败'
+                    });
+                } else {
+                    console.log('data', data)
+                    if (data.affectedRows != 0) {
+                        return res.send({
+                            error: 0,
+                            msg: '已撤销',
+                            data: '已撤销'
+                        });
+                    }
+                    return res.send({
+                        error: 1,
+                        msg: '撤销失败',
+                        data: null
+                    });
+                }
+            })
+        })
+    });
+
+    // 提交本地数据
+    app.post('/businessMgmt/IPOMgmtEC/fundChangeHandle/submit.ajax', (req, res, next) => {
+        let params = req.body;
+        let userid = req.session.loginInfo.userid;
+        console.log('params', params)
+        pool.getConnection(function (err, connection) {
+            if (err) {
+                console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/submit.ajax  链接失败', err)
+                return;
+            }
+            connection.query(`UPDATE ${tableName} SET ? WHERE delete_flag='F'&&local_id=${params.local_id}&&update_timestamp='${params.update_timestamp}';`, { operator: userid, status: 2 }, function (err, data) {
+                connection.release()
+                if (err) {
+                    console.log(err)
+                    return res.send({
+                        error: 1,
+                        msg: '操作数据库失败'
+                    });
+                } else {
+                    console.log('data', data)
+                    if (data.changedRows != 0) {
+                        return res.send({
+                            error: 0,
+                            msg: '已提交',
+                            data: '已提交'
+                        });
+                    }
+                    return res.send({
+                        error: 1,
+                        msg: '提交失败',
+                        data: null
+                    });
+                }
+            })
+        })
+    });
+
+
+
+
+
+    // 新增
+    app.post('/businessMgmt/IPOMgmtEC/fundChangeHandle/add.ajax', (req, res, next) => {
+        let params = req.body;
+        let userid = req.session.loginInfo.userid;
+        console.log('params', params)
+        new Promise(function (resolve, reject) {
+            let option = {
+                session: req.session,
+                url: `${apiUrl.getLineList}${params.fundid}/convert/query`,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/add.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/add.ajax error:', error);
+                console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/add.ajax statusCode:', response && response.statusCode);
+                console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/add.ajax body:', body);
+                if (error) {
+                    reject({
+                        error: 1,
+                        msg: '数据获取失败'
+                    });
+                }
+                let result = typeof body === 'string' ? JSON.parse(body) : body;
+                if (result && result.returnCode == '0') {
+                    result.body.some(function (item, ind) {
+                        if (item.fundid == params.fundid && item.ofundid == params.ofundid) {
+                            reject({
+                                error: 1,
+                                msg: '数据已存在，不能重复新增'
+                            });
+                            return true;
+                        }
+                    })
+                    resolve();
+
+                } else {
+                    reject({
+                        error: 1,
+                        msg: '获取数据失败'
+                    });
+                }
+            });
+        }).then(function (result) {
+            pool.getConnection(function (err, connection) {
+                if (err) {
+                    console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/add.ajax  链接失败', err)
+                    return;
+                }
+                connection.query(`SELECT local_id FROM ${tableName} WHERE delete_flag='F'&&operate='1'&&status<>'0' AND JSON_EXTRACT(content, '$.fundid')='${params.fundid}' AND JSON_EXTRACT(content, '$.ofundid')='${params.ofundid}';`, function (err, data) {
+                    if (err) {
+                        console.log('/businessMgmt/IPOMgmtEC/fundChangeHandle/add.ajax', err)
+                        return res.send({
+                            error: 1,
+                            msg: '查询失败'
+                        });
+                    } else {
+                        if (data.length) {
+                            return res.send({
+                                error: 1,
+                                msg: '新增失败，数据已存在，请勿重复提交',
+                                data: null
+                            });
+                        } else {
+                            let $sql = `insert into ${tableName} set ?;`
+                            let $sql_params = {
+                                content: JSON.stringify({
+                                    fundid: params.fundid,
+                                    ofundid: params.ofundid
+                                }),
+                                creator: userid,
+                                operator: userid,
+                                status:1,
+                                delete_flag:'F',
+                                operate:1
+                            }
+                            connection.query($sql, $sql_params, function (err, data) {
+                                connection.release()
+                                if (err) {
+                                    console.log(err)
+                                    return res.send({
+                                        error: 1,
+                                        msg: '操作数据库失败'
+                                    });
+                                } else {
+                                    console.log('data', data)
+                                    if (data.affectedRows != 0) {
+                                        return res.send({
+                                            error: 0,
+                                            msg: '新增成功，等待提交',
+                                            data: '新增成功，等待提交'
+                                        });
+                                    }
+                                    return res.send({
+                                        error: 1,
+                                        msg: '新增失败',
+                                        data: null
+                                    });
+                                }
+                            })
+                        }
+
+                    }
+                })
+
+            })
+        }).catch(function (err) {
+            res.send(err)
+        })
+    });
+
+
+
+};
+
+
+function formatTimeStamp(timestamp) {
+    let d = new Date(timestamp);
+    let fixZero = function (num) {
+        return num < 10 ? '0' + num : num;
+    };
+    return [d.getFullYear(), d.getMonth() + 1, d.getDate()].map(value => fixZero(value)).join('-') +
+        ' ' + [d.getHours(), d.getMinutes(), d.getSeconds()].map(value => fixZero(value)).join(':');
+}

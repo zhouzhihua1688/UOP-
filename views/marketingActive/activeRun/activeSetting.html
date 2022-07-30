@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <style>
+        .table > tbody > tr > td {
+                vertical-align: middle;
+            }
+            .cover {
+position: fixed;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(9, 10, 10, 0.527);
+z-index: 999;
+
+}
+[v-cloak]{
+    display:none;
+}
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 新增弹窗 -->
+                            <div class="modal" id="addNotice" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="form-horizontal">
+                                            <div class="table-header" style="margin-bottom: 20px;">新增</div>
+
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    活动ID: </label>
+
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='actId'>
+                                                    <!-- <select >
+                                                        <option value="">请选择</option>
+                                                        <option :value="item.actId" v-for="(item,index) in activeAll">{{item.actId}}</option>
+                                                    </select> -->
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    活动名称: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='actName'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动对外展示名称:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='actDisplayName'>
+                                                    <span>（最多支持10个汉字）</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动描述:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='actDesc'>
+                                                    <span>（最多支持20个汉字）</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动路径:</label>
+                                                <div class="col-sm-9">
+                                                    <textarea cols="30" rows="3" v-model.trim='actUrl'></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    wap路径:</label>
+                                                <div class="col-sm-9">
+                                                    <textarea cols="30" rows="3" v-model.trim='wapUrl'></textarea>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动状态:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model.trim="actStatus" style="width: 168px;">
+                                                        <option value="0">活动未开始</option>
+                                                        <option value="1">活动进行中</option>
+                                                        <option value="2">参与过期</option>
+                                                        <option value="9">过期</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动展示模式:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model.trim="displayMode" style="width: 168px;">
+                                                        <option value="0">不展</option>
+                                                        <option value="1">展示</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    投放渠道:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model.trim='actSeatNo' style="width: 168px;">
+                                                        <option value="">请选择</option>
+                                                        <option :value="item.seatNo" v-for="(item,index) in getActSeatNo">{{item.actSeatName}}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动分享:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model.trim='actShare' style="width: 168px;">
+                                                        <option value="">请选择</option>
+                                                        <option :value="item.shareFlag" v-for="(item,index) in actShareFlagEnums">{{item.flagDesc}}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    红包有效期:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="number" v-model.trim.number='bonusVailday'>
+                                                </div>
+                                            </div>
+                                            <!-- <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动页面地址:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='actUrl'>
+                                                </div>
+                                            </div> -->
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动开始时间:</label>
+                                                <div class="col-sm-9">
+                                                    <div class="input-group">
+                                                        <input type="text" ref="startTime" class="date-timepicker oneStartDate"
+                                                            style="width: 100%;">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动结束时间:</label>
+                                                <div class="col-sm-9">
+                                                    <div class="input-group">
+                                                        <input type="text" ref="endTime" class="date-timepicker oneStartDate"
+                                                            style="width: 100%;">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动参与结束时间:</label>
+                                                <div class="col-sm-9">
+                                                    <div class="input-group">
+                                                        <input type="text" ref="tarkpartEndTime" class="date-timepicker oneStartDate"
+                                                            style="width: 100%;">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    banner图片地址:</label>
+                                                <!-- <div class="col-sm-9">
+                                                        <input type="text" v-model.trim='bannerPic'>
+                                                    </div> -->
+                                                <div class="col-sm-9">
+                                                    <input type="text" class="col-sm-6" placeholder="请选择" disabled
+                                                        v-model.trim='bannerPic' />
+                                                    <input type="button" class="btn btn-sm btn-primary" id="uploadBtn"
+                                                        value="选择" @click='select' :disabled='!upLoadStatus'>
+                                                    <input type="button" value="上传" :disabled='!upLoadStatus' class="btn btn-sm btn-success"
+                                                        @click='fileUpload'>
+                                                    <template v-if='anew'>
+                                                        <form id="updateForm" enctype="multipart/form-data">
+                                                            <input id="uploadFileInput" type="file" name="file" style="display: none"
+                                                                @change='showFileName' />
+                                                        </form>
+                                                    </template>
+
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <div class="col-md-offset-3 col-md-9">
+                                                    <button class="btn btn-info" type="button" @click='add'>
+                                                        保存
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 查看修改弹窗 -->
+                            <div class="modal" id="changeNotice" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="form-horizontal">
+                                            <div class="table-header" style="margin-bottom: 20px;">查看</div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    活动ID: </label>
+
+                                                <div class="col-sm-9">
+                                                    <select v-model.trim='viewChange.actId' :disabled='redactStatus'>
+                                                        <option value="">请选择</option>
+                                                        <option :value="item.actId" v-for="(item,index) in activeAll">{{item.actId}}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-3">
+                                                    活动名称: </label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='viewChange.actName'>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动对外展示名称:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='viewChange.actDisplayName'
+                                                        :disabled='redactStatus'>
+                                                        <span>（最多支持10个汉字）</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动描述:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='viewChange.actDesc' :disabled='redactStatus'>
+                                                    <span>（最多支持20个汉字）</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动路径:</label>
+                                                <div class="col-sm-9">
+                                                    <textarea cols="30" rows="3" v-model.trim='viewChange.actUrl'
+                                                        :disabled='redactStatus'></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    wap路径:</label>
+                                                <div class="col-sm-9">
+                                                    <textarea cols="30" rows="3" v-model.trim='viewChange.wapUrl'
+                                                        :disabled='redactStatus'></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动状态:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model.trim="viewChange.actStatus" :disabled='redactStatus'
+                                                        style="width: 168px;">
+                                                        <option value="0">活动未开始</option>
+                                                        <option value="1">活动进行中</option>
+                                                        <option value="2">参与过期</option>
+                                                        <option value="9">过期</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动展示模式:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model.trim="viewChange.displayMode" :disabled='redactStatus'
+                                                        style="width: 168px;">
+                                                        <option value="0">不展</option>
+                                                        <option value="1">展示</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    投放渠道:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model.trim='viewChange.actSeatNo' :disabled='redactStatus'
+                                                        style="width: 168px;">
+                                                        <option :value="item.seatNo" v-for="(item,index) in getActSeatNo">{{item.actSeatName}}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动分享:</label>
+                                                <div class="col-sm-9">
+                                                    <select v-model.trim='viewChange.actShareConfig' :disabled='redactStatus'
+                                                        style="width: 168px;">
+                                                        <option :value="item.shareFlag" v-for="(item,index) in actShareFlagEnums">{{item.flagDesc}}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    红包有效期:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="number" v-model.trim.number='viewChange.bonusVailday'
+                                                        :disabled='redactStatus'>
+                                                </div>
+                                            </div>
+                                            <!--  <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动页面地址:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model.trim='viewChange.actUrl'>
+                                                </div>
+                                            </div> -->
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动开始时间:</label>
+                                                <div class="col-sm-9">
+                                                    <div class="input-group">
+                                                        <input type="text" :disabled='redactStatus' ref="XstartTime"
+                                                            class="date-timepicker oneStartDate" style="width: 100%;">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动结束时间:</label>
+                                                <div class="col-sm-9">
+                                                    <div class="input-group">
+                                                        <input type="text" :disabled='redactStatus' ref="XendTime"
+                                                            class="date-timepicker oneStartDate" style="width: 100%;">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    活动参与结束时间:</label>
+                                                <div class="col-sm-9">
+                                                    <div class="input-group">
+                                                        <input type="text" :disabled='redactStatus' ref="XtarkpartEndTime"
+                                                            class="date-timepicker oneStartDate" style="width: 100%;">
+                                                        <span class="input-group-addon" style="width: 16%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    banner图片地址:</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" class="col-sm-6" placeholder="请选择" disabled
+                                                        v-model.trim='viewChange.bannerPic' />
+                                                    <input type="button" class="btn btn-sm btn-primary" id="uploadBtn"
+                                                        :disabled='viewChange.upLoadStatus' value="选择" @click='select("change")'>
+                                                    <input type="button" :disabled='viewChange.upLoadStatus' value="上传"
+                                                        class="btn btn-sm btn-success" @click='fileUpload("change")'>
+                                                    <template v-if='viewChange.anew'>
+                                                        <form id="updateForm" enctype="multipart/form-data">
+                                                            <input id="uploadFileInputCge" type="file" name="file" key='1'
+                                                                style="display: none" @input='showFileName' />
+                                                        </form>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <div class="col-md-offset-3 col-md-9">
+                                                    <% if(canShow||authorityList.includes('U')) { %>
+                                                    <button class="btn btn-info" v-show='redactStatus' type="button"
+                                                        @click='redactStatus=false'>
+                                                        修改
+                                                    </button>
+                                                    <button class="btn btn-info" type="button" v-show='!redactStatus'
+                                                        @click='changeDate'>
+                                                        保存
+                                                    </button>
+                                                    <% } %>
+                                                    <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--删除弹窗-->
+                            <div class="modal" id="deleteDialog" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4> 确定删除这条数据吗？</h4>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <div class="col-md-offset-3 col-md-9">
+                                                <button class="btn btn-info" type="button" @click='deleteData'>
+                                                    删除
+                                                </button>
+                                                <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                    取消
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                             <!-- loading动画 -->
+                    <div class="cover" v-show='progress' v-cloak style="z-index: 1999;">
+                        <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                    </div><!-- loading动画 -->
+                            <!--刷新弹窗-->
+                            <div class="modal" id="refresh" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4> 是否刷新CRM活动数据？</h4>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <div class="col-md-offset-3 col-md-9">
+                                                <button class="btn btn-info" type="button" @click='refreshAct'>
+                                                    刷新
+                                                </button>
+                                                <button type="button" class="btn btn-danger" data-dismiss="modal">
+                                                    取消
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- DIALOG ENDS -->
+                            <div class="form-inline" style="margin:10px auto;height: 30px;">
+                                <div class="form-group ">
+                                    <label style="width: 70px;">活动ID:</label>
+                                    <input type="text" v-model.trim="queryActId" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 70px;">活动状态:</label>
+                                    <select v-model.trim="queryActStatus" style="width: 168px;">
+                                        <option value="">请选择</option>
+                                        <option value="0">活动未开始</option>
+                                        <option value="1">活动进行中</option>
+                                        <option value="2">参与过期</option>
+                                        <option value="9">过期</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group" style="margin-left: 5px;">
+                                    <input type="button" class="btn btn-sm btn-primary " value="查询" @click="queryData">
+                                </div>
+                                <% if(canShow||authorityList.includes('U')) { %>
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " style="margin: 0 20px;"  @click="refreshStorage"
+                                        value="刷新活动中心缓存">
+                                </div>
+                                <% } %>
+                                <% if(canShow||authorityList.includes('C')) { %>
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " value="新增活动配置" @click="addDialog">
+                                </div>
+                                <% } %>
+                                <% if(canShow||authorityList.includes('U')) { %>
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary" style="margin: 0 20px;" @click="showDialog('', 'refresh', false)"
+                                        value="刷新CRM活动" disabled>
+                                </div>
+                                <% } %>
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-danger" value="全量导出"
+                                           @click="exportExcel">
+                                </div>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!--分页器和快速查询-->
+                            <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                <div class="col-xs-6">
+                                    <div class="dataTables_length" id="dynamic-table_length">
+                                        <label>每页显示</label>
+                                        <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                            <option value="10">10</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                            <option value="500">500</option>
+                                        </select>
+                                        <label>条</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--数据表-->
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">活动ID</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">活动名称</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">活动中心展示名称</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">状态</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">投放渠道</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">是否展示</th>
+                                        <th class="center col-sm-2 col-md-2 col-lg-2">操作</th>
+                                        <th class="center col-sm-2 col-md-2 col-lg-2"> 关联配置</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="tableData.length>0">
+                                        <tr v-for="(item,index) in tableData" :key="index">
+                                            <td class="center" v-text='item.actId'></td>
+                                            <td class="center" v-text='item.actName'></td>
+                                            <td class="center" v-text='item.actDisplayName'></td>
+                                            <td class="center" v-text='item.viewactStatus'></td>
+                                            <td class="center" v-text='item.seatName'></td>
+                                            <td class="center" v-text='item.viewdisplayMode'></td>
+                                            <td class="center">
+                                                <a href="javascript:;" @click='showView(item.id)'>查看</a>
+                                                <% if(canShow||authorityList.includes('D')) { %>
+                                                &nbsp;
+                                                <a href="javascript:;" class="red" @click='deleteDialog(item.id)'>删除</a>
+                                                <% } %>
+                                                <% if(canShow||authorityList.includes('U')) { %>
+                                                &nbsp;
+                                                <a href="javascript:;" @click='sendAct(item.actId)'>发布</a>
+                                                <% } %>
+                                            </td>
+                                            <td class="center">
+                                                <% if(canShow||authorityList.includes('U')) { %>
+                                                <a href="javascript:;" @click='windowGoTo("Add",item.actId)'>活动规则配置</a>
+                                                &nbsp;
+                                                <a href="javascript:;" @click='windowGoTo("TemplatePage",item.actId)'>活动模板页面上传</a>
+                                                <% } %>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+
+                            <!--底部页码-->
+                            <div v-if="tableData.length>0" class="row" style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                        <ul class="pagination">
+                                            <li class="paginate_button" v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                            </li>
+                                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in pageList" @click="changeIndex(value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li class="paginate_button" v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                                <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                            </li>
+                                            <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+
+
+
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/js/thirdPartyOperation/common/ajaxfileupload.js"></script>
+    <script src="/js/marketingActive/activeRun/activeSetting.js"></script>
+</body>
+
+</html>

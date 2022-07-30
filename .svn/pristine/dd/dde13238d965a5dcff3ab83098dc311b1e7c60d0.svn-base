@@ -1,0 +1,452 @@
+module.exports = [
+    {
+        "menuId": "7",
+        "parentMenuId": "",
+        "hasSubmenu": true,
+        "page": false,
+        "type": "2",
+        "name": "营销系统",
+        "url": "/marketingActive"
+    },
+    {
+        "menuId": "7-1",
+        "parentMenuId": "7",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "活动基础管理",
+        "url": "/marketingActive/activeBasics"
+    },
+    {
+        "menuId": "7-1-1",
+        "parentMenuId": "7-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动基础规则配置",
+        "url": "/marketingActive/activeBasics/marketingRule.html"
+    },
+    {
+        "menuId": "7-1-2",
+        "parentMenuId": "7-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动表字段释义配置",
+        "url": "/marketingActive/activeBasics/wordFieldNotes.html"
+    },
+    {
+        "menuId": "7-2",
+        "parentMenuId": "7",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "大数据对接管理",
+        "url": "/marketingActive/largeData"
+    },
+    {
+        "menuId": "7-2-1",
+        "parentMenuId": "7-2",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "大数据对接文件配置",
+        "url": "/marketingActive/largeData/largeDataFile.html"
+    },
+    {
+        "menuId": "7-3",
+        "parentMenuId": "7",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "活动模型管理",
+        "url": "/marketingActive/activeTemplateMgmt"
+    },
+    {
+        "menuId": "7-3-1",
+        "parentMenuId": "7-3",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动模型配置",
+        "url": "/marketingActive/activeTemplateMgmt/activeTemplate.html"
+    },
+    {
+        "menuId": "7-3-2",
+        "parentMenuId": "7-3",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动切点配置",
+        "url": "/marketingActive/activeTemplateMgmt/activeCut.html"
+    },
+    {
+        "menuId": "7-3-3",
+        "parentMenuId": "7-3",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动组件配置",
+        "url": "/marketingActive/activeTemplateMgmt/activeComponent.html"
+    },
+    {
+        "menuId": "7-3-4",
+        "parentMenuId": "7-3",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "模型接口配置",
+        "url": "/marketingActive/activeTemplateMgmt/templatePort.html"
+    },
+    {
+        "menuId": "7-4",
+        "parentMenuId": "7",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "活动运营配置管理",
+        "url": "/marketingActive/activeRun"
+    },
+    {
+        "menuId": "7-4-1",
+        "parentMenuId": "7-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动投放渠道配置",
+        "url": "/marketingActive/activeRun/activeRoad.html"
+    },
+    {
+        "menuId": "7-4-2",
+        "parentMenuId": "7-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动配置",
+        "url": "/marketingActive/activeRun/activeSetting.html"
+    },
+    {
+        "menuId": "7-4-3",
+        "parentMenuId": "7-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动规则配置",
+        "url": "/marketingActive/activeRun/activeRuleSetting.html"
+    },
+    {
+        "menuId": "7-4-4",
+        "parentMenuId": "7-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "模板页面上传",
+        "url": "/marketingActive/activeRun/activeSettingTemplatePage.html"
+    },
+    {
+        "menuId": "7-4-5",
+        "parentMenuId": "7-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基础奖励配置表",
+        "url": "/marketingActive/activeRun/awardBase.html"
+    },
+    {
+        "menuId": "7-4-6",
+        "parentMenuId": "7-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动奖励包配置表",
+        "url": "/marketingActive/activeRun/activeAward.html"
+    },
+    {
+        "menuId": "7-4-7",
+        "parentMenuId": "7-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "分享配置",
+        "url": "/marketingActive/activeRun/shareSetting.html"
+    },
+    {
+        "menuId": "7-4-8",
+        "parentMenuId": "7-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动异步任务管理配置",
+        "url": "/marketingActive/activeRun/asyncWorkSetting.html"
+    },
+    {
+        "menuId": "7-4-9",
+        "parentMenuId": "7-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "异步节点-任务管理配置",
+        "url": "/marketingActive/activeRun/asyncNodeSetting.html"
+    },
+    {
+        "menuId": "7-4-10",
+        "parentMenuId": "7-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "生成二维码小工具",
+        "url": "/marketingActive/activeRun/qrCodeGenerate.html"
+    },
+    {
+        "menuId": "7-4-11",
+        "parentMenuId": "7-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动标签配置",
+        "url": "/marketingActive/activeRun/activeTag.html"
+    },
+    {
+        "menuId": "7-4-12",
+        "parentMenuId": "7-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动标签关系管理",
+        "url": "/marketingActive/activeRun/activeTagRelation.html"
+    },
+    {
+        "menuId": "7-5",
+        "parentMenuId": "7",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "营销活动数据查询",
+        "url": "/marketingActive/activeDataQuery"
+    },
+    {
+        "menuId": "7-5-1",
+        "parentMenuId": "7-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动参与数据查询",
+        "url": "/marketingActive/activeDataQuery/activeJoinQuery.html"
+    },
+    {
+        "menuId": "7-5-2",
+        "parentMenuId": "7-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动奖励数据查询",
+        "url": "/marketingActive/activeDataQuery/activeAwardQuery.html"
+    },
+    {
+        "menuId": "7-5-3",
+        "parentMenuId": "7-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动邀请记录数据查询",
+        "url": "/marketingActive/activeDataQuery/inviteLog.html"
+    },
+    {
+        "menuId": "7-5-4",
+        "parentMenuId": "7-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动邀请码数据查询",
+        "url": "/marketingActive/activeDataQuery/inviteCode.html"
+    },
+    {
+        "menuId": "7-5-5",
+        "parentMenuId": "7-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "活动用户参与机会数据查询",
+        "url": "/marketingActive/activeDataQuery/userJoin.html"
+    },
+    {
+        "menuId": "7-5-6",
+        "parentMenuId": "7-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "用户发奖明细记录查询",
+        "url": "/marketingActive/activeDataQuery/prizeDetailLog.html"
+    },
+    {
+        "menuId": "7-5-7",
+        "parentMenuId": "7-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "用户活动参与明细查询",
+        "url": "/marketingActive/activeDataQuery/joinDetail.html"
+    },
+    {
+        "menuId": "7-5-8",
+        "parentMenuId": "7-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true, 
+        "name": "用户信息采集查询",
+        "url": "/marketingActive/activeDataQuery/userInfoSearch.html"
+      },
+    {
+        "menuId": "7-5-9",
+        "parentMenuId": "7-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true, 
+        "name": "活动关注记录查询",
+        "url": "/marketingActive/activeDataQuery/followRecord.html"
+      },
+    {
+        "menuId": "7-5-10",
+        "parentMenuId": "7-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true, 
+        "name": "活动关注统计查询",
+        "url": "/marketingActive/activeDataQuery/followCount.html"
+      },
+    {
+        "menuId": "7-5-11",
+        "parentMenuId": "7-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true, 
+        "name": "活动助力信息查询",
+        "url": "/marketingActive/activeDataQuery/activeHelp.html"
+      },
+    {
+        "menuId": "7-6",
+        "parentMenuId": "7",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "任务管理",
+        "url": "/marketingActive/taskManage"
+    },
+    {
+        "menuId": "7-6-1",
+        "parentMenuId": "7-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "任务分类管理",
+        "url": "/marketingActive/taskManage/taskClassify.html"
+    },
+    {
+        "menuId": "7-6-2",
+        "parentMenuId": "7-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "任务管理",
+        "url": "/marketingActive/taskManage/manage.html"
+    },
+    {
+        "menuId": "7-6-3",
+        "parentMenuId": "7-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "任务规则管理",
+        "url": "/marketingActive/taskManage/taskRule.html"
+    },
+    {
+        "menuId": "7-6-4",
+        "parentMenuId": "7-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "用户任务记录",
+        "url": "/marketingActive/taskManage/userTaskLog.html"
+    },
+    {
+        "menuId": "7-6-5",
+        "parentMenuId": "7-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "用户任务进度记录",
+        "url": "/marketingActive/taskManage/userTaskProgress.html"
+    },
+    {
+        "menuId": "7-6-6",
+        "parentMenuId": "7-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "任务-规则模型配置",
+        "url": "/marketingActive/taskManage/taskRuleTemplate.html"
+    },
+    {
+        "menuId": "7-6-7",
+        "parentMenuId": "7-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "规则占位符的释义配置",
+        "url": "/marketingActive/taskManage/rulePlaceholders.html"
+    },
+    {
+        "menuId": "7-6-8",
+        "parentMenuId": "7-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "任务与异步消息匹配表",
+        "url": "/marketingActive/taskManage/taskMessage.html"
+    },
+    {
+        "menuId": "7-6-9",
+        "parentMenuId": "7-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "场景任务关联配置",
+        "url": "/marketingActive/taskManage/sceneTaskRelation.html"
+    },
+	{
+	    "menuId": "7-7",
+	    "parentMenuId": "7",
+	    "hasSubmenu": true,
+	    "type": "2",
+	    "page": false,
+	    "name": "分享管理",
+	    "url": "/marketingActive/shareMgmt"
+	},
+	{
+	    "menuId": "7-7-1",
+	    "parentMenuId": "7-7",
+	    "hasSubmenu": false,
+	    "type": "2",
+	    "page": true,
+	    "name": "分享场景管理",
+	    "url": "/marketingActive/shareMgmt/scene.html"
+	},
+    {
+	    "menuId": "7-8",
+	    "parentMenuId": "7",
+	    "hasSubmenu": true,
+	    "type": "2",
+	    "page": false,
+	    "name": "关键词查询",
+	    "url": "/marketingActive/keywordQuery"
+	},
+    {
+	    "menuId": "7-8-1",
+	    "parentMenuId": "7-8",
+	    "hasSubmenu": false,
+	    "type": "2",
+	    "page": true,
+	    "name": "模板关键词查询",
+	    "url": "/marketingActive/keywordQuery/template.html"
+	}
+];

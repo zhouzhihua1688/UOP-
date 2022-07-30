@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datepicker3.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        .chosen-single {
+            height: 30px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+        }
+        .dia-label {
+            width: 120px;
+            margin-left: 50px;
+        }
+        .chosen-drop{
+            height:450px !important;
+        }
+        .chosen-container .chosen-results {
+            color: #444;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+            margin: 0 4px 4px 0;
+            padding: 0 0 0 4px;
+            max-height:400px;
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+
+                <!--单笔管理-->
+                <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:600px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding:10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">单笔管理</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding: 0 10px;margin-left:120px">
+                                    <div>
+                                        <!--<div class="form-group">-->
+                                            <!--<label class="control-label">产品名称:</label>-->
+                                            <!--&lt;!&ndash;<input type="text" style="width:175px;" v-model="fundIds"/>&ndash;&gt;-->
+                                            <!--&lt;!&ndash;<select style="width:175px" v-model="fundIds">&ndash;&gt;-->
+                                                <!--&lt;!&ndash;<option value="">全部</option>&ndash;&gt;-->
+                                                <!--&lt;!&ndash;<option>&ndash;&gt;-->
+                                                <!--&lt;!&ndash;</option>&ndash;&gt;-->
+                                            <!--&lt;!&ndash;</select>&ndash;&gt;-->
+                                            <!--<select style="width:175px" v-model="fundIds">-->
+                                                <!--<option value="">全部</option>-->
+                                                <!--<option :value="item.fundId" v-for="(item,index) in nameList">-->
+                                                    <!--{{item.fundName}}-->
+                                                <!--</option>-->
+                                            <!--</select>-->
+                                        <!--</div>-->
+
+                                        <div class="form-group">
+                                            <label class="control-label">产品名称:</label>
+                                            <select id="fundNameSingle" class="chosen-select form-control"
+                                                    data-placeholder="全部" @click="checkFund()">
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label">受理方式:</label>
+                                            <select style="width:220px" v-model="accptMds">
+                                                <option value="">全部</option>
+                                                <option value="0">柜台</option>
+                                                <option value="1">电话</option>
+                                                <option value="2">Internet</option>
+                                                <option value="3">传真</option>
+                                                <option value="5">IVR</option>
+                                                <option value="6">远程</option>
+                                                <option value="7">企业版</option>
+                                                <option value="M">手机</option>
+                                                <option value="9">其他</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">开放日期:</label>
+                                               <!-- <input type="text" style="width:175px;"/> -->
+                                            <input type="text" style="width:175px;" class="date-timepicker" id="openTime" disabled/>
+                                            <span class="input-group-addon"
+                                                  style="display:inline;margin:-5px 0 0 -3px;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                            </span>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label">失效日期:</label>
+                                            <!--<input type="text" style="width:175px;" v-model="deadlineDates"/>-->
+                                            <input type="text" style="width:175px;"
+                                                   class="date-timepicker" ref="deadlineDates" id="deadlineDates"/>
+                                            <span class="input-group-addon"
+                                                  style="display:inline;margin:-5px 0 0 -3px;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                            </span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-15px">申请用户名:</label>
+                                            <input type="text" style="width:220px;" v-model="custNms"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-3px">实配额度:</label>
+                                            <input type="text" style="width:220px;" v-model="realAmts"/>万元
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">手机号码:</label>
+                                            <input type="text" style="width:220px;" v-model="mobileNos"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="saveSingle()">确认发送</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--批量发送-->
+                <div class="modal" id="allAdd" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:1120px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding:10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">批量发送信息</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <input type="button" class="btn btn-sm btn-primary pull-right"
+                                       style="margin-bottom:10px;margin-top: -10px;" value="增加十行" @click="increase()">
+                                </div>
+                                <div class="form-group" style="margin-top:30px;">
+                                    <!--<label class="control-label">产品名称:</label>-->
+                                    <!--&lt;!&ndash;<input type="text" style="width:175px;" v-model="fundId"/>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;<select style="width:175px" v-model="fundId">&ndash;&gt;-->
+                                        <!--&lt;!&ndash;<option value="">全部</option>&ndash;&gt;-->
+                                        <!--&lt;!&ndash;<option>&ndash;&gt;-->
+                                        <!--&lt;!&ndash;</option>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;</select>&ndash;&gt;-->
+                                    <!--<select style="width:175px" v-model="fundId">-->
+                                        <!--<option value="">全部</option>-->
+                                        <!--<option :value="item.fundId" v-for="(item,index) in nameList">-->
+                                            <!--{{item.fundName}}-->
+                                        <!--</option>-->
+                                    <!--</select>-->
+
+                                    <!--<div class="form-group">-->
+                                        <label class="control-label">产品名称:</label>
+                                        <select id="fundNameBatch" class="chosen-select form-control"
+                                                data-placeholder="请选择">
+                                        </select>
+                                    <!--</div>-->
+
+                                    <label class="control-label">受理方式:</label>
+                                    <select style="width:175px" v-model="accptMd">
+                                        <option value="">全部</option>
+                                        <option value="0">柜台</option>
+                                        <option value="1">电话</option>
+                                        <option value="2">Internet</option>
+                                        <option value="3">传真</option>
+                                        <option value="5">IVR</option>
+                                        <option value="6">远程</option>
+                                        <option value="7">企业版</option>
+                                        <option value="M">手机</option>
+                                        <option value="9">其他</option>
+                                    </select>
+                                    <label class="control-label">开放日期:</label>
+                                    <!--<input type="text" style="width:175px;" v-model="nextOpenDates"/>-->
+                                    <input type="text" style="width:135px;"
+                                           class="date-timepicker" id="openTimes" disabled />
+                                    <span class="input-group-addon"
+                                          style="display:inline;margin:-5px 0 0 -3px;">
+                                        <i class="fa fa-clock-o bigger-110"></i>
+                                    </span>
+                                    <label class="control-label">失效日期:</label>
+                                    <!--<input type="text" style="width:175px;" v-model="deadlineDates"/>-->
+                                    <input type="text" style="width:135px;"
+                                           class="date-timepicker"  ref="deadlineDate" id="deadlineDate"/>
+                                    <span class="input-group-addon"
+                                          style="display:inline;margin:-5px 0 0 -3px;">
+                                        <i class="fa fa-clock-o bigger-110"></i>
+                                    </span>
+
+                                </div>
+                                <table  class="table table-bordered table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th class="center">
+                                            <label class="pos-rel">
+                                                <input type="checkbox" class="ace" v-model="checkAll" @click="select(checkAll)"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                        </th>
+                                        <th class="center">申请用户名</th>
+                                        <th class="center">手机号码</th>
+                                        <th class="center">实配额度</th>
+                                        <th class="center">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <template v-if="batchData.length>0">
+                                    <tr v-for="(item,index) in batchData" :key="index">
+                                        <td class="center">
+                                            <label class="pos-rel">
+                                                <input type="checkbox" class="ace" v-model="item.check" @click="single(index)"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                        </td>
+                                        <td class="center">
+                                            <input type="text" style="width:175px;"  v-model="item.custNm"/>
+                                        </td>
+                                        <td class="center">
+                                            <input type="text" style="width:175px;"  v-model="item.mobileNo"/>
+                                        </td>
+                                        <td class="center">
+                                            <input type="text" style="width:175px;"  v-model="item.realAmt"/>万元
+                                        </td>
+                                        <td class="center">
+                                            <a href="javascript:;"
+                                               @click.prevent="delList(item.index)">删除</a>
+                                        </td>
+                                    </tr>
+                                    </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="text-center" style="clear:both">
+                                <button class="btn btn-sm btn-primary" @click="saveBatch()">确认发送</button>
+                                <button type="button" class="btn btn-default btn-sm"
+                                        data-dismiss="modal">取消
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--修改相关数据弹窗-->
+                <div class="modal" id="revise" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:600px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding:10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">修改实配额度信息</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding: 0 10px;">
+                                    <div style="text-align:center">
+                                        <div class="form-group">
+                                            <label class="control-label">产品代码:</label>
+                                            <input type="text" style="width:175px;" v-model="fundId" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">产品名称:</label>
+                                            <input type="text" style="width:175px;" v-model="fundName" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-15px">申请用户名:</label>
+                                            <!--<input type="text" style="width:175px;" v-model="nextOpenDates"/>-->
+                                            <input type="text" style="width:175px;" v-model="custNm" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:15px">流水号:</label>
+                                            <input type="text" style="width:175px;" v-model="reserveNo" disabled/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:25px">申请额度:</label>
+                                            <input type="text" style="width:175px;" v-model="reserveAmt" disabled/>万元
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:25px">实配额度:</label>
+                                            <input type="text" style="width:175px;" v-model="realAmt"/>万元
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="update()">保存</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!--设置失效时间-->
+                <div class="modal" id="failureTime" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:1100px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding:10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">失效时间设置</h4>
+                            </div>
+                            <div class="modal-body" style="padding:8px">
+                                <table  class="table table-bordered table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th class="center">产品名称</th>
+                                        <th class="center">开放日期</th>
+                                        <th class="center">申请用户名</th>
+                                        <th class="center">手机号</th>
+                                        <th class="center">实配金额</th>
+                                        <th class="center">流水号</th>
+                                        <th class="center">失效日期</th>
+                                        <th class="center">审核状态</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <template v-if="failList.length>0">
+                                        <tr v-for="(item,index) in failList" :key="index">
+                                            <td class="center" v-text="item.fundName"></td>
+                                            <td class="center" v-text="item.nextOpenDate"></td>
+                                            <td class="center" v-text="item.custNm"></td>
+                                            <td class="center" v-text="item.mobileNo"></td>
+                                            <td class="center" v-text="item.realAmt"></td>
+                                            <td class="center" v-text="item.reserveNo"></td>
+                                            <td class="center" v-text="item.deadlineDate"></td>
+                                            <td class="center">
+                                                {{item.auditStatus | auditStatus}}
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!--<div class="input-group text-center">-->
+                                <!--<label class="control-label">设置失效日期:</label>-->
+                                <!--<input type="text" style="width:135px;" class="date-timepicker startTime"-->
+                                <!--/>-->
+                                <!--<span class="input-group-addon" style="width:30px;">-->
+                                    <!--<i class="fa fa-clock-o bigger-110"></i>-->
+                                <!--</span>-->
+                            <!--</div>-->
+                            <div class="input-group" style="margin:10px auto">
+                                <label class="control-label">设置失效日期:</label>
+                                <input type="text" style="width:135px;" class="date-timepicker startTime" ref="setTime" id="invalidTime"
+                                />
+                                <span class="input-group-addon" style="width:30px;">
+                                    <i class="fa fa-clock-o bigger-110"></i>
+                                </span>
+                            </div>
+                            <p class="text-center" style="clear:both;margin-bottom:20px;margin-top:20px">
+                                <button class="btn btn-sm btn-primary" @click="sendOut()">确认发送</button>
+                                <button class="btn btn-sm btn-primary" @click="invalid()">立即失效</button>
+                                <button class="btn btn-sm btn-primary" @click="refuse()">拒绝申请</button>
+                                <button type="button" class="btn btn-default btn-sm"
+                                        data-dismiss="modal">取消
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!--提示信息弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--查询参数-->
+                <div class="form-inline" style="padding: 10px 0;">
+                    <!--<div class="form-group">-->
+                        <!--<label style="width:60px;">产品名称:</label>-->
+                        <!--<select style="width:175px" v-model="fundIdList">-->
+                            <!--<option value="">全部</option>-->
+                            <!--<option :value="item.fundId" v-for="(item,index) in nameList">-->
+                                <!--{{item.fundName}}-->
+                            <!--</option>-->
+                        <!--</select>-->
+                    <!--</div>-->
+                    <div class="form-group">
+                        <label class="control-label">产品名称:</label>
+                        <select id="fundNameList" class="chosen-select form-control" v-model="fundIdList"
+                                data-placeholder="全部">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="width:60px;margin-left:15px">短信状态:</label>
+                        <select style="width:175px" v-model="transTypeList">
+                            <option value="">全部</option>
+                            <option value="N">未发送</option>
+                            <option value="T">发送中</option>
+                            <option value="Y">发送成功</option>
+                            <option value="F">发送失败</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <label class="control-label;" style="margin-left:15px">失效日期:</label>
+                            <input type="text" style="width:135px;" class="date-timepicker startTime" ref="deadTime"
+                                   />
+                            <span class="input-group-addon" style="width:30px;">
+                                <i class="fa fa-clock-o bigger-110"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" style="margin-left:18px">受理方式:</label>
+                        <select style="width:175px" v-model="accptMdList">
+                            <option value="">全部</option>
+                            <option value="0">柜台</option>
+                            <option value="1">电话</option>
+                            <option value="2">Internet</option>
+                            <option value="3">传真</option>
+                            <option value="5">IVR</option>
+                            <option value="6">远程</option>
+                            <option value="7">企业版</option>
+                            <option value="M">手机</option>
+                            <option value="9">其他</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 0px 0 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label" style="margin-left:15px">流水号:</label>
+                        <input class="scrollable" type="text" v-model="reserveNoList" style="width:220px"/>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">申请用户名:</label>
+                        <input class="scrollable" style="width:173px" type="text" v-model="custNmList"/>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" style="margin-left:15px">使用状态:</label>
+                        <select style="width:175px" v-model="statusList">
+                            <option value="">全部</option>
+                            <option value="N">待购买</option>
+                            <option value="Y">已购买</option>
+                            <option value="F">已过期</option>
+                            <option value="C">已撤单</option>
+                            <option value="Q">已取消</option>
+                            <option value="T">已调整</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label"> 预约码状态:</label>
+                        <select style="width:175px" v-model="auditStatusList">
+                            <option value="">全部</option>
+                            <option value="N">未审核</option>
+                            <option value="Y">审核通过生效中</option>
+                            <option value="F">审核通过已失效</option>
+                            <option value="C">审核未通过</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 0 0 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label" style="width: 60px;text-align: right;">类型:</label>
+                        <select style="width:220px" v-model="type">
+                            <option value="">全部</option>
+                            <option value="L">在线预约</option>
+                            <option value="P">主动发送</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="float:right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                        <input type="button" class="btn btn-sm btn-primary" value="失效时间" @click="failureTime()">
+                        <input type="button" class="btn btn-sm btn-primary" value="单笔管理" @click="singleMgmt()">
+                        <input type="button" class="btn btn-sm btn-primary" value="批量发送" @click="batchSending()">
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <div>
+                    <!--分页器和快速查询-->
+                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length" id="dynamic-table_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+                        <!-- <div class="col-xs-6">
+                            <div class="dataTables_filter">
+                                <label>快速查询:</label>
+                                <input type="text" class="input-sm" v-model="condition">
+                            </div>
+                        </div> -->
+                    </div>
+                    <!--数据表-->
+                    <table class="table table-striped table-bordered table-hover dataTable" style="margin-bottom: 0;">
+                        <thead>
+                        <tr>
+                            <th class="center">
+                                <label class="pos-rel">
+                                    <input type="checkbox" class="ace" v-model="allCheck" @click="selectAll(allCheck)"/>
+                                    <span class="lbl"></span>
+                                </label>
+                            </th>
+                            <th class="center">产品代码</th>
+                            <th class="center">产品名称</th>
+                            <th class="center">开放日期</th>
+                            <th class="center">类型</th>
+                            <th class="center">交易账号</th>
+                            <th class="center">申请用户名</th>
+                            <th class="center">申请额度</th>
+                            <th class="center">实配额度</th>
+                            <th class="center">实际使用额度</th>
+                            <th class="center">流水号</th>
+                            <th class="center">申请日期</th>
+                            <th class="center">发送状态</th>
+                            <th class="center">发送日期</th>
+                            <th class="center">失效日期</th>
+                            <th class="center">受理方式</th>
+                            <th class="center">手机号</th>
+                            <!--<th class="center">客户经理</th>-->
+                            <!--<th class="center">历史资产峰值</th>-->
+                            <!--<th class="center">当前现金宝资产市值</th>-->
+                            <th class="center">使用情况</th>
+                            <th class="center">预约码状态</th>
+                            <th class="center">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!--真分页业务数据-->
+                        <template v-if="tableData.length>0">
+                            <tr v-for="(item,index) in tableData" :key="index"
+                                :style="index%2==0?'background-color: #f9f9f9;':''">
+                                <td class="center">
+                                    <label class="pos-rel">
+                                        <input type="checkbox" class="ace" v-model="item.check" @click="check(index)"/>
+                                        <span class="lbl"></span>
+                                    </label>
+                                </td>
+                                <td class="center" v-text="item.fundId"></td>
+                                <td class="center" v-text="item.fundName"></td>
+                                <td class="center" v-text="item.nextOpenDate"></td>
+                                <td class="center">{{item.type | type}}</td>
+                                <td class="center" v-text="item.tradeAcco"></td>
+                                <td class="center" v-text="item.custNm"></td>
+                                <td class="center" v-text="item.reserveAmt"></td>
+                                <td class="center" v-text="item.realAmt"></td>
+                                <td class="center" v-text="item.subAmt"></td>
+                                <td class="center" v-text="item.reserveNo"></td>
+
+                                <td class="center" v-text="item.reserveDate"></td>
+                                <td class="center">
+                                    {{item.transType | transType}}
+                                </td>
+                                <td class="center" v-text="item.transDate"></td>
+                                <td class="center" v-text="item.deadlineDate"></td>
+                                <td class="center">
+                                    {{item.accptMd | accptMd}}
+                                </td>
+                                <td v-text="item.mobileNo"></td>
+                                <td class="center">
+                                    {{item.status | status}}
+                                </td>
+                                <td class="center">
+                                    {{item.auditStatus | auditStatus}}
+                                </td>
+                                <td class="center">                                   
+                                    <template v-if="item.transType=='Y'">
+                                        <span href="javascript:;" v-text="'发送成功'"></span>
+                                    </template>
+                                    <template v-else>
+                                        <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                                    </template>
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <tr>
+                                <td class="center" v-text="'没有数据'" colspan="22"></td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+
+                    <!--底部页码-->
+                    <!--后端真分页-->
+                    <div v-if="tableData.length>0" class="row"
+                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                        <div class="col-xs-2">
+                            <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                        </div>
+                        <div class="col-xs-10">
+                            <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                <ul class="pagination">
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                    </li>
+                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                        @click="prev">
+                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                    </li>
+                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                        v-for="value in pageList" @click="changeIndex(value)">
+                                        <a href="javascript:;" v-text="value"></a>
+                                    </li>
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                    </li>
+                                    <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                        @click="next">
+                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/businessMgmt/highFinancialMgmt/bookingCodeMgmt.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+
+.third-party{
+	margin-top: 10px;
+}
+.copy{
+   margin-top:50px;
+}
+.attachment{
+   margin-top:130px;
+}
+.mail-completely{
+   margin-top:90px;
+}
+.btnstyle{
+   line-height:12px;
+   margin-right:5px; 
+}
+.file-control{
+	/*opacity: 0;*/
+	position:absolute;
+	left:5px;
+	line-height:20px;
+	padding:10px 10px;
+	height: 80px;
+	display: inline-block;
+}
+

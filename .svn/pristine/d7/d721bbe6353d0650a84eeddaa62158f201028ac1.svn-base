@@ -1,0 +1,246 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').sendCount.WXSearch;
+
+
+module.exports = function (app) {
+    app.post('/messageCenter/sendCount/WXSearch/search.ajax', (req, res, next) => {
+        let getWXList = new Promise((resolve, reject) => {
+            let params = {};
+            params.batchNo = req.body.batchNo;
+            params.ruleId = req.body.ruleId;
+            params.ruleSource = req.body.ruleSource;
+            params.status = req.body.status;
+            params.beginTime = req.body.beginTime;
+            params.endTime = req.body.endTime;
+            params.custNo = req.body.custNo;
+            let option = {
+                session: req.session,
+                url: apiUrlList.search,
+                qs: params, //传参
+                timeout: 15000,
+                json: true
+            };
+            console.log('/messageCenter/sendCount/WXSearch/search.ajax --getWXList option:', option);
+            request(option, (error, response, body) => {
+                if (error) {
+                    return reject({message: '获取微信列表失败'});
+                }
+                console.log('/messageCenter/sendCount/WXSearch/search.ajax --getWXList error:', error);
+                console.log('/messageCenter/sendCount/WXSearch/search.ajax --getWXList statusCode:', response && response.statusCode);
+                console.log('/messageCenter/sendCount/WXSearch/search.ajax --getWXList body:', body);
+                if (body && body.returnCode == 0 && Array.isArray(body.body)) {
+                    resolve(body.body);
+                }
+                else if (body && body.returnCode != 0 && body.returnCode != 9999) {
+                    reject({message: body.returnMsg});
+                }
+                else {
+                    reject({message: '获取微信列表失败'});
+                }
+            });
+        });
+        function formatContent(jsonStr) {
+            let obj = JSON.parse(jsonStr);
+            let str = '';
+            let count = 1;
+            for(let key in obj){
+                str += `字段${count++}：${obj[key]}<br>`;
+            }
+            return str;
+        }
+        getWXList.then(WXList => {
+            WXList.forEach(item => {
+                item.showWeixinId = item.weixinId ? item.weixinId : '未绑定微信';
+                switch (item.sendStatus) {
+                    case 0:
+                        item.showStatus = '开始';
+                        break;
+                    case 1:
+                        item.showStatus = '免打扰';
+                        break;
+                    case 2:
+                        item.showStatus = '失败';
+                        break;
+                    case 3:
+                        item.showStatus = '成功';
+                        break;
+                    case 4:
+                        item.showStatus = '无pushtoken';
+                        break;
+                    case 5:
+                        item.showStatus = '遇到挡板未发送状态';
+                        break;
+                    case 6:
+                        item.showStatus = '超过频次限额';
+                        break;
+                    case 7:
+                        item.showStatus = '客户关闭设置';
+                        break;
+                    case 9:
+                        item.showStatus = '已通过短信发送';
+                        break;
+                    default:
+                        item.showStatus = item.sendStatus;
+                }
+                if (!item.channelType) { // 未获取到channelType
+                    item.showType = '-';
+                    item.content = formatContent(item.data);
+                }
+                else {
+                    if (item.channelType == 4) { // 普通微信模板
+                        let content = JSON.parse(item.data);
+                        switch (item.wxTemplateType) {
+                            case 'servive':
+                                item.showType = '服务状态通知';
+                                item.content = `欢迎语：${content.first}<br>`;
+                                item.content += `服务名称：${content.keyword1}<br>`;
+                                item.content += `服务状态：${content.keyword2}<br>`;
+                                item.content += `问题详情：${content.keyword3}<br>`;
+                                item.content += `备注：${content.remark}`;
+                                break;
+                            case 'trade':
+                                item.showType = '交易通知';
+                                item.content = `欢迎语：${content.title}<br>`;
+                                item.content += `业务：${content.OPERATE}<br>`;
+                                item.content += `金额：${content.AMT}<br>`;
+                                item.content += `状态：${content.STATUS}<br>`;
+                                item.content += `时间：${content.DATE}<br>`;
+                                item.content += `备注：${content.remark}`;
+                                break;
+                            case 'monthBill':
+                                item.showType = '月度对账单提醒';
+                                item.content = `欢迎语：${content.first}<br>`;
+                                item.content += `姓名：${content.keyword1}<br>`;
+                                item.content += `对账单日期：${content.keyword2}<br>`;
+                                item.content += `备注：${content.remark}`;
+                                break;
+                            case 'investment':
+                                item.showType = '投顾服务通知';
+                                item.content = `欢迎语：${content.first}<br>`;
+                                item.content += `服务名称：${content.keyword1}<br>`;
+                                item.content += `服务时间：${content.keyword2}<br>`;
+                                item.content += `备注：${content.remark}`;
+                                break;
+                            default:
+                                item.showType = '-';
+                                item.content = formatContent(item.data);
+                        }
+                    }
+                    else if (item.channelType == 5) { // 高端微信模板
+                        item.showType = '微信高端';
+                        item.content = `欢迎语：${content.first}<br>`;
+                        item.content += `业务：${content.OPERATE}<br>`;
+                        item.content += `金额：${content.AMT}<br>`;
+                        item.content += `状态：${content.STATUS}<br>`;
+                        item.content += `时间：${content.DATE}<br>`;
+                        item.content += `备注：${content.remark}`;
+                    }
+                    else {
+                        item.showType = '-';
+                        item.content = formatContent(item.data);
+                    }
+                }
+                for (let prop in item) {
+                    if (item[prop] == null || item[prop] == '') {
+                        item[prop] = '-';
+                    }
+                }
+            });
+            res.send({error: 0, msg: '请求成功', data: WXList});
+        }).catch(error => {
+            res.send({error: 1, msg: error.message, data: null});
+        });
+    });
+    //获取查询信息列表
+    app.post('/messageCenter/sendCount/WXSearch/getSearchList.ajax', (req, res, next) => {
+        let params = {};
+        params.routeRuleId = req.body.ruleId;
+        let option = {
+            session: req.session,
+            url: apiUrlList.query,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/sendCount/WXSearch/getSearchList.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            console.log('/messageCenter/sendCount/WXSearch/getSearchList.ajax error:', error);
+            console.log('/messageCenter/sendCount/WXSearch/getSearchList.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/sendCount/WXSearch/getSearchList.ajax body:', body);
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0 && Array.isArray(result.body)) {
+                let batchList = [];
+                let batchInfo = {};
+                let templateName = '';
+                result.body.forEach((item) => {
+                    if (item.channelType == 4) {
+                        batchList.push(item.batchId);
+                        batchInfo[item.batchId] = {
+                            templateId: item.templateId,
+                            templateName: item.templateName
+                        };
+                    }
+                });
+                let resultData = {
+                    batchList: batchList,
+                    batchInfo: batchInfo,
+                    ruleName: result.body[0] ? result.body[0].ruleName : '',
+                    templateName: batchList[0] ? batchInfo[batchList[0]].templateName : ''
+                };
+                res.send({error: 0, msg: '查询成功', data: resultData});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '查询失败'});
+            }
+        });
+    });
+    //获取规则信息
+    app.post('/messageCenter/sendCount/WXSearch/getRuleInfoList.ajax', (req, res, next) => {
+        let option = {
+            session: req.session,
+            url: apiUrlList.query,
+            body: {},
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/sendCount/WXSearch/getRuleInfoList.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            console.log('/messageCenter/sendCount/WXSearch/getRuleInfoList.ajax error:', error);
+            console.log('/messageCenter/sendCount/WXSearch/getRuleInfoList.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/sendCount/WXSearch/getRuleInfoList.ajax body:', body);
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0 && Array.isArray(result.body)) {
+                let ruleIdArr = [];
+                result.body.forEach((item) => {
+                    ruleIdArr.push(item.routeRuleId);
+                });
+                ruleIdArr = Array.from(new Set(ruleIdArr));
+                let ruleInfoList = [];
+                ruleIdArr.forEach((ruleId) => {
+                    for (let item of result.body) {
+                        if (ruleId == item.routeRuleId) {
+                            ruleInfoList.push({ruleId: ruleId, ruleName: item.ruleName});
+                            break;
+                        }
+                    }
+                });
+                res.send({error: 0, msg: '获取人工发送数据成功', data: ruleInfoList});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '获取人工发送数据失败'});
+            }
+        });
+    });
+};

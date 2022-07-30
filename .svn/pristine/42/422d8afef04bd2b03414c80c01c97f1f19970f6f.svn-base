@@ -1,0 +1,406 @@
+Vue.component('selectChosen', {
+    template: `
+        <select class="chosen-select form-control" ref="sele">
+                <option value="">请选择</option>
+                <option :value="item[keyName[0]]"
+                 v-for="(item,index) in list">
+                 {{item[keyName[0]]}}-{{item[keyName[1]]}}
+                </option>
+        </select>
+        `,
+    model: {
+        prop: "value",
+        event: "change",
+    },
+    props: {
+        value: {
+            validator: () => true,
+        },
+        list: {
+            type: [Object, Array],
+            default: () => [],
+        },
+        keyName:{
+            type:Array,
+            default:()=> ['','']
+        }
+    },
+    watch: {
+        value(newval) {
+            $(this.$refs.sele).val(newval).trigger("chosen:updated");
+        }
+    },
+    mounted() {
+        $(this.$refs.sele).chosen({
+            search_contains: true,
+            no_results_text: '未找到',
+            disable_search_threshold: 6,
+            width: '168px'
+        });
+        $(this.$refs.sele).on('change', function (e, params) {
+            this.$emit('change', params ? params.selected : '')
+        }.bind(this));
+    },
+    updated() {
+        $(this.$refs.sele).trigger("chosen:updated");
+    },
+})
+
+new Vue({
+    el: '#content',
+    data: {
+        // 查询
+        groupId:'',
+        // 主页面相关数据
+        tableData: [],
+        fundGroupList:[],
+		shiftTypeList:[],
+        opreateData:{
+            groupid: '',
+            shiftType: '',//投顾系列
+			endDefaultOperation:'00',
+			endOptionalOperationList:[],
+			periodDesc:'',
+			targetReturnPercent:0,
+			partiStartDate:'',//参与起始日
+			partiEndDate:'',//参与结束日
+			operationStartDate:'',//运作起始日
+			operationEndDate:'',//运作到期日
+			observStartDate:'',//观察起始日
+			isEndWin:0,//是否已止盈 默认否
+			endWinDate:'',
+			nextGroupid:''
+        },
+        diaMsg:'',
+		modifyStatus:'0',//0新增1修改
+        //主表格分页数据
+        currentIndex: 1,
+        maxSpace: 5,
+        totalPage: 0,
+        pageMaxNum: 10,
+        loadingStatus:'暂无数据',
+		baseUrl:'/investmentMgmt/investmentStrategy/targetProfitStrategyConfig'
+    },
+    mounted: function () {
+        var dialogs = ['info', 'del'];
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        this.getTableData();
+        this.fundGroup();
+        this.getShiftTypeList();
+    },
+    
+    watch: {
+        pageMaxNum: function () {
+            this.currentIndex = 1;
+            this.getTableData();
+        },
+        groupId:function(){
+            this.currentIndex = 1;
+        },
+		'opreateData.partiEndDate':function(newval,oldval){
+			if(this.modifyStatus=='0'){//只有新增的时候自动填入
+				// 获取当前选择的发车类型typeDesc是否能转化为数字类型；
+				var obj;
+				// 自动填入,运作起始日day1,观察起始日day2,运作到期日day3
+				var day1 = new Date(newval).getTime()+1*1000*60*60*24;  //运作起始日=参与结束日+1
+				var day2 = new Date(newval).getTime()+90*1000*60*60*24; //观察起始日=参与结束日+90
+				var day3 = new Date(newval).getTime()+182*1000*60*60*24;  //运作到期日=参与结束日+182(182天为默认,如果下方obj获取到的typeDesc字段可转化为数字，则day3=Number(typeDesc))
+				obj=this.shiftTypeList.find(function(item){
+					return item.shiftType == this.opreateData.shiftType
+				},this)
+				if(obj&&!isNaN(obj.typeDesc)){//能转化为数值时
+					console.log('hahahah',Number(obj.typeDesc));
+					day3 = new Date(newval).getTime()+Number(obj.typeDesc)*1000*60*60*24;
+				}
+				this.opreateData.operationStartDate = moment(day1).format('YYYY-MM-DD');//运作起始日
+				this.opreateData.observStartDate = moment(day2).format('YYYY-MM-DD');//观察起始日
+				this.opreateData.operationEndDate = moment(day3).format('YYYY-MM-DD');//运作到期日
+			}
+		}
+    },
+    methods: {
+        moment,
+        getTableData: function () {
+            var params = {};
+            params.pageNo = this.currentIndex;
+            this.pageMaxNum&&(params.pageSize = this.pageMaxNum);
+            this.groupId&&(params.groupId = this.groupId);
+            this.loadingStatus = '数据获取中...';
+            $.post({
+                url: this.baseUrl+'/getTableData.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        if(result.data.length>0){
+                            this.tableData = result.data;
+                        }else{
+                            this.tableData = [];
+                            this.loadingStatus = '没有数据';
+                        }
+                    } else {
+                        this.tableData = [];
+                        this.currentIndex = 0;
+                        this.totalPage = 0;
+                        this.showDialog('', 'info', false, result.msg);
+                        this.loadingStatus = '没有数据';
+                    }
+                }.bind(this)
+            });
+        },
+        fundGroup: function () {
+            $.post({
+                url: this.baseUrl+'/fundGroups.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        var filterList=[];
+                        filterList=result.data.body.filter((item)=>{
+                            return item.fundgroupType=='13'||item.fundgroupType=='14'||item.fundgroupType=='15'||item.fundgroupType=='16'||item.fundgroupType=='17'
+                        });
+                        this.fundGroupList = filterList;
+                    }
+                }.bind(this)
+            });
+        },
+		getShiftTypeList: function () {
+            $.post({
+                url: this.baseUrl+'/getShiftTypeList.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        this.shiftTypeList = result.data;
+                    }
+                }.bind(this)
+            });
+        },
+		initData:function(item){
+			if(item){
+				// 修改
+				var obj = JSON.parse(JSON.stringify(item));
+				obj.partiStartDate = this.formatTime(obj.partiStartDate+obj.partiStartTime);
+				obj.partiEndDate = this.formatTime(obj.partiEndDate+obj.partiEndTime);
+				obj.observStartDate = moment(obj.observStartDate).format('YYYY-MM-DD');
+				obj.operationEndDate = moment(obj.operationEndDate).format('YYYY-MM-DD');
+				obj.operationStartDate = moment(obj.operationStartDate).format('YYYY-MM-DD');
+				obj.endWinDate&&(obj.endWinDate = moment(obj.endWinDate).format('YYYY-MM-DD'));
+				this.opreateData = obj;
+			}else{
+				// 新增
+				for(var key in this.opreateData){
+					this.opreateData[key] = ''
+				}
+				this.opreateData.endDefaultOperation='00';
+				this.opreateData.endOptionalOperationList=[];
+				this.opreateData.targetReturnPercent = 0;
+				this.opreateData.isEndWin = 0;
+			}
+		},
+        showAdd:function(){
+			this.modifyStatus = '0';
+			this.initData();
+            this.showDialog('','add');
+        },
+		// 修改
+		showUpdate:function(item){
+			this.modifyStatus = '1';
+			this.initData(item);
+			this.showDialog('','add');
+		},
+        add:function(){
+			if(!this.checkData(this.opreateData)){
+				return false
+			}
+			// 日期format
+			var params = JSON.parse(JSON.stringify(this.opreateData));
+			var partiStartDate = this.opreateData.partiStartDate.split(' ')[0].replace(/-/g,'');
+			var partiStartTime = this.opreateData.partiStartDate.split(' ')[1].replace(/:/g,'');
+			var partiEndDate = this.opreateData.partiEndDate.split(' ')[0].replace(/-/g,'');
+			var partiEndTime = this.opreateData.partiEndDate.split(' ')[1].replace(/:/g,'');
+			var observStartDate = this.opreateData.observStartDate.replace(/-/g,'');
+			var operationEndDate = this.opreateData.operationEndDate.replace(/-/g,'');
+			var operationStartDate = this.opreateData.operationStartDate.replace(/-/g,'');
+			params.endWinDate&&(params.endWinDate = params.endWinDate.replace(/-/g,''));
+			params.partiStartDate = partiStartDate;
+			params.partiStartTime = partiStartTime;
+			params.partiEndDate = partiEndDate;
+			params.partiEndTime = partiEndTime;
+			params.observStartDate = observStartDate;
+			params.operationEndDate = operationEndDate;
+			params.operationStartDate = operationStartDate;
+			var url='';
+			(this.modifyStatus == '0')&&(url=this.baseUrl+'/add.ajax');
+			(this.modifyStatus == '1')&&(url=this.baseUrl+'/modify.ajax');
+            $.post({
+                url:url,
+                data: params,
+                success: function (result) {
+                    this.showDialog('add','info',false,result.msg)
+                    this.getTableData()
+                }.bind(this)
+            });
+        },
+		checkData:function(item){
+			if(!item.groupid){
+				this.showDialog('add','info',true,'请选择组合id')
+				return false
+			}
+			if(!item.shiftType){
+				this.showDialog('add','info',true,'请选择投顾系列')
+				return false
+			}
+			if(item.endOptionalOperationList.length===0){
+				this.showDialog('add','info',true,'请选择止盈或到期处理方式')
+				return false
+			}
+			if(!item.periodDesc){
+				this.showDialog('add','info',true,'请选择填写产品期数描述')
+				return false
+			}
+			if(item.targetReturnPercent===''){
+				this.showDialog('add','info',true,'请选择填写目标年华收益率')
+				return false
+			}
+			if(!item.partiStartDate){
+				this.showDialog('add','info',true,'请选择填写参与起始日')
+				return false
+			}
+			if(!item.partiEndDate){
+				this.showDialog('add','info',true,'请选择填写参与结束日')
+				return false
+			}
+			if(!item.operationStartDate){
+				this.showDialog('add','info',true,'请选择填写运作起始日')
+				return false
+			}
+			if(!item.operationEndDate){
+				this.showDialog('add','info',true,'请选择填写运作到期日')
+				return false
+			}
+			if(!item.observStartDate){
+				this.showDialog('add','info',true,'请选择填写观察起始日')
+				return false
+			}
+			return true
+		},
+		// 发车系列翻译
+		transferTableData:function(val,type){
+			var obj;
+			obj=this.shiftTypeList.find(function(item){
+				return item.shiftType == val
+			})
+			if(obj){
+				return obj[type]
+			}else{
+				return val
+			}
+		},
+		formatTime(time){
+			if(time&&time.length===14){
+				return time.slice(0,4)+'-'+time.slice(4,6)+'-'+time.slice(6,8)+' '+time.slice(8,10)+':'+time.slice(10,12)+':'+time.slice(12,14)
+			}else{
+				return time
+			}
+		},
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            } else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            } else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            } else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            } else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        //主表格分页方法
+        prev: function () {
+            if (this.currentIndex <= 1) {
+                return;
+            }
+            this.currentIndex--;
+            this.getTableData()
+            // this.getTableData(this.currentIndex - 1);
+        },
+        next: function () {
+            // if (this.currentIndex >= this.totalPage - 1) {
+            //     return;
+            // }
+            // this.getTableData(this.currentIndex + 1);
+            if(this.tableData.length<this.pageMaxNum){
+                return
+            }
+            this.currentIndex++
+            this.getTableData()
+        },
+        changeIndex: function (index) {
+            this.getTableData(index - 1);
+        },
+        toFirst: function () {
+            this.getTableData(0);
+        },
+        toLast: function () {
+            this.getTableData(this.totalPage - 1);
+        },
+    },
+    components:{
+        datePicker: VueBootstrapDatetimePicker,
+    },
+	filters:{
+		endOperateTransfer:function(val){
+			var obj = {
+				'00':'赎回',
+				'01':'续期'
+			}
+			if(val){
+				if(typeof val === 'string'){
+					if(val in obj){
+						return obj[val]
+					}else{
+						return val
+					}
+				}else if(Array.isArray(val)&&val.length>0){
+					var str = ''
+					val.forEach(function(item){
+						if(item in obj){
+							str+=obj[item]+'、'
+						}
+					})
+					if(str){
+						return str.substring(0,str.length-1)
+					}else{
+						return '-'
+					}
+				}else{
+					return '-'
+				}
+			}else{
+				return '-'
+			}
+		}
+	}
+});
+

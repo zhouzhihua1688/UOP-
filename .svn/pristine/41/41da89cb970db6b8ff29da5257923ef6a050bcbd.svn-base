@@ -1,0 +1,441 @@
+new Vue({
+    el: '#content',
+    data: {
+        //主页面相关数据
+        routeRuleId: '',
+        batchId: '',
+        tableData: [],
+        diaMsg: '',
+        loadingShow: false,
+        deleteInfo: {},
+        //新增弹窗相关数据
+        diaRuleList: [],
+        diaRuleId: '',
+        //模板展示数据
+        diaTemplateName: '',
+        diaTemplateExplain: '',
+        diaChannelType: '1',
+        diaTitle: '',
+        diaContent: '',
+        diaUrl: '',
+        //主表格分页数据
+        currentIndex: 0,
+        maxSpace: 5,
+        pageMaxNum: '10',
+        condition: '',
+    },
+    computed: {
+        //主表格分页
+        middleData: function () {
+            var middleData = [];
+            var filterData = [];
+            var pageMaxNum = parseInt(this.pageMaxNum);
+            var _this = this;
+            this.tableData.forEach(function (jsonObj) {
+                var valueArr = [];
+                for (var prop in jsonObj) {
+                    valueArr.push(jsonObj[prop]);
+                }
+                for (var i = 0, len = valueArr.length; i < len; i++) {
+                    if (valueArr[i]) {
+                        if (valueArr[i].toString().indexOf(_this.condition) != -1) {
+                            filterData.push(jsonObj);
+                            break;
+                        }
+                    }
+                }
+            });
+            if (filterData.length <= pageMaxNum) {
+                middleData.push(filterData);
+                return middleData;
+            }
+            else {
+                var i = 0;
+                while ((i + 1) * pageMaxNum < filterData.length) {
+                    middleData.push(filterData.slice(i * pageMaxNum, (i + 1) * pageMaxNum));
+                    i++;
+                }
+                middleData.push(filterData.slice(i * pageMaxNum, filterData.length));
+                return middleData;
+            }
+        },
+        viewData: function () {
+            var currentIndex = parseInt(this.currentIndex);
+            return this.middleData[currentIndex];
+        },
+        ruleInfo: function () {
+            if (!this.diaRuleId) {
+                return {
+                    templateName: [],
+                    channelType: ''
+                };
+            }
+            var _this = this;
+            var item = this.diaRuleList[this.inSelected({ruleId: this.diaRuleId}, this.diaRuleList, 'ruleId')];
+            var channelArr = [];
+            var templateNameArr = [];
+            item.templateChannelList.forEach(function (item) {
+                $.post({
+                    url: '/messageCenter/templateMgmt/templateMgmt/query.ajax',
+                    data: {templateId: item.templateId},
+                    async: false,
+                    success: function (result) {
+                        if (result.error === 0) {
+                            templateNameArr.push(result.data[0]);
+                        }
+                        else {
+                            _this.showDialog('add', 'info', false, result.msg);
+                        }
+                    }
+                });
+                if (item.channelType == 1) {
+                    channelArr.push('App站内信');
+                }
+                if (item.channelType == 2) {
+                    channelArr.push('App-push');
+                }
+                if (item.channelType == 3) {
+                    channelArr.push('短信');
+                }
+                if (item.channelType == 4) {
+                    channelArr.push('微信');
+                }
+                if (item.channelType == 5) {
+                    channelArr.push('微信高端');
+                }
+            });
+            return {
+                templateName: templateNameArr,
+                channelType: channelArr.join(',')
+            };
+        },
+        pageList: function () {
+            var arr = [];
+            if (this.middleData.length <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            else if (this.currentIndex <= this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            }
+            else if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex <= this.maxSpace) {
+                var space = this.middleData.length - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            else {
+                for (var i = 0; i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        }
+    },
+    watch: {
+        pageMaxNum: function () {
+            this.currentIndex = 0;
+        },
+        condition: function () {
+            this.currentIndex = 0;
+        }
+    },
+    mounted: function () {
+        var _this = this;
+        var dialogs = ['info', 'add', 'delete', 'sendMsg'];
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        $('#diaRuleList').chosen({
+            search_contains: true,
+            allow_single_deselect: true,
+            no_results_text: '未找到规则名称',
+            disable_search_threshold: 8,
+            width: '300px'
+        });
+        $('#diaRuleList').on('change', function (e, params) {
+            _this.diaRuleId = params ? params.selected : '';
+        });
+        _this.loadingShow = true;
+        $.post({
+            url: '/messageCenter/manualMgmt/manualMgmt/search.ajax',
+            data: {},
+            success: function (result) {
+                _this.loadingShow = false;
+                if (result.error === 0) {
+                    _this.tableData = result.data;
+                }
+                else {
+                    _this.showDialog('', 'info', false, result.msg);
+                }
+            },
+            error: function () {
+                _this.loadingShow = false;
+                _this.showDialog('', 'info', false, '请求出错');
+            }
+        });
+    },
+    methods: {
+        //业务方法
+        search: function () {
+            this.currentIndex = 0;
+            var _this = this;
+            var params = {};
+            params.routeRuleId = this.routeRuleId;
+            params.batchId = this.batchId;
+            if (this.routeRuleId === '' && this.batchId === '') { // 查全体
+                _this.loadingShow = true;
+            }
+            $.post({
+                url: '/messageCenter/manualMgmt/manualMgmt/search.ajax',
+                data: params,
+                success: function (result) {
+                    _this.loadingShow = false;
+                    if (result.error === 0) {
+                        _this.tableData = result.data;
+                    }
+                    else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                },
+                error: function () {
+                    _this.loadingShow = false;
+                    _this.showDialog('', 'info', false, '请求出错');
+                }
+            });
+        },
+        showAdd: function () {
+            var _this = this;
+            this.diaRuleId = '';
+            $('#diaRuleList').val('');
+            $('#diaRuleList').trigger('chosen:updated');
+            if (this.diaRuleList.length == 0) {
+                $.post({
+                    url: '/messageCenter/manualMgmt/manualMgmt/getRuleList.ajax',
+                    success: function (result) {
+                        if (result.error === 0) {
+                            _this.diaRuleList = result.data;
+                            var str = '<option value=""></option>';
+                            result.data.forEach(function (item) {
+                                str += '<option value="' + item.ruleId + '">' + item.ruleName + '</option>';
+                            });
+                            $('#diaRuleList').html(str);
+                            $("#diaRuleList").trigger("chosen:updated");
+                            _this.showDialog('', 'add');
+                        }
+                        else {
+                            _this.showDialog('', 'info', false, result.msg);
+                        }
+                    }
+                });
+            }
+            else {
+                this.showDialog('', 'add');
+            }
+        },
+        showDelete: function (item) {
+            this.deleteInfo.batchId = item.batchId;
+            this.deleteInfo.routeRuleId = item.routeRuleId;
+            this.showDialog('', 'delete');
+        },
+        searchCount: function (item) {
+            var params = {};
+            params.ruleId = item.routeRuleId;
+            params.batchNo = item.batchId;
+            var _this = this;
+            $.post({
+                url: '/messageCenter/manualMgmt/manualMgmt/searchCount.ajax',
+                data: params,
+                success: function (result) {
+                    _this.showDialog('', 'info', false, result.msg);
+                }
+            });
+        },
+        showMsg: function () {
+            this.showDialog('add', 'sendMsg', false);
+        },
+        showTemplate: function (id) {
+            var item = {};
+            var _this = this;
+            $.post({
+                url: '/messageCenter/templateMgmt/templateMgmt/query.ajax',
+                data: {templateId: id},
+                async: false,
+                success: function (result) {
+                    if (result.error === 0) {
+                        item = result.data[0];
+                    }
+                    else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+            this.clearTemplateInfo();
+            this.diaTemplateName = item.templateName;
+            this.diaChannelType = item.channelType;
+            this.diaContent = item.content;
+            if (item.channelType == 1) {
+                this.diaTemplateExplain = item.summary;
+                this.diaTitle = item.title;
+                this.diaUrl = item.url;
+                $("#startTime").val(item.startTime);
+                $("#endTime").val(item.endTime);
+            }
+            else if (item.channelType == 2) {
+                this.diaUrl = item.url;
+            }
+            else if (item.channelType == 4) {
+                this.diaUrl = item.url;
+            }
+            else if (item.channelType == 5) {
+                this.diaUrl = item.url;
+            }
+            this.showDialog('', 'templateInfo');
+        },
+        clearTemplateInfo: function () {
+            this.diaTemplateName = '';
+            this.diaTemplateExplain = '';
+            this.diaChannelType = '1';
+            this.diaTitle = '';
+            this.diaContent = '';
+            this.diaUrl = '';
+            $("#startTime").val('');
+            $("#endTime").val('');
+        },
+        showtemplateInfo: function (item) {
+            this.clearTemplateInfo();
+            this.diaTemplateName = item.templateName;
+            this.diaTemplateExplain = item.summary;
+            this.diaChannelType = item.channelType;
+            this.diaContent = item.content;
+            if (item.channelType == 1) {
+                this.diaTitle = item.title;
+                this.diaUrl = item.url;
+                $("#startTime").val(item.startTime);
+                $("#endTime").val(item.endTime);
+            }
+            else if (item.channelType == 2) {
+                this.diaUrl = item.url;
+            }
+            else if (item.channelType == 4) {
+                this.diaUrl = item.url;
+            }
+            else if (item.channelType == 5) {
+                this.diaUrl = item.url;
+            }
+            this.showDialog('add', 'templateInfo', true);
+        },
+        deleteData: function () {
+            var params = {};
+            params.routeRuleId = this.deleteInfo.routeRuleId;
+            params.batchId = this.deleteInfo.batchId;
+            var _this = this;
+            $.post({
+                url: '/messageCenter/manualMgmt/manualMgmt/del.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.search();
+                        _this.showDialog('delete', 'info', false, result.msg);
+                    }
+                    else {
+                        _this.showDialog('delete', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+        sendMsg: function () {
+            var _this = this;
+            var params = {};
+            params.routeRuleId = this.diaRuleId;
+            params.ruleSource = 'mcp';
+            $.post({
+                url: '/messageCenter/manualMgmt/manualMgmt/sendMsg.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.search();
+                        _this.showDialog('sendMsg', 'info', false, result.msg);
+                    }
+                    else {
+                        _this.showDialog('sendMsg', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        //主表格分页方法
+        prev: function () {
+            this.currentIndex <= 0 ? 0 : this.currentIndex--;
+        },
+        next: function () {
+            this.currentIndex >= this.middleData.length - 1 ? this.middleData.length - 1 : this.currentIndex++;
+        },
+        changeIndex: function (index) {
+            this.currentIndex = index - 1;
+        },
+        toFirst: function () {
+            this.currentIndex = 0;
+        },
+        toLast: function () {
+            this.currentIndex = this.middleData.length - 1;
+        },
+        //公共方法
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            }
+            else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            }
+            else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            }
+            else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+            else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        inSelected: function (item, arr, prop) {
+            var _index = -1;
+            arr.forEach(function (value, index) {
+                if (item[prop] == value[prop]) {
+                    _index = index;
+                }
+            });
+            return _index;
+        }
+    }
+});

@@ -1,0 +1,487 @@
+new Vue({
+    el: '#content',
+    data: {
+        //主页面相关数据
+        custNo: '',
+        commentToItemId: '',
+        commentToItemIdList: {},
+        commentToItemTp: '',
+        commentToItemTpList: [],
+        commentContext: '',
+        loadingShow: false,
+        // List search condition
+        custNo_search: '',
+        commentToItemId_search: '',
+        commentToItemTp_search: '',
+        commentContext_search: '',
+        endTime: '',
+        startTime: '',
+        tableData: [],
+        diaMsg: '',
+        loadingStatus: '数据获取中...',
+        // 修改状态相关数据
+        item: {},
+        status: 0,
+        dialogTipStr: '',
+        // 弹窗id
+        commentId: '',
+        // 留言回复弹窗数据
+        commentToItemTpByAddDialog: '',
+        commentToItemIdByAddDialog: '',
+        addReplyContext: '',
+        // 查看列表数据
+        replyContext_detail: '',
+        detailData: [],
+        // 查看列表修改弹窗数据
+        replyId: '',
+        commentToItemIdByModifyDialog: '',
+        commentToItemTpByModifyDialog: '',
+        modifyReplyContext: '',
+        //主表格分页数据
+        currentIndex: 0,
+        maxSpace: 5,
+        totalPage: 0,
+        pageMaxNum: 10
+    },
+    computed: {
+        pageList: function () {
+            var arr = [];
+            if (this.totalPage <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex <= this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex <= this.maxSpace) {
+                var space = this.totalPage - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            } else {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        },
+        detailFilterData: function () {
+            var _this = this;
+            return this.detailData.filter(function (item) {
+                return item.replyContext.indexOf(_this.replyContext_detail) > -1;
+            });
+        }
+    },
+    watch: {
+        pageMaxNum: function () {
+            this.getList(0);
+        },
+        commentToItemTp: function (val) {
+            this.commentToItemId = '';
+        }
+    },
+    mounted: function () {
+        var _this = this;
+        var dialogs = ['info', 'reply', 'modify', 'checkDetail', 'changeStatus'];
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        $('.date-timepicker').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm:ss',//use this option to display seconds
+            icons: {
+                time: 'fa fa-clock-o',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-arrows ',
+                clear: 'fa fa-trash',
+                close: 'fa fa-times'
+            }
+        }).next().on(ace.click_event, function () {
+            $(this).prev().focus();
+        });
+        this.getSelectData();
+        this.getTableData(0);
+    },
+    methods: {
+        // 获取下拉框所需数据
+        getSelectData: function () {
+            var _this = this;
+            $.post({
+                url: '/messageCenter/auditMgmt/leaveWordMgmt/getSelectData.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.commentToItemTpList = result.data.itemList;
+                        _this.commentToItemIdList = result.data.managerList;
+                        if (_this.getQueryString('firmOfferId')) {
+                            _this.commentToItemTp = 5;
+                            setTimeout(function () {
+                                _this.commentToItemId = _this.getQueryString('firmOfferId');
+                            }, 0);
+                        }
+                    }
+                }
+            });
+        },
+        // 查询列表
+        getTableData: function (currentIndex) {
+            this.custNo_search = this.custNo;
+            this.commentToItemId_search = this.getQueryString('firmOfferId') ? this.getQueryString('firmOfferId') : this.commentToItemId;
+            this.commentToItemTp_search = this.getQueryString('firmOfferId') ? 5 : this.commentToItemTp;
+            this.commentContext_search = this.commentContext;
+            this.endTime = $("#endTime").val();
+            this.startTime = $("#startTime").val();
+            var params = {};
+            params.custNo = this.custNo_search;
+            params.commentToItemId = this.commentToItemId_search;
+            params.commentToItemTp = this.commentToItemTp_search;
+            params.commentContext = this.commentContext_search;
+            params.endTime = this.endTime;
+            params.startTime = this.startTime;
+            params.pageNo = currentIndex + 1;
+            params.pageSize = this.pageMaxNum;
+            this.loadingStatus = '数据获取中...';
+            var _this = this;
+            $.post({
+                url: '/messageCenter/auditMgmt/leaveWordMgmt/search.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        if (result.data.rows.length > 0) {
+                            _this.tableData = result.data.rows;
+                            _this.currentIndex = result.data.pageNum - 1;
+                            _this.totalPage = result.data.pages;
+                        }
+                        else {
+                            _this.tableData = [];
+                            _this.currentIndex = 0;
+                            _this.totalPage = 0;
+                            _this.loadingStatus = '暂无数据';
+                        }
+                    }
+                    else {
+                        _this.tableData = [];
+                        _this.currentIndex = 0;
+                        _this.totalPage = 0;
+                        _this.loadingStatus = '暂无数据';
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        getList: function (currentIndex) {
+            var params = {};
+            params.custNo = this.custNo_search;
+            params.commentToItemId = this.commentToItemId_search;
+            params.commentToItemTp = this.commentToItemTp_search;
+            params.commentContext = this.commentContext_search;
+            params.endTime = this.endTime;
+            params.startTime = this.startTime;
+            params.pageNo = currentIndex + 1;
+            params.pageSize = this.pageMaxNum;
+            var _this = this;
+            $.post({
+                url: '/messageCenter/auditMgmt/leaveWordMgmt/search.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        if (result.data.rows.length > 0) {
+                            _this.tableData = result.data.rows;
+                            _this.currentIndex = result.data.pageNum - 1;
+                            _this.totalPage = result.data.pages;
+                        }
+                        else {
+                            _this.tableData = [];
+                            _this.currentIndex = 0;
+                            _this.totalPage = 0;
+                            _this.loadingStatus = '暂无数据';
+                        }
+                    }
+                    else {
+                        _this.tableData = [];
+                        _this.currentIndex = 0;
+                        _this.totalPage = 0;
+                        _this.loadingStatus = '暂无数据';
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        // 刷新基金经理
+        refresh: function () {
+            var _this = this;
+            $.post({
+                url: '/messageCenter/auditMgmt/leaveWordMgmt/refreshFundManage.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('', 'info', false, '刷新成功');
+                    }
+                    else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        showOpen: function (item, status, dialogTipStr) {
+            this.item = item;
+            this.status = status;
+            this.dialogTipStr = dialogTipStr;
+            this.showDialog('', 'changeStatus', false, '是否确定' + dialogTipStr + '此留言？');
+        },
+        open: function () {
+            var params = {};
+            params.commentId = this.item.commentId;
+            params.commentStatus = this.status;
+            var _this = this;
+            $.post({
+                url: '/messageCenter/auditMgmt/leaveWordMgmt/updateStatus.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.getList(_this.currentIndex);
+                        _this.showDialog('changeStatus', 'info', false, '留言状态更改成功');
+                    }
+                    else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        // 回复
+        reply: function (item) {
+            this.commentId = item.commentId;
+            this.commentToItemTpByAddDialog = item.commentToItemTp;
+            this.commentToItemIdByAddDialog = item.commentToItemId;
+            this.addReplyContext = '';
+            this.showDialog('', 'reply');
+        },
+        replying: function () {
+            if (this.commentToItemTpByAddDialog == 1 && !this.commentToItemIdByAddDialog) {
+                this.showDialog('reply', 'info', true, '请选择基金经理');
+                return false;
+            }
+            if (!this.addReplyContext.trim()) {
+                this.showDialog('reply', 'info', true, '回复内容不能为空');
+                return false;
+            }
+            if (this.addReplyContext.length > 500) {
+                this.showDialog('reply', 'info', true, '回复内容字数不能大于500');
+                return false;
+            }
+            var params = {};
+            params.commentId = this.commentId;
+            params.replyContext = this.addReplyContext;
+            params.fundManageId = this.commentToItemTpByAddDialog == 1 ? this.commentToItemIdByAddDialog : '';
+            params.commentToItemTp = this.commentToItemTpByAddDialog;
+            var _this = this;
+            $.post({
+                url: '/messageCenter/auditMgmt/leaveWordMgmt/addMessage.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('reply', 'info', false, '回复留言成功');
+                    }
+                    else {
+                        _this.showDialog('reply', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        // 查看
+        checkThis: function (item) {
+            this.commentId = item.commentId;
+            this.commentToItemTpByModifyDialog = item.commentToItemTp;
+            this.detailData = [];
+            var params = {};
+            params.commentId = item.commentId;
+            var _this = this;
+            $.post({
+                url: '/messageCenter/auditMgmt/leaveWordMgmt/getMessage.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.detailData = result.data;
+                        _this.showDialog('', 'checkDetail', false);
+                    }
+                    else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        // 删除
+        deleteData: function (item) {
+            var params = {};
+            params.replyId = item.replyId;
+            var _this = this;
+            $.post({
+                url: '/messageCenter/auditMgmt/leaveWordMgmt/deleteMessage.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        $.post({
+                            url: '/messageCenter/auditMgmt/leaveWordMgmt/getMessage.ajax',
+                            data: {commentId: item.commentId},
+                            success: function (result) {
+                                if (result.error === 0) {
+                                    _this.detailData = result.data;
+                                }
+                            }
+                        });
+                        _this.showDialog('checkDetail', 'info', true, '删除成功');
+                    }
+                    else {
+                        _this.showDialog('checkDetail', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+        // 修改
+        modifyData: function (item) {
+            this.replyId = item.replyId;
+            this.commentId = item.commentId;
+            if (this.commentToItemTpByModifyDialog == 1) {
+                this.commentToItemIdByModifyDialog = item.fundManageId;
+            }
+            else {
+                this.commentToItemIdByModifyDialog = '';
+            }
+            this.modifyReplyContext = item.replyContext;
+            this.showDialog('checkDetail', 'modify', false);
+        },
+        modifying: function () {
+            if (this.commentToItemTpByModifyDialog == 1 && !this.commentToItemIdByModifyDialog) {
+                this.showDialog('modify', 'info', true, '请选择基金经理');
+                return false;
+            }
+            if (!this.modifyReplyContext.trim()) {
+                this.showDialog('modify', 'info', true, '回复内容不能为空');
+                return false;
+            }
+            if (this.modifyReplyContext.length > 500) {
+                this.showDialog('modify', 'info', true, '回复内容字数不能大于500');
+                return false;
+            }
+            var _this = this;
+            var params = {};
+            params.replyId = this.replyId;
+            params.commentId = this.commentId;
+            params.commentToItemTp = this.commentToItemTpByModifyDialog;
+            params.fundManageId = this.commentToItemTpByModifyDialog == 1 ? this.commentToItemIdByModifyDialog : '';
+            params.replyContext = this.modifyReplyContext;
+            $.post({
+                url: '/messageCenter/auditMgmt/leaveWordMgmt/modifyMessage.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('modify', 'info', false, '修改成功');
+
+                    } else {
+                        _this.showDialog('modify', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+        modifyRef: function () {
+            var $index = this.dcurrentIndex;
+            this.checkThis($index);
+        },
+        //导出Excel
+        exportExcel: function () {
+            var _this = this;
+            if (!$("#endTime").val().trim() || !$("#startTime").val().trim()) {
+                _this.showDialog('', 'info', false, '导出数据时必须选择时间段');
+                return false;
+            }
+            var url = '/messageCenter/auditMgmt/leaveWordMgmt/exportExcel.ajax';
+            url += '?custNo=' + _this.custNo;
+            url += '&&commentToItemId=' + _this.commentToItemId;
+            url += '&&commentContext=' + _this.commentContext;
+            url += '&&pageNo=1';
+            url += '&&pageSize=999';
+            url += '&&startTime=' + $("#startTime").val();
+            url += '&&endTime=' + $("#endTime").val();
+            window.location.href = url;
+        },
+        //主表格分页方法
+        prev: function () {
+            if (this.currentIndex <= 0) {
+                return;
+            }
+            this.getList(this.currentIndex - 1);
+        },
+        next: function () {
+            if (this.currentIndex >= this.totalPage - 1) {
+                return;
+            }
+            this.getList(this.currentIndex + 1);
+        },
+        changeIndex: function (index) {
+            this.getList(index - 1);
+        },
+        toFirst: function () {
+            this.getList(0);
+        },
+        toLast: function () {
+            this.getList(this.totalPage - 1);
+        },
+        //公共方法
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            }
+            else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            }
+            else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            }
+            else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+            else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        // 获取url参数方法
+        getQueryString: function (name) {
+            var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) {
+                return unescape(r[2]);
+            }
+            return '';
+        }
+    }
+});

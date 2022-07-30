@@ -1,0 +1,445 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').channelMaintain;
+const qs = require("qs");
+module.exports = function (app) {
+    //查询
+    app.get('/thirdPartyOperation/channelMaintain/fileInteraction/search.ajax', (req, res, next) => {
+
+        let params = {};
+        userid = req.session.loginInfo.userid;
+        // req.body.branchcode && (params.branchcode = req.body.branchcode);
+        //req.body.shortnm && (params.shortnm = req.body.shortnm);
+        if (req.query.branchnm) {
+            params.branchnm = req.query.branchnm;
+        }
+        if (req.query.fileDesc) {
+            params.fileDesc= req.query.fileDesc;
+        }
+        if (req.query.date) {
+            params.date= req.query.date;
+        }
+        let option = {
+            session:req.session,
+            url: apiUrlList.fileInteraction.search,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/thirdPartyOperation/channelMaintain/fileInteraction/search.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/search.ajax error:', error);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/search.ajax statusCode:', response && response.statusCode);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/search.ajax body:', body);
+            // return res.send(body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.responseCode === '0000') {
+                res.send({
+                    error: 0,
+                    msg: '数据获取成功',
+                    data:result.data
+                });
+            }
+            else if (result && result.responseCode != '9999') {
+                res.send({ error: 1, msg: result.responseMessage });
+            }
+            else {
+                res.send({
+                    error: 1,
+                    msg: result.responseMessage
+                });
+            }
+        });
+    });
+    //人工执行
+    app.post('/thirdPartyOperation/channelMaintain/fileInteraction/implement.ajax', (req, res, next) => {
+        let params =qs.parse(req.body);
+        params.operator = req.session.loginInfo.userid ;
+        console.log((params));
+        // let params1 = JSON.stringify(params);
+        let option = {
+            session:req.session,
+            url: apiUrlList.fileInteraction.implement,
+            body:params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/thirdPartyOperation/channelMaintain/fileInteraction/implement.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/implement.ajax error:', error);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/implement.ajax statusCode:', response && response.statusCode);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/implement.ajax body:', body);
+            // return res.send(body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+
+            if (result && result.responseCode === '0000') {
+                res.send({
+                    error: 0,
+                    msg: '数据获取成功',
+                    data:result.data
+
+                });
+
+            }
+            else if (result && result.responseCode != '9999') {
+                res.send({ error: 1, msg: result.responseMessage });
+            }
+            else {
+                res.send({
+                    error: 1,
+                    msg: result.responseMessage
+
+                });
+            }
+        });
+    });
+    //系统执行
+    app.post('/thirdPartyOperation/channelMaintain/fileInteraction/implements.ajax', (req, res, next) => {
+        let params =qs.parse(req.body);
+        params.operator = req.session.loginInfo.userid ;
+        console.log((params));
+        let option = {
+            session:req.session,
+            url: apiUrlList.fileInteraction.implements,
+            body:params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/thirdPartyOperation/channelMaintain/fileInteraction/implements.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/implements.ajax error:', error);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/implements.ajax statusCode:', response && response.statusCode);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/implements.ajax body:', body);
+            // return res.send(body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+
+            if (result && result.responseCode === '0000') {
+                res.send({
+                    error: 0,
+                    msg: '数据获取成功',
+                    data:result.data
+
+                });
+
+            }
+            else if (result && result.responseCode != '9999') {
+                res.send({ error: 1, msg: result.responseMessage });
+            }
+            else {
+                res.send({
+                    error: 1,
+                    msg: result.responseMessage
+
+                });
+            }
+        });
+    });
+    //导入出暂停、恢复
+    app.post('/thirdPartyOperation/channelMaintain/fileInteraction/pauseExport.ajax', (req, res, next) => {
+        let params =qs.parse(req.body);
+        params.operator = req.session.loginInfo.userid ;
+        console.log((params));
+        let option = {
+            session:req.session,
+            url: apiUrlList.fileInteraction.pauseExport,
+            body:params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/thirdPartyOperation/channelMaintain/fileInteraction/pauseExport.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/pauseExport.ajax error:', error);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/pauseExport.ajax statusCode:', response && response.statusCode);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/pauseExport.ajax body:', body);
+            // return res.send(body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+
+            if (result && result.responseCode === '0000') {
+                res.send({
+                    error: 0,
+                    msg: '数据获取成功',
+                    data:result.data
+
+                });
+
+            }
+            else if (result && result.responseCode != '9999') {
+                res.send({ error: 1, msg: result.responseMessage });
+            }
+            else {
+                res.send({
+                    error: 1,
+                    msg: result.responseMessage
+
+                });
+            }
+        });
+    });
+    //上传出暂停、恢复
+    app.post('/thirdPartyOperation/channelMaintain/fileInteraction/pauseUpload.ajax', (req, res, next) => {
+        let params =qs.parse(req.body);
+        params.operator = req.session.loginInfo.userid ;
+        console.log((params));
+        let option = {
+            session:req.session,
+            url: apiUrlList.fileInteraction.pauseUpload,
+            body:params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/thirdPartyOperation/channelMaintain/fileInteraction/pauseUpload.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/pauseUpload.ajax error:', error);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/pauseUpload.ajax statusCode:', response && response.statusCode);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/pauseUpload.ajax body:', body);
+            // return res.send(body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+
+            if (result && result.responseCode === '0000') {
+                res.send({
+                    error: 0,
+                    msg: '数据获取成功',
+                    data:result.data
+
+                });
+
+            }
+            else if (result && result.responseCode != '9999') {
+                res.send({ error: 1, msg: result.responseMessage });
+            }
+            else {
+                res.send({
+                    error: 1,
+                    msg: result.responseMessage
+
+                });
+            }
+        });
+    });
+    //初始化当日对账清单
+    app.get('/thirdPartyOperation/channelMaintain/fileInteraction/resetTask.ajax', (req, res, next) => {
+
+        let params = req.query;
+        params.operator = req.session.loginInfo.userid
+        //  params.date= req.query.date;
+
+        let option = {
+            session:req.session,
+            url: apiUrlList.fileInteraction.resetTask,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/thirdPartyOperation/channelMaintain/fileInteraction/resetTask.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/resetTask.ajax error:', error);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/resetTask.ajax statusCode:', response && response.statusCode);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/resetTask.ajax body:', body);
+            // return res.send(body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.responseCode === '0000') {
+                res.send({
+                    error: 0,
+                    msg: '数据获取成功',
+                    data:result.data
+                });
+                console.log(result.data);
+            }
+            else if (result && result.responseCode != '9999') {
+                res.send({ error: 1, msg: result.responseMessage });
+            }
+            else {
+                res.send({
+                    error: 1,
+                    msg: result.responseMessage
+                });
+            }
+        });
+    });
+    //查询渠道信息
+    app.get('/thirdPartyOperation/channelMaintain/fileInteraction/qrybranchInfo.ajax', (req, res, next) => {
+
+        let params = req.query;
+        params.operator = req.session.loginInfo.userid
+        //  params.date= req.query.date;
+
+        let option = {
+            session:req.session,
+            url: apiUrlList.fileInteraction.qryBranchInfo,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/thirdPartyOperation/channelMaintain/fileInteraction/qrybranchInfo.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/qrybranchInfo.ajax error:', error);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/qrybranchInfo.ajax statusCode:', response && response.statusCode);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/qrybranchInfo.ajax body:', body);
+            // return res.send(body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.responseCode === '0000') {
+                res.send({
+                    error: 0,
+                    msg: '数据获取成功',
+                    data:result.data
+                });
+                console.log(result.data);
+            }
+            else if (result && result.responseCode != '9999') {
+                res.send({ error: 1, msg: result.responseMessage });
+            }
+            else {
+                res.send({
+                    error: 1,
+                    msg: result.responseMessage
+                });
+            }
+        });
+    });
+
+    //初始化 部分 对账清单
+    app.post('/thirdPartyOperation/channelMaintain/fileInteraction/resetPart.ajax', (req, res, next) => {
+        let params =qs.parse(req.body);
+        params.operater = req.session.loginInfo.userid;
+        console.log((params));
+        let option = {
+            session:req.session,
+            url: apiUrlList.fileInteraction.reset,
+            body:params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/thirdPartyOperation/channelMaintain/fileInteraction/resetPart.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/resetPart.ajax error:', error);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/resetPart.ajax statusCode:', response && response.statusCode);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/resetPart.ajax body:', body);
+            // return res.send(body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+
+            if (result && result.responseCode === '0000') {
+                res.send({
+                    error: 0,
+                    msg: '数据获取成功',
+                    data:result.data
+
+                });
+
+            }
+            else if (result && result.responseCode != '9999') {
+                res.send({ error: 1, msg: result.responseMessage });
+            }
+            else {
+                res.send({
+                    error: 1,
+                    msg: result.responseMessage
+
+                });
+            }
+        });
+    });
+
+
+
+    //操作日志
+
+    app.get('/thirdPartyOperation/channelMaintain/fileInteraction/record.ajax', (req, res, next) => {
+        let option = {
+            session: req.session,
+            url: apiUrlList.fileInteraction.record,
+            qs:req.body,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/thirdPartyOperation/channelMaintain/fileInteraction/record.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/record.ajax error:', error);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/record.ajax statusCode:', response && response.statusCode);
+            console.log('/thirdPartyOperation/channelMaintain/fileInteraction/record.ajax body:', body);
+            // return res.send(body);
+            if (error) {
+                return res.send({error: 1, msg: '数据获取失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.responseCode === '0000' && Array.isArray(result.data)) {
+
+                result.data.forEach(function (value,index) {
+                    value.changetime=formatTime(value.changetime);});
+                result.data.changetime= formatTime(result.data.changetime);
+                res.send({
+                    error: 0,
+                    msg: '数据获取成功',
+                    data: result.data
+                });
+            }
+            else if (result && result.responseCode != '9999') {
+                res.send({ error: 1, msg: result.responseMessage });
+            }
+            else {
+                res.send({
+                    error: 1,
+                    msg: result.responseMessage
+                });
+            }
+        });
+    });
+
+
+};
+function formatTime(timestamp) {
+    var date = new Date(timestamp);//时间戳为10位需*1000，时间戳为13位的话不需乘1000
+    var Y = date.getFullYear() + '-';
+    var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+    var D = (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) + ' ';
+    var h = (date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ':';
+    var m = (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()) + ':';
+    var s = (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds());
+    return Y + M + D + h + m + s;
+}

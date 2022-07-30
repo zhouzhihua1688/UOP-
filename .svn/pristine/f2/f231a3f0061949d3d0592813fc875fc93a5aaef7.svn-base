@@ -1,0 +1,323 @@
+new Vue({
+	el: '#content',
+	data: {
+		// 主页面相关数据
+		tableData: [],
+		diaMsg: '',
+		groupId: 'ALL',
+		groupList: [],
+		deleteId: '',
+		loadingShow: false,
+		// 录入弹窗数据
+		dialog_reportName: '',
+		dialog_reportUrl: '',
+		// 关联弹窗数据
+		reportId: '',
+		relate_groupId: '',
+		//主表格分页数据
+		currentIndex: 0,
+		maxSpace: 5,
+		totalPage: 0,
+		pageMaxNum: 10,
+		condition: ''
+	},
+	mounted: function() {
+		var dialogs = ['info', 'add', 'relation', 'del', 'uploadFile'];
+		var _this = this;
+		dialogs.forEach(function(id) {
+			$('#' + id).on('shown.bs.modal', function() {
+				var $this = $(this);
+				var dialog = $this.find('.modal-dialog');
+				var top = ($(window).height() - dialog.height()) / 2;
+				dialog.css({
+					marginTop: top
+				});
+			});
+		});
+		var arr = ['fundGroupsList', 'fundRelations'];
+		arr.forEach(function(id) {
+			$('#' + id).chosen({
+				search_contains: true,
+				no_results_text: '未找到基金组合',
+				disable_search_threshold: 6,
+				width: '170px'
+			});
+		});
+		$('#fundGroupsList').on('change', function(e, params) {
+			_this.groupId = params ? params.selected : '';
+		});
+		$('#fundRelations').on('change', function(e, params) {
+			_this.relate_groupId = params ? params.selected : '';
+		});
+		$('#uploadBtn').click(function () {
+		    $('#uploadFileInput').click();
+		});
+		this.getFundGroupList();
+		this.getTableData();
+	},
+	computed: {
+		//主表格假分页
+		middleData: function() {
+			var middleData = [];
+			var filterData = [];
+			var pageMaxNum = parseInt(this.pageMaxNum);
+			var _this = this;
+			this.tableData.forEach(function(jsonObj) {
+				var valueArr = [];
+				for (var prop in jsonObj) {
+					valueArr.push(jsonObj[prop]);
+				}
+				for (var i = 0, len = valueArr.length; i < len; i++) {
+					if (valueArr[i]) {
+						if (valueArr[i].toString().indexOf(_this.condition) != -1) {
+							filterData.push(jsonObj);
+							break;
+						}
+					}
+				}
+			});
+			if (filterData.length <= pageMaxNum) {
+				middleData.push(filterData);
+				return middleData;
+			} else {
+				var i = 0;
+				while ((i + 1) * pageMaxNum < filterData.length) {
+					middleData.push(filterData.slice(i * pageMaxNum, (i + 1) * pageMaxNum));
+					i++;
+				}
+				middleData.push(filterData.slice(i * pageMaxNum, filterData.length));
+				return middleData;
+			}
+		},
+		viewData: function() {
+			var currentIndex = parseInt(this.currentIndex);
+			return this.middleData[currentIndex];
+		},
+	},
+	watch: {
+		// 假分页
+		pageMaxNum: {
+			handler: function(val, oldval) {
+				this.currentIndex = 0;
+			}
+		},
+		condition: {
+			handler: function(val, oldval) {
+				this.currentIndex = 0;
+			}
+		}
+	},
+	methods: {
+		// 获取基金组合列表
+		getFundGroupList: function() {
+			var _this = this;
+			$.post({
+				url: '/businessMgmt/combinationProductConfig/reportMgmt/fundGroups.ajax',
+				success: function(result) {
+					if (result.error === 0) {
+						_this.groupList = result.data;
+						var str = '';
+						result.data.forEach(function(item) {
+							str += '<option value="' + item.groupId + '">' + item.groupName + '</option>';
+						});
+						$('#fundRelations').html(str);
+						$("#fundRelations").trigger("chosen:updated");
+						str = '<option value="ALL">全部</option>' + str;
+						$('#fundGroupsList').html(str);
+						$("#fundGroupsList").trigger("chosen:updated");
+					}
+				}
+			});
+		},
+		// 查询表格报告数据
+		getTableData: function() {
+			var _this = this;
+			var params = {};
+			params.groupId = this.groupId;
+			$.post({
+				url: '/businessMgmt/combinationProductConfig/reportMgmt/getTableData.ajax',
+				data: params,
+				success: function(result) {
+					if (result.error === 0) {
+						_this.currentIndex = 0;
+						_this.tableData = result.data;
+					} else {
+						_this.tableData = [];
+						_this.currentIndex = 0;
+						_this.showDialog('', 'info', false, result.msg);
+					}
+				}
+			});
+		},
+		// 展示录入弹窗
+		showAdd: function() {
+			this.dialog_reportName = '';
+			this.dialog_reportUrl = '';
+			this.showDialog('', 'add', false);
+		},
+		checkAddDialog: function() {
+			if (!this.dialog_reportName) {
+				this.showDialog('add', 'info', true, '未填写报告名称');
+				return false;
+			}
+			return true;
+		},
+		saveParam: function() {
+			if (!this.checkAddDialog()) {
+				return;
+			}
+			var _this = this;
+			var params = {}
+			params.reportName = this.dialog_reportName;
+			params.reportUrl = this.dialog_reportUrl;
+			$.post({
+				url: '/businessMgmt/combinationProductConfig/reportMgmt/saveParam.ajax',
+				data: params,
+				success: function(result) {
+					if (result.error === 0) {
+						_this.getTableData();
+						_this.showDialog('add', 'info', false, result.msg);
+					} else {
+						_this.showDialog('add', 'info', true, result.msg);
+					}
+				}
+			});
+		},
+		// 文件上传
+		uploadFile: function() {
+			$('#uploadFileInput').change(function () {
+			    $('#uploadInput').val($(this).val());
+			});
+			$('#uploadInput').val('');
+			$('#uploadFileInput').val('');
+			this.showDialog('', 'uploadFile');
+		},
+		fileUpload: function() {
+			var excelData = $('#uploadFileInput').get(0).files[0];
+			if (!excelData) {
+			    this.showDialog('uploadFile', 'info', true, '未选择文件');
+			    return;
+			}
+			var fileType = excelData.name.split('.')[excelData.name.split('.').length - 1];
+			if (fileType !== 'pdf') {
+			    this.showDialog('uploadFile', 'info', true, '上传文件格式错误,请上传.pdf文件');
+			    return;
+			}
+			var _this = this;
+			this.showDialog('uploadFile', '');
+			this.loadingShow = true;
+			var file = document.getElementById('uploadFileInput');
+			var formdata = new FormData();
+			formdata.append('file', file.files[0]);
+			$.post({
+				url: '/businessMgmt/combinationProductConfig/reportMgmt/upload.ajax',
+				cache: false,
+				data: formdata,
+				processData: false,
+				contentType: false,
+			}).done(function(result) {
+				_this.loadingShow = false;
+				_this.getTableData();
+				_this.showDialog('', 'info', false, result.msg);
+			}).fail(function(err) {
+				_this.showDialog('', 'info', false, '上传失败');
+			});
+		},
+		// 下载
+		exportFile: function(item) {
+			var url = '/businessMgmt/combinationProductConfig/reportMgmt/exportFile.ajax?reportName=' + encodeURIComponent(item.reportName);
+			window.location.href = url;
+		},
+		// 删除
+		showDelete: function(item) {
+			this.deleteId = item.reportId;
+			this.showDialog('', 'del');
+		},
+		del: function() {
+			var _this = this;
+			var params = {};
+			params.reportId = this.deleteId
+			$.post({
+				url: '/businessMgmt/combinationProductConfig/reportMgmt/deleteParam.ajax',
+				data: params,
+				success: function(result) {
+					if (result.error === 0) {
+						_this.getTableData();
+						_this.showDialog('del', 'info', false, result.msg);
+					} else {
+						_this.showDialog('del', 'info', true, result.msg);
+					}
+				}
+			});
+		},
+		// 关联
+		showRelation: function(item) {
+			this.reportId = item.reportId;
+			this.relate_groupId = item.groupId ? item.groupId : '';
+			$('#fundRelations').val(item.groupId ? item.groupId : '');
+			$("#fundRelations").trigger("chosen:updated"); // 清空基金组合选项
+			this.showDialog('', 'relation');
+		},
+		// 关联确定
+		relationParam: function() {
+			if (!this.relate_groupId) {
+				this.showDialog('relation', 'info', true, '未选择关联基金组合');
+				return false;
+			}
+			var _this = this;
+			var params = {}
+			params.reportId = this.reportId;
+			params.groupIdList = JSON.stringify([this.relate_groupId])
+			$.post({
+				url: '/businessMgmt/combinationProductConfig/reportMgmt/relationParam.ajax',
+				data: params,
+				success: function(result) {
+					if (result.error === 0) {
+						_this.getTableData();
+						_this.showDialog('relation', 'info', false, result.msg);
+					} else {
+						_this.showDialog('relation', 'info', true, result.msg);
+					}
+				}
+			});
+		},
+		showDialog: function(dia1, dia2, callback, msg) {
+			if (msg) {
+				this.diaMsg = msg;
+			} else {
+				msg = '输入条件错误';
+			}
+			if (!dia1) {
+				$('#' + dia2).modal('show');
+			} else if (!dia2) {
+				$('#' + dia1).modal('hide');
+			} else if (!callback) {
+				$('#' + dia1).on("hidden.bs.modal", function() {
+					$('#' + dia2).modal('show');
+					$('#' + dia1).off().on("hidden", "hidden.bs.modal");
+				});
+				$('#' + dia1).modal('hide');
+			} else {
+				$('#' + dia1).on("hidden.bs.modal", function() {
+					$('#' + dia2).on("hidden.bs.modal", function() {
+						$('#' + dia1).modal("show");
+						$('#' + dia2).off().on("hidden", "hidden.bs.modal");
+					});
+					$('#' + dia2).modal("show");
+					$('#' + dia1).off().on("hidden", "hidden.bs.modal");
+				});
+				$('#' + dia1).modal('hide');
+			}
+		},
+		//主表格分页方法
+		prev: function() {
+			this.currentIndex <= 0 ? 0 : this.currentIndex--;
+		},
+		next: function() {
+			this.currentIndex >= this.middleData.length - 1 ? this.middleData.length - 1 : this.currentIndex++;
+		},
+		changeIndex: function(index) {
+			this.currentIndex = index - 1;
+		}
+	}
+});

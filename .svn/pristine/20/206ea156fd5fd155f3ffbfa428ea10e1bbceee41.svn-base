@@ -1,0 +1,349 @@
+const request = require('../../../local_data/requestWrapper');
+const fs = require('fs');
+const path = require('path');
+const formidable = require('formidable');
+const apiUrlList = require('../apiConfig').recommendSystem.recommendSystemTemplateConfig.wapInformationTemplateConfig;
+module.exports = function (app) {
+    //获取分页查询列表
+    app.post('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/queryInfo.ajax', (req, res, next) => {
+            let params = req.body;
+            params.pageNo=parseInt(params.pageNo);
+            params.pageSize=parseInt(params.pageSize);
+            let userId= req.session.loginInfo.userid;
+            let option = {
+                session: req.session,
+                url: apiUrlList.queryInfo,
+                qs: params,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/queryInfo.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/queryInfo.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/queryInfo.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/queryInfo.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    let data = body.body;
+                    data.userId=userId;
+                    data.pages = Math.ceil(data.total / params.pageSize);//最大页码
+                    data.pageNum = params.pageNo;//当前页
+                    res.send({error: 0, msg: '查询成功', data: data});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '查询失败'});
+                }
+            });
+        }
+    );
+    //删除
+    app.post('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/delete.ajax', (req, res, next) => {
+            let params = req.body;
+            let option = {
+                session: req.session,
+                url: apiUrlList.deleteInfo,
+                qs: params,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/delete.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/delete.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/delete.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/delete.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    res.send({error: 0, msg: '操作成功', data: null});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '操作失败'});
+                }
+            });
+        }
+    );
+    //新增
+    app.post('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/add.ajax', (req, res, next) => {
+
+        let option = {
+            session: req.session,
+            url: apiUrlList.add,
+            body: req.body,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/add.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/add.ajax error:', error);
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/add.ajax statusCode:', response && response.statusCode);
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/add.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode == 0) {
+                res.send({error: 0, msg: '添加成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '添加失败'});
+            }
+        });
+    });
+    //修改
+    app.post('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/update.ajax', (req, res, next) => {
+
+        let option = {
+            session: req.session,
+            url: apiUrlList.update,
+            body: req.body,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/update.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/update.ajax error:', error);
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/update.ajax statusCode:', response && response.statusCode);
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/update.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode == 0) {
+                res.send({error: 0, msg: '修改成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '修改失败'});
+            }
+        });
+    });
+    //上传图片
+    app.post('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/upload1.ajax', (req, res, next) => {
+        let form = new formidable.IncomingForm();
+        form.keepExtensions = true;
+        form.parse(req, (err, fields, files) => {
+            console.log('图片接收完毕:', files);
+            let formData = {
+                file: fs.createReadStream(path.resolve(files.file.path))
+            };
+            let option = {
+                session: req.session,
+                url: apiUrlList.upload,
+                timeout: 30000,
+                formData: formData
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/upload1.ajax:', option);
+            request.post(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/upload1.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/upload1.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/upload1.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '上传失败'});
+                }
+                let result = typeof body === 'string' ? JSON.parse(body) : body;
+                if (result && result.returnCode == 0) {
+                    res.send({error: 0, msg: '上传成功',data:result.returnMsg});
+                }
+                else if (result && result.responseCode != 9999) {
+                    res.send({error: 1, msg: result.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '上传失败'});
+                }
+            });
+        });
+    });
+    app.post('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/upload2.ajax', (req, res, next) => {
+        let form = new formidable.IncomingForm();
+        form.keepExtensions = true;
+        form.parse(req, (err, fields, files) => {
+            console.log('图片接收完毕:', files);
+            let formData = {
+                file: fs.createReadStream(path.resolve(files.file.path))
+            };
+            let option = {
+                session: req.session,
+                url: apiUrlList.upload,
+                timeout: 30000,
+                formData: formData
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/upload2.ajax:', option);
+            request.post(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/upload2.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/upload2.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/upload2.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '上传失败'});
+                }
+                let result = typeof body === 'string' ? JSON.parse(body) : body;
+                if (result && result.returnCode == 0) {
+                    res.send({error: 0, msg: '上传成功',data:result.returnMsg});
+                }
+                else if (result && result.responseCode != 9999) {
+                    res.send({error: 1, msg: result.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '上传失败'});
+                }
+            });
+        });
+    });
+    //查询展示样式接口
+    app.post('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/adviceDisplayStyle.ajax', (req, res, next) => {
+            let option = {
+                session: req.session,
+                url: apiUrlList.adviceDisplayStyle,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/adviceDisplayStyle.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/adviceDisplayStyle.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/adviceDisplayStyle.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/adviceDisplayStyle.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    res.send({error: 0, msg: '查询成功', data: body.body});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '查询失败'});
+                }
+            });
+        }
+    );
+    //分页查询资讯类型接口
+    app.post('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/adviceTpListQuery.ajax', (req, res, next) => {
+            let option = {
+                session: req.session,
+                url: apiUrlList.adviceTp,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/adviceTpListQuery.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/adviceTpListQuery.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/adviceTpListQuery.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/adviceTpListQuery.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    res.send({error: 0, msg: '查询成功', data: body.body});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '查询失败'});
+                }
+            });
+        }
+    );
+    //刷新缓存
+    app.post('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/fresh.ajax', (req, res, next) => {
+            let option = {
+                session: req.session,
+                url: apiUrlList.fresh,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/fresh.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/fresh.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/fresh.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/fresh.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    res.send({error: 0, msg: '操作成功', data: null});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '操作失败'});
+                }
+            });
+        }
+    );
+    //Viewlist
+    app.post('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/viewList.ajax', (req, res, next) => {
+            let option = {
+                session: req.session,
+                url: apiUrlList.viewList,
+                qs: req.body,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/viewList.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/viewList.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/viewList.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/viewList.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    let data = body.body;
+                    res.send({error: 0, msg: '查询成功', data: data});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '查询失败'});
+                }
+            });
+        }
+    );
+    //渠道列表
+    app.post('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/channelMenu.ajax', (req, res, next) => {
+            let option = {
+                session: req.session,
+                url: apiUrlList.channelMenu,
+                qs: req.body,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/channelMenu.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/channelMenu.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/channelMenu.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/wapInformationTemplateConfig/channelMenu.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    let data = body.body;
+                    res.send({error: 0, msg: '查询成功', data: data});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '查询失败'});
+                }
+            });
+        }
+    );
+};

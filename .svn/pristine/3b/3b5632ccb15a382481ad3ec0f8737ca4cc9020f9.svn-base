@@ -1,0 +1,862 @@
+const path = require('path');
+const request = require('../../../local_data/requestWrapper');
+const formidable = require('formidable');
+const apiUrlList = require('../apiConfig').ruleMgmt.ruleMgmt;
+const fs = require('fs');
+const filepath = global.envConfig.messageCenterFilePath ? global.envConfig.messageCenterFilePath : `${require('../apiConfig').filePath}`;
+module.exports = function (app) {
+    //查询
+    app.post('/messageCenter/ruleMgmt/ruleMgmt/search.ajax', (req, res, next) => {
+
+        function getMessageRuleList() {
+            return new Promise((resolve, reject) => {
+                let params = {};
+                req.body.ruleId && (params.ruleId = req.body.ruleId);
+                req.body.ruleName && (params.ruleName = req.body.ruleName);
+                req.body.creator && (params.creator = req.body.creator);
+                let url = '';
+                if (params.ruleId) {
+                    url = `${apiUrlList.query}?routeRuleId=${params.ruleId}`;
+                }
+                else {
+                    url = `${apiUrlList.search}`;
+                }
+                let option = {
+                    session: req.session,
+                    url: url,
+                    timeout: 15000,
+                    json: true
+                };
+                console.log('/messageCenter/ruleMgmt/ruleMgmt/search.ajax --getMessageRuleList option:', option);
+                request(option, (error, response, body) => {
+                    console.log('/messageCenter/ruleMgmt/ruleMgmt/search.ajax --getMessageRuleList statusCode:', response && response.statusCode);
+                    console.log('/messageCenter/ruleMgmt/ruleMgmt/search.ajax --getMessageRuleList body:', body);
+                    if (error) {
+                        console.log('/messageCenter/ruleMgmt/ruleMgmt/search.ajax --getMessageRuleList error:', error.message);
+                        reject({message: '操作失败'});
+                    }
+                    if (body && body.returnCode === 0 && body.body) {
+                        let tableData = Array.isArray(body.body) ? body.body : [body.body];
+                        tableData.forEach(item => {
+                            item.showRuleKey = item.ruleKey ? item.ruleKey : '-';
+                            if (item.priority == 1) {
+                                item.showPriority = '高';
+                            }
+                            if (item.priority == 2) {
+                                item.showPriority = '中';
+                            }
+                            if (item.pushType == 0) {
+                                item.showPushType = '实时';
+                            }
+                            if (item.pushType == 1) {
+                                item.showPushType = '外部系统调用';
+                            }
+                            if (item.pushType == 2) {
+                                item.showPushType = '场景化';
+                            }
+                            if (item.pushType == 3) {
+                                item.showPushType = '定时(' + item.schedulePushTime + ')';
+                            }
+                            item.showRuleSource = item.ruleSource;
+                            if (item.showRuleSource == 'mcp') {
+                                item.showRuleSource = '电商直销';
+                            }
+                            if (item.showRuleSource == 'acc') {
+                                item.showRuleSource = '活动中心';
+                            }
+                            if (item.showRuleSource == 'DSC') {
+                                item.showRuleSource = '柜台系统';
+                            }
+                            if (item.showRuleSource == 'HOP') {
+                                item.showRuleSource = '对外合作平台';
+                            }
+                            if (item.showRuleSource == 'smac') {
+                                item.showRuleSource = '现金宝系统';
+                            }
+                            if (item.showRuleSource == 'fundgroup') {
+                                item.showRuleSource = '组合系统';
+                            }
+                            if (item.showRuleSource == 'fundpay') {
+                                item.showRuleSource = '汇闪付';
+                            }
+                            if (item.showRuleSource == 'BE') {
+                                item.showRuleSource = '银行引擎';
+                            }
+                            if (item.showRuleSource == 'ags') {
+                                item.showRuleSource = '养老金';
+                            }
+                            if (item.showRuleSource == 'uaa') {
+                                item.showRuleSource = '统一认证授权';
+                            }
+                            if (item.showRuleSource == 'ats') {
+                                item.showRuleSource = '预约交易系统';
+                            }
+                            if (item.showRuleSource == 'icif') {
+                                item.showRuleSource = '账户系统';
+                            }
+                            if (item.showRuleSource == 'fts') {
+                                item.showRuleSource = '基金系统';
+                            }
+                            if (item.showRuleSource == 'vip') {
+                                item.showRuleSource = '高端系统';
+                            }
+                            if (item.showRuleSource == 'credit') {
+                                item.showRuleSource = '信用卡系统';
+                            }
+                            if (item.showRuleSource == 'BigData') {
+                                item.showRuleSource = '大数据';
+                            }
+                            if (item.showRuleSource == 'CTS') {
+                                item.showRuleSource = '核心交易系统';
+                            }
+                            if (item.showRuleSource == 'sfs') {
+                                item.showRuleSource = '社交系统';
+                            }
+                            if (item.showRuleSource == 'AOS') {
+                                item.showRuleSource = '自动化运营';
+                            }
+                            if (item.showRuleSource == 'cos') {
+                                item.showRuleSource = '安全中心';
+                            }
+                            if (item.showRuleSource == 'uop') {
+                                item.showRuleSource = '统一运营平台';
+                            }
+                            if (item.showRuleSource == 'reward') {
+                                item.showRuleSource = '奖励系统';
+                            }
+                            item.channelInfo = item.templateChannelList.map(item => {
+                                if (item.channelType == 1) {
+                                    return 'App站内信';
+                                }
+                                if (item.channelType == 2) {
+                                    return 'App-push';
+                                }
+                                if (item.channelType == 3) {
+                                    return '短信';
+                                }
+                                if (item.channelType == 4) {
+                                    return '微信';
+                                }
+                                if (item.channelType == 5) {
+                                    return '微信高端';
+                                }
+                            }).join(',');
+                            item.groupType = item.csvfileName ? '2' : '1';
+                            let arr = item.schedulePushTime.split(' ');
+                            arr.shift();
+                            arr.shift();
+                            item.schedulePushTimeForWeb = arr.join(' ');
+                        });
+                        resolve(tableData);
+                    }
+                    else if (body && body.returnCode != 9999) {
+                        reject({message: body.returnMsg});
+                    }
+                    else {
+                        reject({message: '查询失败'});
+                    }
+                });
+            });
+        }
+
+        function getClassList() {
+            return new Promise((resolve, reject) => {
+                let option = {
+                    session: req.session,
+                    url: apiUrlList.searchCategory,
+                    timeout: 15000,
+                    json: true
+                };
+                console.log('/messageCenter/ruleMgmt/ruleMgmt/search.ajax --getClassList option:', option);
+                request(option, (error, response, body) => {
+                    console.log('/messageCenter/ruleMgmt/ruleMgmt/search.ajax --getClassList statusCode:', response && response.statusCode);
+                    console.log('/messageCenter/ruleMgmt/ruleMgmt/search.ajax --getClassList body:', body);
+                    if (error) {
+                        console.log('/messageCenter/ruleMgmt/ruleMgmt/search.ajax --getClassList error:', error.message);
+                        reject({message: '操作失败'});
+                    }
+                    if (body && body.returnCode === 0 && body.body) {
+                        let categoryList = body.body.map(item => {
+                            return {
+                                categoryId: item.categoryId,
+                                categoryName: item.categoryName
+                            };
+                        });
+                        resolve(categoryList);
+                    }
+                    else if (body && body.returnCode != 9999) {
+                        reject({message: body.returnMsg});
+                    }
+                    else {
+                        reject({message: '查询失败'});
+                    }
+                });
+            });
+        }
+
+        function getGroupList() {
+            return new Promise((resolve, reject) => {
+                let option = {
+                    session: req.session,
+                    url: apiUrlList.getGroupList,
+                    timeout: 15000,
+                    json: true
+                };
+                request(option, (error, response, body) => {
+                    console.log('/messageCenter/ruleMgmt/ruleMgmt/search.ajax --getGroupList statusCode:', response && response.statusCode);
+                    console.log('/messageCenter/ruleMgmt/ruleMgmt/search.ajax --getGroupList body:', body);
+                    if (error) {
+                        console.log('/messageCenter/ruleMgmt/ruleMgmt/search.ajax --getGroupList error:', error.message);
+                        resolve(null);
+                    }
+                    if (body && body.returnCode == 0 && Array.isArray(body.body)) {
+                        resolve(body.body);
+                    }
+                    else {
+                        resolve(null);
+                    }
+                });
+            });
+        }
+
+        Promise.all([getMessageRuleList(), getClassList(), getGroupList()]).then((body) => {
+            let [messageRuleList, classList, groupList] = body;
+            messageRuleList.forEach(item => {
+                let nameIndex = classList.map(item => item.categoryId).indexOf(item.categoryId);
+                if (item.categoryId == 30) {
+                    item.showCategoryName = '系统消息';
+                }
+                else if (nameIndex > -1) {
+                    item.showCategoryName = classList[nameIndex].categoryName;
+                }
+                else {
+                    item.showCategoryName = '-';
+                }
+                if (item.groupId && Array.isArray(groupList)) {
+                    let groupIdArr = item.groupId.split(',');
+                    let showGroup = [];
+                    groupIdArr.forEach(groupId => {
+                        let groupArr = groupId.split('');
+                        while (groupArr.length < 5) {
+                            groupArr.unshift('0');
+                        }
+                        for (let i = 0; i < groupList.length; i++) {
+                            if (groupList[i].groupId == groupArr.join('')) {
+                                showGroup.push(groupList[i].groupName);
+                                break;
+                            }
+                        }
+                    });
+                    item.showGroup = showGroup.join(',');
+                }
+                else if (item.groupId && !groupList) {
+                    item.showGroup = '获取客群数据失败';
+                }
+                else if (!item.groupId) {
+                    item.showGroup = '无客群';
+                }
+                else {
+                    item.showGroup = '--';
+                }
+            });
+            res.send({error: 0, msg: '请求成功', data: messageRuleList});
+        }).catch(error => {
+            res.send({error: 1, msg: error.message, data: null});
+        });
+    });
+    //删除
+    app.post('/messageCenter/ruleMgmt/ruleMgmt/del.ajax', (req, res, next) => {
+        let params = {};
+        req.body.routeRuleId && (params.routeRuleId = req.body.routeRuleId);
+        let option = {
+            session: req.session,
+            url: apiUrlList.del,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/ruleMgmt/ruleMgmt/del.ajax option:', option);
+        request.del(option, (error, response, body) => {
+            sysLogger(3, req, option, body);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/del.ajax error:', error);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/del.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/del.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({error: 0, msg: '删除成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '删除失败'});
+            }
+        });
+    });
+    //根据模板ID查询模板详情
+    app.post('/messageCenter/ruleMgmt/ruleMgmt/queryTemplate.ajax', (req, res, next) => {
+        let params = {};
+        params.templateId = req.body.templateId;
+        let option = {
+            session: req.session,
+            url: apiUrlList.queryTemplate,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/ruleMgmt/ruleMgmt/queryTemplate.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/queryTemplate.ajax error:', error);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/queryTemplate.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/queryTemplate.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0 && Array.isArray(result.body)) {
+                if (result.body[0].channelType == 1) {
+                    result.body[0].showChannelType = 'App站内信';
+                }
+                if (result.body[0].channelType == 2) {
+                    result.body[0].showChannelType = 'App-push';
+                }
+                if (result.body[0].channelType == 3) {
+                    result.body[0].showChannelType = '短信';
+                }
+                if (result.body[0].channelType == 4) {
+                    result.body[0].showChannelType = '微信';
+                }
+                if (result.body[0].channelType == 5) {
+                    result.body[0].showChannelType = '微信高端';
+                }
+                res.send({error: 0, msg: '获取模板详情成功', data: result.body[0]});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '获取模板详情失败'});
+            }
+        });
+    });
+    //获取消息模板
+    app.post('/messageCenter/ruleMgmt/ruleMgmt/getSelectList.ajax', (req, res, next) => {
+        let params = {};
+        req.body.channelType && (params.channelType = req.body.channelType);
+        let option = {
+            session: req.session,
+            url: apiUrlList.getSelectList,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/ruleMgmt/ruleMgmt/getSelectList.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/getSelectList.ajax error:', error);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/getSelectList.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/getSelectList.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0 && Array.isArray(result.body)) {
+                let templateList = [];
+                result.body.forEach((item) => {
+                    templateList.push({
+                        templateId: item.templateId,
+                        templateName: item.templateName
+                    });
+                });
+                res.send({error: 0, msg: '获取模板列表成功', data: templateList});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '获取模板列表失败'});
+            }
+        });
+    });
+    //获取静态客群
+    app.post('/messageCenter/ruleMgmt/ruleMgmt/getGroupList.ajax', (req, res, next) => {
+        let option = {
+            session: req.session,
+            url: apiUrlList.getGroupList,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/ruleMgmt/ruleMgmt/getGroupList.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/getGroupList.ajax error:', error);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/getGroupList.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/getGroupList.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0 && Array.isArray(result.body)) {
+                let resultData = [];
+                result.body.forEach((item) => {
+                    resultData.push({
+                        groupId: item.groupId,
+                        groupName: item.groupName,
+                        groupNum: '获取中...',
+                        check: false
+                    });
+                });
+                res.send({error: 0, msg: '获取用户客群成功', data: resultData});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '获取用户客群失败'});
+            }
+        });
+    });
+    //获取默认分组客群
+    app.post('/messageCenter/classMgmt/classMgmt/getInitGroup.ajax', (req, res, next) => {
+        let option = {
+            session: req.session,
+            url: apiUrlList.getGroupList,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/ruleMgmt/ruleMgmt/getInitGroup.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/getInitGroup.ajax error:', error);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/getInitGroup.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/getInitGroup.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0 && Array.isArray(result.body)) {
+                let obj = {};
+                for (let i = 0; i < result.body.length; i++) {
+                    if (result.body[i].groupName == '默认分组') {
+                        obj.check = true;
+                        obj.groupId = result.body[i].groupId;
+                        obj.groupName = result.body[i].groupName;
+                        break;
+                    }
+                }
+                if (obj.groupId) {
+                    res.send({error: 0, msg: '获取默认分组成功', data: obj});
+                }
+                else {
+                    res.send({error: 1, msg: '获取默认分组失败'});
+                }
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '获取默认分组失败'});
+            }
+        });
+    });
+    //获取静态客群数量
+    app.post('/messageCenter/ruleMgmt/ruleMgmt/getGroupNum.ajax', (req, res, next) => {
+        let groupIds = JSON.parse(req.body.groupIds);
+        let option = {
+            session: req.session,
+            url: apiUrlList.getGroupNum,
+            qs: {groupId: groupIds[0]},
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/ruleMgmt/ruleMgmt/getGroupNum.ajax option:', option);
+        request.get(option, (error, response, body) => {
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/getGroupNum.ajax error:', error);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/getGroupNum.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/getGroupNum.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({error: 0, msg: '获取静态客群数量成功', data: result.body});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '获取静态客群数量失败'});
+            }
+        });
+    });
+    //新增消息规则无文件
+    app.post('/messageCenter/ruleMgmt/ruleMgmt/addGroupList.ajax', (req, res, next) => {
+        let params = {};
+        params.ruleName = req.body.ruleName;
+        params.categoryId = req.body.categoryId;
+        params.templateChannelList = JSON.parse(req.body.templateChannelList);
+        params.pushType = req.body.pushType;
+        params.ruleKey = req.body.ruleKey;
+        params.eventType = req.body.eventType;
+        params.expiredTime = req.body.expiredTime;
+        params.priority = req.body.priority;
+        params.ruleSource = req.body.ruleSource;
+        params.groupId = req.body.groupId;
+        params.schedulePushTime = '0 0 ' + req.body.schedulePushTime;
+        params.ruleSource = params.ruleSource == 'e7ad0120840f4ce94e25771f97d4721d' ? 'mcp' : params.ruleSource;
+        params.pushTime = 0;
+        params.creator = req.session['loginInfo'].username;
+        params.csvfileName = '';
+        let option = {
+            session: req.session,
+            url: apiUrlList.add,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/ruleMgmt/ruleMgmt/addGroupList.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            sysLogger(1, req, option, body);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/addGroupList.ajax error:', error);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/addGroupList.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/addGroupList.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({error: 0, msg: '添加成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '添加失败'});
+            }
+        });
+    });
+    //新增消息规则含文件
+    app.post('/messageCenter/ruleMgmt/ruleMgmt/addExcel.ajax', (req, res, next) => {
+        try {
+            let form = new formidable.IncomingForm();
+            form.uploadDir = filepath;
+            form.keepExtensions = true;
+            form.parse(req, (err, fields, files) => {
+                if (err) {
+                    console.log('/messageCenter/ruleMgmt/ruleMgmt/addExcel.ajax error:', err.message);
+                    return res.send({error: 1, msg: '文件上传出错', data: null});
+                }
+                console.log('消息模板数据接收完毕:', fields);
+                console.log('消息模板文件接收完毕:', files);
+                let channelArr = fields.channelArr.split(',');
+                let templateArr = fields.templateArr.split(',');
+                let templateChannelList = [];
+                for (let i = 0; i < channelArr.length; i++) {
+                    templateChannelList.push({
+                        channelType: channelArr[i],
+                        templateId: templateArr[i]
+                    });
+                }
+                fields.templateChannelList = templateChannelList;
+                fields.creator = req.session['loginInfo'].username;
+                fields.ruleSource = fields.ruleSource == 'e7ad0120840f4ce94e25771f97d4721d' ? 'mcp' : fields.ruleSource;
+                fields.csvfileName = path.resolve(files.file.path);
+                fields.groupId = '';
+                let option = {
+                    session: req.session,
+                    url: apiUrlList.add,
+                    body: fields,
+                    timeout: 15000,
+                    json: true
+                };
+                console.log('/messageCenter/ruleMgmt/ruleMgmt/addExcel.ajax option:', option);
+                request.post(option, (error, response, body) => {
+                    sysLogger(1, req, option, body);
+                    console.log('/messageCenter/ruleMgmt/ruleMgmt/addExcel.ajax error:', error);
+                    console.log('/messageCenter/ruleMgmt/ruleMgmt/addExcel.ajax statusCode:', response && response.statusCode);
+                    console.log('/messageCenter/ruleMgmt/ruleMgmt/addExcel.ajax body:', body);
+                    if (error) {
+                        return res.send({error: 1, msg: '操作失败'});
+                    }
+                    let result = typeof body === 'string' ? JSON.parse(body) : body;
+                    if (result && result.returnCode === 0) {
+                        res.send({error: 0, msg: '添加成功'});
+                    }
+                    else if (result && result.returnCode != 9999) {
+                        res.send({error: 1, msg: result.returnMsg});
+                    }
+                    else {
+                        res.send({error: 1, msg: '添加失败'});
+                    }
+                });
+            });
+        } catch (err) {
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/addExcel.ajax error:', err.message);
+            return res.send({error: 1, msg: '文件上传出错', data: null});
+        }
+    });
+    //修改消息规则无文件
+    app.post('/messageCenter/ruleMgmt/ruleMgmt/updateGroupList.ajax', (req, res, next) => {
+        let params = {};
+        params.ruleId = req.body.ruleId;
+        params.ruleName = req.body.ruleName;
+        params.categoryId = req.body.categoryId;
+        params.templateChannelList = JSON.parse(req.body.templateChannelList);
+        params.pushType = req.body.pushType;
+        params.ruleKey = req.body.ruleKey;
+        params.eventType = req.body.eventType;
+        params.expiredTime = req.body.expiredTime;
+        params.priority = req.body.priority;
+        params.ruleSource = req.body.ruleSource;
+        params.groupId = req.body.groupId;
+        params.schedulePushTime = '0 0 ' + req.body.schedulePushTime;
+        params.ruleSource = params.ruleSource == 'e7ad0120840f4ce94e25771f97d4721d' ? 'mcp' : params.ruleSource;
+        params.pushTime = 0;
+        params.creator = req.session['loginInfo'].username;
+        params.csvfileName = '';
+        let option = {
+            session: req.session,
+            url: apiUrlList.update,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/ruleMgmt/ruleMgmt/updateGroupList.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            sysLogger(2, req, option, body);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/updateGroupList.ajax error:', error);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/updateGroupList.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/updateGroupList.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({error: 0, msg: '修改成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '修改失败'});
+            }
+        });
+    });
+    //修改消息规则含文件
+    app.post('/messageCenter/ruleMgmt/ruleMgmt/updateAddExcel.ajax', (req, res, next) => {
+        let form = new formidable.IncomingForm();
+        form.uploadDir = filepath;
+        form.keepExtensions = true;
+        form.parse(req, (err, fields, files) => {
+            console.log('消息模板数据接收完毕:', fields);
+            console.log('消息模板文件接收完毕:', files);
+            let channelArr = fields.channelArr.split(',');
+            let templateArr = fields.templateArr.split(',');
+            let templateChannelList = [];
+            for (let i = 0; i < channelArr.length; i++) {
+                templateChannelList.push({
+                    channelType: channelArr[i],
+                    templateId: templateArr[i]
+                });
+            }
+            fields.templateChannelList = templateChannelList;
+            fields.creator = req.session['loginInfo'].username;
+            fields.ruleSource = fields.ruleSource == 'e7ad0120840f4ce94e25771f97d4721d' ? 'mcp' : fields.ruleSource;
+            fields.csvfileName = path.resolve(files.file.path);
+            fields.groupId = '';
+            let option = {
+                session: req.session,
+                url: apiUrlList.update,
+                body: fields,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/updateAddExcel.ajax option:', option);
+            request.post(option, (error, response, body) => {
+                sysLogger(2, req, option, body);
+                console.log('/messageCenter/ruleMgmt/ruleMgmt/updateAddExcel.ajax error:', error);
+                console.log('/messageCenter/ruleMgmt/ruleMgmt/updateAddExcel.ajax statusCode:', response && response.statusCode);
+                console.log('/messageCenter/ruleMgmt/ruleMgmt/updateAddExcel.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                let result = typeof body === 'string' ? JSON.parse(body) : body;
+                if (result && result.returnCode === 0) {
+                    res.send({error: 0, msg: '修改成功'});
+                }
+                else if (result && result.returnCode != 9999) {
+                    res.send({error: 1, msg: result.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '修改失败'});
+                }
+            });
+        });
+    });
+    //上传csv文件
+    app.post('/messageCenter/ruleMgmt/ruleMgmt/uploadCSV.ajax', (req, res, next) => {
+        let form = new formidable.IncomingForm();
+        form.uploadDir = filepath;
+        form.keepExtensions = true;
+        form.parse(req, (err, fields, files) => {
+            if (err) {
+                return res.send({error: 1, msg: '本地上传csv文件失败', data: null});
+            }
+            console.log('本地上传csv文件成功:', files);
+            let option = {
+                session: req.session,
+                url: apiUrlList.uploadCSV,
+                body: {
+                    csvfileName: files.file ? path.resolve(files.file.path) : ''
+                },
+                timeout: 15000,
+                json: true
+            };
+            console.log('/messageCenter/ruleMgmt/ruleMgmt/uploadCSV.ajax option:', option);
+            request.post(option, (error, response, body) => {
+                sysLogger(1, req, option, body);
+                console.log('/messageCenter/ruleMgmt/ruleMgmt/uploadCSV.ajax error:', error);
+                console.log('/messageCenter/ruleMgmt/ruleMgmt/uploadCSV.ajax statusCode:', response && response.statusCode);
+                console.log('/messageCenter/ruleMgmt/ruleMgmt/uploadCSV.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '文件路径上传失败', data: null});
+                }
+                if (body && body.returnCode == 0) {
+                    res.send({error: 0, msg: '上传成功', data: null});
+                }
+                else if (body.returnCode != 0 && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg, data: null});
+                }
+                else {
+                    res.send({error: 1, msg: '文件路径上传失败', data: null});
+                }
+            });
+        });
+    });
+    //上传excel文件
+    app.post('/messageCenter/ruleMgmt/ruleMgmt/uploadExcel.ajax', (req, res, next) => {
+        try {
+            let ExcelData = JSON.parse(req.body.ExcelData);
+            for (let item of ExcelData) {
+                item.templateChannelList = JSON.parse(item.templateChannelList);
+                !item.ruleKey && (item.ruleKey = '');
+                !item.eventType && (item.eventType = '');
+                item.pushTime = 0;
+                !item.schedulePushTime && (item.schedulePushTime = '');
+                !item.groupId && (item.groupId = '');
+                !item.csvfileName && (item.csvfileName = '');
+                item.creator = req.session['loginInfo'].username;
+            }
+            console.log('ExcelData:', ExcelData);
+            if (ExcelData.length === 0) {
+                return {error: 1, msg: 'Excel表格无数据', data: null};
+            }
+            let errorDataIndex = [];
+            // 检查每条数据格式是否正确,若不正确,指出具体哪条数据
+            function checkTemplate(item) {
+                if (!item.ruleName ||
+                    !item.categoryId ||
+                    item.templateChannelList.length === 0 ||
+                    !item.priority ||
+                    !item.ruleSource) {
+                    return {error: 1, msg: '必填字段为空或格式错误'};
+                }
+                let dayReg = /^((((1[6-9]|[2-9]\d)\d{2})-(0?[13578]|1[02])-(0?[1-9]|[12]\d|3[01]))|(((1[6-9]|[2-9]\d)\d{2})-(0?[13456789]|1[012])-(0?[1-9]|[12]\d|30))|(((1[6-9]|[2-9]\d)\d{2})-0?2-(0?[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-0?2-29-)) (20|21|22|23|[0-1]?\d):[0-5]?\d:[0-5]?\d$/;
+                if (!dayReg.test(item.expiredTime)) {
+                    return {error: 1, msg: '失效时间格式有误'};
+                }
+                // 实时发送方式
+                if (item.pushType == 0) {
+                    if (!item.groupId && !item.csvfileName) {
+                        return {error: 1, msg: '未填写客群'};
+                    }
+                }
+                // 外部系统调用方式
+                if (item.pushType == 1) {
+                    if (!item.ruleKey) {
+                        return {error: 1, msg: '未填写规则编码'};
+                    }
+                    if (!item.eventType) {
+                        return {error: 1, msg: '未填写事件类型'};
+                    }
+                }
+                // 场景化调用方式
+                if (item.pushType == 2) {
+                    if (!item.ruleKey) {
+                        return {error: 1, msg: '未填写规则编码'};
+                    }
+                    if (item.schedulePushTime == '') {
+                        return {error: 1, msg: '未填写推送时间'};
+                    }
+                }
+                // 定时调用方式
+                if (item.pushType == 3) {
+                    if (item.schedulePushTime == '') {
+                        return {error: 1, msg: '未填写发送时间'};
+                    }
+                    if (!item.groupId && !item.csvfileName) {
+                        return {error: 1, msg: '未填写客群'};
+                    }
+                }
+                return {error: 0, msg: 'success'};
+            }
+
+            for (let i = 0; i < ExcelData.length; i++) {
+                let resultObj = checkTemplate(ExcelData[i]);
+                if (resultObj.error === 1) {
+                    errorDataIndex.push({
+                        index: i + 1,
+                        msg: resultObj.msg
+                    });
+                }
+            }
+            if (errorDataIndex.length > 0) {
+                return res.send({
+                    error: 1,
+                    msg: `解析Excel表格第${errorDataIndex.map(item => item.index).join('，')}行数据出错,错误信息分别为:${errorDataIndex.map(item => item.msg).join('，')},请检查格式是否正确`,
+                    data: null
+                });
+            }
+            let ExcelDataToPromise = function (item) {
+                return new Promise((resolve, reject) => {
+                    let option = {
+                        session: req.session,
+                        url: apiUrlList.add,
+                        body: item,
+                        timeout: 15000,
+                        json: true
+                    };
+                    console.log('/messageCenter/ruleMgmt/ruleMgmt/uploadExcel.ajax option:', option);
+                    request.post(option, (error, response, body) => {
+                        sysLogger(1, req, option, body);
+                        console.log('/messageCenter/ruleMgmt/ruleMgmt/uploadExcel.ajax error:', error);
+                        console.log('/messageCenter/ruleMgmt/ruleMgmt/uploadExcel.ajax statusCode:', response && response.statusCode);
+                        console.log('/messageCenter/ruleMgmt/ruleMgmt/uploadExcel.ajax body:', body);
+                        if (error) {
+                            return reject(error.message);
+                        }
+                        let result = typeof body === 'string' ? JSON.parse(body) : body;
+                        if (result && result.returnCode === 0) {
+                            return resolve();
+                        }
+                        else if (result && result.returnCode != 9999) {
+                            return reject(result.returnMsg);
+                        }
+                        else {
+                            return reject('上传失败');
+                        }
+                    });
+                });
+            };
+            Promise.all(ExcelData.map(item => ExcelDataToPromise(item))).then(() => {
+                return res.send({error: 0, msg: `上传成功`, data: null});
+            }).catch(error => {
+                return res.send({error: 1, msg: `上传失败:${error.message}`, data: null});
+            });
+        }
+
+        catch (err) {
+            console.log(err);
+        }
+    });
+};

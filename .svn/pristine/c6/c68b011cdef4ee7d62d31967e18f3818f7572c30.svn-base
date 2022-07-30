@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-multiselect.min.css" />
+    <style type="text/css">
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .chosen-single {
+            height: 30px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+        }
+
+        .cover {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(9, 10, 10, 0.527);
+            z-index: 999;
+        }
+
+        .strategy {
+            color: blue
+        }
+
+        .flex-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 20px 0 0 20px;
+            /* width: 300px; */
+        }
+
+        .btnSmall {
+            border: 0
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content" id="content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+
+                    <!--新增/修改弹窗-->
+                    <div class="modal" id="add" tabindex="-1" style="padding-top:20vh" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog" >
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                        &times;
+                                    </button>
+                                    <h4 class="modal-title" style="display: inline">新增</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form-group" style="text-align:left">
+                                        <div class="form-group">
+                                            <label class="control-label">月报名称:</label>
+                                            <input type="text" style="width:60%;" v-model.trim="dialogData.mReportNm"
+                                                placeholder="必填" />
+                                            <button class="btn btn-sm btn-primary" @click="preview()">生成预览</button>
+
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">月报摘要:</label>
+                                            <input type="text" style="width:60%;"
+                                                v-model.trim="dialogData.mReportAbstract" placeholder="必填" />
+
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">
+                                                <h5>关联策略（内容上传）：</h5>
+                                            </label>
+                                        </div>
+                                        <div style="padding-left: 30px;" v-for="(item1,index1) in strategyArr">
+                                            <div class="form-group" style="margin:20px 0 0 0">
+                                                <label class="control-label strategy" class="">
+                                                    {{item1.strategyName}}：</label>
+                                            </div>
+                                            <div class="flex-row" v-for="(item2,index2) in item1.groupArr">
+                                                <label class="control-label"
+                                                    style=" width: 100px;">{{item2.name}}:</label>
+                                                <label class="btn btnSmall"
+                                                    :for="'uploadsFile'+index1+index2">{{item2.fileName==''?'待上传':'已上传'}}</label>
+                                                <input type="file" style="position:absolute; clip:rect(0 0 0 0);"
+                                                    :id="'uploadsFile'+index1+index2" accept="image/*"
+                                                    @change="uploadsFileImg($event,index1,index2)">
+                                                <div style="padding:0 0 0 10px">
+                                                    <p>
+                                                        文件名称：{{item2.fileName}}</p>
+                                                    <p>
+                                                        上传地址：{{item2.fileUrl}}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-center" style="clear: both">
+                                    <button class="btn btn-sm btn-primary" @click="saveParam()">确定</button>
+                                    <button type="button" class="btn btn-default btn-sm"
+                                        data-dismiss="modal">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--删除弹窗-->
+                    <!-- <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title">删除数据</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4>确认删除此条数据?</h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm" @click="del">确定</button>
+                                    <button type="button" class="btn btn-default btn-sm"
+                                        data-dismiss="modal">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div> -->
+
+
+
+                    <!--信息提示弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                        data-dismiss="modal">确定</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 搜索 -->
+                    
+                    <div class="form-inline" style="padding: 10px 0;height: 54px">
+                        
+                        <div class="form-group pull-right" style="vertical-align: middle">
+                             <input type="text" v-model='searchInfo' class="" placeholder="请输入关键字">
+                            <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)" />
+                            <% if(canShow||authorityList.includes('C')) { %>
+                            <input type="button" class="btn btn-sm btn-primary" value="添加" @click="showAdd()" />
+                            <% } %>
+                        </div>
+                    </div>
+                    <div class="table-header">
+                        <%= cpage %>--表格数据
+                    </div>
+                    <!--分页器和快速查询-->
+                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length" id="dynamic-table_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="500">500</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!--数据表-->
+                    <table id="simple-table" class="table table-bordered table-hover dataTable">
+                        <thead>
+                            <tr>
+                                <th class="center col-sm-2">月报编号</th>
+                                <th class="center col-sm-2">月报名称</th>
+                                <th class="center col-sm-2">月报地址</th>
+                                <th class="center col-sm-2">创建时间</th>
+                                <th class="center col-sm-2">创建人</th>
+                                <th class="center col-sm-2">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-if="tableData.length>0">
+                                <template v-for="(item,index) in tableData">
+
+                                    <tr>
+                                        <td class="center" v-text='item.mReportNo'></td>
+                                        <td class="center" v-text='item.mReportNm'></td>
+                                        <td class="center" v-text='item.mReportAs'></td>
+                                        <td class="center" v-text="transformTime(item.mReportCreateTime)"></td>
+                                        <td class="center" v-text='item.mReportCreator'></td>
+                                        <td class="center">
+                                            <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                                            &nbsp;
+                                            <a href="javascript:;" @click="showRelation(item)">详情</a>
+                                            &nbsp;
+                                            <a href="javascript:;" class="red" @click="showDelete(item)">删除</a>
+                                        </td>
+                                    </tr>
+
+                                </template>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'没有数据'" colspan="8"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                    <!--底部页码-->
+                    <div v-if="viewData.length>0" class="row"
+                        style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                        <div class="col-xs-2">
+                            <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                        </div>
+                        <div class="col-xs-10">
+                            <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                <ul class="pagination">
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                    </li>
+                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                        @click="prev">
+                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                    </li>
+                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                        v-for="value in pageList" @click="changeIndex(value)">
+                                        <a href="javascript:;" v-text="value"></a>
+                                    </li>
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'...'+middleData.length" @click="toLast"></a>
+                                    </li>
+                                    <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                        @click="next">
+                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/js/lib/zh-cn.js"></script>
+    <script src="/ace/assets/js/bootstrap-multiselect.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datepicker.min.js"></script>
+    <script src="/ace/assets/js/daterangepicker.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/ace/assets/js/v-datetimepicker.js"></script>
+    <script src="/ace/assets/js/chosen.jquery.min.js"></script>
+    <script src="/js/investmentMgmt/investmentInformationDisclosure/monthlyReport.js"></script>
+</body>
+
+</html>

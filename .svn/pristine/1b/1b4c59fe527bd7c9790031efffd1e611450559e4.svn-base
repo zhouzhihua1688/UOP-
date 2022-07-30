@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content" id="content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <!--信息提示弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                        data-dismiss="modal">确定</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--删除弹窗-->
+                    <div class="modal" id="delete" tabindex="-1" role="dialog" aria-hidden="true"
+                        data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <p>
+                                    <div class="modal-body text-center">
+                                        <h4>是否确认删除?</h4>
+                                    </div>
+                                </p>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm" @click="deleteData">确定</button>
+                                    <button type="button" class="btn btn-default btn-sm"
+                                        data-dismiss="modal">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--新增弹窗-->
+                    <div class="modal" id="operate" tabindex="-1" role="dialog" aria-hidden="true"
+                        data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content" style="width: 850px;">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                    </button>
+                                    <h4 class="modal-title inline">新建</h4>
+                                </div>
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">场景:</label>
+                                        <div class="col-sm-4">
+                                            <select v-model='addData.accountType' style="width: 168px;">
+                                                <option value="">请选择</option>
+                                                <option :value="item.typeId" v-for='(item,index) of sceneList'
+                                                    :key="index">
+                                                    {{item.typeName}}</option>
+                                            </select>
+                                        </div>
+                                        <span class="col-sm-1 control-label red">必填</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">展示序号:</label>
+                                        <div class="col-sm-4">
+                                            <input type="number" v-model='addData.orderNum' placeholder="仅能输入整数数字">
+                                        </div>
+                                        <span class="col-sm-1 control-label red">必填</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">计划名称:</label>
+                                        <div class="col-sm-4">
+                                            <input type="text" placeholder="不超过15个字" v-model='addData.planTypeName'>
+                                        </div>
+                                        <span class="col-sm-1 control-label red">必填</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">上传大图标:</label>
+                                        <input type="text" style="width: 170px;margin-left:10px" id="uploadInput1" placeholder="请选择" disabled  />
+                                        <input type="button" class="btn btn-sm btn-primary" id="selectBtn1" value="选择">
+                                        <input type="button" class="btn btn-sm btn-primary" @click="uploadPostPicFile1" value="上传">
+                                        <input type="button" class="btn btn-sm btn-primary"  value="查看" @click="checkPicUri">
+                                        <input id="uploadFileInput1" type="file" name="file" style="display: none" class="upload" />
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">上传小图标:</label>
+                                        <input type="text" style="width: 170px;margin-left:10px" id="uploadInput3" placeholder="请选择" disabled  />
+                                        <input type="button" class="btn btn-sm btn-primary" id="selectBtn3" value="选择">
+                                        <input type="button" class="btn btn-sm btn-primary" @click="uploadPostPicFile3" value="上传">
+                                        <input type="button" class="btn btn-sm btn-primary"  value="查看" @click="checkPicUriSmall">
+                                        <input id="uploadFileInput3" type="file" name="file" style="display: none" class="upload" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">背景图片:</label>
+                                        <div class="col-sm-4">
+                                            <select style="width: 168px;" v-model='addData.backgroundUrl'>
+                                                <option value="">无</option>
+                                                <option :value="val" v-for='val of bgcList'>{{val}}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <a :href="staticUrl+addData.backgroundUrl" target="_blank"
+                                                style="line-height: 30px;">查看</a>
+                                        </div>
+                                    </div>
+                                      <!-- 9511 新增-->
+                                      <div class="form-group">
+                                        <label class="col-sm-5 control-label">产品类型:</label>
+                                        <div class="col-sm-4">
+                                            <input type='text' disabled placeholder='基金'
+                                            ></input>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">投资产品:</label>
+                                        <div class="col-sm-4">
+                                            <input type="text" placeholder="产品ID" v-model='addData.productId' ></input>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="display: flex;align-items: center; padding-top: 20px;"> >
+                                        <label class="col-sm-5 control-label">投入周期:</label>
+                                        <label class="pos-rel">
+                                            <input type="radio" 
+                                                   value="1" class="ace"
+                                                   v-model="addData.modeTer"
+                                                   >
+                                            <span class="lbl"></span>
+                                        </label>    
+                                        <label for="type1" style="padding-right:20px">一次投入</label>
+                                        
+                                        <label class="pos-rel">
+                                            <input type="radio" 
+                                                   value="2" class="ace"
+                                                   v-model="addData.modeTer"
+                                                   />
+                                            <span class="lbl"></span>
+                                        </label>
+                                        <label for="type2" style="padding-right:20px" >周期定投</label>
+
+                                        <div class="" style="padding-right:20px" v-if="addData.modeTer==2">
+                                            <select v-model='addData.defaultCycle' style="width: 80px;" @change="investmentChange(addData.defaultCycle)">
+                                                <option value="MM" >每月</option>
+                                                <option value="2W">每双周</option>
+                                                <option value="WW">每周</option>
+                                                <option value="DD">每天</option>
+                                               
+                                            </select>
+                                        </div>
+                                        <div class="" v-if="addData.modeTer==2&&addData.defaultCycle!=='DD'">
+                                            <select v-model='addData.defaultDayOfCycle' style="width: 80px;">
+                                                <option  v-for='(item,index) of investmentList' :value="item.defaultDayOfCycle"
+                                                    :key="index">
+                                                    {{item.defaultDayOfCycle}}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">最低目标金额（元）:</label>
+                                        <div class="col-sm-4">
+                                            <input type="text" placeholder="填写整数金额" v-model='addData.defaultPlanAmount'>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">目标金额（元）:</label>
+                                        <div class="col-sm-4">
+                                            <input type="text" placeholder="填写整数金额" v-model='addData.defaultAmount'>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">文案介绍:</label>
+                                        <div class="col-sm-4">
+                                            <textarea name="" id="" cols="20" rows="3" v-model='addData.planDesc'
+                                                placeholder="不超过100个字"></textarea>
+                                        </div>
+                                    </div>
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" @click='add'>保存</button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                            aria-hidden="true">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--修改弹窗-->
+                    <div class="modal" id="modifyData" tabindex="-1" role="dialog" aria-hidden="true"
+                        data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content" style="width:850px">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                    </button>
+                                    <h4 class="modal-title inline">修改</h4>
+                                </div>
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">场景:</label>
+                                        <div class="col-sm-4">
+                                            <select v-model='modifyData.accountType' style="width: 168px;">
+                                                <option value="">请选择</option>
+                                                <option :value="item.typeId" v-for='(item,index) of sceneList'
+                                                    :key="index">
+                                                    {{item.typeName}}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">展示序号:</label>
+                                        <div class="col-sm-4">
+                                            <input type="number" v-model='modifyData.orderNum' placeholder="仅能输入整数数字">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">计划名称:</label>
+                                        <div class="col-sm-4">
+                                            <input type="text" placeholder="必填,不超过15个字"
+                                                v-model='modifyData.planTypeName'>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">上传大图标:</label>
+                                        <input type="text" style="width: 170px;margin-left:10px" id="uploadInput2" placeholder="请选择" disabled  />
+                                        <input type="button" class="btn btn-sm btn-primary" id="selectBtn2" value="选择">
+                                        <input type="button" class="btn btn-sm btn-primary" @click="uploadPostPicFile2" value="上传">
+                                        <input type="button" class="btn btn-sm btn-primary"  value="查看" @click="checkPicUri">
+                                        <input id="uploadFileInput2" type="file" name="file" style="display: none" class="upload" />
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">上传小图标:</label>
+                                        <input type="text" style="width: 170px;margin-left:10px" id="uploadInput4" placeholder="请选择" disabled  />
+                                        <input type="button" class="btn btn-sm btn-primary" id="selectBtn4" value="选择">
+                                        <input type="button" class="btn btn-sm btn-primary" @click="uploadPostPicFile4" value="上传">
+                                        <input type="button" class="btn btn-sm btn-primary"  value="查看" @click="checkPicUriSmall">
+                                        <input id="uploadFileInput4" type="file" name="file" style="display: none" class="upload" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">背景图片:</label>
+                                        <div class="col-sm-4">
+                                            <select style="width: 168px;" v-model='modifyData.backgroundUrl'>
+                                                <option value="">无</option>
+                                                <option :value="val" v-for='val of bgcList'>{{val}}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <a :href="staticUrl+modifyData.backgroundUrl" target="_blank"
+                                                style="line-height: 30px;">查看</a>
+                                        </div>
+                                    </div>
+                                    <!-- 9511 新增-->
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">产品类型:</label>
+                                        <div class="col-sm-4">
+                                            <input type='text' disabled placeholder='基金'
+                                            ></input>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">投资产品:</label>
+                                        <div class="col-sm-4">
+                                            <input  type='text' v-model='modifyData.productId'
+                                            placeholder="产品ID"
+                                            ></input>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="display: flex;align-items: center; padding-top: 20px;"> >
+                                        <label class="col-sm-5 control-label">投入周期:</label>
+                                        <label class="pos-rel">
+                                            <input type="radio" 
+                                                   value="1" class="ace"
+                                                   name="modeTer"
+                                                   v-model="modifyData.modeTer"
+                                                   @click="changeModeTer('1')"
+                                                   >
+                                            <span class="lbl"></span>
+                                        </label>    
+                                        <label for="type1" style="padding-right:20px">一次投入</label>
+                                        
+                                        <label class="pos-rel">
+                                            <input type="radio" 
+                                                    name="modeTer"
+                                                   value="2" class="ace"
+                                                   v-model="modifyData.modeTer"
+                                                   @click="changeModeTer('2')"
+                                                   />
+                                            <span class="lbl"></span>
+                                        </label>
+                                        <label for="type2" style="padding-right:20px" >周期定投</label>
+                                        <div v-show="showDefaultCycle" style="display:flex;">
+                                        <div class="modifyData-defaultCycle" style="padding-right:20px">
+                                            <select v-model='modifyData.defaultCycle' style="width: 80px;" @change="investmentChange(modifyData.defaultCycle)">
+                                                <option value="MM" >每月</option>
+                                                <option value="2W">每双周</option>
+                                                <option value="WW">每周</option>
+                                                <option value="DD">每天</option>
+                                               
+                                            </select>
+                                        </div>
+                                        <div class="modifyData-defaultCycle"v-if="modifyData.defaultCycle!=='DD'">
+                                                <input type="text" v-if="showModifyDefaultDayOfCycle" @click="investmentChange(modifyData.defaultCycle,'showModifyDefaultDayOfCycle')" name=""  style="width: 80px;height: 30px;" v-model='modifyData.defaultDayOfCycle'>
+                                                <select name="defaultDayOfCycle" v-else
+                                                    v-model='modifyData.defaultDayOfCycle' style="width: 80px;">
+                                                    <option v-for='(item,index) of investmentList'
+                                                        :value="item.defaultDayOfCycle" :key="index">
+                                                        {{item.defaultDayOfCycle}}</option>
+                                                </select>
+                                        </div></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">最低目标金额（元）:</label>
+                                        <div class="col-sm-4">
+                                            <input type="text" placeholder="填写整数金额"
+                                                v-model='modifyData.defaultPlanAmount'>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">目标金额（元）:</label>
+                                        <div class="col-sm-4">
+                                            <input type="text" placeholder="填写整数金额" v-model='modifyData.defaultAmount'>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">文案介绍:</label>
+                                        <div class="col-sm-4">
+                                            <textarea name="" id="" cols="20" rows="3" v-model='modifyData.planDesc'
+                                                placeholder="不超过100个字"></textarea>
+                                        </div>
+                                    </div>
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" @click='modify'>保存</button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                            aria-hidden="true">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-inline" style="padding: 10px 0;">
+                        <div class="form-group">
+                            <label class="control-label">场景:</label>
+                            <select v-model='accountType' style="width: 168px;">
+                                <option value="">请选择</option>
+                                <option :value="item.typeId" v-for='(item,index) of sceneList' :key="index">
+                                    {{item.typeName}}</option>
+                            </select>
+                        </div>
+                        <div class="form-group pull-right">
+                            <input type="button" class="btn btn-sm btn-primary" value="查询" @click='getTableData'
+                                style="margin-right: 50px;">
+                            <% if(canShow||authorityList.includes('C')) { %>
+                            <input type="button" class="btn btn-sm btn-primary" @click='showAdd'
+                                value="新建">
+                            <% } %>
+                        </div>
+                        <div style="clear: both;"></div>
+                    </div>
+
+                    <div class="table-header">
+                        <%= cpage %>--表格数据
+                    </div>
+
+                    <!--分页器和快速查询-->
+                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="500">500</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <div id="dynamic-table_filter" class="dataTables_filter">
+                                <label>快速查询:</label>
+                                <input type="text" class="input-sm" v-model="condition">
+                            </div>
+                        </div>
+                    </div>
+                    <!--数据表-->
+                    <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                        style="margin-bottom: 0;">
+                        <thead>
+                            <tr>
+                                <th class="center col-sm-1">展示序号</th>
+                                <th class="center col-sm-2">计划名称</th>
+                                <th class="center col-sm-5">文案介绍</th>
+                                <th class="center col-sm-1">背景图片</th>
+                                <th class="center col-sm-1">最低目标金额（元）</th>
+                                <th class="center col-sm-1">目标金额（元）</th>
+                                <th class="center col-sm-2">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-if="viewData.length>0">
+                                <tr v-for="(item,index) in viewData" :key="index">
+                                    <td class="center" v-text='item.orderNum'></td>
+                                    <td class="center" v-text='item.planTypeName'></td>
+                                    <td class="center" v-text='item.planDesc'></td>
+                                    <td class="center" v-text=''>
+                                        <a :href="staticUrl+item.backgroundUrl"
+                                            target="_blank">{{item.backgroundUrl}}</a>
+                                    </td>
+                                    <td class="center" v-text='item.defaultPlanAmount'></td>
+                                    <td class="center" v-text='item.defaultAmount'></td>
+                                    <td class="center">
+                                        <% if(canShow||authorityList.includes('U')) { %>
+                                        <a href="javascript:;" @click='showModify(item)'>修改</a>
+                                        <% } %>
+                                        /
+                                        <% if(canShow||authorityList.includes('D')) { %>
+                                        <a href="javascript:;" class="red" @click="showDelete(item)">删除</a>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'没有数据'" colspan="8"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                    <!--底部页码-->
+                    <div v-if="viewData.length>0" class="row"
+                        style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                        <div class="col-xs-2">
+                            <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                        </div>
+                        <div class="col-xs-10">
+                            <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                <ul class="pagination">
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                    </li>
+                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                        @click="prev">
+                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                    </li>
+                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                        v-for="value in pageList" @click="changeIndex(value)">
+                                        <a href="javascript:;" v-text="value"></a>
+                                    </li>
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'...'+middleData.length" @click="toLast"></a>
+                                    </li>
+                                    <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                        @click="next">
+                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/lib/ajaxfileupload.js"></script>
+    <script src="/js/publicConfig/familyAffectionAccount/sceneName.js"></script>
+</body>
+
+</html>

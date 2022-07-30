@@ -1,0 +1,104 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').auditMgmt.nicknameToReview;
+
+module.exports = function (app) {
+    //获取列表
+    app.post('/messageCenter/auditMgmt/nicknameToReview/nicknameGetList.ajax', (req, res, next) => {
+        let params = req.body;
+        let userId= req.session.loginInfo.userid;
+        let option = {
+            session: req.session,
+            url: apiUrlList.nicknameGetList,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/auditMgmt/nicknameToReview/nicknameGetList.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/messageCenter/auditMgmt/nicknameToReview/nicknameGetList.ajax error:', error);
+            console.log('/messageCenter/auditMgmt/nicknameToReview/nicknameGetList.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/auditMgmt/nicknameToReview/nicknameGetList.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            if (body && body.returnCode == 0) {
+                let data = body.body;
+                data.userId=userId;
+                data.pages = Math.ceil(data.total / params.pageSize);//最大页码
+                data.pageNum = params.pageNo;//当前页
+                res.send({error: 0, msg: '查询成功', data: data});
+            }
+            else if (body && body.returnCode != 9999) {
+                res.send({error: 1, msg: body.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '查询失败'});
+            }
+        });
+    }
+    );
+    //审核通过
+    app.post('/messageCenter/auditMgmt/nicknameToReview/passCheck.ajax', (req, res, next) => {
+            let params = req.body;
+            let option = {
+                session: req.session,
+                url: apiUrlList.nicknameCheck,
+                body: params,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/messageCenter/auditMgmt/nicknameToReview/passCheck.ajax option:', option);
+            request.put(option, (error, response, body) => {
+                sysLogger(2, req, option, body);
+                console.log('/messageCenter/auditMgmt/nicknameToReview/passCheck.ajax error:', error);
+                console.log('/messageCenter/auditMgmt/nicknameToReview/passCheck.ajax statusCode:', response && response.statusCode);
+                console.log('/messageCenter/auditMgmt/nicknameToReview/passCheck.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    let data = body.body;
+                    res.send({error: 0, msg: '查询成功', data: data});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '查询失败'});
+                }
+            });
+        }
+    );
+    //审核未通过
+    app.post('/messageCenter/auditMgmt/nicknameToReview/rejectCheck.ajax', (req, res, next) => {
+            let params = req.body;
+            let option = {
+                session: req.session,
+                url: apiUrlList.nicknameCheck,
+                body: params,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/messageCenter/auditMgmt/nicknameToReview/rejectCheck.ajax option:', option);
+            request.put(option, (error, response, body) => {
+                sysLogger(2, req, option, body);
+                console.log('/messageCenter/auditMgmt/nicknameToReview/rejectCheck.ajax error:', error);
+                console.log('/messageCenter/auditMgmt/nicknameToReview/rejectCheck.ajax statusCode:', response && response.statusCode);
+                console.log('/messageCenter/auditMgmt/nicknameToReview/rejectCheck.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    let data = body.body;
+                    res.send({error: 0, msg: '查询成功', data: data});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '查询失败'});
+                }
+            });
+        }
+    );
+};

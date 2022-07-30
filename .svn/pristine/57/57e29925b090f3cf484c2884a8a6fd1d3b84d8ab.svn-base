@@ -1,0 +1,56 @@
+{
+	"retCode":"0000",
+	"retMsg":"调用成功",
+	"sale":[
+		{	
+			"branchCode":"24706",
+			"branchName":"富管家",
+			"product":"现金宝",
+			"pattern":"HOP",
+			"style":"文件",
+			"customer":"个人",
+			"uptime":"1999/9/9",
+			"frequency":"34442",
+			"amount":"32223",
+			"status":"1"
+		},
+		{	
+			"branchCode":"24706",
+			"branchName":"上汽车贷",
+			"product":"全额宝",
+			"pattern":"HOP",
+			"style":"实时",
+			"customer":"企业",
+			"uptime":"1999/9/9",
+			"frequency":"34442",
+			"amount":"32223",
+			"status":"2"
+		},
+		{	
+			"branchCode":"24706",
+			"branchName":"上海银行",
+			"product":"全额宝",
+			"pattern":"PSP",
+			"style":"文件",
+			"customer":"产品库",
+			"uptime":"1999/9/9",
+			"frequency":"34442",
+			"amount":"32223",
+			"status":"3"
+		},	
+		{	
+			"branchCode":"24706",
+			"branchName":"",
+			"product":"股基",
+			"pattern":"RTDS",
+			"style":"实时",
+			"customer":"企业",
+			"uptime":"1999/9/9",
+			"frequency":"34442",
+			"amount":"32223",
+			"status":"1"
+		}
+
+		
+	]
+}

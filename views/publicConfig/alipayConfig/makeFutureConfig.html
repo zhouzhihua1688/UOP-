@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content" id="content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <!--消息提示弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title"></h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                        data-dismiss="modal">确定</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="font-size: 20px;padding: 10px 0;">本页面所属于蚂蚁小程序添财红包,实现功能为将配置文件上传至static服务器,以便小程序能够获取配置数据!
+                    </div>
+                    <% if(canShow||authorityList.includes('U')) { %>
+                    <div style="font-size: 20px;padding: 10px 0;">
+                        <label>上传文件：</label>
+                        <input type="text" style="width: 300px;" id="uploadInput" placeholder="请选择" disabled />
+                        <input type="button" class="btn btn-sm btn-primary" id="selectBtn" value="选择">
+                        <input type="button" class="btn btn-sm btn-primary" @click="uploadFile" value="上传">
+                        <input id="uploadFileInput" type="file" name="file" style="display: none" class="upload" />
+                    </div>
+                    <% } %>
+                    <div style="font-size: 20px;padding: 10px 0;">
+                        <label>文件路径：</label>
+                        <a :href="filePath" v-text="filePath" target="_blank"></a>
+                    </div>
+                    <div style="font-size: 20px;padding: 10px 0;">
+                        <pre v-text="jsonDetail" style="height: 400px;overflow: scroll;"></pre>
+                    </div>
+                    <% if(canShow||authorityList.includes('U')) { %>
+                    <div style="font-size: 20px;padding: 10px 0;">
+                        <label>上传封面图片文件：</label>
+                        <input type="text" style="width: 300px;" id="uploadInput2" placeholder="请选择" disabled />
+                        <input type="button" class="btn btn-sm btn-primary" id="selectBtn2" value="选择">
+                        <input type="button" class="btn btn-sm btn-primary" @click="uploadPostPicFile" value="上传">
+                        <input id="uploadFileInput2" type="file" name="file" style="display: none" class="upload" />
+                    </div>
+                    <% } %>
+                    <div style="font-size: 20px;padding: 10px 0;">
+                        <label>图片文件路径：</label>
+                        <div v-for="(filename,index) in filePicPath">
+                            <a :key="index" :href="filename" v-text="filename" target="_blank"></a>
+                        </div>
+                    </div>
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/lib/ajaxfileupload.js"></script>
+    <script src="/js/publicConfig/alipayConfig/makeFutureConfig.js"></script>
+</body>
+
+</html>

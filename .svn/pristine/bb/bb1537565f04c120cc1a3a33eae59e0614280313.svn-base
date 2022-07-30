@@ -1,0 +1,24 @@
+module.exports = {
+    index: {
+        name: '会员等级'
+    },
+    vipGrade: {
+        index: 'vipGrade.html',
+        name: '会员等级',
+        child: {
+            member: '会员等级管理',
+            blacklist: '黑名单管理',
+            privilege: '等级特权管理',
+            privilegeHand: '特权手动发放',
+            source: '特权来源管理',
+
+        }
+    },
+    whiteList: {
+        index: 'whiteList.html',
+        name: '白名单',
+        child: {
+            setting: '白名单设置',
+        }
+    },
+};

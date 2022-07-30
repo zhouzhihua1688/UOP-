@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div label {
+            padding: 10px 0;
+            text-align: right;
+        }
+
+        .form-inline span {
+            text-align: left;
+        }
+
+        .select2-selection.select2-selection--single {
+            height: 30px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+            border: 1px solid #D5D5D5 !important;
+        }
+
+        @media (min-width: 768px) {
+            .modal-dialog {
+                width: 700px;
+                margin: 30px auto;
+            }
+        }
+
+        .chosen-single {
+            height: 34px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+        }
+
+        .custom_productList {
+            display: flex;
+            justify-content:space-around;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- DIALOG ENDS -->
+                         
+                            <div class="form-inline" style="height: 50px;margin-top: 10px;">
+                                <!-- <div class="form-group ">
+                                    <label>日期：</label>
+                                    <date-picker v-model='calcDate' :config="{format:'YYYY-MM-DD'}"
+                                        style="width: 140px;">
+                                        <span class="input-group-addon" slot='right'>
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </date-picker>
+                                </div> -->
+																<div class="form-group pull-right" style="height:40px;line-height: 40px;">报表日期：{{calcDate}}</div>
+                            </div> 
+                            <!--数据表-->
+														<template v-if="tableData.length>0">
+															<div>
+																<div style="width: 100%;" v-for="(item,index) in tableData" :key="index">
+																	<div class="table-header">
+																		市场的竞品情况（平台：{{item.parentPlatform}}；赛道：{{item.investArea}}）
+																	</div>
+																	<table id="simple-table" class="table table-bordered table-hover dataTable">
+																			<thead>
+																					<tr>
+																							<th class="center col-sm-1 " rowspan="2">基金代码</th>
+																							<th class="center col-sm-1 " rowspan="2">基金名称</th>
+																							<th class="center col-sm-1 " rowspan="2">上线平台</th>
+																							<th class="center col-sm-1 " rowspan="2">所处赛道</th>
+																							<th class="center" :colspan="item.productAllPrdMonitorDetailVOList[0].prdMonitorIndexShowVOList.length">最新各类指标情况</th>
+																					</tr>
+																					<tr >
+																						<th class="center col-sm-1" v-for = "theadItem in item.productAllPrdMonitorDetailVOList[0].prdMonitorIndexShowVOList">{{theadItem.indexName}}</th>
+																					</tr>
+																			</thead>
+																			<tbody>
+																					<template v-if="item.productAllPrdMonitorDetailVOList.length>0">
+																						<tr v-for ="citem in item.productAllPrdMonitorDetailVOList">
+																							<td class="center">{{citem.productId}}</td>
+																							<td class="center">{{citem.productName}}</td>
+																							<td class="center">{{citem.salePlatform}}</td>
+																							<td class="center">{{citem.investArea}}</td>
+																							<td v-for = "sitem in citem.prdMonitorIndexShowVOList">{{sitem.indexValueDesc}}</td>
+																						</tr>
+																					</template>
+																					<!-- <template v-else>
+																							<tr>
+																									<td class="center" v-text="'没有数据'" :colspan="item.productAllPrdMonitorDetailVOList[0].prdMonitorIndexShowVOList.length+4"></td>
+																							</tr>
+																					</template> -->
+																			</tbody>
+																	</table>
+																</div>
+															</div>
+															
+														</template>
+														<template v-eles>
+															<div style="width:100%;height:50px;line-height: 50px;background-color: #eee;text-align: center;">
+																	没有数据
+															</div>
+														</template>
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/ace/assets/js/v-datetimepicker.js"></script>
+    <script src="/js/productIndexes/monitoring/reportForms.js"></script>
+</body>
+
+</html>

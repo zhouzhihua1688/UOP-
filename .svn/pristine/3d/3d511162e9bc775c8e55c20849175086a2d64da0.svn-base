@@ -1,0 +1,134 @@
+const request = require('./../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').productInfoConfig.productExpandContent;
+
+module.exports = function(app) {
+	// 获取类型列表
+	app.post('/businessMgmt/productInfoConfig/productExpandContent/getTypeList.ajax', (req, res, next) => {
+		let option = {
+			session: req.session,
+			url: apiUrl.getTypeList,
+			qs: req.body,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/businessMgmt/productInfoConfig/productExpandContent/getTypeList.ajax option:', option);
+		request(option, (error, response, body) => {
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/getTypeList.ajax error:', error);
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/getTypeList.ajax statusCode:', response && response.statusCode);
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/getTypeList.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+			if (body.returnCode == 0) {
+				body.body.forEach(item => {
+					item.extValue = '';
+				});
+				return res.send({
+					error: 0,
+					msg: '查询成功',
+					data: body.body
+				});
+			} else if (body && body.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: body.returnMsg,
+					data: null
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '查询失败',
+					data: null
+				});
+			}
+		});
+	});
+	// 查询
+	app.post('/businessMgmt/productInfoConfig/productExpandContent/query.ajax', (req, res, next) => {
+		let option = {
+			session: req.session,
+			url: apiUrl.query,
+			qs: req.body,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/businessMgmt/productInfoConfig/productExpandContent/query.ajax option:', option);
+		request(option, (error, response, body) => {
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/query.ajax error:', error);
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/query.ajax statusCode:', response && response.statusCode);
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/query.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+			if (body.returnCode == 0) {
+				return res.send({
+					error: 0,
+					msg: '查询成功',
+					data: body.body
+				});
+			} else if (body && body.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: body.returnMsg,
+					data: null
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '查询失败',
+					data: null
+				});
+			}
+		});
+	});
+	// 新增
+	app.post('/businessMgmt/productInfoConfig/productExpandContent/add.ajax', (req, res, next) => {
+		let option = {
+			session: req.session,
+			url: apiUrl.add,
+			body: {
+				productId: req.body.productId,
+				recordList: JSON.parse(req.body.recordList),
+			},
+			timeout: 15000,
+			json: true
+		};
+		console.log('/businessMgmt/productInfoConfig/productExpandContent/add.ajax option:', option);
+		request.post(option, (error, response, body) => {
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/add.ajax error:', error);
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/add.ajax statusCode:', response && response.statusCode);
+			console.log('/businessMgmt/productInfoConfig/productExpandContent/add.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '新增失败'
+				});
+			}
+			if (body.returnCode == 0) {
+				return res.send({
+					error: 0,
+					msg: '新增成功',
+					data: null
+				});
+			} else if (body && body.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: body.returnMsg,
+					data: null
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '新增失败',
+					data: null
+				});
+			}
+		});
+	});
+}

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content" id="content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <!-- 预览图 -->
+                    <div id="previewImg"
+                        style="display: none;position: fixed;background: #fff; width: 400px;;right:20px ;top:50%;transform:translateY(-50%);z-index: 999999;">
+                        <img :src="pagePreviewImgurl" alt="" style="display: block;width: 100%;max-height: 600px;">
+                    </div>
+                    <!--编辑弹窗-->
+                    <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog" style="width: 800px;">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" @click = "hideImg">
+                                        &times;
+                                    </button>
+                                    <h4 class="modal-title" style="display: inline">内容配置</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form " style="padding: 0 50px 0 24px;">
+                                        <div class="form-group">
+                                            <label class="control-label"
+                                                style="width: 150px;text-align: right">渠道:</label>
+                                            <select name="" id="" v-model="channelId">
+                                                <option v-for="item in channelMenu" :value="item.channelId"
+                                                    v-text="item.channelName"></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label"
+                                                style="width: 150px;text-align: right">模板:</label>
+                                            <select name="" id="" v-model="elementCollection">
+                                                <option v-for="item in viewList" :value="item.temId"
+                                                    v-text="item.temName"></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diaexchangeCostPoints">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                消耗积分:</label>
+                                            <input type="text" style="width: 60%;" v-model.trim="diaexchangeCostPoints" />
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diaprivilegeFrom">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                特权来源: </label>
+                                           
+                                            <select v-model.trim='diaprivilegeFrom' style="width: 169px;">
+                                                <option :value="item.id" v-for="(item,index) in sourceList">
+                                                    {{item.privilegeSource}}</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diaprivilegeId" >
+                                            <label class="control-label " style="width: 150px;text-align: right">
+                                                特权ID: </label>
+                                            <select v-model.trim='diaprivilegeId' style="width:169px">
+                                                <option :value="item.privilegeId"
+                                                    v-for="(item,index) in privilegeList">{{item.privilegeName}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diaprivilegeType">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                特权类型:</label>
+                                            <select v-model.trim='diaprivilegeType' style="width: 169px;" disabled>
+                                                <option value="01">信用卡额度</option>
+                                                <option value="02">快取额度</option>
+                                                <option value="03">多卡取现</option>
+                                                <option value="05">信用卡白名单</option>
+                                                <option value="11">申购优惠</option>
+                                                <option value="12">认购优惠</option>
+                                                <option value="31">积分翻倍</option>
+                                                <option value="51">奖励包</option>
+                                                <option value="61">跟我投</option>
+                                                <option value="71">赎回特权</option>
+                                                <option value="72">组合转换</option>
+                                                <option value="73">基金组合费率</option>
+                                                <option value="74">现金宝BC份额</option>
+                                                <option value="91">其它</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diaprivilegeName">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                特权名称:</label>
+                                            <input type="text" style="width: 60%;" disabled v-model.trim="diaprivilegeName"/>
+                                        </div>
+                                        <div class="form-group clearfix" v-show="elementShow.diaeffectStartTime">
+                                            <label class="control-label" style="width: 150px;text-align: right;float: left;vertical-align: middle;">
+                                                生效时间:</label>
+                                            <div class="col-sm-9" style="margin-left: -9px;">
+                                                <div class="input-group">
+                                                    <input type="text" ref="diaeffectStartTime" class="date-timepicker "
+                                                        style="width: 100%;">
+                                                    <span class="input-group-addon" style="width: 16%;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group clearfix" v-show="elementShow.diaeffectEndTime">
+                                            <label class="control-label"  style="width: 150px;text-align: right;float: left;vertical-align: middle;">
+                                                失效时间:</label>
+                                            <div class="col-sm-9" style="margin-left: -9px;">
+                                                <div class="input-group">
+                                                    <input type="text" ref="diaeffectEndTime" class="date-timepicker "
+                                                        style="width: 100%;"
+                                                        :disabled='longTime=="2099-12-31 00:00:00"'>
+                                                    <span class="input-group-addon" style="width: 16%;">
+                                                        <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                                    <div style="position:absolute;right: -35%; top: 48%;">
+                                                        <input type="checkbox" class="ace" v-model="longTimeStatus">
+                                                        <span class="lbl"></span>长期有效
+                                                    </div>
+                                                </div>
+
+
+                                            </div>
+                                        </div>
+                                        <div class="form-group" v-show="elementShow.diadisplayContent">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                展示文案:</label>
+                                            <input type="text" style="width: 60%;" v-model.trim="diadisplayContent" />
+                                        </div>
+                                        <div class="form-group" style="color: red;"><label class="control-label" style="width: 150px; text-align: right;">
+                                            展示文案提示:</label> <span>添富币占位符：${exchangeCostPoints}，特权名称占位符：${privilegeName}</span></div>
+                                        <div class="form-group" v-show="elementShow.diaremark">
+                                            <label class="control-label" style="width: 150px;text-align: right">
+                                                介绍文案:</label>
+                                            <input type="text" style="width: 60%;" v-model.trim="diaremark" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary"  @click="add">保存</button>
+                                    <button class="btn btn-default btn-sm" data-dismiss="modal" @click = "hideImg">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--信息提示弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                        data-dismiss="modal">确定</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--删除弹窗1-->
+                    <div class="modal" id="delete1" tabindex="-1" role="dialog" aria-hidden="true"
+                        data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×</button>
+                                    <h4 class="modal-title">删除</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4>是否确认删除?</h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                        @click="deleteConfirm">确定</button>
+                                    <button class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-inline" style="padding: 10px 0;">
+                        <div class="form-group">
+                            <label class="control-label">特权Id:</label>
+                            <input type="text" v-model.trim="privilegeId">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">特权名称:</label>
+                            <input type="text" v-model.trim="privilegeName">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">特权类型:</label>
+                            <input type="text" v-model.trim="privilegeType">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">渠道:</label>
+                            <select name="" id="" v-model="searchChannelId">
+                                <option v-for="item in channelMenu" :value="item.channelId"
+                                    v-text="item.channelName"></option>
+                            </select>
+                        </div>
+                        <div class="form-group pull-right">
+                            <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                            <% if(canShow||authorityList.includes('U')) { %>
+                            <input type="button" class="btn btn-sm btn-primary" value="刷新" @click="fresh">
+                            <% } %>
+                            <% if(canShow||authorityList.includes('C')) { %>
+                            <input type="button" class="btn btn-sm btn-primary" value="新增内容" @click="showAdd">
+                            <% } %>
+                            <% if(canShow||authorityList.includes('U')) { %>
+                            <input type="button" class="btn btn-sm btn-primary" value="配置到主题" @click="configMgmt">
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="table-header">
+                        <%= cpage %>--表格数据
+                    </div>
+                    <!--分页器和快速查询-->
+                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length" id="dynamic-table_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="500">500</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!--数据表-->
+                    <table id="simple-table" class="table table-bordered table-hover dataTable">
+                        <thead>
+                            <tr>
+                                <th class="center col-sm-1">
+                                    <label class="pos-rel">
+                                        <input type="checkbox" class="ace" :checked="checkAll" @click="allCheck"/>
+                                        <span class="lbl"></span>
+                                    </label>
+                                </th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">配置ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">消耗积分</th>
+                                <th class="center col-sm-2 col-md-2 col-lg-2">特权Id</th>
+                                <th class="center col-sm-2 col-md-2 col-lg-2">特权名称</th>
+                                <th class="center col-sm-2 col-md-2 col-lg-2">特权类型</th>
+                                <th class="center col-sm-2 col-md-2 col-lg-2">生效开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">生效结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">渠道</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-if="tableData.length>0">
+                                <tr v-for="(item,index) in tableData" :key="index">
+                                    <td class="center">
+                                        <label class="pos-rel">
+                                            <input type="checkbox" class="ace" :checked="item.check"
+                                                   @click="check(item)"/>
+                                            <span class="lbl"></span>
+                                        </label>
+                                    </td>
+                                    <td class="center" v-text='item.privilegeConfigId'></td>
+                                    <td class="center" v-text='item.exchangeCostPoints'></td>
+                                    <td class="center" v-text='item.privilegeId'></td>
+                                    <td class="center" v-text='item.privilegeName'></td>
+                                    <td class="center" >{{item.privilegeType |setType}}</td>
+                                    <td class="center" v-text='stringTimeFat(item.effectStartTime)'></td>
+                                    <td class="center" v-text='stringTimeFat(item.effectEndTime)'></td>
+                                    <td class="center" v-text='channelNameForId(item.channelId)'></td>
+                                    <td class="center">
+                                        <% if(canShow||authorityList.includes('U')) { %>
+                                        <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                                        <% } %>
+                                        <% if(canShow||authorityList.includes('D')) { %>
+                                        &nbsp;
+                                        <a href="javascript:;" class="red" @click="deleteParams(item)">删除</a>
+                                        <% } %>
+                                        &nbsp;
+                                        <a href="javascript:;" class="green" @click="configThis(item)">查看</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="loadingStatus" colspan="13"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                    <!--底部页码-->
+                    <div v-if="tableData.length>0" class="row"
+                        style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                        <div class="col-xs-2">
+                            <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                        </div>
+                        <div class="col-xs-10">
+                            <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                <ul class="pagination">
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                    </li>
+                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                        @click="prev">
+                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                    </li>
+                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                        v-for="value in pageList" @click="changeIndex(value)">
+                                        <a href="javascript:;" v-text="value"></a>
+                                    </li>
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                    </li>
+                                    <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                        @click="next">
+                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/js/recommendSystem/recommendSystemTemplateConfig/privilegeConfig.js"></script>
+    
+</body>
+
+</html>

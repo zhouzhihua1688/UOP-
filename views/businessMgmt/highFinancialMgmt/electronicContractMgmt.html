@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!-- <div class="form-inline" style="padding: 10px 0;">
+                    <label class="control-label">产品名称:</label>
+                    <div class="form-group">
+                        <input class="typeahead scrollable updataMsql" type="text"/>
+                    </div>
+                    <label class="control-label">开放日期:</label>
+                    <div class="form-group">
+                        <input class="typeahead scrollable" type="text"/>
+                    </div>
+                    <label class="control-label">当前额度:</label>
+                    <div class="form-group">
+                        <input class="typeahead scrollable" type="text"/>
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询">
+                    </div>
+                </div> -->
+                <!-- <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div> -->
+                <div>
+                    <!--分页器和快速查询-->
+                    <!-- <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length" id="dynamic-table_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                    <option value="10">10</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                            <option value="500">500</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+                    </div> -->
+                    <!--数据表-->
+                    <!-- <table class="table table-striped table-bordered table-hover dataTable" style="margin-bottom: 0;">
+                        <thead>
+                        <tr>
+                            <th class="center">产品代码</th>
+                            <th class="center">产品名称</th>
+                            <th class="center">开放日期</th>
+                            <th class="center">产品当前规模</th>
+                            <th class="center">销售总额度</th>
+                            <th class="center">当前额度</th>
+                            <th class="center">当前已下单金额</th>
+                            <th class="center">流水号冻结额度</th>
+                            <th class="center">赎回金额</th>
+                            <th class="center">当前立即购买额度</th>
+                            <th class="center">当前预约购买额度</th>
+                            <th class="center">企业版当前可用额度</th>
+                            <th class="center">持有人数</th>
+                            <th class="center">300万已下人数</th>
+                            <th class="center">当前预约明细</th>
+                            <th class="center">系列明细查询</th>
+                            <th class="center">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table> -->
+
+                    <!--底部页码-->
+                    <!--后端真分页-->
+                    <div v-if="tableData.length>0" class="row" v-show="isUpdate"
+                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                        <div class="col-xs-2">
+                            <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                        </div>
+                        <div class="col-xs-10">
+                            <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                <ul class="pagination">
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                    </li>
+                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                        @click="prev">
+                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                    </li>
+                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                        v-for="value in pageList" @click="changeIndex(value)">
+                                        <a href="javascript:;" v-text="value"></a>
+                                    </li>
+                                    <li class="paginate_button"
+                                        v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                        <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                    </li>
+                                    <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                        @click="next">
+                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!--底部假分页页码-->
+                    <!-- <div v-if="viewData.length>0"  class="row" v-show="showMysql"
+                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                        <div class="col-xs-2">
+                            <div class="dataTables_info" v-text="'共 '+middleData.length+'页'"></div>
+                        </div>
+                        <div class="col-xs-10">
+                            <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                <ul class="pagination">
+                                    <li :class="currentIndex2==0?'paginate_button previous disabled':'paginate_button previous'"
+                                        @click="prev1">
+                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                    </li>
+                                    <li :class="value==currentIndex2+1?'paginate_button active':'paginate_button'"
+                                        v-for="value in middleData.length" @click="changeIndex1(value)">
+                                        <a href="javascript:;" v-text="value"></a>
+                                    </li>
+                                    <li :class="currentIndex2==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                        @click="next1">
+                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div> -->
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/businessMgmt/highFinancialMgmt/electronicContractMgmt.js"></script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div {
+            padding: 10px 0;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- DIALOG ENDS -->
+
+                            <div class="form-inline">
+
+                                <div class="form-group ">
+                                    <label style="width: 60px;">姓名：</label>
+                                    <input type="text" v-model.trim="invnm" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">身份证：</label>
+                                    <input type="text" v-model.trim="idno" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">手机号码:</label>
+                                    <input type="text" v-model.trim="mobileNo" />
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">通道选择：</label>
+                                    <select style="width: 80px;height:33px;" v-model='route'>
+                                        <option value="ECT">证通</option>
+                                        <option value="GEO">集奥</option>
+                                    </select>
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">使用缓存:</label>
+                                    <select v-model='useCache ' style="height:33px;">
+                                        <option value="1">是</option>
+                                        <option value="0">否</option>
+                                    </select>
+                                </div>
+
+
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " value="核查" @click="inspect()">
+                                </div>
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--核查结果
+                            </div>
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">验证渠道</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">验证结果</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="tableData&&tableData.length>0">
+                                        <tr v-for="(item,index) in tableData" :key="index">
+                                            <td class="center" v-text='item.channel==="ECT"?"证通" :"集奥"'></td>
+                                            <td class="center" :class='flag?"green":"red"' v-text='item.msg'></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <div class="table-header">
+                                <%= cpage %>--核查历史记录
+                            </div>
+                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">序列号</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">客户姓名</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">证件号码</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">手机号码</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">验证结果</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">验证详细信息</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">验证通道</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">操作时间</th>
+                                        <th class="center col-sm-1 col-md-1 col-lg-1">最后更新时间</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="logs&&logs.length>0">
+                                        <tr v-for="(item,index) in logs" :key="index">
+                                            <td class="center" v-text='item.serialNo'></td>
+                                            <td class="center" v-text='item.invnm'></td>
+                                            <td class="center" v-text='item.idno'></td>
+                                            <td class="center" v-text='item.mobileno'></td>
+                                            <td class="center" v-text='item.validResult'></td>
+                                            <td class="center" v-text='item.validResultInfo'></td>
+                                            <td class="center" v-text='item.supplier ==="ECT"?"证通" :"集奥"'></td>
+                                            <td class="center" v-text='item.insertTime'></td>
+                                            <td class="center" v-text='item.updateTime'></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+
+
+
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/customerService/accountQuery/mobileNumInspect.js"></script>
+</body>
+
+</html>

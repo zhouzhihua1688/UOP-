@@ -1,0 +1,176 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').products;
+const qs =require("qs");
+module.exports = function (app) {
+
+//查询
+    app.get('/thirdPartyOperation/products/pspfund/search.ajax', (req, res, next) => {
+        let params = req.query;
+        let option = {
+            session:req.session,
+            url: apiUrlList.pspfund.search,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/thirdPartyOperation/products/pspfund/search.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/thirdPartyOperation/products/pspfund/search.ajax error:', error);
+            console.log('/thirdPartyOperation/products/pspfund/search.ajax statusCode:', response && response.statusCode);
+            console.log('/thirdPartyOperation/products/pspfund/search.ajax body:', body);
+            // return res.send(body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.responseCode === '0000') {
+                res.send({
+                    error: 0,
+                    msg: '数据获取成功',
+                    data:result.data
+                });
+            }
+            else if (result && result.responseCode != '9999') {
+                res.send({ error: 1, msg: result.responseMessage });
+            }
+            else {
+                res.send({
+                    error: 1,
+                    msg: result.responseMessage
+                });
+            }
+        });
+    });
+
+    //添加
+    app.post('/thirdPartyOperation/products/pspfund/add.ajax', (req, res, next) => {
+        let params =qs.parse(req.body);
+        params.operator = req.session.loginInfo.userid ;
+        console.log((params))
+        let option = {
+            session:req.session,
+            url: apiUrlList.pspfund.add,
+            body:params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/thirdPartyOperation/products/pspfund/add.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/thirdPartyOperation/products/pspfund/add.ajax error:', error);
+            console.log('/thirdPartyOperation/products/pspfund/add.ajax statusCode:', response && response.statusCode);
+            console.log('/thirdPartyOperation/products/pspfund/add.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.responseCode === '0000') {
+                res.send({
+                    error: 0,
+                    msg: '数据获取成功',
+                    data:result.data
+                });
+            }
+            else if (result && result.responseCode != '9999') {
+                res.send({ error: 1, msg: result.responseMessage });
+            }
+            else {
+                res.send({
+                    error: 1,
+                    msg: result.responseMessage
+                });
+            }
+        });
+    });
+
+    //修改
+    app.post('/thirdPartyOperation/products/pspfund/update.ajax', (req, res, next) => {
+        let params =qs.parse(req.body);
+        params.operator = req.session.loginInfo.userid ;
+        console.log((params));
+        let option = {
+            session:req.session,
+            url: apiUrlList.pspfund.update,
+            body:params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/thirdPartyOperation/products/pspfund/update.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/thirdPartyOperation/products/pspfund/update.ajax error:', error);
+            console.log('/thirdPartyOperation/products/pspfund/update.ajax statusCode:', response && response.statusCode);
+            console.log('/thirdPartyOperation/products/pspfund/update.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.responseCode === '0000') {
+                res.send({
+                    error: 0,
+                    msg: '数据获取成功',
+                    data:result.data
+                });
+            }
+            else if (result && result.responseCode != '9999') {
+                res.send({ error: 1, msg: result.responseMessage });
+            }
+            else {
+                res.send({
+                    error: 1,
+                    msg: result.responseMessage
+                });
+            }
+        });
+    });
+
+    //删除
+    app.get('/thirdPartyOperation/products/pspfund/delete.ajax', (req, res, next) => {
+        let params =req.query;
+        params.operator = req.session.loginInfo.userid ;
+        let option = {
+            session:req.session,
+            url: apiUrlList.pspfund.delete,
+            qs: params,
+            timeout: 15000,
+            json:true
+        };
+        console.log('/thirdPartyOperation/products/pspfund/delete.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/thirdPartyOperation/products/pspfund/delete.ajax error:', error);
+            console.log('/thirdPartyOperation/products/pspfund/delete.ajax statusCode:', response && response.statusCode);
+            console.log('/thirdPartyOperation/products/pspfund/delete.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.responseCode === '0000') {
+                res.send({
+                    error: 0,
+                    msg: '数据获取成功',
+                    data:result.data
+                });
+            }
+            else if (result && result.responseCode != '9999') {
+                res.send({ error: 1, msg: result.responseMessage });
+            }
+            else {
+                res.send({
+                    error: 1,
+                    msg: result.responseMessage
+                });
+            }
+        });
+    });
+
+}

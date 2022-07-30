@@ -1,0 +1,7 @@
+module.exports = function (app) {
+    require('./contentElementMgmt')(app);
+    require('./contentTypeMgmt')(app);
+    require('./viewMgmt')(app);
+    require('./channelMgmt')(app);
+    require('./platformPageMgmt')(app);
+};

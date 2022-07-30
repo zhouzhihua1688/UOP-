@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!-- 提示信息弹窗 -->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 查看弹窗 -->
+                        <div class="modal" id="checkItem" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title inline">数据操作</h4>
+                                    </div>
+                                    <div class="modal-body" style="padding: 10px 30px;">
+                                        <div class="form">
+                                            <div class="form-group">
+                                                <label class="control-label">
+                                                    <label class="control-label" style="width: 70px;">方案名称:<span
+                                                            class="red">*</span></label>
+                                                    <input type="text" placeholder="必填"
+                                                           v-model="dialog_folioName">
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">
+                                                    <label class="control-label" style="width: 70px;">方案ID:<span
+                                                            class="red">*</span></label>
+                                                    <input type="text" disabled
+                                                           v-model="dialog_folioId">
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">
+                                                    <label class="control-label"
+                                                           style="width: 70px;vertical-align: top;">方案说明:<span
+                                                            class="red">*</span></label>
+                                                    <textarea cols="60" rows="5" placeholder="必填"
+                                                              v-model="dialog_folioDesc"></textarea>
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">
+                                                    <label class="control-label"
+                                                           style="width: 70px;vertical-align: top;">方案备注:</label>
+                                                    <textarea cols="60" rows="3"
+                                                              v-model="dialog_folioRemark"></textarea>
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">
+                                                    <label class="control-label">公募基金</label>
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">
+                                                    <span>已添加<span
+                                                            class="red"
+                                                            v-text="dialog_selectedFundList1.length"></span>只基金</span>
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <table class="table table-bordered table-hover dataTable">
+                                                    <thead>
+                                                    <tr>
+                                                        <th class="center col-sm-2">基金类型</th>
+                                                        <th class="center col-sm-7">基金</th>
+                                                        <th class="center col-sm-3">推荐配比</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <tr v-for="(item, index) in dialog_selectedFundList1">
+                                                        <td class="center">
+                                                            {{item.fundType|translateFundType}}
+                                                        </td>
+                                                        <td class="center" v-text="item.fundName"></td>
+                                                        <td class="center">
+                                                            <input type="text" style="width: 70px;height: 25px;"
+                                                                   v-model="item.percentRatio"> %
+                                                        </td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">
+                                                    <label class="control-label">资管产品</label>
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">
+                                                    <span>已添加<span
+                                                            class="red"
+                                                            v-text="dialog_selectedFundList2.length"></span>只基金</span>
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <table class="table table-bordered table-hover dataTable">
+                                                    <thead>
+                                                    <tr>
+                                                        <th class="center col-sm-2">基金类型</th>
+                                                        <th class="center col-sm-7">基金</th>
+                                                        <th class="center col-sm-3">推荐配置金额</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <tr v-for="(item, index) in dialog_selectedFundList2">
+                                                        <td class="center">
+                                                            {{item.fundType|translateFundType}}
+                                                        </td>
+                                                        <td class="center" v-text="item.fundName"></td>
+                                                        <td class="center">
+                                                            <input type="text" style="width: 70px;height: 25px;"
+                                                                   v-model="item.recommendAmount"> 元
+                                                        </td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">
+                                                    <label class="control-label">组合产品</label>
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">
+                                                    <span>已添加<span
+                                                            class="red"
+                                                            v-text="dialog_selectedFundList3.length"></span>只组合</span>
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <table class="table table-bordered table-hover dataTable">
+                                                    <thead>
+                                                    <tr>
+                                                        <th class="center col-sm-2">组合ID</th>
+                                                        <th class="center col-sm-7">组合名称</th>
+                                                        <th class="center col-sm-3">推荐配比</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <tr v-for="(item, index) in dialog_selectedFundList3">
+                                                        <td class="center" v-text="item.fundid"></td>
+                                                        <td class="center" v-text="item.fundName"></td>
+                                                        <td class="center">
+                                                            <input type="text" style="width: 70px;height: 25px;"
+                                                                   v-model="item.percentRatio"> %
+                                                        </td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 备注弹窗 -->
+                        <div class="modal" id="reviewReject" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">请填写驳回原因</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <textarea cols="75" rows="10" v-model="remark" style="resize:none;"></textarea>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" @click="reviewReject">确定
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 复核通过弹窗 -->
+                        <div class="modal" id="reviewAccept" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确认批准该申请？</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" @click="reviewAccept">确定
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- DIALOG ENDS -->
+                        <div class="tabbable">
+                            <ul class="nav nav-tabs padding-12 tab-color-blue background-blue">
+                                <li class="active">
+                                    <a data-toggle="tab" href="#local">经办数据</a>
+                                </li>
+                                <li>
+                                    <a data-toggle="tab" href="#service">已生效数据</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div id="local" class="tab-pane in active">
+                                    <div class="form-inline" style="padding-bottom: 10px;">
+                                        <div class="form-group">
+                                            <label class="control-label">方案名称:</label>
+                                            <input type="text" style="width: 170px;height: 30px;"
+                                                   v-model="folioName">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">操作类型:</label>
+                                            <select style="width: 169px;" v-model="operate">
+                                                <option value="">全部</option>
+                                                <option value="1">新增</option>
+                                                <option value="2">修改</option>
+                                                <option value="3">删除</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">复核状态:</label>
+                                            <select style="width: 169px;" v-model="status">
+                                                <option value="">全部</option>
+                                                <option value="2">待复核</option>
+                                                <option value="0">复核通过</option>
+                                                <option value="9">复核驳回</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group pull-right">
+                                            <input type="button" class="btn btn-sm btn-primary" value="查询"
+                                                   @click="search">
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                    </div>
+
+                                    <div class="table-header">
+                                        <%= cpage %>--表格数据
+                                    </div>
+                                    <!--分页器和快速查询-->
+                                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                        <div class="col-xs-6">
+                                            <div class="dataTables_length" id="dynamic-table_length">
+                                                <label>每页显示</label>
+                                                <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                                    <option value="10">10</option>
+                                                    <option value="50">50</option>
+                                                    <option value="100">100</option>
+                                                    <option value="500">500</option>
+                                                </select>
+                                                <label>条</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--数据表-->
+                                    <table class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center">方案ID</th>
+                                            <th class="center">方案名称</th>
+                                            <th class="center">创建时间</th>
+                                            <th class="center">最新修改时间</th>
+                                            <th class="center">备注</th>
+                                            <th class="center">操作类型</th>
+                                            <th class="center">创建人</th>
+                                            <th class="center">创建时间</th>
+                                            <th class="center">复核状态</th>
+                                            <th class="center">复核人</th>
+                                            <th class="center">复核时间</th>
+                                            <th class="center">复核备注</th>
+                                            <th class="center">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="viewData.length>0">
+                                            <tr v-for="(item,index) in viewData" :key="index">
+                                                <td class="center" v-text="item.content.portfolioInfo.folioId"></td>
+                                                <td class="center" v-text="item.content.portfolioInfo.folioName"></td>
+                                                <td class="center" v-text="item.createTime"></td>
+                                                <td class="center" v-text="item.updateTime"></td>
+                                                <td class="center" v-text="item.content.portfolioInfo.folioRemark"></td>
+                                                <td :class="{center:true,green:item.operate==1,orange:item.operate==2,red:item.operate==3}"
+                                                    v-text="item.showOperate"></td>
+                                                <td class="center" v-text="item.creator"></td>
+                                                <td class="center" v-text="item.createTime"></td>
+                                                <td :class="{center:true,
+															green:item.status==0,
+															black:item.status==1,
+															blue:item.status==2,
+															red:item.status==9}"
+                                                    v-text="item.showStatus"></td>
+                                                <td class="center" v-text="item.reviewer"></td>
+                                                <td class="center" v-text="item.reviewTime"></td>
+                                                <td class="center" v-text="item.remark"></td>
+                                                <td class="center">
+                                                    <a href="javascript:;" @click="checkDialog(item)">查看</a>
+                                                    <% if(canShow||authorityList.includes('U')) { %>
+                                                    <template v-if="item.status==2">
+                                                        &nbsp;
+                                                        <a href="javascript:;" @click="showReviewAccept(item)">通过</a>
+                                                        &nbsp;
+                                                        <a href="javascript:;" class="red" @click="showReviewReject(item)">驳回</a>
+                                                    </template>
+                                                    <% } %>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'暂无数据'" colspan="13"></td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                    <div v-if="viewData.length>0" class="row"
+                                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                        <div class="col-xs-2">
+                                            <div class="dataTables_info"
+                                                 v-text="'共 '+middleData.length+' 页'"></div>
+                                        </div>
+                                        <div class="col-xs-10">
+                                            <div class="dataTables_paginate paging_simple_numbers">
+                                                <ul class="pagination">
+                                                    <li class="paginate_button"
+                                                        v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                                        <a href="javascript:;" v-text="'1...'" @click="toFirst()"></a>
+                                                    </li>
+                                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                        @click="prev()">
+                                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                                    </li>
+                                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                        v-for="value in pageList" @click="changeIndex(value)">
+                                                        <a href="javascript:;" v-text="value"></a>
+                                                    </li>
+                                                    <li class="paginate_button"
+                                                        v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                                        <a href="javascript:;" v-text="'...'+middleData.length"
+                                                           @click="toLast()"></a>
+                                                    </li>
+                                                    <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                        @click="next()">
+                                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="service" class="tab-pane">
+                                    <!-- 服务端数据查询条件 -->
+                                    <div class="form-inline" style="padding-bottom: 10px;">
+                                        <div class="form-group pull-right">
+                                            <input type="button" class="btn btn-sm btn-primary" @click="searchService"
+                                                   value="查询">
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                    </div>
+                                    <div class="table-header">
+                                        服务端表格数据
+                                    </div>
+                                    <!--分页器和快速查询-->
+                                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                        <div class="col-xs-6">
+                                            <div class="dataTables_length">
+                                                <label>每页显示</label>
+                                                <select class="input-sm" name="pageMaxNum" v-model="service.pageMaxNum">
+                                                    <option value="10">10</option>
+                                                    <option value="50">50</option>
+                                                    <option value="100">100</option>
+                                                    <option value="500">500</option>
+                                                </select>
+                                                <label>条</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--数据表-->
+                                    <table class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center">方案ID</th>
+                                            <th class="center">方案名称</th>
+                                            <th class="center">创建时间</th>
+                                            <th class="center">最新修改时间</th>
+                                            <th class="center">备注</th>
+                                            <th class="center">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="viewData_service.length>0">
+                                            <tr v-for="(item,index) in viewData_service" :key="index">
+                                                <td class="center" v-text="item.portfolioInfo.folioId"></td>
+                                                <td class="center" v-text="item.portfolioInfo.folioName"></td>
+                                                <td class="center" v-text="item.portfolioInfo.inserttimestamp"></td>
+                                                <td class="center" v-text="item.portfolioInfo.updatetimestamp"></td>
+                                                <td class="center" v-text="item.portfolioInfo.folioRemark"></td>
+                                                <td class="center">
+                                                    <a href="javascript:;" @click="checkServiceDialog(item)">查看</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'暂无数据'" colspan="6"></td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                    <!--底部页码-->
+                                    <div v-if="viewData_service.length>0" class="row"
+                                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                        <div class="col-xs-2">
+                                            <div class="dataTables_info"
+                                                 v-text="'共 '+middleData_service.length+' 页'"></div>
+                                        </div>
+                                        <div class="col-xs-10">
+                                            <div class="dataTables_paginate paging_simple_numbers">
+                                                <ul class="pagination">
+                                                    <li class="paginate_button"
+                                                        v-show="pageList_service.length<middleData_service.length&&service.currentIndex>service.maxSpace">
+                                                        <a href="javascript:;" v-text="'1...'" @click="toFirst(1)"></a>
+                                                    </li>
+                                                    <li :class="service.currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                        @click="prev(1)">
+                                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                                    </li>
+                                                    <li :class="value==service.currentIndex+1?'paginate_button active':'paginate_button'"
+                                                        v-for="value in pageList_service" @click="changeIndex(value,1)">
+                                                        <a href="javascript:;" v-text="value"></a>
+                                                    </li>
+                                                    <li class="paginate_button"
+                                                        v-show="pageList_service.length<middleData_service.length&&middleData_service.length-service.currentIndex>service.maxSpace">
+                                                        <a href="javascript:;" v-text="'...'+middleData_service.length"
+                                                           @click="toLast(1)"></a>
+                                                    </li>
+                                                    <li :class="service.currentIndex==middleData_service.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                        @click="next(1)">
+                                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/js/publicConfig/assetAllocationMgmt/assetAllocationReview.js"></script>
+</body>
+</html>

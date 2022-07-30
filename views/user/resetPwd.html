@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../common/head.html %>
+    <style>
+        .tip-err-div { line-height: 25px;}
+        .row{
+            margin: 0;
+            position: absolute;
+            top: 30%;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../common/header.html %>
+<div class="main-container">
+    <div class="main-content">
+        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+             data-backdrop="static">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header" style="padding: 10px;">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                        </button>
+                        <h4 class="modal-title">提示信息</h4>
+                    </div>
+                    <div class="modal-body text-center">
+                        <h4 class="diaMsg"></h4>
+                    </div>
+                    <p class="text-center">
+                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                        </button>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="success" tabindex="-1" role="dialog" aria-hidden="true"
+             data-backdrop="static">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header" style="padding: 10px;">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                        </button>
+                        <h4 class="modal-title">提示信息</h4>
+                    </div>
+                    <div class="modal-body text-center">
+                        <h4 class="diaMsg diaMsgs"></h4>
+                    </div>
+                    <p class="text-center">
+                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                        </button>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="row"　id="bouncingScreen">
+            <div class="col-sm-10 col-sm-offset-1">
+                <div class="login-container">
+                    <div class="position-relative">
+                        <div id="login-box" class="login-box visible widget-box no-border">
+                            <div class="widget-body">
+                                <div class="widget-main">
+                                    <h4 class="header blue lighter bigger">
+                                        <i class="ace-icon fa fa-coffee green"></i>
+                                        密码修改设定
+                                    </h4>
+
+                                    <div class="space-6"></div>
+
+                                    <form>
+                                        <fieldset>
+
+                                            <label class="block clearfix">
+                                                <span class="block input-icon input-icon-right">
+                                                    <input type="password" class="form-control" placeholder="原密码" id="oldPassword" name="oldPassword" />
+                                                    <i class="ace-icon fa fa-lock"></i>
+                                                </span>
+                                            </label>
+
+                                            <label class="block clearfix">
+                                                <span class="block input-icon input-icon-right">
+                                                    <input type="password" class="form-control" placeholder="新密码" id="newPassword" name="newPassword"/>
+                                                    <i class="ace-icon fa fa-lock"></i>
+                                                </span>
+                                            </label>
+
+                                            <label class="block clearfix">
+                                                <span class="block input-icon input-icon-right">
+                                                    <input type="password" class="form-control" placeholder="请重复您的新密码" id="checkPassword" name="checkPassword"/>
+                                                    <i class="ace-icon fa fa-lock"></i>
+                                                </span>
+                                            </label>
+
+                                            <!-- <div class="space"></div> -->
+
+                                            <div class="clearfix tip-err-div">
+                                                <span class="tip-err red invisible">错误信息</span>
+                                            </div>
+
+                                            <div class="clearfix">
+
+                                                <button type="button" class="width-100 pull-right btn btn-sm btn-primary btn-login">
+                                                    <i class="ace-icon fa fa-key"></i>
+                                                    <span class="bigger-110">重置</span>
+                                                </button>
+                                            </div>
+
+                                            <div class="space-4"></div>
+                                        </fieldset>
+                                    </form>
+
+                                    <!-- <div class="social-or-login center">
+                                        <span class="bigger-110">Or Login Using</span>
+                                    </div>
+
+                                    <div class="space-6"></div>
+
+                                    <div class="social-login center">
+                                        <a class="btn btn-primary">
+                                            <i class="ace-icon fa fa-facebook"></i>
+                                        </a>
+
+                                        <a class="btn btn-info">
+                                            <i class="ace-icon fa fa-twitter"></i>
+                                        </a>
+
+                                        <a class="btn btn-danger">
+                                            <i class="ace-icon fa fa-google-plus"></i>
+                                        </a>
+                                    </div> -->
+                                </div><!-- /.widget-main -->
+
+                            </div><!-- /.widget-body -->
+                        </div><!-- /.login-box -->
+
+                    </div><!-- /.position-relative -->
+                </div>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.main-content -->
+    <% include ../common/footer.html %>
+</div><!-- /.main-container -->
+
+<% include ../common/basic-scripts.html %>
+
+<!-- inline scripts related to this page -->
+<script type="text/javascript">
+    var getUrlParameter = function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+            sURLVariables = sPageURL.split('&'),
+            sParameterName,
+            i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+            sParameterName = sURLVariables[i].split('=');
+
+            if (sParameterName[0] === sParam) {
+                return sParameterName[1] === undefined ? true : sParameterName[1];
+            }
+        }
+    };
+
+    $("form input").on("keydown", function (event) {
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        if (e && e.keyCode == 13) {
+            $(".btn.btn-login").click();
+        }
+    });
+
+    $(".btn.btn-login").on("click", function () {
+        $(".tip-err").addClass("invisible");
+
+        var params = {
+            oldPassword: $("form input[name='oldPassword']").val(),
+            newPassword: $("form input[name='newPassword']").val(),
+            checkPassword: $("form input[name='checkPassword']").val(),
+        };
+
+        if ($.trim(params.oldPassword) === ""||$.trim(params.newPassword) === ""||$.trim(params.checkPassword) === "") {
+            $(".tip-err").text("以上选项皆不能为空").removeClass("invisible");
+            return;
+        }
+        if($.trim(params.newPassword)!==$.trim(params.checkPassword)){
+            $(".tip-err").text("两次输入的密码不同，请重新输入").removeClass("invisible");
+            return;
+        }
+        var postParams={
+            oldPassword: $("form input[name='oldPassword']").val(),
+            newPassword: $("form input[name='newPassword']").val()
+        };
+        $.post({
+            url: "/user/resetPwd.ajax",
+            data: postParams,
+            dataType: 'json',
+            success: function (result) {
+                console.log("result=", result);
+                if(result.error==0){
+                    showDialog('','success',false,result.msg);
+                }else {
+                    showDialog('','info',false,result.msg);
+                }
+            }
+
+        });
+
+    });
+    $("#success .btn-primary").click(function () {
+        window.location.href = 'login.html';
+    });
+    //公共方法
+    function showDialog(dia1, dia2, callback, msg) {
+        if (msg) {
+            $(".diaMsg").text(msg);
+        }
+        else {
+            msg = '输入条件错误';
+        }
+        if (!dia1) {
+            $('#' + dia2).modal('show');
+        }
+        else if (!dia2) {
+            $('#' + dia1).modal('hide');
+        }
+        else if (!callback) {
+            $('#' + dia1).on("hidden.bs.modal", function () {
+                $('#' + dia2).modal('show');
+                $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+            });
+            $('#' + dia1).modal('hide');
+        }
+        else {
+            $('#' + dia1).on("hidden.bs.modal", function () {
+                $('#' + dia2).on("hidden.bs.modal", function () {
+                    $('#' + dia1).modal("show");
+                    $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia2).modal("show");
+                $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+            });
+            $('#' + dia1).modal('hide');
+        }
+    }
+
+    //you don't need this, just used for changing background
+    jQuery(function($) {
+        $('#btn-login-dark').on('click', function(e) {
+            $('body').attr('class', 'login-layout');
+            $('#id-text2').attr('class', 'white');
+            $('#id-company-text').attr('class', 'blue');
+
+            e.preventDefault();
+        });
+        $('#btn-login-light').on('click', function(e) {
+            $('body').attr('class', 'login-layout light-login');
+            $('#id-text2').attr('class', 'grey');
+            $('#id-company-text').attr('class', 'blue');
+
+            e.preventDefault();
+        });
+        $('#btn-login-blur').on('click', function(e) {
+            $('body').attr('class', 'login-layout blur-login');
+            $('#id-text2').attr('class', 'white');
+            $('#id-company-text').attr('class', 'light-blue');
+
+            e.preventDefault();
+        });
+
+    });
+</script>
+</body>
+</html>

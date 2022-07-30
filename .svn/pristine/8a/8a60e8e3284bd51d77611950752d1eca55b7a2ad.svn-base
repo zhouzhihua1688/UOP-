@@ -1,0 +1,660 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').templateMgmt.templateMgmt;
+const XLSX = require('xlsx');
+// const node_xlsx = require('node-xlsx');
+// const formidable = require('formidable');
+// const fs = require('fs');
+module.exports = function (app) {
+    //查询
+    app.post('/messageCenter/templateMgmt/templateMgmt/search.ajax', (req, res, next) => {
+        let option = {
+            session: req.session,
+            url: apiUrlList.search,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/templateMgmt/templateMgmt/search.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/messageCenter/templateMgmt/templateMgmt/search.ajax error:', error);
+            console.log('/messageCenter/templateMgmt/templateMgmt/search.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/templateMgmt/templateMgmt/search.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0 && Array.isArray(result.body)) {
+                result.body.forEach(item => {
+                    if (item.channelType == 1) {
+                        item.showChannelType = 'App站内信';
+                    }
+                    if (item.channelType == 2) {
+                        item.showChannelType = 'App-push';
+                    }
+                    if (item.channelType == 3) {
+                        item.showChannelType = '短信';
+                    }
+                    if (item.channelType == 4) {
+                        item.showChannelType = '微信';
+                    }
+                    if (item.channelType == 5) {
+                        item.showChannelType = '微信高端';
+                    }
+                });
+                res.send({error: 0, msg: '查询成功', data: result.body});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '查询失败'});
+            }
+        });
+    });
+    //按条件查询
+    app.post('/messageCenter/templateMgmt/templateMgmt/query.ajax', (req, res, next) => {
+        let params = {};
+        req.body.templateId && (params.templateId = req.body.templateId);
+        req.body.templateName && (params.templateName = req.body.templateName);
+        req.body.creator && (params.creator = req.body.creator);
+        req.body.channelType && (params.channelType = req.body.channelType);
+        let option = {
+            session: req.session,
+            url: apiUrlList.query,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/templateMgmt/templateMgmt/query.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/messageCenter/templateMgmt/templateMgmt/query.ajax error:', error);
+            console.log('/messageCenter/templateMgmt/templateMgmt/query.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/templateMgmt/templateMgmt/query.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0 && Array.isArray(result.body)) {
+                result.body.forEach(item => {
+                    if (item.channelType == 1) {
+                        item.showChannelType = 'App站内信';
+                    }
+                    if (item.channelType == 2) {
+                        item.showChannelType = 'App-push';
+                    }
+                    if (item.channelType == 3) {
+                        item.showChannelType = '短信';
+                    }
+                    if (item.channelType == 4) {
+                        item.showChannelType = '微信';
+                    }
+                    if (item.channelType == 5) {
+                        item.showChannelType = '微信高端';
+                    }
+                });
+                res.send({error: 0, msg: '查询成功', data: result.body});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '查询失败'});
+            }
+        });
+    });
+    //删除
+    app.post('/messageCenter/templateMgmt/templateMgmt/del.ajax', (req, res, next) => {
+        let params = {};
+        params.templateId = req.body.templateId;
+        let option = {
+            session: req.session,
+            url: apiUrlList.del,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/templateMgmt/templateMgmt/del.ajax option:', option);
+        request.del(option, (error, response, body) => {
+            sysLogger(3, req, option, body);
+            console.log('/messageCenter/templateMgmt/templateMgmt/del.ajax error:', error);
+            console.log('/messageCenter/templateMgmt/templateMgmt/del.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/templateMgmt/templateMgmt/del.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({error: 0, msg: '删除成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '删除失败'});
+            }
+        });
+    });
+    // 添加
+    app.post('/messageCenter/templateMgmt/templateMgmt/add.ajax', (req, res, next) => {
+        let params = {};
+        params.templateName = req.body.templateName;
+        params.channelType = req.body.channelType;
+        params.content = req.body.content;
+        params.templateType = 0;
+        params.duration = req.body.timeInterval ? req.body.timeInterval : 0;
+        params.image = '';
+        params.appId = '';
+        params.pagePath = '';
+        params.wxTemplateType = '';
+        params.creator = req.session['loginInfo'].username;
+        if (req.body.channelType == 1) {
+            params.title = req.body.title;
+            params.summary = req.body.summary;
+            params.url = req.body.url;
+            if (params.duration > 0) {
+                let d = new Date();
+                params.startTime = `${d.getFullYear()}-${(d.getMonth() + 1 < 10) ? '0' + (d.getMonth() + 1) : d.getMonth() + 1}-${d.getDate() < 10 ? ('0' + d.getDate()) : d.getDate()} 00:00:00`;
+                d.setDate(d.getDate() + Number(params.duration));
+                params.endTime = `${d.getFullYear()}-${(d.getMonth() + 1 < 10) ? '0' + (d.getMonth() + 1) : d.getMonth() + 1}-${d.getDate() < 10 ? ('0' + d.getDate()) : d.getDate()} 00:00:00`;
+            }
+            else {
+                params.startTime = req.body.startTime;
+                params.endTime = req.body.endTime;
+            }
+        }
+        else if (req.body.channelType == 2) {
+            params.title = '';
+            params.summary = '';
+            params.url = req.body.url;
+        }
+        else if (req.body.channelType == 3) {
+            params.title = '';
+            params.summary = '';
+            params.url = '';
+        }
+        else if (req.body.channelType == 4) {
+            params.title = '';
+            params.summary = '';
+            params.appId = req.body.appId;
+            params.pagePath = req.body.pagePath;
+            params.wxTemplateType = req.body.wxTemplateType;
+            params.url = req.body.url;
+        }
+        else if (req.body.channelType == 5) {
+            params.title = '';
+            params.summary = '';
+            params.wxTemplateType = req.body.wxTemplateType;
+            params.url = req.body.url;
+        }
+        let option = {
+            session: req.session,
+            url: apiUrlList.add,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/templateMgmt/templateMgmt/add.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            sysLogger(1, req, option, body);
+            console.log('/messageCenter/templateMgmt/templateMgmt/add.ajax error:', error);
+            console.log('/messageCenter/templateMgmt/templateMgmt/add.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/templateMgmt/templateMgmt/add.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({error: 0, msg: '添加成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: result.returnCode, msg: '添加失败'});
+            }
+        });
+    });
+    // 更改
+    app.post('/messageCenter/templateMgmt/templateMgmt/update.ajax', (req, res, next) => {
+        let params = {};
+        params.templateId = req.body.templateId;
+        params.templateName = req.body.templateName;
+        params.channelType = req.body.channelType;
+        params.content = req.body.content;
+        params.templateType = 0;
+        params.duration = req.body.timeInterval ? req.body.timeInterval : 0;
+        params.image = '';
+        params.appId = '';
+        params.pagePath = '';
+        params.wxTemplateType = '';
+        params.creator = req.session['loginInfo'].username;
+        params.updator = req.session.loginInfo.username;
+        if (req.body.channelType == 1) {
+            params.title = req.body.title;
+            params.summary = req.body.summary;
+            params.url = req.body.url;
+            if (params.duration > 0) {
+                let d = new Date();
+                params.startTime = `${d.getFullYear()}-${(d.getMonth() + 1 < 10) ? '0' + (d.getMonth() + 1) : d.getMonth() + 1}-${d.getDate() < 10 ? ('0' + d.getDate()) : d.getDate()} 00:00:00`;
+                d.setDate(d.getDate() + Number(params.duration));
+                params.endTime = `${d.getFullYear()}-${(d.getMonth() + 1 < 10) ? '0' + (d.getMonth() + 1) : d.getMonth() + 1}-${d.getDate() < 10 ? ('0' + d.getDate()) : d.getDate()} 00:00:00`;
+            }
+            else {
+                params.startTime = req.body.startTime;
+                params.endTime = req.body.endTime;
+            }
+        }
+        else if (req.body.channelType == 2) {
+            params.title = '';
+            params.summary = '';
+            params.url = req.body.url;
+        }
+        else if (req.body.channelType == 3) {
+            params.title = '';
+            params.summary = '';
+            params.url = '';
+        }
+        else if (req.body.channelType == 4) {
+            params.title = '';
+            params.summary = '';
+            params.appId = req.body.appId;
+            params.pagePath = req.body.pagePath;
+            params.wxTemplateType = req.body.wxTemplateType;
+            params.url = req.body.url;
+        }
+        else if (req.body.channelType == 5) {
+            params.title = '';
+            params.summary = '';
+            params.wxTemplateType = req.body.wxTemplateType;
+            params.url = req.body.url;
+        }
+        let option = {
+            session: req.session,
+            url: apiUrlList.update,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/templateMgmt/templateMgmt/update.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            sysLogger(2, req, option, body);
+            console.log('/messageCenter/templateMgmt/templateMgmt/update.ajax error:', error);
+            console.log('/messageCenter/templateMgmt/templateMgmt/update.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/templateMgmt/templateMgmt/update.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                res.send({error: 0, msg: '更改成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: result.returnCode, msg: '更改失败'});
+            }
+        });
+    });
+    // 批量添加模板
+    app.post('/messageCenter/templateMgmt/templateMgmt/addByExcel.ajax', (req, res, next) => {
+        try {
+            let ExcelData = JSON.parse(req.body.ExcelData);
+            if (!Array.isArray(ExcelData)) {
+                return res.send({error: 1, msg: '解析Excel表格数据出错,请检查格式是否正确', data: null});
+            }
+            if (ExcelData.length === 0) {
+                return res.send({error: 1, msg: 'Excel表格无数据', data: null});
+            }
+            let errorDataIndex = [];
+            // 检查每条数据格式是否正确,若不正确,指出具体那条数据
+            function checkTemplate(item) {
+                if (!item.templateName || !item.channelType || !item.content) {
+                    return false;
+                }
+                if (item.channelType == 1) {
+                    let dayReg = /^((((1[6-9]|[2-9]\d)\d{2})-(0?[13578]|1[02])-(0?[1-9]|[12]\d|3[01]))|(((1[6-9]|[2-9]\d)\d{2})-(0?[13456789]|1[012])-(0?[1-9]|[12]\d|30))|(((1[6-9]|[2-9]\d)\d{2})-0?2-(0?[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-0?2-29-)) (20|21|22|23|[0-1]?\d):[0-5]?\d:[0-5]?\d$/;
+                    if (!item.title || !item.summary) {
+                        return false;
+                    }
+                    if (!item.duration && (!dayReg.test(item.startTime) || !dayReg.test(item.endTime))) {
+                        return false;
+                    }
+                }
+                else if (item.channelType == 2) {
+
+                }
+                else if (item.channelType == 3) {
+
+                }
+                else if (item.channelType == 4) {
+                    if (!item.wxTemplateType ||
+                        (item.wxTemplateType !== 'servive' &&
+                        item.wxTemplateType !== 'trade' &&
+                        item.wxTemplateType !== 'monthBill' &&
+                        item.wxTemplateType !== 'investment')) {
+                        return false;
+                    }
+                }
+                else if (item.channelType == 5) {
+
+                }
+                else {
+                    return false;
+                }
+                return true;
+            }
+
+            for (let i = 0; i < ExcelData.length; i++) {
+                if (!checkTemplate(ExcelData[i])) {
+                    errorDataIndex.push(i + 1);
+                }
+            }
+            if (errorDataIndex.length > 0) {
+                return res.send({error: 1, msg: `解析Excel表格第${errorDataIndex.join('，')}行数据出错,请检查格式是否正确`, data: null});
+            }
+            let finalData = ExcelData.map(item => {
+                let params = {};
+                params.templateName = item.templateName;
+                params.channelType = item.channelType;
+                params.content = item.content;
+                params.templateType = 0;
+                params.duration = item.duration ? item.duration : 0;
+                params.image = '';
+                params.appId = '';
+                params.pagePath = '';
+                params.wxTemplateType = '';
+                params.creator = req.session['loginInfo'].username;
+                if (item.channelType == 1) {
+                    params.title = item.title;
+                    params.summary = item.summary;
+                    params.url = item.url ? item.url : '';
+                    if (params.duration > 0) {
+                        let d = new Date();
+                        params.startTime = `${d.getFullYear()}-${(d.getMonth() + 1 < 10) ? '0' + (d.getMonth() + 1) : d.getMonth() + 1}-${d.getDate() < 10 ? ('0' + d.getDate()) : d.getDate()} 00:00:00`;
+                        d.setDate(d.getDate() + Number(params.duration));
+                        params.endTime = `${d.getFullYear()}-${(d.getMonth() + 1 < 10) ? '0' + (d.getMonth() + 1) : d.getMonth() + 1}-${d.getDate() < 10 ? ('0' + d.getDate()) : d.getDate()} 00:00:00`;
+                    }
+                    else {
+                        params.startTime = item.startTime;
+                        params.endTime = item.endTime;
+                    }
+                }
+                else if (item.channelType == 2) {
+                    params.title = '';
+                    params.summary = '';
+                    params.url = item.url ? item.url : '';
+                }
+                else if (item.channelType == 3) {
+                    params.title = '';
+                    params.summary = '';
+                    params.url = '';
+                }
+                else if (item.channelType == 4) {
+                    params.title = '';
+                    params.summary = '';
+                    params.appId = item.appId;
+                    params.pagePath = item.pagePath;
+                    params.wxTemplateType = item.wxTemplateType;
+                    params.url = item.url ? item.url : '';
+                }
+                else if (item.channelType == 5) {
+                    params.title = '';
+                    params.summary = '';
+                    params.wxTemplateType = 'highTrade';
+                    params.url = item.url ? item.url : '';
+                }
+                return params;
+            });
+
+            function sendTemplate(item) {
+                return new Promise((resolve, reject) => {
+                    let option = {
+                        session: req.session,
+                        url: apiUrlList.add,
+                        body: item,
+                        timeout: 15000,
+                        json: true
+                    };
+                    request.post(option, (error, response, body) => {
+                        sysLogger(1, req, option, body);
+                        if (error) {
+                            reject();
+                        }
+                        if (body && body.returnCode === 0) {
+                            resolve();
+                        }
+                        else {
+                            reject();
+                        }
+                    });
+                });
+            }
+
+            let allParams = finalData.map(item => sendTemplate(item));
+            Promise.all(allParams).then(() => {
+                res.send({error: 0, msg: '批量导入成功', data: null});
+            }).catch(error => {
+                res.send({error: 1, msg: '调用新增模板接口失败', data: null});
+            });
+        } catch (error) {
+            console.log('/messageCenter/templateMgmt/templateMgmt/addByExcel.ajax error:', error.message);
+            return res.send({error: 1, msg: '解析Excel表格数据出错,请检查格式是否正确', data: null});
+        }
+    });
+    // 批量修改模板
+    app.post('/messageCenter/templateMgmt/templateMgmt/updateByExcel.ajax', (req, res, next) => {
+        try {
+            let ExcelData = JSON.parse(req.body.ExcelData);
+            if (!Array.isArray(ExcelData)) {
+                return res.send({error: 1, msg: '解析Excel表格数据出错,请检查格式是否正确', data: null});
+            }
+            if (ExcelData.length === 0) {
+                return res.send({error: 1, msg: 'Excel表格无数据', data: null});
+            }
+            let errorDataIndex = [];
+            // 检查每条数据格式是否正确,若不正确,指出具体那条数据
+            function checkTemplate(item) {
+                if (!item.templateId || !item.templateName || !item.channelType || !item.content) {
+                    return false;
+                }
+                if (item.channelType == 1) {
+                    let dayReg = /^((((1[6-9]|[2-9]\d)\d{2})-(0?[13578]|1[02])-(0?[1-9]|[12]\d|3[01]))|(((1[6-9]|[2-9]\d)\d{2})-(0?[13456789]|1[012])-(0?[1-9]|[12]\d|30))|(((1[6-9]|[2-9]\d)\d{2})-0?2-(0?[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-0?2-29-)) (20|21|22|23|[0-1]?\d):[0-5]?\d:[0-5]?\d$/;
+                    if (!item.title || !item.summary) {
+                        return false;
+                    }
+                    if (!item.duration && (!dayReg.test(item.startTime) || !dayReg.test(item.endTime))) {
+                        return false;
+                    }
+                }
+                else if (item.channelType == 2) {
+
+                }
+                else if (item.channelType == 3) {
+
+                }
+                else if (item.channelType == 4) {
+                    if (!item.wxTemplateType ||
+                        (item.wxTemplateType !== 'servive' &&
+                        item.wxTemplateType !== 'trade' &&
+                        item.wxTemplateType !== 'monthBill' &&
+                        item.wxTemplateType !== 'investment')) {
+                        return false;
+                    }
+                }
+                else if (item.channelType == 5) {
+
+                }
+                else {
+                    return false;
+                }
+                return true;
+            }
+
+            for (let i = 0; i < ExcelData.length; i++) {
+                if (!checkTemplate(ExcelData[i])) {
+                    errorDataIndex.push(i + 1);
+                }
+            }
+            if (errorDataIndex.length > 0) {
+                return res.send({error: 1, msg: `解析Excel表格第${errorDataIndex.join('，')}行数据出错,请检查格式是否正确`, data: null});
+            }
+            let finalData = ExcelData.map(item => {
+                let params = {};
+                params.templateId = item.templateId;
+                params.templateName = item.templateName;
+                params.channelType = item.channelType;
+                params.content = item.content;
+                params.templateType = 0;
+                params.duration = item.duration ? item.duration : 0;
+                params.image = '';
+                params.appId = '';
+                params.pagePath = '';
+                params.wxTemplateType = '';
+                params.updator = req.session['loginInfo'].username;
+                if (item.channelType == 1) {
+                    params.title = item.title;
+                    params.summary = item.summary;
+                    params.url = item.url ? item.url : '';
+                    if (params.duration > 0) {
+                        let d = new Date();
+                        params.startTime = `${d.getFullYear()}-${(d.getMonth() + 1 < 10) ? '0' + (d.getMonth() + 1) : d.getMonth() + 1}-${d.getDate() < 10 ? ('0' + d.getDate()) : d.getDate()} 00:00:00`;
+                        d.setDate(d.getDate() + Number(params.duration));
+                        params.endTime = `${d.getFullYear()}-${(d.getMonth() + 1 < 10) ? '0' + (d.getMonth() + 1) : d.getMonth() + 1}-${d.getDate() < 10 ? ('0' + d.getDate()) : d.getDate()} 00:00:00`;
+                    }
+                    else {
+                        params.startTime = item.startTime;
+                        params.endTime = item.endTime;
+                    }
+                }
+                else if (item.channelType == 2) {
+                    params.title = '';
+                    params.summary = '';
+                    params.url = item.url ? item.url : '';
+                }
+                else if (item.channelType == 3) {
+                    params.title = '';
+                    params.summary = '';
+                    params.url = '';
+                }
+                else if (item.channelType == 4) {
+                    params.title = '';
+                    params.summary = '';
+                    params.appId = item.appId;
+                    params.pagePath = item.pagePath;
+                    params.wxTemplateType = item.wxTemplateType;
+                    params.url = item.url ? item.url : '';
+                }
+                else if (item.channelType == 5) {
+                    params.title = '';
+                    params.summary = '';
+                    params.wxTemplateType = 'highTrade';
+                    params.url = item.url ? item.url : '';
+                }
+                return params;
+            });
+
+            function sendTemplate(item) {
+                return new Promise((resolve, reject) => {
+                    let option = {
+                        session: req.session,
+                        url: apiUrlList.update,
+                        body: item,
+                        timeout: 15000,
+                        json: true
+                    };
+                    request.post(option, (error, response, body) => {
+                        sysLogger(2, req, option, body);
+                        if (error) {
+                            reject();
+                        }
+                        if (body && body.returnCode === 0) {
+                            resolve();
+                        }
+                        else {
+                            reject();
+                        }
+                    });
+                });
+            }
+
+            let allParams = finalData.map(item => sendTemplate(item));
+            Promise.all(allParams).then(() => {
+                res.send({error: 0, msg: '批量修改成功', data: null});
+            }).catch(error => {
+                res.send({error: 1, msg: '修改失败', data: null});
+            });
+        } catch (error) {
+            console.log('/messageCenter/templateMgmt/templateMgmt/updateByExcel.ajax error:', error.message);
+            return res.send({error: 1, msg: '解析Excel表格数据出错,请检查格式是否正确', data: null});
+        }
+    });
+    // 导出
+    app.get('/messageCenter/templateMgmt/templateMgmt/exportAll.ajax', (req, res, next) => {
+        let option = {
+            session: req.session,
+            url: apiUrlList.exportAll,
+            // qs: params,
+            // qs:req.body,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/templateMgmt/templateMgmt/exportAll.ajax/ option:', option);
+        // request(option).pipe(res);
+        request(option, (error, response, body) => {
+            console.log('/messageCenter/templateMgmt/templateMgmt/exportAll.ajax error:', error);
+            console.log('/messageCenter/templateMgmt/templateMgmt/exportAll.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/templateMgmt/templateMgmt/exportAll.ajax body:', body);
+            if (error) {
+                return res.send({ error: 1, msg: '操作失败' });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                let data = result.body;
+
+                if (data && Array.isArray(data) && data.length > 0) {
+                    console.log("----------", data)
+                    var arr = [['模板ID', '模板名称', '模板摘要', '创建时间','渠道类型','内容','url地址','结束时间', '创建人']];
+                    data.forEach(function (item) {
+                        if (item.channelType == 1) {
+                            item.showChannelType = '1-App站内信';
+                        }
+                        if (item.channelType == 2) {
+                            item.showChannelType = '2-App-push';
+                        }
+                        if (item.channelType == 3) {
+                            item.showChannelType = '3-短信';
+                        }
+                        if (item.channelType == 4) {
+                            item.showChannelType = '4-微信';
+                        }
+                        if (item.channelType == 5) {
+                            item.showChannelType = '5-微信高端';
+                        }
+                        arr.push([item.templateId, item.templateName, item.summary, item.createTime, item.showChannelType,item.content,item.url, item.endTime, item.creator])
+                    });
+                    const stream = require('stream');
+                    const book = XLSX.utils.book_new();
+                    const sheet = XLSX.utils.aoa_to_sheet(arr);
+                    XLSX.utils.book_append_sheet(book, sheet, "test");
+                    const fileContents = XLSX.write(book, { type: 'buffer', bookType: 'xlsx', bookSST: false });
+                    let readStream = new stream.PassThrough();
+                    readStream.end(fileContents);
+                    var myDate = new Date();
+                    var mytime = myDate.toLocaleDateString();
+                    let fileName = mytime + ".xlsx";
+                    res.set('Content-disposition', 'attachment; filename=' + fileName);
+                    res.set('Content-Type', 'text/plain');
+                    readStream.pipe(res);
+                } else {
+                    res.send('没有数据');
+                }
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({ error: 1, msg: result.returnMsg });
+            }
+            else {
+                res.send({ error: 1, msg: '查询失败' });
+            }
+        });
+    });
+};

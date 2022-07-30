@@ -1,0 +1,345 @@
+const request = require('./../../../local_data/requestWrapper');
+const original_request = require('request');
+const apiUrlList = require('../apiConfig').combinationProductConfig.reportMgmt;
+const requestGroup_obs = require('../../../local_data/requestGroup_obs');
+const XLSX = require('xlsx');
+const formidable = require('formidable');
+const fs = require('fs');
+const path = require('path');
+module.exports = function(app) {
+	// 获取所有组合
+	app.post('/businessMgmt/combinationProductConfig/reportMgmt/fundGroups.ajax', (req, res, next) => {
+		let option = {
+			session: req.session,
+			url: apiUrlList.fundGroups,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/businessMgmt/combinationProductConfig/reportMgmt/fundGroups.ajax option:', option);
+		request(option, (error, response, body) => {
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/fundGroups.ajax error:', error);
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/fundGroups.ajax statusCode:', response &&
+				response.statusCode);
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/fundGroups.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '操作失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result.returnCode == 0) {
+				return res.send({
+					error: 0,
+					msg: '获取成功',
+					data: result.body
+				});
+			} else if (result && result.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: result.returnMsg,
+					data: null
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '获取失败',
+					data: null
+				});
+			}
+		});
+	});
+	// 获取列表数据
+	app.post('/businessMgmt/combinationProductConfig/reportMgmt/getTableData.ajax', (req, res, next) => {
+		let params = {};
+		params.groupId = req.body.groupId;
+		let option = {
+			session: req.session,
+			url: apiUrlList.getTableData,
+			qs: params,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/businessMgmt/combinationProductConfig/reportMgmt/getTableData.ajax option:', option);
+		request(option, (error, response, body) => {
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/getTableData.ajax error:', error);
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/getTableData.ajax statusCode:', response &&
+				response.statusCode);
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/getTableData.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '查询失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode == 0) {
+				return res.send({
+					error: 0,
+					msg: '查询成功',
+					data: result.body
+				});
+			} else if (result && result.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: result.returnMsg,
+					data: null
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '查询失败',
+					data: null
+				});
+			}
+		});
+	});
+	// 录入
+	app.post('/businessMgmt/combinationProductConfig/reportMgmt/saveParam.ajax', (req, res, next) => {
+		let params = {};
+		params.reportName = req.body.reportName;
+		params.reportUrl = req.body.reportUrl;
+		let option = {
+			session: req.session,
+			url: apiUrlList.saveParam,
+			body: params,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/businessMgmt/combinationProductConfig/reportMgmt/saveParam.ajax option:', option);
+		request.post(option, (error, response, body) => {
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/saveParam.ajax error:', error);
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/saveParam.ajax statusCode:', response &&
+				response.statusCode);
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/saveParam.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '录入失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode == 0) {
+				return res.send({
+					error: 0,
+					msg: '录入成功',
+					data: null
+				});
+			} else if (result && result.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: result.returnMsg,
+					data: null
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '录入失败',
+					data: null
+				});
+			}
+		});
+	});
+	// 删除
+	app.post('/businessMgmt/combinationProductConfig/reportMgmt/deleteParam.ajax', (req, res, next) => {
+		let params = {};
+		params.reportId = req.body.reportId;
+		let option = {
+			session: req.session,
+			url: apiUrlList.deleteParam,
+			qs: params,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/businessMgmt/combinationProductConfig/reportMgmt/deleteParam.ajax option:', option);
+		request.delete(option, (error, response, body) => {
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/deleteParam.ajax error:', error);
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/deleteParam.ajax statusCode:', response &&
+				response.statusCode);
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/deleteParam.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '删除失败',
+					data: null
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode == 0) {
+				return res.send({
+					error: 0,
+					msg: '删除成功',
+					data: null
+				});
+			} else if (result && result.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: result.returnMsg
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '删除失败',
+					data: null
+				});
+			}
+		});
+	});
+	// 关联
+	app.post('/businessMgmt/combinationProductConfig/reportMgmt/relationParam.ajax', (req, res, next) => {
+		let params = {};
+		params.groupIdList = JSON.parse(req.body.groupIdList);
+		params.reportId = req.body.reportId;
+		let option = {
+			session: req.session,
+			url: apiUrlList.relationParam,
+			body: params,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/businessMgmt/combinationProductConfig/reportMgmt/relationParam.ajax option:', option);
+		request.post(option, (error, response, body) => {
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/relationParam.ajax error:', error);
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/relationParam.ajax statusCode:', response &&
+				response.statusCode);
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/relationParam.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '操作失败'
+				});
+			}
+			let result = typeof body === 'string' ? JSON.parse(body) : body;
+			if (result && result.returnCode == 0) {
+				return res.send({
+					error: 0,
+					msg: '操作成功'
+				});
+			} else if (result && result.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: result.returnMsg
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '操作失败'
+				});
+			}
+		});
+	});
+	//文件上传
+	app.post('/businessMgmt/combinationProductConfig/reportMgmt/upload.ajax', (req, res, next) => {
+		let form = new formidable.IncomingForm();
+		form.keepExtensions = true;
+		form.parse(req, (err, fields, files) => {
+			if (err) {
+				console.log('/businessMgmt/combinationProductConfig/reportMgmt/upload.ajax:', err);
+				return res.send({
+					error: 1,
+					msg: '上传文件失败',
+					data: null
+				});
+			}
+			console.log('文件接收完毕:', files);
+			let option = {
+				body: {
+					objectName: files.file.name,
+				}
+			};
+			requestGroup_obs(option).then(tokenInfo => {
+				let tokenParams = {
+					url: tokenInfo.url,
+					headers: {
+						'X-Auth-Token': tokenInfo.token
+					}
+				};
+				console.log('/businessMgmt/combinationProductConfig/reportMgmt/upload.ajax --tokenParams:', tokenParams);
+				fs.createReadStream(files.file.path).pipe(original_request.put(tokenParams));
+				let params = {};
+				params.reportName = files.file.name;
+				let option = {
+					session: req.session,
+					url: apiUrlList.saveParam,
+					body: params,
+					timeout: 15000,
+					json: true
+				};
+				console.log('/businessMgmt/combinationProductConfig/reportMgmt/upload.ajax option:', option);
+				request.post(option, (error, response, body) => {
+					console.log('/businessMgmt/combinationProductConfig/reportMgmt/upload.ajax error:', error);
+					console.log('/businessMgmt/combinationProductConfig/reportMgmt/upload.ajax statusCode:', response &&
+						response.statusCode);
+					console.log('/businessMgmt/combinationProductConfig/reportMgmt/saveParam.ajax body:', body);
+					if (error) {
+						return res.send({
+							error: 1,
+							msg: '上传文件成功,录入失败'
+						});
+					}
+					let result = typeof body === 'string' ? JSON.parse(body) : body;
+					if (result && result.returnCode == 0) {
+						return res.send({
+							error: 0,
+							msg: '上传文件成功并录入成功',
+							data: null
+						});
+					} else if (result && result.returnCode != 9999) {
+						return res.send({
+							error: 1,
+							msg: result.returnMsg,
+							data: null
+						});
+					} else {
+						return res.send({
+							error: 1,
+							msg: '上传文件成功但录入失败',
+							data: null
+						});
+					}
+				});
+			}).catch(error => {
+				return res.send({
+					error: 1,
+					msg: '上传文件失败',
+					data: null
+				});
+			});
+		});
+	});
+	// 下载
+	app.get('/businessMgmt/combinationProductConfig/reportMgmt/exportFile.ajax', (req, res, next) => {
+		let option = {
+			body: {
+				objectName: decodeURIComponent(req.query.reportName),
+			}
+		};
+		requestGroup_obs(option).then(tokenInfo => {
+			let tokenParams = {
+				url: tokenInfo.url,
+				headers: {
+					'X-Auth-Token': tokenInfo.token
+				}
+			};
+			console.log('/businessMgmt/combinationProductConfig/reportMgmt/exportFile.ajax --tokenParams:', tokenParams);
+			let body = original_request(tokenParams);
+			body.on('response', function(response) {
+				if (response.statusCode !== 200) {
+					return res.send({
+						error: 1,
+						msg: '下载失败',
+						data: null
+					});
+				} else {
+					return body.pipe(res);
+				}
+			});
+		}).catch(error => {
+			res.send({
+				error: 1,
+				msg: '下载失败',
+				data: null
+			})
+		});
+	});
+};

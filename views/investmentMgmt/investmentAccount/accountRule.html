@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        table tbody td {
+            vertical-align: middle !important;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--删除信息弹窗-->
+                <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">删除数据</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确认删除此条数据?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="del">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--新增和修改弹窗-->
+                <div class="modal" id="operate" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width: 650px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title inline">数据操作</h4>
+                            </div>
+                            <div class="form-inline" style="padding: 30px;">
+                                <div class="form-group" style="margin-bottom: 20px;width: 100%;">
+                                    <label class="control-label" style="width: 70px;">规则ID:</label>
+                                    <input type="text" :disabled="isUpdate" style="width: 400px;"
+                                           v-model="dialog.ruleId">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 20px;width: 100%;">
+                                    <label class="control-label" style="width: 70px;">规则名称:</label>
+                                    <input type="text" style="width: 400px;" v-model="dialog.ruleName">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 20px;width: 100%;">
+                                    <label class="control-label" style="width: 70px;">规则描述:</label>
+                                    <input type="text" style="width: 400px;" v-model="dialog.ruleDesc">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 20px;width: 100%;">
+                                    <label class="control-label" style="width: 70px;">组合ID:</label>
+                                    <input type="text" style="width: 400px;" v-model="dialog.groupIds" placeholder="支持多个，比如A6101,A6102">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 20px;width: 100%;">
+                                    <label class="control-label" style="width: 70px;">触发指标:</label>
+                                    <button class="btn btn-sm btn-primary" @click="addCondition">+筛选条件</button>
+                                </div>
+                                <div style="margin-bottom: 20px;width: 100%;display: flex;">
+                                    <div style="width: 70px;display: flex;justify-content: center;align-items: center;">
+                                        <button class="btn btn-sm btn-primary"
+                                                v-text="dialog.operateType==1?'且':'或'"
+                                                @click="dialog.operateType=dialog.operateType==1?0:1"></button>
+                                    </div>
+                                    <div style="flex: 1;background-color: rgb(222,237,247)">
+                                        <div style="margin: 10px;" v-for="(item, index) in dialog.ruleConditionDisplay">
+                                            <select style="width: 135px;" v-model="item.indexId">
+                                                <option value="">请选择</option>
+                                                <option v-for="(item, index) in ruleIndexes" :value="item.indexId"
+                                                        v-text="item.indexName"></option>
+                                            </select>
+                                            <select style="width: 100px;" v-model="item.operator">
+                                                <template v-if="getIndexType(item.indexId)==1">
+                                                    <option value="">请选择</option>
+                                                    <option v-for="(item, index) in operateList1" :value="item.value"
+                                                            v-text="item.text"></option>
+                                                </template>
+                                                <template v-else>
+                                                    <option value="">请选择</option>
+                                                    <option v-for="(item, index) in operateList2" :value="item.value"
+                                                            v-text="item.text"></option>
+                                                </template>
+                                            </select>
+                                            <input type="number" v-show="getIndexType(item.indexId)!=1"
+                                                   :disabled="getIndexType(item.indexId)==1" style="height: 30px;width: 190px;"
+                                                   v-model="item.indexValue"
+                                                   :placeholder="getIndexPercent(item.indexId)?'已默认加上%，输入数值即可':''" ><span v-show="getIndexPercent(item.indexId)">&nbsp;&nbsp;%&nbsp;&nbsp;</span>
+                                            <button class="btn btn-sm btn-danger" @click="delCondition(index)">×
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div style="clear: both;"></div>
+                                </div>
+                                <div class="text-center">
+                                    <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                            aria-hidden="true">取消
+                                    </button>
+                                    <button class="btn btn-sm btn-primary" style="margin-right: 40px;"
+                                            v-show="isAdd||isUpdate" @click="operate">确定
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label">规则ID:</label>
+                        <input type="text" placeholder="请输入规则ID" v-model="ruleId">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">规则名称:</label>
+                        <input type="text" placeholder="请输入规则名称" v-model="ruleName">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData">
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" @click="showAdd" value="创建新规则">
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length" id="dynamic-table_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                    <thead>
+                    <tr>
+                        <th class="center col-sm-2">规则ID</th>
+                        <th class="center col-sm-2">规则名称</th>
+                        <th class="center col-sm-5">规则描述</th>
+                        <th class="center col-sm-1">创建人</th>
+                        <th class="center col-sm-2">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="viewData.length>0">
+                        <tr v-for="(item,index) in viewData" :key="index">
+                            <td class="center" v-text="item.ruleId"></td>
+                            <td class="center" v-text="item.ruleName"></td>
+                            <td class="center" v-text="item.ruleDesc"></td>
+                            <td class="center" v-text="item.createUser"></td>
+                            <td class="center">
+                                <a href="javascript:;" @click="showCheck(item)">查看</a>
+                                <% if(canShow||authorityList.includes('U')) { %>
+                                /
+                                <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                                <% } %>
+                                <% if(canShow||authorityList.includes('D')) { %>
+                                /
+                                <a href="javascript:;" class="red" @click="showDelete(item)">删除</a>
+                                <% } %>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'没有数据'" colspan="5"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <div v-if="viewData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList"
+                                    @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+middleData.length" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/js/investmentMgmt/investmentAccount/accountRule.js"></script>
+</body>
+</html>
+

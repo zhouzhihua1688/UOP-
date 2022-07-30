@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <!--<link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>-->
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        .chosen-single {
+            height: 30px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!-- 提示信息弹窗 -->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 服务端提交审核弹窗 -->
+                        <div class="modal" id="serviceToLocalUpdate" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog" style="width: 700px;">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title inline">审核操作</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="modal-body text-center">
+                                            <template v-if="setOperate==2">
+                                                <h4 class="modal-title">请填写拒绝原因</h4>
+                                                <div>
+                                                    <textarea cols="75" rows="10" v-model="necessaryRemark" style="resize:none;"></textarea>
+                                                </div>
+                                            </template>
+                                            <template v-else>
+                                                <h4>是否执行该操作</h4>
+                                            </template>
+                                        </div>
+                                        <div class="form">
+                                            <p class="text-center">
+                                                <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                        @click="serviceToLocalUpdate">确定
+                                                </button>
+                                                <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                        aria-hidden="true">取消
+                                                </button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 撤销弹窗 -->
+                        <div class="modal" id="localRevert" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">撤销</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确定撤销该数据？</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" @click="revert">确定
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                aria-hidden="true">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal" id="preview" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">图像预览</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <p>姓名：{{custName}}</p>
+                                        <p>证件号：{{idCardNo}}</p>
+                                        <img :src="'data:image/jpeg;base64,'+previewPath" alt=""
+                                             style="max-width:100%;height: auto;">
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">返回
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- DIALOG ENDS -->
+                        <div class="tabbable">
+                            <ul class="nav nav-tabs padding-12 tab-color-blue background-blue">
+                                <li class="active">
+                                    <a data-toggle="tab" href="#local">经办数据</a>
+                                </li>
+                                <li>
+                                    <a data-toggle="tab" href="#service">已生效数据</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div id="local" class="tab-pane in active">
+                                    <!-- 本地数据 -->
+                                    <div class="form-inline" style="padding-bottom: 10px;">
+                                        <div class="form-group">
+                                            <label class="control-label">CUSTNO:</label>
+                                            <input type="text" v-model.trim="local.custNo"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">姓名:</label>
+                                            <input type="text" v-model.trim="local.invNm"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">证件类型:</label>
+                                            <select style="width:160px;height: 34px;" v-model.trim='local.idTp'>
+                                                <option value="">全部</option>
+                                                <option value="0">身份证</option>
+                                                <option value="1">护照</option>
+                                                <option value="2">军官证</option>
+                                                <option value="3">士兵证</option>
+                                                <option value="4">港澳居民来往内地通行证</option>
+                                                <option value="5">户口本</option>
+                                                <option value="6">外籍护照</option>
+                                                <option value="7">其他</option>
+                                                <option value="8">文职证</option>
+                                                <option value="9">警官证</option>
+                                                <option value="A">台胞证</option>
+                                                <option value="B">外国人永久居住证</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">复核状态:</label>
+                                            <select style="width: 169px;height: 34px;" v-model="local.status">
+                                                <option value="">全部</option>
+                                                <option value="0">通过</option>
+                                                <option value="1">待复核</option>
+                                                <option value="9">复核驳回</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">操作类型:</label>
+                                            <select style="width: 169px;height: 34px;" v-model="local.operate">
+                                                <option value="">全部</option>
+                                                <option value="1">通过</option>
+                                                <option value="2">拒绝</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group pull-right">
+                                            <input type="button" class="btn btn-sm btn-primary" @click="searchLocal(0)"
+                                                   value="查询">
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                    </div>
+                                    <div class="table-header">
+                                        经办表格数据
+                                    </div>
+                                    <!--分页器和快速查询-->
+                                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                        <div class="col-xs-6">
+                                            <div class="dataTables_length ">
+                                                <label>每页显示</label>
+                                                <select class="input-sm" name="pageMaxNum" v-model="local.pageMaxNum">
+                                                    <option value="10">10</option>
+                                                    <option value="20">20</option>
+                                                    <option value="50">50</option>
+                                                </select>
+                                                <label>条</label>
+                                                <label class="inline-block " style="margin-left: 10px">
+                                                    <label>查看范围</label>
+                                                    <label><input name="" type="radio" value="1"
+                                                                  v-model="radioForCheck"/>看所有人</label>
+                                                    <label><input name="" type="radio" value="2"
+                                                                  v-model="radioForCheck"/>仅看自己 </label>
+
+                                                </label>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                    <!--数据表-->
+                                    <table class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center">CUSTNO</th>
+                                            <th class="center">姓名</th>
+                                            <th class="center">证件类型</th>
+                                            <th class="center">证件号</th>
+                                            <th class="center">证件有效期</th>
+                                            <th class="center">证件照片</th>
+                                            <th class="center">提交来源</th>
+                                            <th class="center">创建时间</th>
+                                            <th class="center">操作类型</th>
+                                            <th class="center">复核状态</th>
+                                            <th class="center">复核人</th>
+                                            <th class="center">复核时间</th>
+                                            <th class="center">复核备注</th>
+                                            <th class="center">短信通知内容</th>
+                                            <th class="center">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="local.showTableData&&local.showTableData.length>0">
+                                            <tr v-for="(item,index) in local.showTableData" :key="index">
+                                                <td class="center" v-text="item.custNo"></td>
+                                                <td class="center" v-text="item.invNm"></td>
+                                                <td class="center" v-text="item.idTpName"></td>
+                                                <td class="center" v-text="item.idNo"></td>
+                                                <td class="center" v-text="stringTimeFat(item.idValiDate)"></td>
+                                                <template v-if="item.imgData instanceof Array">
+                                                    <td class="center"><img v-for="imgItem in item.imgData"  :src="'data:image/jpeg;base64,'+imgItem" alt="" style="width:100px;height: 100px;cursor: pointer;margin: 10px;" @click="previewImg(imgItem,item)" title="点击查看大图"></td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center" v-text="item.imgData"></td>
+                                                </template>
+                                                <td class="center" v-text="item.accptMdTs"></td>
+                                                <td class="center" v-text="item.createTime"></td>
+                                                <td :class="{center:true,green:item.operate==1,red:item.operate==2}"
+                                                    v-text="item.showOperate"></td>
+                                                <td :class="{center:true,
+                                                            green:item.status==0,
+                                                            black:item.status==1,
+                                                            red:item.status==9}"
+                                                    v-text="item.showStatus"></td>
+                                                <td class="center" v-text="item.reviewer"></td>
+                                                <td class="center" v-text="item.reviewTime"></td>
+                                                <td class="center" v-text="item.remark"></td>
+                                                <td class="center" v-text="item.necessaryRemark"></td>
+                                                <td class="center">
+                                                    <template v-if="item.showButton">
+                                                        <template v-if="item.status==1">
+                                                            <a href="javascript:;" class="red"
+                                                               @click="showRevert(item)">撤销</a>
+                                                        </template>
+                                                        <template v-else>
+                                                            <span>-</span>
+                                                        </template>
+                                                    </template>
+                                                    <template v-else>
+                                                        <span>无权限</span>
+                                                    </template>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="local.loadingStatus" colspan="15"></td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                    <!--底部页码-->
+                                    <div v-if="local.showTableData&&local.showTableData.length>0" class="row"
+                                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                        <div class="col-xs-2">
+                                            <div class="dataTables_info" v-text="'共 '+local.totalPage+' 页'"></div>
+                                        </div>
+                                        <div class="col-xs-10">
+                                            <div class="dataTables_paginate paging_simple_numbers">
+                                                <ul class="pagination">
+                                                    <li class="paginate_button"
+                                                        v-show="pageList_local.length<local.totalPage&&local.currentIndex>local.maxSpace">
+                                                        <a href="javascript:;" v-text="'1...'"
+                                                           @click="toFirst_local"></a>
+                                                    </li>
+                                                    <li :class="local.currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                        @click="prev_local">
+                                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                                    </li>
+                                                    <li :class="value==local.currentIndex+1?'paginate_button active':'paginate_button'"
+                                                        v-for="value in pageList_local"
+                                                        @click="changeIndex_local(value)">
+                                                        <a href="javascript:;" v-text="value"></a>
+                                                    </li>
+                                                    <li class="paginate_button"
+                                                        v-show="pageList_local.length<local.totalPage&&local.totalPage-local.currentIndex>local.maxSpace">
+                                                        <a href="javascript:;" v-text="'...'+local.totalPage"
+                                                           @click="toLast_local"></a>
+                                                    </li>
+                                                    <li :class="local.currentIndex==local.totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                                        @click="next_local">
+                                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="service" class="tab-pane">
+                                    <!-- 服务端数据查询条件 -->
+                                    <div class="form-inline" style="padding-bottom: 10px;">
+                                        <div class="form-group">
+                                            <label class="control-label">CUSTNO:</label>
+                                            <input type="text" v-model.trim="service.custNo"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">证件号码:</label>
+                                            <input type="text" v-model.trim="service.idNo"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">证件类型:</label>
+                                            <select style="width:160px;height: 34px;" v-model.trim='service.idTp'>
+                                                <option value="">全部</option>
+                                                <option value="0">身份证</option>
+                                                <option value="1">护照</option>
+                                                <option value="2">军官证</option>
+                                                <option value="3">士兵证</option>
+                                                <option value="4">港澳居民来往内地通行证</option>
+                                                <option value="5">户口本</option>
+                                                <option value="6">外籍护照</option>
+                                                <option value="7">其他</option>
+                                                <option value="8">文职证</option>
+                                                <option value="9">警官证</option>
+                                                <option value="A">台胞证</option>
+                                                <option value="B">外国人永久居住证</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">复核状态:</label>
+                                            <select style="width:160px;height: 34px;" v-model="service.chkFlg">
+                                                <option value="">全部</option>
+                                                <option value="F">已拒绝</option>
+                                                <option value="I">待审核</option>
+                                                <option value="Y">审核通过</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group pull-right">
+                                            <input type="button" class="btn btn-sm btn-primary"
+                                                   value="查询" @click="searchService(0)">
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                    </div>
+                                    <div class="table-header">
+                                        已生效表格数据
+                                    </div>
+                                    <!--分页器和快速查询-->
+                                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                        <div class="col-xs-6">
+                                            <div class="dataTables_length">
+                                                <label>每页显示</label>
+                                                <select class="input-sm" name="pageMaxNum" v-model="service.pageMaxNum">
+                                                    <option value="10">10</option>
+                                                    <option value="20">20</option>
+                                                    <option value="50">50</option>
+                                                </select>
+                                                <label>条</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--数据表-->
+                                    <table class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center">CUSTNO</th>
+                                            <th class="center">姓名</th>
+                                            <th class="center">证件类型</th>
+                                            <th class="center">证件号</th>
+                                            <th class="center">证件有效期</th>
+                                            <th class="center">证件照片</th>
+                                            <th class="center">提交来源</th>
+                                            <th class="center">提交时间</th>
+                                            <th class="center">审核状态</th>
+                                            <th class="center">审核人</th>
+                                            <th class="center">审核时间</th>
+                                            <th class="center">审核备注</th>
+                                            <th class="center">操作</th>
+                                        </tr>
+
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="service.tableData&&service.tableData.length>0">
+                                            <tr v-for="(item,index) in service.tableData" :key="index">
+                                                <td class="center" v-text='item.custNo'></td>
+                                                <td class="center" v-text='item.invNm'></td>
+                                                <td class="center" v-text='item.idTpName'></td>
+                                                <td class="center" v-text='item.idNo'></td>
+                                                <td class="center" v-text='stringTimeFat(item.idValiDate) '></td>
+                                                <template v-if="item.imgData instanceof Array">
+                                                    <td class="center"><img v-for="imgItem in item.imgData"
+                                                                            :src="'data:image/jpeg;base64,'+imgItem"
+                                                                            alt=""
+                                                                            style="width:100px;height: 100px;cursor: pointer;margin: 10px;"
+                                                                            @click="previewImg(imgItem,item)"
+                                                                            title="点击查看大图"></td>
+                                                </template>
+                                                <template v-else>
+                                                    <td class="center" v-text="item.imgData"></td>
+                                                </template>
+                                                <td class="center" v-text="item.accptMdTs"></td>
+                                                <td class="center" v-text='stringTimeFat(item.apDt)'></td>
+                                                <td class="center red"
+                                                    v-text='item.chkFlg=="Y"?"已通过":item.chkFlg=="I"?"待审核":"已拒绝"'></td>
+                                                <td class="center" v-text="item.chkOpr">-</td>
+                                                <td class="center" v-text='stringTimeFat(item.chkDt) '></td>
+                                                <td class="center" v-text='item.chkComment'></td>
+
+                                                <td class="center">
+                                                    <template v-if="item.showOperateStatus">
+                                                        <template v-if="item.chkFlg=='Y'">
+                                                            <a href="javascript:;" class="red"
+                                                               @click="showServiceToLocalUpdate(item,2)">拒绝</a>
+                                                        </template>
+                                                        <template v-else-if="item.chkFlg=='F'">
+                                                            <a href="javascript:;"
+                                                               @click="showServiceToLocalUpdate(item,1)">通过</a>
+                                                        </template>
+                                                        <template v-else>
+                                                            <a href="javascript:;"
+                                                               @click="showServiceToLocalUpdate(item,1)">通过</a>/
+                                                            <a href="javascript:;" class="red"
+                                                               @click="showServiceToLocalUpdate(item,2)">拒绝</a>
+                                                        </template>
+                                                    </template>
+                                                    <template v-else>
+                                                        正在经办
+                                                    </template>
+
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="service.loadingStatus" colspan="13"></td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                    <!--底部页码-->
+                                    <div v-if="service.tableData&&service.tableData.length>0" class="row"
+                                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                        <div class="col-xs-2">
+                                            <div class="dataTables_info" v-text="'共 '+service.totalPage+' 页'"></div>
+                                        </div>
+                                        <div class="col-xs-10">
+                                            <div class="dataTables_paginate paging_simple_numbers"
+                                                 id="dynamic-table_paginate">
+                                                <ul class="pagination">
+                                                    <li class="paginate_button"
+                                                        v-show="pageList.length<service.totalPage&&service.currentIndex>service.maxSpace">
+                                                        <a href="javascript:;" v-text="'1...'"
+                                                           @click="toFirst_service"></a>
+                                                    </li>
+                                                    <li :class="service.currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                        @click="prev_service">
+                                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                                    </li>
+                                                    <li :class="value==service.currentIndex+1?'paginate_button active':'paginate_button'"
+                                                        v-for="value in pageList" @click="changeIndex_service(value)">
+                                                        <a href="javascript:;" v-text="value"></a>
+                                                    </li>
+                                                    <li class="paginate_button"
+                                                        v-show="pageList.length<service.totalPage&&service.totalPage-service.currentIndex>service.maxSpace">
+                                                        <a href="javascript:;" v-text="'...'+service.totalPage"
+                                                           @click="toLast_service"></a>
+                                                    </li>
+                                                    <li :class="service.currentIndex==service.totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                                        @click="next_service">
+                                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<!--<script src="/js/lib/zh-cn.js"></script>-->
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/messageCenter/idCardHandle.js"></script>
+</body>
+</html>

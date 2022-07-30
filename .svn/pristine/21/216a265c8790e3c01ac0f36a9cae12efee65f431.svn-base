@@ -1,0 +1,127 @@
+module.exports = [
+    {
+        "menuId": "4",
+        "parentMenuId": "",
+        "hasSubmenu": true,
+        "type": "2",
+        "name": "公共配置",
+        "url": "/publicConfig"
+    },
+    {
+        "menuId": "4-1",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "短链接管理",
+        "url": "/publicConfig/shortLink"
+    },
+    {
+        "menuId": "4-1-1",
+        "parentMenuId": "4-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "短链接配置",
+        "url": "/publicConfig/shortLink/linkConfig.html"
+    },
+    {
+        "menuId": "4-2",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "自动化工具",
+        "url": "/publicConfig/automatedTool"
+    },
+    {
+        "menuId": "4-2-1",
+        "parentMenuId": "4-2",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "自动化切片工具",
+        "url": "/publicConfig/automatedTool/sliceTool.html"
+    },
+    {
+        "menuId": "4-2-2",
+        "parentMenuId": "4-2",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "近期产品列表",
+        "url": "/publicConfig/automatedTool/recentProductList.html"
+    },
+    {
+        "menuId": "4-3",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "支付宝相关配置",
+        "url": "/publicConfig/alipayConfig"
+    },
+    {
+        "menuId": "4-3-1",
+        "parentMenuId": "4-3",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "小程序配置",
+        "url": "/publicConfig/alipayConfig/miniConfig.html"
+    },
+    {
+        "menuId": "4-4",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "技术参数维护",
+        "url": "/publicConfig/paramsMaintain"
+    },
+    {
+        "menuId": "4-4-1",
+        "parentMenuId": "4-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "技术参数维护",
+        "url": "/publicConfig/paramsMaintain/maintain.html"
+    },
+    {
+        "menuId": "4-5",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "手机后台管理",
+        "url": "/publicConfig/mobileMgmt"
+    },
+    {
+        "menuId": "4-5-1",
+        "parentMenuId": "4-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "系统缓存刷新",
+        "url": "/publicConfig/mobileMgmt/systemRefresh.html"
+    },
+    {
+        "menuId": "4-6",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "定投策略管理",
+        "url": "/publicConfig/AIPstrategyMgmt"
+    },
+    {
+        "menuId": "4-6-1",
+        "parentMenuId": "4-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "定投策略设置",
+        "url": "/publicConfig/AIPstrategyMgmt/planSetting.html"
+    }
+];

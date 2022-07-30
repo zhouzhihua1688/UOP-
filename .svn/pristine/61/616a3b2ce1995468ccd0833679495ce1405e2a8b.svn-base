@@ -1,0 +1,53 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').monitoring.reportForms;
+module.exports = function (app) {
+    // 获取  查询列表
+    app.post('/productIndexes/monitoring/reportForms/tableData.ajax', (req, res, next) => {
+        let params = req.body;
+				params.user = req.session.loginInfo.userid
+        let option = {
+            req,
+            pageUrl: '/productIndexes/monitoring/reportForms/tableData.ajax',
+            url: apiUrl.tableData,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+								let resultData = result.body;
+								let resultDataCopy = JSON.parse(JSON.stringify(resultData));
+								resultDataCopy.forEach(item => {
+									item.productAllPrdMonitorDetailVOList.forEach((citem,cindex,carr)=>{
+										citem.prdMonitorIndexShowVOList.forEach((sitem,sindex,sarr)=>{
+
+										})
+									})
+								});
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '调用失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+};

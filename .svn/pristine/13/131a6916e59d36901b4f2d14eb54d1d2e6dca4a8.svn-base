@@ -1,0 +1,311 @@
+const request = require('../../../local_data/requestWrapper');
+const fs = require('fs');
+const path = require('path');
+const formidable = require('formidable');
+const apiUrlList = require('../apiConfig').recommendSystem.recommendSystemTemplateConfig.labelTemplateConfig;
+module.exports = function (app) {
+    //获取分页查询列表
+    app.post('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/queryInfo.ajax', (req, res, next) => {
+            let params = req.body;
+            params.pageNo=parseInt(params.pageNo);
+            params.pageSize=parseInt(params.pageSize);
+            let userId= req.session.loginInfo.userid;
+            let option = {
+                session: req.session,
+                url: apiUrlList.queryInfo,
+                qs: params,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/queryInfo.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/queryInfo.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/queryInfo.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/queryInfo.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    let data = body.body;
+                    data.userId=userId;
+                    data.pages = Math.ceil(data.total / params.pageSize);//最大页码
+                    data.pageNum = params.pageNo;//当前页
+                    res.send({error: 0, msg: '查询成功', data: data});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '查询失败'});
+                }
+            });
+        }
+    );
+    //启用或禁用
+    app.post('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/enable.ajax', (req, res, next) => {
+            let params = req.body;
+            let option = {
+                session: req.session,
+                url: apiUrlList.enable,
+                qs: params,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/enable.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/enable.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/enable.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/enable.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    res.send({error: 0, msg: '操作成功', data: null});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '操作失败'});
+                }
+            });
+        }
+    );
+    //删除
+    app.post('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/delete.ajax', (req, res, next) => {
+            let params = req.body;
+            let option = {
+                session: req.session,
+                url: apiUrlList.deleteInfo,
+                qs: params,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/delete.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/delete.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/delete.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/delete.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    res.send({error: 0, msg: '操作成功', data: null});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '操作失败'});
+                }
+            });
+        }
+    );
+    //新增
+    app.post('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/add.ajax', (req, res, next) => {
+
+        let option = {
+            session: req.session,
+            url: apiUrlList.add,
+            body: req.body,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/add.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/add.ajax error:', error);
+            console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/add.ajax statusCode:', response && response.statusCode);
+            console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/add.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode == 0) {
+                res.send({error: 0, msg: '添加成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '添加失败'});
+            }
+        });
+    });
+    //修改
+    app.post('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/update.ajax', (req, res, next) => {
+
+        let option = {
+            session: req.session,
+            url: apiUrlList.update,
+            body: req.body,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/update.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/update.ajax error:', error);
+            console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/update.ajax statusCode:', response && response.statusCode);
+            console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/update.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode == 0) {
+                res.send({error: 0, msg: '修改成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '修改失败'});
+            }
+        });
+    });
+    //query-childContentTp
+    app.post('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/querychildContentTp.ajax', (req, res, next) => {
+            let option = {
+                session: req.session,
+                url: apiUrlList.childContentTp,
+                qs:req.body,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/querychildContentTp.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/querychildContentTp.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/querychildContentTp.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/querychildContentTp.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    res.send({error: 0, msg: '操作成功', data: body.body});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '操作失败'});
+                }
+            });
+        }
+    );
+    //query-childContentIds
+    app.post('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/querychildContentIds.ajax', (req, res, next) => {
+            let option = {
+                session: req.session,
+                url: apiUrlList.childContentIds,
+                qs:req.body,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/querychildContentTp.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/querychildContentTp.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/querychildContentTp.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/querychildContentTp.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    res.send({error: 0, msg: '操作成功', data: body.body});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '操作失败'});
+                }
+            });
+        }
+    );
+
+    //刷新缓存
+    app.post('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/fresh.ajax', (req, res, next) => {
+            let option = {
+                session: req.session,
+                url: apiUrlList.fresh,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/fresh.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/fresh.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/fresh.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/fresh.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    res.send({error: 0, msg: '操作成功', data: null});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '操作失败'});
+                }
+            });
+        }
+    );
+    //Viewlist
+    app.post('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/viewList.ajax', (req, res, next) => {
+            let option = {
+                session: req.session,
+                url: apiUrlList.viewList,
+                qs: req.body,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/viewList.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/viewList.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/viewList.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/viewList.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    let data = body.body;
+                    res.send({error: 0, msg: '查询成功', data: data});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '查询失败'});
+                }
+            });
+        }
+    );
+    //渠道列表
+    app.post('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/channelMenu.ajax', (req, res, next) => {
+            let option = {
+                session: req.session,
+                url: apiUrlList.channelMenu,
+                qs: req.body,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/channelMenu.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/channelMenu.ajax error:', error);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/channelMenu.ajax statusCode:', response && response.statusCode);
+                console.log('/recommendSystem/recommendSystemTemplateConfig/labelTemplateConfig/channelMenu.ajax body:', body);
+                if (error) {
+                    return res.send({error: 1, msg: '操作失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    let data = body.body;
+                    res.send({error: 0, msg: '查询成功', data: data});
+                }
+                else if (body && body.returnCode != 9999) {
+                    res.send({error: 1, msg: body.returnMsg});
+                }
+                else {
+                    res.send({error: 1, msg: '查询失败'});
+                }
+            });
+        }
+    );
+};

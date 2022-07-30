@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        #simple-table > tbody > tr > td {
+            padding: 0;
+            vertical-align: middle;
+        }
+        .cover {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(9, 10, 10, 0.527);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+                    <div class="cover" v-show="loadingShow" style="z-index: 1999;display: none;">
+                        <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                    </div>
+                    <div class="col-xs-12">
+                        <!--信息提示弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--选择红包弹窗-->
+                        <div class="modal" id="select" tabindex="0" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title">选择红包</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="col-sm-12">
+                                            <div class="form-inline" style="margin: 10px 0;">
+                                                <div class="form-group">
+                                                    <label class="control-label">搜索条件:</label>
+                                                    <input type="text" style="width: 460px;"
+                                                           v-model.trim="searchCondition"
+                                                           placeholder="请输入红包编号或红包名称">
+                                                </div>
+                                            </div>
+                                            <div class="table-header">
+                                                红包列表
+                                            </div>
+                                            <div style="margin-bottom: 0;height:400px; overflow-y: auto">
+                                                <table class="table table-striped table-bordered table-hover dataTable"
+                                                       style="margin-bottom: 0;">
+                                                    <thead>
+                                                    <tr>
+                                                        <th class="center col-sm-3">红包编号</th>
+                                                        <th class="center col-sm-3">红包名称</th>
+                                                        <th class="center col-sm-3">红包金额</th>
+                                                        <th class="center col-sm-3">操作</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <template v-if="envelopList_filter.length>0">
+                                                        <tr v-for="(item, index) in envelopList_filter" :key="index">
+                                                            <td class="center" v-text="item.envelopNo"></td>
+                                                            <td class="center" v-text="item.name.slice(0,20)"></td>
+                                                            <td class="center" v-text="item.value"></td>
+                                                            <td class="center">
+                                                                <a href="javascript:;" @click="select(item)">选择</a>
+                                                            </td>
+                                                        </tr>
+                                                    </template>
+                                                    <template v-else>
+                                                        <tr>
+                                                            <td class="center" v-text="'暂无数据'" colspan="4"></td>
+                                                        </tr>
+                                                    </template>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                    </div>
+                                    <p class="text-center" style="padding: 10px 0;">
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal">取消</button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--发送提示弹窗-->
+                        <div class="modal" id="send" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">红包发送</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确认发送红包?</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" @click="send">确定</button>
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--批量发送-->
+                        <div class="modal" id="fileSend" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title inline">批量发送</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form class="form" style="padding: 0 24px 0 24px;"
+                                              enctype="multipart/form-data">
+                                            <div class="form-group">
+                                                <label class="control-label" style="margin-right: 14px;">选择文件:</label>
+                                                <input type="text" style="width: 50%;" id="uploadInput"
+                                                       placeholder="请选择"
+                                                       disabled/>
+                                                <input type="button" class="btn btn-sm btn-primary" id="uploadBtn"
+                                                       value="上传">
+                                                <input id="uploadFileInput" type="file" name="file"
+                                                       style="display: none"
+                                                       class="upload"/>
+                                                <input type="button" class="btn btn-sm btn-danger" @click="downloadFile"
+                                                       value="下载模板文件">
+                                            </div>
+                                        </form>
+                                        <p class="text-center">
+                                            <button class="btn btn-sm btn-danger" @click="fileSend">批量发送</button>
+                                            <button class="btn btn-sm btn-primary" data-dismiss="modal">取消</button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group pull-right">
+                                <input type="button" class="btn btn-sm btn-danger" @click="showSend" value="发送">
+                                <input type="button" class="btn btn-sm btn-primary" @click="addRow" value="新增一行">
+                                <input type="button" class="btn btn-sm btn-primary" @click="showFileSend" value="批量发送">
+                            </div>
+                            <div style="clear: both;"></div>
+                        </div>
+
+                        <div class="table-header">
+                            <%= cpage %>--表格数据
+                        </div>
+
+                        <!--数据表-->
+                        <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                               style="margin-bottom: 0;">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-2">红包编号</th>
+                                <th class="center col-sm-2">红包名称</th>
+                                <th class="center col-sm-2">客户号</th>
+                                <th class="center col-sm-2">红包金额</th>
+                                <th class="center col-sm-3">来源详情</th>
+                                <th class="center col-sm-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="(item,index) in tableData" :key="index">
+                                <td class="center">
+                                    <template v-if="!!item.redEnvelopNo">
+                                        <span v-text="item.redEnvelopNo"></span>
+                                    </template>
+                                    <template v-else>
+                                        <a href="javascript:;" @click="showSelect(index)">选择</a>
+                                    </template>
+                                </td>
+                                <td class="center" v-text="item.redEnvelopName"></td>
+                                <td class="center">
+                                    <input type="text" style="width: 100%;text-align: center"
+                                           v-model.trim="item.custNo">
+                                </td>
+                                <template v-if="item.type==2">
+                                    <td class="center">
+                                        <input type="text" style="width: 100%;text-align: center"
+                                               v-model.trim="item.redEnvelopValue">
+                                    </td>
+                                </template>
+                                <template v-else>
+                                    <td class="center" v-text="item.value_show"></td>
+                                </template>
+                                <td class="center">
+                                    <input type="text" style="width: 100%;text-align: center"
+                                           v-model.trim="item.sourceDetail">
+                                </td>
+                                <td class="center">
+                                    <a href="javascript:;" class="red" @click="deleteRow(index)">删除</a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <!--模板上传文件示例-->
+                        <table id="data-table" border="1" style="display: none;">
+                            <tr>
+                                <td>redEnvelopNo</td>
+                                <td>custNo</td>
+                                <td>redEnvelopValue</td>
+                                <td>sourceDetail</td>
+                            </tr>
+                            <tr>
+                                <td>LuckyMoney20190826160727926</td>
+                                <td>1023854980</td>
+                                <td>10</td>
+                                <td>来源详情</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/js/lib/ajaxfileupload.js"></script>
+<script src="/js/lib/xlsx.core.min.js"></script>
+<script src="/js/awardMgmt/redPacketSettingMgmt/redPacketSend.js"></script>
+</body>
+</html>

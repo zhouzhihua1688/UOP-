@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <label class="control-label">基金名称:</label>
+                    <div class="form-group">
+                        <input class="typeahead scrollable" v-model="fundid" type="text"
+                               @input='binding("fundid","fundnm")'/>
+                    </div>
+                    <label class="control-label">业务类型:</label>
+                    <div class="form-group">
+                        <input class="typeahead scrollable" v-model="fundid" type="text"
+                               @input='binding("fundid","fundnm")'/>
+                    </div>
+
+                    <label class="control-label">复核状态:</label>
+                    <div class="form-group">
+                        <input class="typeahead scrollable" v-model="fundid" type="text"
+                               @input='binding("fundid","fundnm")'/>
+                    </div>
+
+                    <label class="control-label">状态:</label>
+                    <div class="form-group">
+                        <input class="typeahead scrollable" v-model="fundid" type="text"
+                               @input='binding("fundid","fundnm")'/>
+                    </div>
+
+                    <!-- <label class="control-label">产品名称:</label>
+                    <div class="form-group">
+                        <input v-model="fundnm" type="text"/>
+                    </div> -->
+                   <!--  <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="search">
+                        <input type="button" class="btn btn-sm btn-primary" value="上传" @click="showUpload">
+                        <input type="button" class="btn btn-sm btn-primary" value="发送" @click="showEmail">
+                    </div> -->
+                </div>
+                  <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                    <!-- <div class="col-xs-6">
+                        <div class="dataTables_filter">
+                            <label>快速查询:</label>
+                            <input type="text" class="input-sm" v-model="condition">
+                        </div>
+                    </div> -->
+
+                     <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="search">
+                        <input type="button" class="btn btn-sm btn-primary" value="增加" @click="showUpload">
+                        <input type="button" class="btn btn-sm btn-primary" value="修改" @click="showEmail">
+                        <input type="button" class="btn btn-sm btn-primary" value="复制" @click="showEmail">
+                        <input type="button" class="btn btn-sm btn-primary" value="删除" @click="showEmail">
+                        <input type="button" class="btn btn-sm btn-primary" value="导出.xls" @click="showEmail">
+                    </div>
+                </div>
+                 <!--数据表-->
+                <table class="table table-striped table-bordered table-hover dataTable" style="margin-bottom: 0;">
+                    <thead>
+                    <tr>
+                        <th class="center">
+                            <label class="pos-rel">
+                                <input type="checkbox" class="ace" :checked="allCheck" @click="selectAll"/>
+                                <span class="lbl"></span>
+                            </label>
+                        </th>
+                        <th class="center">产品代码</th>
+                        <th class="center">产品名称</th>
+                        <th class="center">参数表</th>
+                        <th class="center">上传人</th>
+                        <th class="center">上传时间</th>
+                        <th class="center">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="viewData.length>0">
+                        <tr v-for="(item,index) in viewData" :key="index" :class="item.check?'active':''">
+                            <td class="center col-md-1">
+                                <label class="pos-rel">
+                                    <input type="checkbox" class="ace" :checked="item.check" @click="add(index)"/>
+                                    <span class="lbl"></span>
+                                </label>
+                            </td>
+                            <td class="center col-md-1" v-text="item.fundid"></td>
+                            <td class="center col-md-1" v-text="item.fundnm"></td>
+                            <td class="center col-md-4"><a
+                                    :href="'/thirdPartyOperation/products/paramsMgmt/download.ajax?fundid='+item.fundid"
+                                    v-text="item.filename"></a></td>
+                            <td class="center col-md-1" v-text="item.operater"></td>
+                            <td class="center col-md-2" v-text="item.updatetime"></td>
+                            <td class="center col-md-2">
+                                <a href="javascript:;" @click="showUpdate(index)">更新</a>
+                                /
+                                <a href="javascript:;" @click="showDelete(index)">删除</a>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'没有数据'" colspan="7"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+</body>
+</html>

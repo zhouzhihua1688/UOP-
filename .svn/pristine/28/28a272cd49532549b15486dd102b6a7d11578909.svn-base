@@ -1,0 +1,159 @@
+const request = require('./../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').highFinancialMgmt.custGroupInfo;
+module.exports = function (app) {
+    // 获取初始数据和查询
+    app.post('/businessMgmt/highFinancialMgmt/custGroupInfo/getTableData.ajax', (req, res, next) => {
+        let params = {};
+        req.body.custGroupNo && (params.custGroupNo = req.body.custGroupNo);
+        req.body.pageNum && (params.pageNum = req.body.pageNum);
+        req.body.pageSize && (params.pageSize = req.body.pageSize);
+        let option = {
+            session: req.session,
+            url: apiUrlList.getTableData,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/getTableData.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/getTableData.ajax error:', error);
+            console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/getTableData.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/getTableData.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result.returnCode == 0 && Array.isArray(result.body.results)) {
+                let resultData = {};
+                // resultData.pageNo = result.body.pageNo; //页数
+
+                resultData.pageNo= result.body.pageNo; //页数
+                resultData.totalSize = Math.ceil(result.body.totalRecord/req.body.pageSize);//总页数d;//总页数
+                resultData.tableData = result.body.results;
+                return res.send({error: 0, msg: '查询成功', data: resultData});
+            }
+            else if (result && result.returnCode != 9999) {
+                return res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                return res.send({error: 1, msg: '查询失败'});
+            }
+        });
+    });
+    // 下拉列表数据
+    app.post('/businessMgmt/highFinancialMgmt/custGroupInfo/custList.ajax', (req, res, next) => {
+        // let params = {};
+        let option = {
+            session: req.session,
+            url: apiUrlList.custList,
+            // body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/custList.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/custList.ajax error:', error);
+            console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/custList.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/custList.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+
+                return res.send({error: 0, msg: '获取数据成功', data:body});
+            }
+            else if (result && result.returnCode != 9999) {
+                return res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                return res.send({error: 1, msg: '获取数据失败'});
+            }
+        });
+    });
+
+    //新增数据
+    app.post('/businessMgmt/highFinancialMgmt/custGroupInfo/saveParam.ajax', (req, res, next) => {
+        let params = {};
+        req.body.custGroupNo && (params.custGroupNo = req.body.custGroupNo);
+        req.body.custGroupName && (params.custGroupName = req.body.custGroupName);
+        req.body.founder && (params.founder = req.body.founder);
+        req.body.purpose && (params.purpose = req.body.purpose);
+        let option = {
+            session: req.session,
+            url: apiUrlList.saveParam,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/saveParam.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/saveParam.ajax error:', error);
+            console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/saveParam.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/saveParam.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '保存失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                return res.send({error: 0, msg: '保存成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                return res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                return res.send({error: 1, msg: '保存失败'});
+            }
+        });
+    });
+
+    //修改数据
+    app.post('/businessMgmt/highFinancialMgmt/custGroupInfo/update.ajax', (req, res, next) => {
+        let params = {};
+        req.body.custGroupNo && (params.custGroupNo = req.body.custGroupNo);
+        req.body.custGroupName && (params.custGroupName = req.body.custGroupName);
+        req.body.founder && (params.founder = req.body.founder);
+        req.body.purpose && (params.purpose = req.body.purpose);
+        let option = {
+            session: req.session,
+            url: apiUrlList.update,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/update.ajax option:', option);
+        request.put(option, (error, response, body) => {
+            console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/update.ajax error:', error);
+            console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/update.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/highFinancialMgmt/custGroupInfo/update.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '修改失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                return res.send({error: 0, msg: '修改成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                return res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                return res.send({error: 1, msg: '修改失败'});
+            }
+        });
+    });
+
+
+}
+

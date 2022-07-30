@@ -1,0 +1,358 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').pauseTradeMgmt.pauseTradeHandle;
+const pool = require('../apiConfig').mysqlPool;
+const tableName = 'bm_ptm_pause'
+module.exports = function (app) {
+    // 获取  基金名称查询数据
+    app.post('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/collection.ajax', (req, res, next) => {
+        let userId = req.session.loginInfo.userid;
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.collection,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/collection.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/collection.ajax error:', error);
+            console.log('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/collection.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/collection.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                result.body.userId = userId;
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+        });
+    });
+
+
+    // 获取  线上初始数据和查询
+    app.post('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/getLineList.ajax', (req, res, next) => {
+        let params = req.body;
+        let userId = req.session.loginInfo.userid;
+        let option = {
+            session: req.session,
+            url: apiUrl.getLineList,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/getLineList.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/getLineList.ajax error:', error);
+            console.log('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/getLineList.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/getLineList.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body,
+                    userId
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+        });
+    });
+
+    // 获取  本地初始数据和查询
+    app.post('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/getLocalList.ajax', (req, res, next) => {
+        let params = req.body;
+        let userId = req.session.loginInfo.userid;
+
+        pool.getConnection(function (err, connection) {
+            if (err) {
+                console.log('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/getLocalList.ajax  链接失败', err)
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            console.log('params', params)
+            var $sql = `SELECT * FROM ${tableName} WHERE delete_flag='F';`;
+            if (params.fundid != '' || params.status != '') {
+                $sql = `SELECT * FROM ${tableName} WHERE delete_flag='F'${params.fundid == '' ? '' : `AND JSON_EXTRACT(content, '$.fundid')='${params.fundid}'`}${params.status == '' ? '' : '&&status=' + params.status};`
+            }
+            connection.query($sql, function (err, data) {
+                connection.release()
+                if (err) {
+                    console.log('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/getLocalList.ajax', err)
+                    return res.send({
+                        error: 1,
+                        msg: '查询失败'
+                    });
+                } else {
+                    data.forEach(element => {
+                        element.statusLocal = element.status
+                        element.content = JSON.parse(element.content)
+                        element.fundid = element.content.fundid
+                        element.enddate = element.content.enddate
+                        element.endtime = element.content.endtime
+                        element.startdate = element.content.startdate
+                        element.starttime = element.content.starttime
+                        element.stoptype = element.content.stoptype
+                        element.accptmd = element.content.accptmd
+                        element.status = element.content.status
+                        element.update_timestamp = formatTimeStamp(element.update_timestamp)
+                        delete element.content
+                    });
+                    res.send({
+                        error: 0,
+                        msg: '查询成功',
+                        data,
+                        userId
+                    });
+                }
+            })
+
+        })
+    });
+
+
+    // 删除线上数据
+    app.post('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/deleteFund.ajax', (req, res, next) => {
+        let params = req.body;
+        let userid = req.session.loginInfo.userid;
+        console.log('params', params)
+        pool.getConnection(function (err, connection) {
+            if (err) {
+                console.log('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/deleteFund.ajax  链接失败', err)
+                return res.send({
+                    error: 1,
+                    msg: '数据库链接失败'
+                });
+            }
+            connection.query(`SELECT local_id FROM ${tableName} WHERE delete_flag='F'&&status<>'0' && service_id='${params.serialno}';`, function (err, data) {
+                if (err) {
+                    console.log('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/deleteFund.ajax', err)
+                    return res.send({
+                        error: 1,
+                        msg: '操作数据库失败'
+                    });
+                } else {
+                    if (data.length) {
+                        return res.send({
+                            error: 1,
+                            msg: '本地已存在该数据，请勿重复操作',
+                            data: null
+                        });
+                    } else {
+                        let $sql = `insert into ${tableName} set ?;`
+                        let $sql_params = {
+                            content: JSON.stringify(params),
+                            creator: userid,
+                            operator: userid,
+                            service_id: params.serialno,
+                            status: 1,
+                            operate: 3
+                        }
+                        connection.query($sql, $sql_params, function (err, data) {
+                            connection.release()
+                            if (err) {
+                                console.log(err)
+                                return res.send({
+                                    error: 1,
+                                    msg: '操作数据库失败'
+                                });
+                            } else {
+                                console.log('data', data)
+                                if (data.affectedRows != 0) {
+                                    return res.send({
+                                        error: 0,
+                                        msg: '已添加到本地库，等待提交',
+                                        data: '已添加到本地库，等待提交'
+                                    });
+                                }
+                                return res.send({
+                                    error: 1,
+                                    msg: '失败',
+                                    data: null
+                                });
+                            }
+                        })
+                    }
+                }
+            })
+
+        })
+    });
+
+
+    // 撤销本地数据
+    app.post('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/backout.ajax', (req, res, next) => {
+        let params = req.body;
+        console.log('params', params)
+        pool.getConnection(function (err, connection) {
+            if (err) {
+                console.log('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/backout.ajax  链接失败', err)
+                return;
+            }
+            connection.query(`DELETE FROM ${tableName} WHERE local_id=${params.local_id}&&update_timestamp='${params.update_timestamp}'`, function (err, data) {
+                connection.release()
+                if (err) {
+                    console.log(err)
+                    return res.send({
+                        error: 1,
+                        msg: '操作数据库失败'
+                    });
+                } else {
+                    console.log('data', data)
+                    if (data.affectedRows != 0) {
+                        return res.send({
+                            error: 0,
+                            msg: '已撤销',
+                            data: '已撤销'
+                        });
+                    }
+                    return res.send({
+                        error: 1,
+                        msg: '撤销失败',
+                        data: null
+                    });
+                }
+            })
+        })
+    });
+
+    // 提交本地数据
+    app.post('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/submit.ajax', (req, res, next) => {
+        let params = req.body;
+        let userid = req.session.loginInfo.userid;
+        console.log('params', params)
+        pool.getConnection(function (err, connection) {
+            if (err) {
+                console.log('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/submit.ajax  链接失败', err)
+                return;
+            }
+            connection.query(`UPDATE ${tableName} SET ? WHERE delete_flag='F'&&local_id=${params.local_id}&&update_timestamp='${params.update_timestamp}';`, { operator: userid, status: 2 }, function (err, data) {
+                connection.release()
+                if (err) {
+                    console.log(err)
+                    return res.send({
+                        error: 1,
+                        msg: '操作数据库失败'
+                    });
+                } else {
+                    console.log('data', data)
+                    if (data.changedRows != 0) {
+                        return res.send({
+                            error: 0,
+                            msg: '已提交',
+                            data: '已提交'
+                        });
+                    }
+                    return res.send({
+                        error: 1,
+                        msg: '提交失败',
+                        data: null
+                    });
+                }
+            })
+        })
+    });
+
+
+
+
+
+    // 新增
+    app.post('/businessMgmt/pauseTradeMgmt/pauseTradeHandle/add.ajax', (req, res, next) => {
+        let params = JSON.parse(req.body.params);
+        let userid = req.session.loginInfo.userid;
+        let $sql = `insert into ${tableName} set ?;`
+
+        cycleInsert(params)
+
+        function cycleInsert(arr) {
+            if (arr.length === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '新增成功，等待提交',
+                    data: '新增成功，等待提交'
+                });
+            } else {
+                let $sql_params = {
+                    content: JSON.stringify(arr[0]),
+                    creator: userid,
+                    operator: userid,
+                    status: 1,
+                    operate: 1
+                }
+                sql_query(res, $sql, $sql_params, function (err, data) {
+                    if (err) {
+                        console.log(err)
+                        return res.send({
+                            error: 1,
+                            msg: '操作数据库失败'
+                        });
+                    } else {
+                        if (data.affectedRows != 0) {
+                            return cycleInsert(arr.slice(1))
+                        }
+                        return res.send({
+                            error: 1,
+                            msg: '数据库新增失败',
+                            data: null
+                        });
+                    }
+                })
+            }
+
+        }
+    });
+
+
+
+};
+function sql_query(res, $sql, params, callback) {
+
+    pool.getConnection(function (err, connection) {
+        if (err) {
+            console.log('链接失败', err)
+            return res.send({
+                error: 1,
+                msg: '数据库链接失败'
+            });
+        }
+        connection.query($sql, params, callback)
+        connection.release()
+    })
+}
+
+
+
+function formatTimeStamp(timestamp) {
+    let d = new Date(timestamp);
+    let fixZero = function (num) {
+        return num < 10 ? '0' + num : num;
+    };
+    return [d.getFullYear(), d.getMonth() + 1, d.getDate()].map(value => fixZero(value)).join('-') +
+        ' ' + [d.getHours(), d.getMinutes(), d.getSeconds()].map(value => fixZero(value)).join(':');
+}

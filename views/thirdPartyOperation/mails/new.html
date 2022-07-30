@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/css/thirdPartyOperation/mails/new.css">
+    <style>
+        .show {
+            display: none;
+        }
+
+        .hide {
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../../common/header.html %>
+<!-- main-container -->
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../left-menu.html %>
+    <!-- .main-content -->
+    <div class="main-content">
+        <div class="main-content-inner">
+            <!-- PAGE CONTENT BEGINS -->
+            <div class="page-content">
+                <% include ../breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="col-lg-12" id="content">
+
+                    <!--联系人弹窗-->
+                    <div class="modal" id="list" tabindex="0" role="dialog" aria-hidden="true">
+                        <div class="modal-dialog" style="width: 1000px;">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                        &times;
+                                    </button>
+                                    <h4 class="modal-title">通讯录</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div>
+                                        <div class="tabbable">
+                                            <ul class="nav nav-tabs padding-12 tab-color-blue background-blue">
+                                                <li class="active">
+                                                    <a data-toggle="tab" href="#staff" aria-expanded="true">员工</a>
+                                                </li>
+                                                <li class="">
+                                                    <a data-toggle="tab" href="#orgs" aria-expanded="false"
+                                                       @click="getOrgData">代销机构</a>
+                                                </li>
+                                            </ul>
+                                            <div class="tab-content">
+                                                <div id="staff" class="tab-pane active">
+                                                    <div class="col-lg-3 organization">
+                                                        <form class="form-inline" style="margin: 10px 0;">
+                                                            <div class="form-group">
+                                                                <label class="control-label"></label>
+                                                                <input type="text" v-model="emailSearch"
+                                                                       style="width: 145px;">
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label class="control-label"></label>
+                                                                <input type="button" class="btn btn-sm btn-primary"
+                                                                       value="查询" @click="searchPerson">
+                                                            </div>
+                                                        </form>
+                                                        <div class="widget-box widget-color-blue2">
+                                                            <div class="widget-header">
+                                                                <div class="widget-title smaller">选择联系人</div>
+                                                            </div>
+                                                            <div class="widget-body">
+                                                                <div class="widget-main padding-8">
+                                                                    <div class="tree-container">
+                                                                        <ul id="tree1" class="tree tree-unselectable"
+                                                                            role="tree">
+                                                                            <!-- 部门列表树 -->
+                                                                            <li v-for="(item, index) in dept"
+                                                                                :key="index"
+                                                                                class="tree-branch" role="treeitem"
+                                                                                @click="clearDept">
+                                                                                <div class="tree-branch-header">
+                                                                                        <span class="tree-branch-name">
+                                                                                            <i class="icon-folder ace-icon tree-minus"
+                                                                                               :ref='"s"+index'
+                                                                                               @click.stop="changeExpand(index)"></i>
+                                                                                            <span class="tree-label"
+                                                                                                  v-text="item.deptName"></span>
+                                                                                        </span>
+                                                                                </div>
+                                                                                <template v-if="item.child">
+                                                                                    <ul class="tree-branch-children"
+                                                                                        :ref='"s"+index' role="group">
+                                                                                        <li v-for="(item, index) in item.child"
+                                                                                            :key="index"
+                                                                                            class="tree-branch"
+                                                                                            role="treeitem"
+                                                                                            @click.stop="selectDept(item.deptOACode)">
+                                                                                            <div class="tree-branch-header">
+                                                                                                    <span class="tree-branch-name">
+                                                                                                        <i class="icon-folder ace-icon tree-minus"
+                                                                                                           :ref='"c"+index'
+                                                                                                           @click.stop="changeChildExpand(index)"></i>
+                                                                                                        <span class="tree-label"
+                                                                                                              v-text="item.deptName"></span>
+                                                                                                    </span>
+                                                                                            </div>
+                                                                                            <template v-if="item.child">
+                                                                                                <ul class="tree-branch-children"
+                                                                                                    :ref='"c"+index'
+                                                                                                    role="group">
+                                                                                                    <li v-for="(item, index) in item.child"
+                                                                                                        :key="index"
+                                                                                                        class="tree-item"
+                                                                                                        role="treeitem"
+                                                                                                        @click.stop="selectDept(item.deptOACode)">
+                                                                                                            <span class="tree-item-name">
+                                                                                                                <span
+                                                                                                                        class="tree-label"
+                                                                                                                        v-text="item.deptName"></span>
+                                                                                                            </span>
+                                                                                                    </li>
+                                                                                                </ul>
+                                                                                            </template>
+                                                                                        </li>
+                                                                                    </ul>
+                                                                                </template>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-6 contacts">
+                                                        <div class="table-header">
+                                                            通讯录
+                                                        </div>
+                                                        <div>
+                                                            <table class="table  table-bordered table-hover dataTable"
+                                                                   style="background-color: #fff;">
+                                                                <thead>
+                                                                <tr>
+                                                                    <th class="center">
+                                                                        <label class="pos-rel">
+                                                                            <input type="checkbox" class="ace"
+                                                                                   :checked="emailAllCheck"
+                                                                                   @click="emailSelectAll"/>
+                                                                            <span class="lbl"></span>
+                                                                        </label>
+                                                                    </th>
+                                                                    <th class="center">姓名</th>
+                                                                    <th class="center">部门</th>
+                                                                </tr>
+                                                                </thead>
+
+                                                                <tbody>
+                                                                <template v-if="emailViewData.length>0">
+                                                                    <tr v-for="(item, index) in emailViewData"
+                                                                        :key="index" :class="item.check?'active':''">
+                                                                        <td class="center">
+                                                                            <label class="pos-rel">
+                                                                                <input type="checkbox" class="ace"
+                                                                                       :checked="item.check"
+                                                                                       @click="emailAdd(index)"/>
+                                                                                <span class="lbl"></span>
+                                                                            </label>
+                                                                        </td>
+                                                                        <td class="center" v-text="item.username"></td>
+                                                                        <td class="center" v-text="item.deptName"></td>
+                                                                    </tr>
+                                                                </template>
+                                                                <template v-else>
+                                                                    <tr>
+                                                                        <td class="center" v-text="'没有数据'"
+                                                                            colspan="3"></td>
+                                                                    </tr>
+                                                                </template>
+                                                                </tbody>
+                                                            </table>
+                                                            <!--底部页码-->
+                                                            <div v-if="emailViewData.length>0" class="row"
+                                                                 style="padding: 10px 0;background-color: #EFF3F8;margin: 0;">
+                                                                <div class="col-lg-4">
+                                                                    <div class="dataTables_info"
+                                                                         v-text="'共 '+emailMiddleData.length+' 页'"></div>
+                                                                </div>
+                                                                <div class="col-lg-8">
+                                                                    <div class="dataTables_paginate paging_simple_numbers">
+                                                                        <ul class="pagination">
+                                                                            <li @click="emailPrev">
+                                                                                <span v-text="'<'"></span>
+                                                                            </li>
+                                                                            <li>
+                                                                                <span v-text="emailCurrentIndex+1"></span>
+                                                                            </li>
+                                                                            <li @click="emailNext">
+                                                                                <span v-text="'>'"></span>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-3 selected">
+                                                        <div class="table-header clearfix info">
+                                                            已选中({{emailSelectedData.length}})人
+                                                            <span class="pull-right" @click="emailClear"
+                                                                  style="margin-right: 10px;">清空</span>
+                                                        </div>
+                                                        <div class="bg-info" style="height: 400px;overflow-y:auto;">
+                                                            <ul class="list-group " style="margin-bottom:0;">
+                                                                <li class="list-group-item" style="padding: 5px;"
+                                                                    v-for="(item, index) in emailSelectedData"
+                                                                    :key="index">
+                                                                    {{item.username}}
+                                                                    <i class="ace-icon glyphicon glyphicon-remove pull-right"
+                                                                       @click="emailRemove(index)"></i>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+
+                                                    </div>
+                                                    <div style="clear: both;"></div>
+                                                </div>
+                                                <div id="orgs" class="tab-pane">
+                                                    <div class="col-lg-3 organization">
+                                                        <form class="form-inline" style="margin: 10px 0;">
+                                                            <div class="form-group">
+                                                                <label class="control-label"></label>
+                                                                <input type="text" v-model="orgShortNM" style="width: 145px;">
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label class="control-label"></label>
+                                                                <input type="button" class="btn btn-sm btn-primary" value="查询"
+                                                                       @click="orgSearch">
+                                                            </div>
+                                                        </form>
+                                                        <div class="widget-box widget-color-blue2">
+                                                            <div class="widget-header">
+                                                                <div class="widget-title smaller">选择代销机构</div>
+                                                            </div>
+                                                            <div class="widget-body">
+                                                                <div class="widget-main padding-8">
+                                                                    <div class="tree-container">
+                                                                        <ul id="tree2" class="tree tree-unselectable" role="tree">
+                                                                            <!-- 代销机构树 -->
+                                                                            <li v-for="(item, index) in orgs" :key="index"
+                                                                                class="tree-branch" role="treeitem"
+                                                                                @click="selectOrg(item.channelname)"
+                                                                            >
+                                                                                <div class="tree-branch-header">
+                                                                <span class="tree-branch-name">
+                                                                    <i class="icon-folder ace-icon tree-minus"
+                                                                       :ref="'channelChild'+index"
+                                                                       @click.stop="channelChangeHide(index)"></i></i>
+                                                                    <span class="tree-label"
+                                                                          v-text="item.channelname"></span>
+                                                                </span>
+                                                                                </div>
+                                                                                <ul class="tree-branch-children"
+                                                                                    :ref="'channel'+index"
+                                                                                    role="group">
+                                                                                    <li v-for="(item, index) in item.child"
+                                                                                        :key="index" class="tree-item"
+                                                                                        role="treeitem"
+                                                                                        @click.stop="selectOrg(item.channelname)">
+                                                                    <span class="tree-item-name">
+                                                                        <span class="tree-label"
+                                                                              v-text="item.channelname"></span>
+                                                                    </span>
+                                                                                    </li>
+                                                                                </ul>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-6 contacts">
+                                                        <div class="table-header">
+                                                            通讯录
+                                                        </div>
+                                                        <div>
+                                                            <table class="table  table-bordered table-hover dataTable"
+                                                                   style="background-color: #fff;">
+                                                                <thead>
+                                                                <tr>
+                                                                    <th class="center">
+                                                                        <label class="pos-rel">
+                                                                            <input type="checkbox" class="ace" :checked="orgAllCheck"
+                                                                                   @click="orgSelectAll"/>
+                                                                            <span class="lbl"></span>
+                                                                        </label>
+                                                                    </th>
+                                                                    <th class="center">姓名</th>
+                                                                    <th class="center">所属机构</th>
+                                                                </tr>
+                                                                </thead>
+
+                                                                <tbody>
+                                                                <template v-if="orgViewData.length>0">
+                                                                    <tr v-for="(item, index) in orgViewData" :key="index"
+                                                                        :class="item.check?'active':''">
+                                                                        <td class="center">
+                                                                            <label class="pos-rel">
+                                                                                <input type="checkbox" class="ace" :checked="item.check"
+                                                                                       @click="orgAdd(item)"/>
+                                                                                <span class="lbl"></span>
+                                                                            </label>
+                                                                        </td>
+                                                                        <td class="center" v-text="item.username"></td>
+                                                                        <td class="center" v-text="item.shortnm"></td>
+                                                                    </tr>
+                                                                </template>
+                                                                <template v-else>
+                                                                    <tr>
+                                                                        <td class="center" v-text="'没有数据'" colspan="3"></td>
+                                                                    </tr>
+                                                                </template>
+                                                                </tbody>
+                                                            </table>
+                                                            <!--底部页码-->
+                                                            <div v-if="orgViewData.length>0" class="row"
+                                                                 style="padding: 10px 0;background-color: #EFF3F8;margin: 0;">
+                                                                <div class="col-lg-4">
+                                                                    <div class="dataTables_info"
+                                                                         v-text="'共 '+orgMiddleData.length+' 页'"></div>
+                                                                </div>
+                                                                <div class="col-lg-8">
+                                                                    <div class="dataTables_paginate paging_simple_numbers">
+                                                                        <ul class="pagination">
+                                                                            <li @click="orgPrev">
+                                                                                <span v-text="'<'"></span>
+                                                                            </li>
+                                                                            <li>
+                                                                                <span v-text="orgCurrentIndex+1"></span>
+                                                                            </li>
+                                                                            <li @click="orgNext">
+                                                                                <span v-text="'>'"></span>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-3 selected">
+                                                        <div class="table-header clearfix info">
+                                                            已选中({{orgSelectPerson.length}})人
+                                                            <span class="pull-right" @click="orgClear"
+                                                                  style="margin-right: 10px;">清空</span>
+                                                        </div>
+                                                        <div class="bg-info" style="height: 400px;overflow-y:auto;">
+                                                            <ul class="list-group " style="margin-bottom:0;">
+                                                                <li class="list-group-item" style="padding: 5px;"
+                                                                    v-for="(item, index) in orgSelectPerson" :key="index" v-if="item">
+                                                                    {{item.channelName+' '+item.username}}
+                                                                    <i class="ace-icon glyphicon glyphicon-remove pull-right"
+                                                                       @click="orgRemove(index)"></i>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+
+                                                    </div>
+                                                    <div style="clear: both;"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer" style="padding: 10px 15px;">
+                                    <button class="btn btn-sm btn-primary" @click="savePerson">确定</button>
+                                    <button class="btn btn-sm btn-default" data-dismiss="modal">取消</button>
+                                </div>
+                            </div>
+                            <!-- /.modal-content -->
+                        </div>
+                        <!-- /.modal -->
+                    </div>
+                    <!--信息提示-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                    </button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--信息提示-->
+                    <div class="modal" id="delete" tabindex="-1" role="dialog" aria-hidden="true"
+                         data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                    </button>
+                                    <h4 class="modal-title">删除文件</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4>是否删除该文件?</h4>
+                                </div>
+                                <p class="text-center">
+                                    <button class="btn btn-primary btn-sm" @click="deleteFile">确定</button>
+                                    <button class="btn btn-primary btn-sm" data-dismiss="modal">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--dialog end-->
+                    <div class="form-horizontal">
+                        <div class="form-group" style="margin-top: 10px;">
+                            <input class="btn btn-sm btn-primary col-lg-1" type="button" value="收件人"
+                                   @click="recipientShow">
+                            <div class="tags col-lg-11" style="min-height: 34px;">
+                                    <span class="tag" v-for="(item, index) in recipient" :key="index">
+                                        {{item.username?item.username:item.contactor}}
+                                        <button type="button" class="close" @click="removeRecipient(index)">×</button>
+                                    </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input class="btn btn-sm btn-primary col-lg-1" type="button" value="抄送人" @click="copyShow">
+                            <div class="tags col-lg-11" style="min-height: 34px;">
+                                    <span class="tag" v-for="(item, index) in copy" :key="index">
+                                        {{item.username?item.username:item.contactor}}
+                                        <button type="button" class="close" @click="removeCopy(index)">×</button>
+                                    </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input class="btn btn-sm btn-primary col-lg-1" type="button" value="密送人"
+                                   @click="encryptionShow">
+                            <div class="tags col-lg-11" style="min-height: 34px;">
+                                    <span class="tag" v-for="(item, index) in encryption" :key="index">
+                                        {{item.username?item.username:item.contactor}}
+                                        <button type="button" class="close" @click="removeEncryption(index)">×</button>
+                                    </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input class="btn btn-sm btn-primary col-lg-1" type="button" value="邮件标题">
+                            <input type="text" class="col-lg-11" v-model="themeName">
+                        </div>
+                        <div class="form-group">
+                            <input type="button" class="btn btn-sm btn-primary col-lg-1" value="附件"
+                                   @click='showUpload'>
+                            <div class="tags col-lg-11" style="min-height: 80px;">
+                                    <span class="tag" v-for="(item,index) in succeedfile">
+                                        {{item.name | fileNameFilter}}
+                                        <button class="close" @click="showDeleteFile(index)">×</button>
+                                    </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- loading动画 -->
+                    <div class="cover" v-show='progress' v-cloak style="z-index: 1999;">
+                        <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                    </div><!-- loading动画 -->
+
+                    <!-- 上传 -->
+                    <div class="cover" v-if='addition' v-cloak>
+                        <form class="upload" enctype="multipart/form-data">
+                            <!--   disabled  -->
+                            <button type="button" class="btn btn-info btn-sm" id='select' @click='selectFile()'>选取文件
+                            </button>  <!-- @click='selectFile()' -->
+                            <button type="button" style="margin-left: 50px;" class="btn btn-info btn-sm"
+                                    @click='upload()'>确定上传
+                            </button>
+                            <button type="button" class="close" @click='shutAddition'><span>&times;</span></button>
+                            <input type="file" ref="addition1" name="files1" id="uploadFile1" @change='getName'
+                                   style="display:none">
+                            <input type="file" ref="addition2" name="files2" id="uploadFile2" @change='getName'
+                                   style="display:none">
+                            <input type="file" ref="addition3" name="files3" id="uploadFile3" @change='getName'
+                                   style="display:none">
+                            <input type="file" ref="addition4" name="files4" id="uploadFile4" @change='getName'
+                                   style="display:none">
+                            <input type="file" ref="addition5" name="files5" id="uploadFile5" @change='getName'
+                                   style="display:none">
+                            <transition-group tag="ul" class="fileName" mode='in-out'>
+                                <li v-for="(item, index) in fileName" :key="index"><i>{{item}}</i>
+                                    <button type="button"
+                                            class="close"><span :data-ind='index' @click='delfile'>&times;</span>
+                                    </button>
+                                </li>
+                            </transition-group>
+                        </form>
+                    </div> <!-- 上传 -->
+
+
+                    <!-- 模态框 -->
+                    <div class="cover" v-show='titleBox' v-cloak>
+                        <div style="background-color: #fff;width: 500px;position: absolute;top: 50%;left: 50%;margin: -80px 0 0 -250px;">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button class="close" @click="titleBoxShow">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="title"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button class="btn btn-primary btn-sm" @click="titleBoxShow">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                    <!-- 模态框结束 -->
+                    <div class="row" style="margin-bottom: 50px">
+                        <div class="col-xs-12">
+                            <div class="wysiwyg-editor" id="editor1"></div>
+                            <div class="widget-toolbox padding-4 clearfix">
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary" @click="sendEmail">发送</button>
+                                    <button class="btn btn-sm btn-primary" @click="saveEmail">保存</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- PAGE CONTENT ENDS -->
+            <% include ../../common/footer.html %>
+        </div>
+
+    </div>
+    <!-- /.main-content -->
+</div>
+<!-- /.main-container -->
+
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<!-- page specific plugin scripts -->
+<script src="/ace/assets/js/jquery-ui.custom.min.js"></script>
+<script src="/ace/assets/js/jquery.ui.touch-punch.min.js"></script>
+<script src="/ace/assets/js/markdown.min.js"></script>
+<script src="/ace/assets/js/bootstrap-markdown.min.js"></script>
+<script src="/ace/assets/js/jquery.hotkeys.index.min.js"></script>
+<script src="/ace/assets/js/bootstrap-wysiwyg.min.js"></script>
+<script src="/ace/assets/js/bootbox.js"></script>
+<script src="/ace/assets/js/tree.min.js"></script>
+<script src="/js/thirdPartyOperation/common/newajaxfileupload.js"></script>
+<script src="/js/thirdPartyOperation/common/richTextBox.js"></script>
+<script src="/js/thirdPartyOperation/mails/new.js"></script>
+
+<!-- inline scripts related to this page -->
+</body>
+
+</html>

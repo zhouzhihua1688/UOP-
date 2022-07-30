@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+
+        .chosen-single {
+            height: 30px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--新增编辑弹窗-->
+                <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:60%;">
+                        <div class="modal-content" style="margin-top:350px;">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title inline">数据操作</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form">
+                                    <div class="form-group">
+                                        <p style="font-weight: bold;margin: 0;">基本信息</p>
+                                        <hr>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="margin-left:90px;">组合类型:</label>
+                                        <!--<select style="width:150px" v-model="fundgroupType"-->
+                                        <!--@change="GroupList(fundgroupType)">-->
+                                        <select style="width:175px" v-model="fundgroupType"
+                                                @change="changeAccept(fundgroupType)">
+                                            <option value="">请选择</option>
+                                            <option :value="item.pmco" v-for="(item,index) in fundGroupType">
+                                                {{item.pmco}}-{{item.pmnm}}
+                                            </option>
+                                        </select>
+                                        <span style="color:red">*必填</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label"
+                                               style="width: 150px;text-align: right">组合ID:</label>
+                                        <input type="text" style="width: 175px;" v-model="groupid" placeholder="A开头加上四位数字"/>
+                                        <span style="color:red">*必填(组合ID格式:以首字母为"A"开头后面加上数字)</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label"
+                                               style="width: 150px;text-align: right">组合名称:</label>
+                                        <input type="text" style="width: 175px;" v-model="groupname"/>
+                                        <!--<select style="width:150px" v-model="groupId">-->
+                                        <!--<option value="">请选择</option>-->
+                                        <!--<option :value="item.groupId"-->
+                                        <!--v-for="(item,index) in subGroupArr">{{item.groupId}} {{item.groupName}}-->
+                                        <!--</option>-->
+                                        <!--<option>-->
+                                        <!--</option>-->
+                                        <!--</select>-->
+                                        <span style="color:red">*必填</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label"
+                                               style="width: 150px;text-align: right;vertical-align: top">组合建议:</label>
+                                        <textarea name="" id="" cols="15" rows="5" placeholder="标准组合页面组合购买建议，最长600字符"
+                                                  style="height: 54px; width: 300px;"
+                                                  v-model="fundgroupDesc"></textarea>
+                                        <span style="color:red">*必填</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label"
+                                               style="width: 150px;text-align: right;vertical-align: top">智投建议:</label>
+                                        <textarea name="" id="" cols="20" rows="10" placeholder="添富智投页面投资建议配置，最长600字符"
+                                                  style="height: 76px; width: 300px;"
+                                                  v-model="fundgroupAdvise"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label"
+                                               style="width: 150px;text-align: right;">历史年化收益率:</label>
+                                        <input type="text" style="width: 175px" placeholder="0.00" v-model="sofarYield"/>%
+                                    </div>
+                                    <div>
+                                        <div style="float:left">
+                                            <div class="form-group">
+                                                <div class="input-group" style="margin-bottom: 5px;">
+                                                    <label class="control-label"
+                                                           style="width: 150px;text-align: right;">成立时间:</label>
+                                                    <input style="width:135px" type="text" id="onlinedate" ref="onlinedate"
+                                                           class="date-timepicker">
+                                                    <span class="input-group-addon" style="width: 12%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right;">小白版宣传页:</label>
+                                                <input type="text" style="width: 175px"
+                                                       placeholder="例如www.99fund.com" v-model="normalPageurl"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right;">开放渠道:</label>
+                                                <select name="" id="" style="width: 175px" v-model="acceptMode">
+                                                    <option value="0">0-柜台</option>
+                                                    <option value="2">2-网上</option>
+                                                    <option value="6">6-第三方</option>
+                                                    <option value="7">7-企业版</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right;">交易状态:</label>
+                                                <select name="" id="" style="width: 175px" v-model="stopStatus"
+                                                        @change="showTimes(stopStatus)">
+                                                    <option value="0">0-正常交易</option>
+                                                    <option value="1">1-暂停申购</option>
+                                                    <option value="2">2-暂停赎回</option>
+                                                    <option value="3">3-暂停交易</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="input-group" style="margin-bottom: 5px;">
+                                                    <label class="control-label"
+                                                           style="width: 150px;text-align: right;">displayDate:</label>
+                                                    <input style="width:135px" type="text" id="displayDate" ref="displayDate"
+                                                           class="date-timepicker">
+                                                    <span class="input-group-addon" style="width: 12%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="float:left;">
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 120px;text-align: right;">专业版宣传页:</label>
+                                                <input type="text" style="width: 175px" placeholder="例如www.99fund.com" v-model="proPageurl"/>
+                                            </div>
+                                            <div class="form-group" v-if="fundgroupType=='04'">
+                                                <label class="control-label" style="width: 120px;text-align: right;">合作模式:</label>
+                                                <select name="" id="" style="width: 150px" v-model="cooPreationMode"
+                                                        @click="changeBranch(cooPreationMode)">
+                                                    <option value="2">2-代销</option>
+                                                    <option value="1">1-直销前置</option>
+                                                    <option value="0">0-直销三方</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group" v-if="fundgroupType=='04'&&cooPreationMode!='2'">
+                                                <label class="control-label" style="width: 120px;text-align: right;">网点号:</label>
+                                                <select name="" id="" style="width: 150px" v-model="branchCode">
+                                                    <!--<option value="1">1号</option>-->
+                                                    <!--<option value="2">2号</option>-->
+                                                    <!--<option value="3">3号</option>-->
+                                                    <option value="">请选择</option>
+                                                    <option :value="item.pmco" v-for="(item,index) in branchCodeList">
+                                                        {{item.pmco}}-{{item.pmnm}}
+                                                    </option>
+                                                </select>
+
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+
+                                        <div style="float: left" v-if="fundgroupType=='02'">
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 120px;text-align: right;">适合年龄段:</label>
+                                                <select name="" id="" style="width: 150px" v-model="ageRange">
+                                                    <option value="">请选择</option>
+                                                    <option :value="item.pmco" v-for="(item,index) in ageRangeList">
+                                                        {{item.pmco}}--{{item.pmnm}}
+                                                    </option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="float: left" v-show="isTime">
+                                            <div class="input-group" style="margin-bottom: 5px;">
+                                                <label class="control-label"
+                                                       style="width: 120px;text-align: right;">暂停起止时间:</label>
+                                                <input type="text" class="date-timepicker" id="stopStartTime" ref="stopStartTime">
+
+                                                <!--<input style="width:135px" type="text" id="onlinedates" ref="onlinedate"-->
+                                                       <!--class="date-timepicker">-->
+                                                <span class="input-group-addon" style="width: 12%;">
+                                                                <i class="fa fa-clock-o bigger-110"></i>
+                                                            </span>至
+                                            </div>
+                                            <div class="input-group" style="margin-bottom: 5px;float:left">
+                                                <label class="control-label"
+                                                       style="width: 130px;margin-left:-10px;text-align: right;"></label>
+                                                <input type="text" class="date-timepicker" id="stopEndTime" ref="stopEndTime">
+                                                <span class="input-group-addon" style="width: 12%;">
+                                                                <i class="fa fa-clock-o bigger-110"></i>
+                                                            </span>
+                                            </div>
+                                            <span style="color:red">*必填</span>
+                                        </div>
+                                        <div style="clear: both"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <p style="font-weight: bold;margin: 0;">组合成分</p>
+                                        <hr>
+                                    </div>
+                                    <div>
+                                        <div style="float:left">
+                                            <div class="form-group">
+                                                <div class="input-group" style="margin-bottom: 5px;">
+                                                    <label class="control-label"
+                                                           style="width: 150px;text-align: right;">风险类型:</label>
+                                                    <select name="" id="" style="width: 170px" v-model="grouptype" @click="groupTypeList()">
+                                                        <option value="">请选择</option>
+                                                        <option :value="item.pmco" v-for="(item,index) in grouptypeList">
+                                                            {{item.pmco}}-{{item.pmnm}}
+                                                        </option>
+                                                    </select>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right;">起投金额:</label>
+                                                <input type="text"
+                                                       placeholder="例如1000.00" v-model="initamount"/>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right;">最低赎回金额:</label>
+                                                <input type="text"
+                                                       placeholder="例如1000.00" v-model="minRedeemAmount"/>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right;">最低持有金额:</label>
+                                                <input type="text"
+                                                       placeholder="例如1000.00" v-model="minReserveAmount"/>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="float:left">
+                                            <div class="form-group">
+                                                <div class="input-group" style="margin-bottom: 5px;">
+                                                    <label class="control-label"
+                                                           style="width: 120px;text-align: right;">风险等级:</label>
+                                                    <select name="" id="" style="width: 170px" v-model="risklevel" @click="riskLevelList()">
+                                                        <option value="">请选择</option>
+                                                        <option :value="item.pmco" v-for="(item,index) in risklevelList">
+                                                            {{item.pmco}}-{{item.pmnm}}
+                                                        </option>
+                                                    </select>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 120px;text-align: right;">费率折扣:</label>
+                                                <input type="text"
+                                                       placeholder="最多两位小数点" v-model="commro"/>%
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 120px;text-align: right;">最低调仓金额:</label>
+                                                <input type="text"
+                                                       placeholder="例如1000.00" v-model="minChangeAmount"/>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <!--<div class="input-group" style="margin-bottom: 5px;">-->
+                                            <!--<label class="control-label"-->
+                                                   <!--style="width: 150px;text-align: right;">成立时间:</label>-->
+                                            <!--<input type="text" id="" class="date-timepicker">-->
+                                            <!--<span class="input-group-addon" style="width: 12%;">-->
+                                                            <!--<i class="fa fa-clock-o bigger-110"></i>-->
+                                                    <!--</span>-->
+                                        <!--</div>-->
+                                        <!--<label class="control-label"-->
+                                               <!--style="width: 150px;text-align: right; vertical-align: top">调仓方案:</label>-->
+                                        <!--<div style="display: inline-block;width: 70%;">-->
+                                            <!--<div class="form-inline" style="padding: 0 0 10px 0 ;">-->
+                                                <!--<div class="form-group text-left">-->
+                                                    <!--<input type="button" class="btn btn-sm btn-primary" value="添加"-->
+                                                           <!--@click="showAddFund()">-->
+                                                    <!--<p style="display:inline-block;margin-left: 10px">已添加<span-->
+                                                            <!--class="red">{{size}}</span>只基金</p>-->
+                                                <!--</div>-->
+                                            <!--</div>-->
+
+
+                                            <!--数据表-->
+                                            <!--<table id="simple-table" class="table table-bordered table-hover dataTable">-->
+                                                <!--<thead>-->
+                                                <!--<tr>-->
+                                                    <!--<th class="center col-sm-1 col-md-1 col-lg-1">产品类型</th>-->
+                                                    <!--<th class="center col-sm-1 col-md-1 col-lg-1">产品名称</th>-->
+                                                    <!--<th class="center col-sm-1 col-md-1 col-lg-1">产品代码</th>-->
+                                                    <!--<th class="center col-sm-1 col-md-1 col-lg-1">调整仓位</th>-->
+                                                    <!--<th class="center col-sm-1 col-md-1 col-lg-1">操作</th>-->
+                                                <!--</tr>-->
+                                                <!--</thead>-->
+                                                <!--<tbody>-->
+                                                <!--<template v-if="fundListAll.length>0">-->
+                                                    <!--<tr v-for="(item,index) in fundListAll" :key="index">-->
+                                                        <!--<td class="center">{{item.fundTypeForFundgroup |-->
+                                                            <!--fundTypeForFundgroup}}-->
+                                                        <!--</td>-->
+                                                        <!--<td class="center" v-text='item.fundName'></td>-->
+                                                        <!--<td class="center" v-text='item.fundId'></td>-->
+                                                        <!--<td class="center"><input type="text"-->
+                                                                                  <!--v-model="item.fundPercent">%-->
+                                                        <!--</td>-->
+                                                        <!--<td class="center">-->
+                                                        <!--<a href="javascript:;" @click="templateConfig(item)">关联模块</a>-->
+                                                        <!--</td>-->
+                                                        <!--<td class="center" v-text='item.enable=="0"?"失效":"可用"'></td>-->
+                                                        <!--<td class="center">-->
+                                                            <!--<a href="javascript:;" v-text='item.enable=="0"?"启用":"禁用"' @click="enableOrDisable(item)"></a>/-->
+                                                            <!--<a href="javascript:;" @click="showUpdate(item)">修改</a>/-->
+                                                            <!--<a href="javascript:;"-->
+                                                               <!--@click.prevent="delList(index)">删除</a>-->
+                                                        <!--</td>-->
+                                                    <!--</tr>-->
+                                                <!--</template>-->
+                                                <!--<template v-else>-->
+                                                <!--<tr>-->
+                                                <!--<td class="center" v-text="loadingStatus" colspan="6"></td>-->
+                                                <!--</tr>-->
+                                                <!--</template>-->
+                                                <!--</tbody>-->
+                                            <!--</table>-->
+                                        <!--</div>-->
+                                    </div>
+                                    <div class="form-group">
+                                        <p style="font-weight: bold;margin: 0;">调仓</p>
+                                        <div class="form-group text-left" style="margin-left:80px">
+                                            <input type="button" class="btn btn-sm btn-primary muchFund"
+                                                   value="添加历史调仓"
+                                                   @click="addAdjustment">
+                                            <input type="button" class="btn btn-sm btn-primary"
+                                                   value="重置历史调仓"
+                                                   @click="deleHtmlAll()">
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="input-group" style="margin-bottom: 5px;">
+                                            <label class="control-label"
+                                                   style="width: 150px;text-align: right;">成立调仓时间:</label>
+                                            <input type="text" id="history_local" class="date-timepicker" ref="stringEstablishDate">
+                                            <!--<input style="width:135px" type="text" id="onlinedates" ref="onlinedate"-->
+                                                   <!--class="date-timepicker" >-->
+                                            <span class="input-group-addon" style="width: 12%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                        </div>
+                                        <div class="form-inline" style="padding: 0 0 10px 150px ;">
+                                            <div class="form-group text-left">
+                                                <input type="button" class="btn btn-sm btn-primary" value="添加"
+                                                       @click="addFundHistory()">
+                                                <p style="display:inline-block;margin-left: 10px">已添加<span
+                                                        class="red">{{size2}}</span>只基金</p>
+                                                <!--<input type="button" class="btn btn-sm btn-primary muchFund"-->
+                                                       <!--value="添加历史调仓"-->
+                                                       <!--@click="addAdjustment">-->
+                                                <!--<input type="button" class="btn btn-sm btn-primary"-->
+                                                       <!--value="重置历史调仓"-->
+                                                       <!--@click="deleHtmlAll()">-->
+                                            </div>
+                                        </div>
+                                        <div style="padding: 0 0 10px 150px; width: 85%;">
+                                            <!--数据表-->
+                                            <table id="simple-table-min"
+                                                   class="table table-bordered table-hover dataTable">
+                                                <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">产品类型</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">产品名称</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">产品代码</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">调整仓位</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="fundHistory.length>0">
+                                                    <tr v-for="(item,index) in fundHistory" :key="index">
+                                                        <td class="center">{{item.fundTypeForFundgroup |
+                                                            fundTypeForFundgroup}}
+                                                        </td>
+                                                        <td class="center" v-text='item.fundName'></td>
+                                                        <td class="center" v-text='item.fundId'></td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.fundPercent" placeholder="0.00">%</td>
+                                                        <td class="center">
+                                                            <a href="javascript:;"
+                                                               @click.prevent="delList2(index)">删除</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                </tbody>
+                                            </table>
+                                            <div class="form-group" style="margin-left:-100px;margin-top:10px">
+                                                <label class="control-label"
+                                                       style="width: 150px;text-align: right;vertical-align: top">调仓说明:</label>
+                                                <textarea name="" cols="15" rows="5" placeholder="跟大家说说你调仓的思路吧"
+                                                          style="height: 54px; width: 300px;" v-model="changeAdvise"></textarea>
+                                            </div>
+                                            <div class="form-group" style="margin-left:-150px;margin-top:3px">
+                                                <label class="control-label" style="width: 120px;text-align: right;">是否展示:</label>
+                                                <select name="" id="" style="width: 150px" v-model="isDisplay">
+                                                    <option value="1">1-是</option>
+                                                    <option value="0">0-否</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="addHtml">
+                                        </div>
+                                    </div>
+                                    <!--调仓模板的添加-->
+                                    <template>
+                                        <div v-for="(item,index) in htmlList">
+                                            <div class="form-group">
+                                                <div class="input-group" style="margin-bottom: 5px;">
+                                                    <label class="control-label"
+                                                           style="width: 150px;text-align: right;">调仓时间:</label>
+                                                    <input type="text" id="" class="date-timepicker change"
+                                                           @click="historyTime(this)">
+                                                    <span class="input-group-addon" style="width: 8%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                    </span>
+                                                    <i style="color:red">(该调仓时间要大于前面调仓时间)</i>
+                                                </div>
+                                                <div class="form-inline" style="padding: 0 0 10px 150px ;">
+                                                    <div class="form-group text-left">
+                                                        <input type="button" class="btn btn-sm btn-primary" value="添加"
+                                                               @click="muchFundHistory(index)">
+                                                        <p style="display:inline-block;margin-left: 10px">已添加<span
+                                                                class="red">{{item.list.length}}</span>只基金</p>
+                                                        <input type="button" class="btn btn-sm btn-primary muchFund"
+                                                               value="删除历史调仓" @click="deleHtmlList(index)">
+                                                    </div>
+                                                </div>
+                                                <div style="padding: 0 0 10px 150px; width: 85%;">
+                                                    <!--数据表-->
+                                                    <table id="simple-table-min"
+                                                           class="table table-bordered table-hover dataTable">
+                                                        <thead>
+                                                        <tr>
+                                                            <th class="center col-sm-1 col-md-1 col-lg-1">产品类型</th>
+                                                            <th class="center col-sm-1 col-md-1 col-lg-1">产品名称</th>
+                                                            <th class="center col-sm-1 col-md-1 col-lg-1">产品代码</th>
+                                                            <th class="center col-sm-1 col-md-1 col-lg-1">调整仓位</th>
+                                                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        <template v-if="item.list.length>0">
+                                                            <tr v-for="(items,indexs) in item.list">
+                                                                <td class="center">{{items.fundTypeForFundgroup |
+                                                                    fundTypeForFundgroup}}</td>
+                                                                    <td class="center" v-text="items.fundName"></td>
+                                                                    <td class="center" v-text="items.fundId"></td>
+                                                                    <td class="center">
+                                                                        <input type="text" v-model="items.fundPercent">%</td>
+                                                                    <td class="center">
+                                                                        <a href="javascript:;"
+                                                                           @click.prevent="muchDelList(indexs)">删除</a>
+                                                                    </td>
+                                                            </tr>
+                                                        </template>
+                                                        <template v-else>
+                                                            <tr>
+                                                                <td class="center" v-text="'没有数据'" colspan="26"></td>
+                                                            </tr>
+                                                        </template>
+                                                        </tbody>
+                                                    </table>
+                                                    <div class="form-group" style="margin-left:-100px;margin-top:10px">
+                                                        <label class="control-label"
+                                                               style="width: 150px;text-align: right;vertical-align: top">调仓说明:</label>
+                                                        <textarea name="" cols="15" rows="5" class="textarea" placeholder="跟大家说说你调仓的思路吧"
+                                                                  style="height: 54px; width: 300px;" v-model="changeAdvises"></textarea>
+                                                    </div>
+                                                    <div class="form-group" style="margin-left:-150px;margin-top:3px">
+                                                        <label class="control-label" style="width: 120px;text-align: right;">是否展示:</label>
+                                                        <select name="" id="" style="width: 150px">
+                                                            <option value="1">1-是</option>
+                                                            <option value="0">0-否</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <hr>
+                                                <!--<div class="addHtml">-->
+                                                <!--</div>-->
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <!--<div class="form-group">-->
+                                        <!--<p style="font-weight: bold;margin: 0;">调仓记录</p>-->
+                                        <!--<hr>-->
+                                    <!--</div>-->
+                                    <!--<div class="form-group">-->
+                                        <!--<p style="font-weight: bold;margin: 0;">审核记录</p>-->
+                                        <!--<hr>-->
+                                    <!--</div>-->
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" @click="saveParam()">确定
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                aria-hidden="true">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--组合成分里调仓添加基金-->
+                <div class="modal" id="addFund" tabindex="0" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title">基金产品信息</h4>
+                            </div>
+                            <div class="modal-body">
+                                <label class="control-label">产品代码:</label>
+                                <input type="text" style="width: 150px;" v-model="diaSearchFundId"/>
+                                <!--<input type="button" class="btn btn-sm btn-primary" value="查询" @click="searchFund()">-->
+                                <div class="col-sm-12" style="margin-top:10px">
+                                    <div class="table-header">
+                                        列表数据
+                                    </div>
+                                    <div style="margin-bottom: 0;height:400px; overflow-y: auto">
+                                        <table class="table table-striped table-bordered table-hover dataTable"
+                                               style="margin-bottom: 0;">
+                                            <thead>
+                                            <tr>
+                                                <!--<th class="center">-->
+                                                <!--<label class="pos-rel">-->
+                                                <!--<input type="checkbox" class="ace" v-model="checkAll" @click="select(checkAll)"/>-->
+                                                <!--<span class="lbl"></span>-->
+                                                <!--</label>-->
+                                                <!--</th>-->
+                                                <th class="center">选择</th>
+                                                <th class="center">产品代码</th>
+                                                <th class="center">产品名称</th>
+                                                <th class="center">产品类型</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <template v-if="filterFundList.length>0">
+                                                <tr v-for="(item,index) in filterFundList" :key="index">
+                                                    <td class="center">
+                                                        <label class="pos-rel">
+                                                            <input type="checkbox" class="ace" v-model="item.check"
+                                                                   @click="single(index)"/>
+                                                            <span class="lbl"></span>
+                                                        </label>
+                                                    </td>
+                                                    <td class="center" v-text="item.fundId"></td>
+                                                    <td class="center" v-text="item.fundName"></td>
+                                                    <td class="center">{{item.fundTypeForFundgroup |
+                                                        fundTypeForFundgroup}}
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                            <template v-else>
+                                                <tr>
+                                                    <td class="center" v-text="'没有数据'" colspan="10"></td>
+                                                </tr>
+                                            </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div style="clear: both;"></div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="checkList()">提交</button>
+                                <button type="button" class="btn btn-default btn-sm"
+                                        data-dismiss="modal">取消
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--历史调仓里增加调仓基金-->
+                <div class="modal" id="addFundHistory" tabindex="0" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title">基金产品信息</h4>
+                            </div>
+                            <div class="modal-body">
+                                <label class="control-label">产品代码:</label>
+                                <input type="text" style="width: 150px;" v-model="diaSearchFundId"/>
+                                <!--<input type="button" class="btn btn-sm btn-primary" value="查询" @click="searchFundHistory()">-->
+                                <div class="col-sm-12" style="margin-top:10px">
+                                    <div class="table-header">
+                                        列表数据
+                                    </div>
+                                    <div style="margin-bottom: 0;height:400px; overflow-y: auto">
+                                        <table class="table table-striped table-bordered table-hover dataTable"
+                                               style="margin-bottom: 0;">
+                                            <thead>
+                                            <tr>
+                                                <!--<th class="center">-->
+                                                <!--<label class="pos-rel">-->
+                                                <!--<input type="checkbox" class="ace" v-model="checkAll" @click="select(checkAll)"/>-->
+                                                <!--<span class="lbl"></span>-->
+                                                <!--</label>-->
+                                                <!--</th>-->
+                                                <th class="center">选择</th>
+                                                <th class="center">产品代码</th>
+                                                <th class="center">产品名称</th>
+                                                <th class="center">产品类型</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <template v-if="filterFundList2.length>0">
+                                                <tr v-for="(item,index) in filterFundList2" :key="index">
+                                                    <td class="center">
+                                                        <label class="pos-rel">
+                                                            <input type="checkbox" class="ace" v-model="item.check"
+                                                                   @click="single(index)"/>
+                                                            <span class="lbl"></span>
+                                                        </label>
+                                                    </td>
+                                                    <td class="center" v-text="item.fundId"></td>
+                                                    <td class="center" v-text="item.fundName"></td>
+                                                    <td class="center">{{item.fundTypeForFundgroup |
+                                                        fundTypeForFundgroup}}
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                            <template v-else>
+                                                <tr>
+                                                    <td class="center" v-text="'没有数据'" colspan="10"></td>
+                                                </tr>
+                                            </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div style="clear: both;"></div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="checkList2()">提交</button>
+                                <button type="button" class="btn btn-default btn-sm"
+                                        data-dismiss="modal">取消
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--历史调仓里增加历史调仓基金-多个添加-->
+                <div class="modal" id="muchFundHistory" tabindex="0" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title">基金产品信息</h4>
+                            </div>
+                            <div class="modal-body">
+                                <label class="control-label">产品代码:</label>
+                                <input type="text" style="width: 150px;" v-model="diaSearchFundId"/>
+                                <div class="col-sm-12" style="margin-top:10px">
+                                    <div class="table-header">
+                                        列表数据
+                                    </div>
+                                    <div style="margin-bottom: 0;height:400px; overflow-y: auto">
+                                        <table class="table table-striped table-bordered table-hover dataTable"
+                                               style="margin-bottom: 0;">
+                                            <thead>
+                                            <tr>
+                                                <!--<th class="center">-->
+                                                <!--<label class="pos-rel">-->
+                                                <!--<input type="checkbox" class="ace" v-model="checkAll" @click="select(checkAll)"/>-->
+                                                <!--<span class="lbl"></span>-->
+                                                <!--</label>-->
+                                                <!--</th>-->
+                                                <th class="center">选择</th>
+                                                <th class="center">产品代码</th>
+                                                <th class="center">产品名称</th>
+                                                <th class="center">产品类型</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <template v-if="filterFundList3.length>0">
+                                                <tr v-for="(item,index) in filterFundList3" :key="index">
+                                                        <td class="center">
+                                                            <label class="pos-rel">
+                                                                <input type="checkbox" class="ace" v-model="item.check"
+                                                                       @click="single3(index)"/>
+                                                                <span class="lbl"></span>
+                                                            </label>
+                                                        </td>
+                                                        <td class="center" v-text="item.fundId"></td>
+                                                        <td class="center" v-text="item.fundName"></td>
+                                                        <td class="center">{{item.fundTypeForFundgroup |
+                                                            fundTypeForFundgroup}}
+                                                        </td>
+                                                </tr>
+                                            </template>
+                                            <template v-else>
+                                                <tr>
+                                                    <td class="center" v-text="'没有数据'" colspan="10"></td>
+                                                </tr>
+                                            </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div style="clear: both;"></div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="muchCheckList()">提交</button>
+                                <button type="button" class="btn btn-default btn-sm"
+                                        data-dismiss="modal">取消
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--修改更新弹窗-->
+                <div class="modal" id="revise" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:60%;">
+                        <div class="modal-content" style="margin-top:350px;">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title inline">数据操作</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form">
+                                    <div class="form-group">
+                                        <p style="font-weight: bold;margin: 0;">基本信息</p>
+                                        <hr>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="margin-left:90px;">组合类型:</label>
+                                        <!--<select style="width:150px" v-model="fundgroupType"-->
+                                        <!--@change="GroupList(fundgroupType)">-->
+                                        <select style="width:175px" v-model="fundgroupType"
+                                                @change="changeAccept(fundgroupType)">
+                                            <option value="">请选择</option>
+                                            <option :value="item.pmco" v-for="(item,index) in fundGroupType">
+                                                {{item.pmco}}-{{item.pmnm}}
+                                            </option>
+                                        </select>
+                                        <span style="color:red">*必填</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label"
+                                               style="width: 150px;text-align: right">组合ID:</label>
+                                        <input type="text" style="width: 175px;" v-model="groupid" disabled/>
+                                        <span style="color:red">*必填</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label"
+                                               style="width: 150px;text-align: right">组合名称:</label>
+                                        <input type="text" style="width: 175px;" v-model="groupname" disabled/>
+                                        <!--<select style="width:150px" v-model="groupId">-->
+                                        <!--<option value="">请选择</option>-->
+                                        <!--<option :value="item.groupId"-->
+                                        <!--v-for="(item,index) in subGroupArr">{{item.groupId}} {{item.groupName}}-->
+                                        <!--</option>-->
+                                        <!--<option>-->
+                                        <!--</option>-->
+                                        <!--</select>-->
+                                        <span style="color:red">*必填</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label"
+                                               style="width: 150px;text-align: right;vertical-align: top">组合建议:</label>
+                                        <textarea name="" id="" cols="15" rows="5" placeholder="标准组合页面组合购买建议，最长600字符"
+                                                  style="height: 54px; width: 300px;"
+                                                  v-model="fundgroupDesc"></textarea>
+                                        <span style="color:red">*必填</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label"
+                                               style="width: 150px;text-align: right;vertical-align: top">智投建议:</label>
+                                        <textarea name="" id="" cols="20" rows="10" placeholder="添富智投页面投资建议配置，最长600字符"
+                                                  style="height: 76px; width: 300px;"
+                                                  v-model="fundgroupAdvise"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label"
+                                               style="width: 150px;text-align: right;">历史年化收益率:</label>
+                                        <input type="text" placeholder="0.00" v-model="sofarYield"/>%
+                                    </div>
+                                    <div>
+                                        <div style="float:left">
+                                            <div class="form-group">
+                                                <div class="input-group" style="margin-bottom: 5px;">
+                                                    <label class="control-label"
+                                                           style="width: 150px;text-align: right;">成立时间:</label>
+                                                    <input style="width:135px" type="text" id="onlinedates" ref="onlinedates"  v-model="onlinedate"
+                                                           class="date-timepicker">
+                                                    <span class="input-group-addon" style="width: 12%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right;">小白版宣传页:</label>
+                                                <input type="text"
+                                                       placeholder="例如www.99fund.com" v-model="normalPageurl"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right;">开放渠道:</label>
+                                                <select name="" id="" style="width: 175px" v-model="acceptMode">
+                                                    <option value="0">0-柜台</option>
+                                                    <option value="2">2-网上</option>
+                                                    <option value="6">6-第三方</option>
+                                                    <option value="7">7-企业版</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right;">交易状态:</label>
+                                                <select name="" id="" style="width: 175px" v-model="stopStatus"
+                                                        @change="showTimes(stopStatus)">
+                                                    <option value="0">0-正常交易</option>
+                                                    <option value="1">1-暂停申购</option>
+                                                    <option value="2">2-暂停赎回</option>
+                                                    <option value="3">3-暂停交易</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="input-group" style="margin-bottom: 5px;">
+                                                <label class="control-label"
+                                                       style="width: 150px;text-align: right;">displayDate:</label>
+                                                <input style="width:135px" type="text" id="displayDates" ref="displayDates" v-model="displayDate"
+                                                       class="date-timepicker">
+                                                <span class="input-group-addon" style="width: 12%;">
+                                                            <i class="fa fa-clock-o bigger-110"></i>
+                                                        </span>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="float:left;">
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 120px;text-align: right;">专业版宣传页:</label>
+                                                <input type="text"
+                                                       placeholder="例如www.99fund.com" style="width: 150px;"
+                                                       v-model="proPageurl"/>
+                                            </div>
+                                            <div class="form-group" v-if="fundgroupType=='04'">
+                                                <label class="control-label" style="width: 120px;text-align: right;">合作模式:</label>
+                                                <select name="" id="" style="width: 175px" v-model="cooPreationMode"
+                                                        @click="changeBranch(cooPreationMode)">
+                                                    <option value="2">2-代销</option>
+                                                    <option value="1">1-直销前置</option>
+                                                    <option value="0">0-直销三方</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group" v-if="fundgroupType=='04'&&cooPreationMode!='2'">
+                                                <label class="control-label" style="width: 120px;text-align: right;">网点号:</label>
+                                                <select name="" id="" style="width: 175px" v-model="branchCode">
+                                                    <!--<option value="1">1号</option>-->
+                                                    <!--<option value="2">2号</option>-->
+                                                    <!--<option value="3">3号</option>-->
+                                                    <option value="">请选择</option>
+                                                    <option :value="item.pmco" v-for="(item,index) in branchCodeList">
+                                                        {{item.pmco}}--{{item.pmnm}}
+                                                    </option>
+                                                </select>
+
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+
+                                        <div style="float: left" v-if="fundgroupType=='02'">
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 120px;text-align: right;">适合年龄段:</label>
+                                                <select name="" id="" style="width: 175px" v-model="ageRange">
+                                                    <option value="">请选择</option>
+                                                    <option :value="item.pmco" v-for="(item,index) in ageRangeList">
+                                                        {{item.pmco}}--{{item.pmnm}}
+                                                    </option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="float: left" v-show="isTime">
+                                            <div class="input-group" style="margin-bottom: 5px;">
+                                                <label class="control-label"
+                                                       style="width: 150px;text-align: right;">暂停起止时间:</label>
+                                                <input type="text" class="date-timepicker" id="stopStartTimes" ref="stopStartTimes" v-model="stopStartTime">
+                                                <span class="input-group-addon" style="width: 12%;">
+                                                                <i class="fa fa-clock-o bigger-110"></i>
+                                                            </span>至
+                                            </div>
+                                            <div class="input-group" style="margin-bottom: 5px;float:left">
+                                                <label class="control-label"
+                                                       style="width: 150px;text-align: right;"></label>
+                                                <input type="text" class="date-timepicker" id="stopEndTimes" ref="stopEndTimes" v-model="stopEndTime">
+                                                <span class="input-group-addon" style="width: 12%;">
+                                                                <i class="fa fa-clock-o bigger-110"></i>
+                                                            </span>
+                                            </div>
+                                            <span style="color:red">*必填</span>
+                                        </div>
+                                        <div style="clear: both"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <p style="font-weight: bold;margin: 0;">组合成分</p>
+                                        <hr>
+                                    </div>
+                                    <div>
+                                        <div style="float:left">
+                                            <div class="form-group">
+                                                <div class="input-group" style="margin-bottom: 5px;">
+                                                    <label class="control-label"
+                                                           style="width: 150px;text-align: right;">风险类型:</label>
+                                                    <select name="" id="" style="width: 170px" v-model="grouptype" @click="groupTypeList()">
+                                                        <option value="">请选择</option>
+                                                        <option :value="item.pmco" v-for="(item,index) in grouptypeList">
+                                                            {{item.pmco}}-{{item.pmnm}}
+                                                        </option>
+                                                    </select>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right;">起投金额:</label>
+                                                <input type="text"
+                                                       placeholder="例如1000.00" v-model="initamount"/>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right;">最低赎回金额:</label>
+                                                <input type="text"
+                                                       placeholder="例如1000.00" v-model="minRedeemAmount"/>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 150px;text-align: right;">最低持有金额:</label>
+                                                <input type="text"
+                                                       placeholder="例如1000.00" v-model="minReserveAmount"/>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="float:left">
+                                            <div class="form-group">
+                                                <div class="input-group" style="margin-bottom: 5px;">
+                                                    <label class="control-label"
+                                                           style="width: 120px;text-align: right;">风险等级:</label>
+                                                    <select name="" id="" style="width: 170px" v-model="risklevel" @click="riskLevelList()">
+                                                        <option value="">请选择</option>
+                                                        <option :value="item.pmco" v-for="(item,index) in risklevelList">
+                                                            {{item.pmco}}-{{item.pmnm}}
+                                                        </option>
+                                                    </select>
+                                                    <span style="color:red">*必填</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 120px;text-align: right;">费率折扣:</label>
+                                                <input type="text"
+                                                       placeholder="最多两位小数点" v-model="commro"/>%
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="width: 120px;text-align: right;">最低调仓金额:</label>
+                                                <input type="text"
+                                                       placeholder="例如1000.00" v-model="minChangeAmount"/>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label"
+                                               style="width: 150px;text-align:right;margin-left:-30px; vertical-align: top">添加基金:</label>
+                                        <div style="display: inline-block;width: 70%;">
+                                            <div class="form-inline" style="padding: 0 0 10px 0 ;">
+                                                <div class="form-group text-left">
+                                                    <input type="button" class="btn btn-sm btn-primary" value="添加"
+                                                           @click="showAddFund()">
+                                                    <p style="display:inline-block;margin-left: 10px">已添加<span
+                                                            class="red" v-text="this.fundListAll.length"></span>只基金</p>
+                                                </div>
+                                            </div>
+
+
+                                            <!--数据表-->
+                                            <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                                <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">产品类型</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">产品名称</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">产品代码</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">调整仓位</th>
+                                                    <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="fundListAll.length>0">
+                                                    <tr v-for="(item,index) in fundListAll" :key="index">
+                                                        <td class="center">{{item.fundApkind |
+                                                            fundApkind}}
+                                                        </td>
+                                                        <td class="center" v-text='item.fundName'></td>
+                                                        <td class="center" v-text='item.fundId'></td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.fundPercent">%
+                                                        </td>
+                                                        <td class="center">
+                                                            <a href="javascript:;"
+                                                               @click.prevent="delList(index)">删除</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <!--<template v-else>-->
+                                                <!--<tr>-->
+                                                <!--<td class="center" v-text="loadingStatus" colspan="6"></td>-->
+                                                <!--</tr>-->
+                                                <!--</template>-->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div style="padding: 0 0 0px 150px; width: 85%;">
+                                            <div class="form-group" style="margin-left:-100px;margin-top:10px">
+                                                <label class="control-label"
+                                                       style="width: 150px;text-align: right;vertical-align: top">调仓说明:</label>
+                                                <textarea name="" cols="15" rows="5" placeholder="跟大家说说你调仓的思路吧"
+                                                          style="height: 54px; width: 300px;" v-model="reviseAdvise"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label" style="width: 120px;text-align: right;">是否展示:</label>
+                                            <select name="" id="" style="width: 150px" v-model="isDisplay">
+                                                <option value="1">1-是</option>
+                                                <option value="0">0-否</option>
+                                            </select>
+                                        </div>
+                                        <div class="addHtml">
+                                        </div>
+                                    </div>
+                                    <!--调仓模板的添加-->
+                                    <p class="text-center">
+                                        <!--<button class="btn btn-sm btn-primary" @click="localRevise()">确定-->
+                                        <!--</button>-->
+                                        <button class="btn btn-sm btn-primary" @click="serviceSave" v-if="type==0">保存</button>
+                                        <button class="btn btn-sm btn-primary" @click="localRevise" v-if="type==1">保存</button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                aria-hidden="true">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--删除弹窗-->
+                <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">删除数据</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确认删除此条数据?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="deleteUser">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--撤销弹窗-->
+                <div class="modal" id="del2" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">撤销数据</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确认撤销数据?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="deleteUser2">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!--重新提交删除弹窗-->
+                <div class="modal" id="delAgain" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">操作数据</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确认重新提交删除数据?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="deleteAgain">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--修改弹窗-->
+                <div class="modal" id="update" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">修改</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确认修改已选中数据?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="updateParam()">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--提示信息弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--提交弹窗-->
+                <div class="modal" id="subMit" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提交信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确定提交该数据？</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="submitCheck()">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!--详细信息弹窗-->
+                <div class="modal" id="checkDatils" tabindex="0" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content" style="width:700px">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title">详情信息</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="col-sm-12" style="margin-top:10px">
+                                    <div class="table-header">
+                                        列表数据
+                                    </div>
+                                    <div style="margin-bottom: 0;height:400px; overflow-y: auto">
+                                        <table class="table table-striped table-bordered table-hover dataTable"
+                                               style="margin-bottom: 0;">
+                                            <thead>
+                                            <tr>
+                                                <th class="center">产品类型</th>
+                                                <th class="center">基金代码</th>
+                                                <th class="center">基金名称</th>
+                                                <th class="center">最新净值</th>
+                                                <th class="center">近一月涨幅</th>
+                                                <th class="center">近半年涨幅</th>
+                                                <th class="center">近一年涨幅</th>
+                                                <th class="center">持仓占比</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <template v-if="checkDatils.length>0&&type==0">
+                                                <tr v-for="(item,index) in checkDatils" :key="index">
+                                                    <td class="center">{{item.fundApkind | fundApkind}}</td>
+                                                    <td class="center" v-text="item.fundId"></td>
+                                                    <td class="center" v-text="item.fundName"></td>
+                                                    <td class="center" v-text="item.latestNavDisplay"></td>
+                                                    <td class="center" v-text="item.monthlyReturn"></td>
+                                                    <td class="center" v-text="item.halfYearReturn"></td>
+                                                    <td class="center" v-text="item.quarterReturn"></td>
+                                                    <td class="center" v-text="item.fundPercent"></td>
+                                                </tr>
+                                            </template>
+                                            <template v-else>
+                                                <tr>
+                                                    <td class="center" v-text="'没有数据'" colspan="10"></td>
+                                                </tr>
+                                            </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div style="clear: both;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="tabbable">
+                    <ul class="nav nav-tabs padding-12 tab-color-blue background-blue" id="myTab4"
+                        style="position:relative">
+                        <li class="active" style="z-index:99">
+                            <a data-toggle="tab" href="#handle" @click="select2">经办数据</a>
+                        </li>
+                        <li style="z-index: 99">
+                            <a data-toggle="tab" href="#discount" @click="select">已生效数据</a>
+
+                        </li>
+                        <label class="pos-rel" style="margin-left:20px;position:absolute;top:0px;left:20px;">
+                            <input type="radio" name="num" class="ace" value="0" v-model="type"
+                                   @click="getTableData(0,0)" id="type0"/>
+
+                            <span class="lbl" style="display:none"></span>
+                            <span style="margin-left:10px"></span>
+                        </label>
+                        <label class="pos-rel" style="margin-left:20px;position:absolute;top:0px;left:20px;">
+                            <input type="radio" name="num" class="ace" value="1" v-model="type"
+                                   @click="getTableData(0,1)" id="type1"/>
+
+                            <span class="lbl" style="display:none"></span>
+                            <span style="margin-left:10px"></span>
+                        </label>
+                    </ul>
+                </div>
+                <div class="form-inline" style="padding:10px 0px">
+                    <div class="form-group" v-if="type==0">
+                        <!--<label class="control-label">基金组合:</label>-->
+                        <!--<input type="text" style="width:175px;" v-model.trim="groupidList"/>-->
+
+                        <!--<select style="width:175px" v-model="fundgroupTypes"-->
+                                <!--@change="GroupList(fundgroupType)">-->
+                            <!--<option value="">请选择</option>-->
+                            <!--<option :value="item.fundgroupType" v-for="(item,index) in fundGroupList">-->
+                                <!--{{item.fundgroupType}} {{item.fundgroupTypeName}}-->
+                            <!--</option>-->
+                        <!--</select>-->
+                        <label class="control-label">组合代码:</label>
+                        <!--<input type="text" style="width:175px;" v-model.trim="groupids"/>-->
+                        <select style="width:175px" v-model="groupides">
+                            <option value="">请选择</option>
+                            <option :value="item.groupId" v-for="(item,index) in fundGroupList">
+                                {{item.groupId}}--{{item.groupName}}
+                            </option>
+                        </select>
+
+                        <!--<select style="width:175px" v-model="groupId">-->
+                        <!--<option value="">请选择</option>-->
+                        <!--<option :value="item.groupId"-->
+                        <!--v-for="(item,index) in subGroupArr">{{item.groupId}} {{item.groupName}}-->
+                        <!--</option>-->
+                        <!--<option>-->
+                        <!--</option>-->
+                        <!--</select>-->
+                    </div>
+                    <div class="form-group" v-if="type==1">
+                        <label class="control-label">组合代码:</label>
+                        <!--<input type="text" style="width:175px;" v-model.trim="groupids"/>-->
+                        <select style="width:175px" v-model="groupids">
+                            <option value="">请选择</option>
+                            <option :value="item.groupId" v-for="(item,index) in fundGroupList">
+                                {{item.groupId}}--{{item.groupName}}
+                            </option>
+                        </select>
+
+                        <!--<select style="width:175px" v-model="groupId">-->
+                        <!--<option value="">请选择</option>-->
+                        <!--<option :value="item.groupId"-->
+                        <!--v-for="(item,index) in subGroupArr">{{item.groupId}} {{item.groupName}}-->
+                        <!--</option>-->
+                        <!--<option>-->
+                        <!--</option>-->
+                        <!--</select>-->
+                    </div>
+                    <div class="form-group" style="margin-left:20px" v-show="showMysql">
+                        <label class="control-label">复核状态:</label>
+                        <select name="status" class="form-control" v-model="reviewStatus"
+                                style="width: 100px;">
+                            <option value="">全部</option>
+                            <option value="0">已复核</option>
+                            <option value="2">待复核</option>
+                            <option value="9">复核驳回</option>
+                        </select>
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" v-show="isUpdate"
+                               @click="getTableData(0,0)">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" v-show="showMysql"
+                               @click="getTableData(0,1)">
+                        <input type="button" class="btn btn-sm btn-primary" value="新增" @click="showAdd"
+                               v-show="showMysql">
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                    <!-- <div class="col-xs-6">
+                        <div class="dataTables_filter">
+                            <label>快速查询:</label>
+                            <input type="text" class="input-sm" v-model="condition">
+                        </div>
+                    </div> -->
+                </div>
+                <!--数据表-->
+                <table class="table table-striped table-bordered table-hover dataTable" style="margin-bottom: 0;">
+                    <thead>
+                    <tr>
+                        <th class="center">组合代码</th>
+                        <th class="center">组合名称</th>
+                        <th class="center">风险类型</th>
+                        <th class="center">组合类型</th>
+                        <th class="center">权益类占比(%)</th>
+                        <th class="center">固收类占比(%)</th>
+                        <th class="center">货币类占比(%)</th>
+                        <th class="center">其它占比(%)</th>
+                        <th class="center">创建时间</th>
+                        <!--<th class="center">调仓时间</th>-->
+                        <th class="center">上线时间</th>
+                        <!--<th class="center">备注</th>-->
+                        <th class="center" v-show="showMysql">创建人</th>
+                        <th class="center" v-show="showMysql">状态</th>
+                        <th class="center" v-show="showMysql">复核状态</th>
+
+                        <th class="center" v-show="showMysql">复核人</th>
+                        <th class="center" v-show="showMysql">复核时间</th>
+                        <th class="center" v-show="showMysql">复核备注</th>
+                        <th class="center">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="viewData.length>0&&type==0">
+                        <tr v-for="(item,index) in viewData" :key="index"
+                            :style="index%2==0?'background-color: #f9f9f9;':''">
+                            <td class="center" v-text="item.groupId"></td>
+                            <td class="center" v-text="item.groupName"></td>
+                            <td class="center">{{item.groupType | chineseGrouptype}}</td>
+                            <td class="center">{{item.fundgroupType | chineseFundgroupType}}</td>
+                            <td class="center" v-text="item.rightPercent"></td>
+                            <td class="center" v-text="item.fixPercent"></td>
+                            <td class="center" v-text="item.vaPercent"></td>
+                            <td class="center" v-text="item.otherPercent"></td>
+                            <td class="center" v-text="item.createTime"></td>
+                            <!--<td class="center"></td>-->
+                            <td class="center" v-text="item.establishDate"></td>
+                            <td class="center" v-show="showMysql">
+                                <template v-if="item.delete_flag=='F'">
+                                    <span href="javascript:;" v-text="'正常'"></span>
+                                </template>
+                                <template v-else-if="item.delete_flag=='T'">
+                                    <span href="javascript:;" v-text="'删除'"></span>
+                                </template>
+                            </td>
+                            <td class="center" v-show="showMysql">
+                                <template v-if="item.mysqlStatus=='0'">
+                                    <span href="javascript:;" v-text="'已复核'"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='1'">
+                                    <span href="javascript:;" v-text="'未复核'" style="color:red"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='9'">
+                                    <span href="javascript:;" v-text="'复核驳回'" style="color:red"></span>
+                                </template>
+                            </td>
+                            <td class="center">
+                                <a href="javascript:;" @click="serviceDetail(item.groupId)">详细</a>/
+                                <a href="javascript:;" @click="serviceUpdate(item,index)">修改</a>
+
+                                <!--<a href="javascript:;" @click="showDelete(item)" style="color:red">删除</a>-->
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else-if="viewData.length>0&&type==1">
+                        <tr v-for="(item,index) in viewData" :key="index"
+                            :style="index%2==0?'background-color: #f9f9f9;':''">
+                            <td class="center" v-text="item.groupid"></td>
+                            <td class="center" v-text="item.groupname"></td>
+                            <td class="center">{{item.grouptype | chineseGrouptype}}</td>
+                            <td class="center">{{item.fundgroupType | chineseFundgroupType}}</td>
+                            <td class="center" v-text="item.rightPercent"></td>
+                            <td class="center" v-text="item.fixPercent"></td>
+                            <td class="center" v-text="item.vaPercent"></td>
+                            <td class="center" v-text="item.otherPercent"></td>
+                            <td class="center" v-text="item.stringEstablishDate"></td>
+                            <!--<td class="center"></td>-->
+                            <td class="center" v-text="item.onlinedate"></td>
+                            <td class="center" v-text="item.operator"></td>
+                            <td class="center" v-show="showMysql">
+                                <template v-if="item.operate==1">
+                                    <span href="javascript:;" v-text="'新增'" style="color:#69AA46"></span>
+                                </template>
+                                <template v-else-if="item.operate==2">
+                                    <span href="javascript:;" v-text="'修改'" style="color:#FF892A"></span>
+                                </template>
+                                <template v-else-if="item.operate==3">
+                                    <span href="javascript:;" v-text="'删除'" style="color:red"></span>
+                                </template>
+                            </td>
+                            <td class="center" v-show="showMysql">
+                                <template v-if="item.mysqlStatus=='0'">
+                                    <span href="javascript:;" v-text="'复核通过'" style="color:#69AA46"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='2'">
+                                    <span href="javascript:;" v-text="'待复核'" style="color:red"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='9'">
+                                    <span href="javascript:;" v-text="'复核驳回'" style="color:red"></span>
+                                </template>
+                            </td>
+
+                            <td class="center" v-show="showMysql" v-text="item.reviewer"></td>
+                            <td class="center" v-show="showMysql" v-text="item.review_time"></td>
+                            <td class="center" v-show="showMysql" v-text="item.revise_remark"></td>
+                            <td class="center">
+                                <template v-if="item.mysqlStatus==2">
+                                    <template v-if="item.operate!=3">
+                                        <a href="javascript:;" @click="localUpdate(item)">修改</a>
+                                        <span>/</span>
+                                    </template>
+                                    <a href="javascript:;" @click="showRevoke(item)" style="color:red">撤销</a>
+                                </template>
+                                <template v-else-if="item.mysqlStatus==9">
+                                    <a href="javascript:;" @click="showSubmitAgain(item)">重新提交</a>
+                                </template>
+                                <template v-else>
+                                    <span>-</span>
+                                </template>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'没有数据'" colspan="26"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <!--底部假分页页码-->
+                <div v-if="viewData.length>0" class="row" v-show="isUpdate"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst1"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev1">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex1(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+middleData.length" @click="toLast1"></a>
+                                </li>
+                                <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next1">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!--底部假分页页码-->
+                <div v-if="viewData.length>0" class="row" v-show="showMysql"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+middleData.length" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/businessMgmt/combinationProductConfig/combinationProductHandle.js"></script>
+</body>
+</html>

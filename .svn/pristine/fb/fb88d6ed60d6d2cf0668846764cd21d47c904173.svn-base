@@ -1,0 +1,962 @@
+Vue.component('selectChosen', {
+    template: '<select class="chosen-select form-control" ref="sele">' +
+        '<option value="">请选择</option>' +
+        '<option :value="item.fundId" v-for="item of list">{{item.fundId}} &nbsp;&nbsp; {{item.fundName}}</option>' +
+        '</select>',
+    model: {
+        prop: "value",
+        event: "change",
+    },
+    props: {
+        value: {
+            validator: function () {
+                return true;
+            },
+        },
+        list: {
+            type: [Object, Array],
+            default: function () {
+                return [];
+            },
+        },
+    },
+    watch: {
+        value: function (newval) {
+            $(this.$refs.sele).val(newval);
+            $(this.$refs.sele).trigger("chosen:updated");
+        }
+    },
+    mounted: function () {
+        $(this.$refs.sele).chosen({
+            search_contains: true,
+            no_results_text: '未找到',
+            disable_search_threshold: 6,
+            width: '184px'
+        });
+        $(this.$refs.sele).on('change', function (e, params) {
+            this.$emit('change', params ? params.selected : '')
+        }.bind(this));
+    },
+    updated: function () {
+        $(this.$refs.sele).trigger("chosen:updated");
+    },
+})
+
+var vm = new Vue({
+    el: '#content',
+    data: {
+        comName: 'localComponent',
+        diaMsg: '',
+        accptmdList: [{
+                pmco: '0',
+                pmnm: '柜台'
+            },
+            {
+                pmco: '2',
+                pmnm: '网上'
+            },
+            {
+                pmco: '7',
+                pmnm: '企业版'
+            },
+            {
+                pmco: '6',
+                pmnm: '第三方'
+            }
+        ],
+        fundstList: [{
+                pmco: '0',
+                pmnm: '正常'
+            },
+            {
+                pmco: 'Z',
+                pmnm: '清盘'
+            }
+        ],
+        fundList: [],
+        statusForParent: '',
+        statusList: [{
+            value: '0',
+            text: '复核通过'
+        }, {
+            value: '1',
+            text: '编辑中'
+        }, {
+            value: '2',
+            text: '待复核'
+        }, {
+            value: '9',
+            text: '复核驳回'
+        }, ],
+        operateList: [{
+            value: '1',
+            text: '新增'
+        }, {
+            value: '2',
+            text: '修改'
+        }, {
+            value: '3',
+            text: '删除'
+        }, ],
+        operationData: {
+            accptmd: '',
+            fundst: '',
+            issuedate: '',
+            issuetime: '',
+            dssubenddate: '',
+            dssubendtime: '',
+            dssublastendtime: '',
+            bidtime: '',
+            biddate: '',
+            fundid: '',
+            fundName: '',
+            // serialno: '',
+        },
+        lineSourceData: null,
+        operateType: 1,
+        localOperation: {
+            content: {
+                after: {}
+            }
+        },
+        addListData: []
+    },
+    mounted: function () {
+        var dialogs = ['info', 'lineModify', 'delectDia', 'delectLocal', 'localOperate', 'resubmit', 'lineAdd'];
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        // this.getTableData(0, true);
+    },
+    watch: {
+        'operationData.fundid': function (newval) {
+            if (newval === '') {
+                this.operationData.fundName = ''
+            } else {
+                this.fundList.some(function (item) {
+                    if (newval === item.fundId) {
+                        this.operationData.fundName = item.fundName;
+                        return true;
+                    }
+                }, this)
+            }
+        }
+    },
+    computed: {
+        operateColor: function () {
+            return function (operate) {
+                if (operate === 3) {
+                    return 'red'
+                } else if (operate === 1) {
+                    return 'green'
+                } else {
+                    return 'blue'
+                }
+            }
+        },
+        statusColor: function () {
+            return function (status) {
+                if (status === 0) {
+                    return 'green'
+                } else if (status === 2) {
+                    return 'blue'
+                } else {
+                    return 'red'
+                }
+            }
+        }
+    },
+    methods: {
+        // 时间选择
+
+        setDatePicker: function (value, index,timeType) {
+            let str
+
+            this.addListData.forEach((i, inde) => {
+                if (inde == index) {
+                     str =i[`${timeType}`]
+                }
+            })
+            console.log( 'str:',str)
+            if(str!==''){
+                if (value === 'now') {
+                    str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, this.getNowTime() + ' $4:$5:$6');
+                } else if (value === 'future') {
+                    str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '2099-12-31 $4:$5:$6' + '');
+                } else if (value == 0) {
+                    str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1-$2-$3 00:00:00');
+                } else if (value == 9) {
+                    str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1-$2-$3 09:00:00');
+                } else if (value == 15) {
+                    str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1-$2-$3 15:00:00');
+                }else if (value == 19) {
+                    str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1-$2-$3 19:00:00');
+                }else if (value == 21) {
+                    str = str.replace(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/g, '$1-$2-$3 21:00:00');
+                }
+            }else{
+                if (value == 'now') {
+                    str = this.getNowTime().concat(' 09:00:00')
+                } else if (value == 'future') {
+                    str = '2099-12-31 09:00:00';
+                } else if (value == 0) {
+                    str = this.getNowTime().concat(' 00:00:00')
+                } else if (value == 9) {
+                    str =this.getNowTime().concat(' 09:00:00')
+                } else if (value == 15) {
+                    str = this.getNowTime().concat(' 15:00:00')
+                }else if (value == 19) {
+                    str = this.getNowTime().concat(' 19:00:00')
+                }else if (value == 21) {
+                    str = this.getNowTime().concat(' 21:00:00')
+                }
+            }
+            this.addListData.forEach((i, inde) => {
+                if (inde == index) {
+                    i[`${timeType}`] = str
+                }
+            })
+        },
+
+       
+        getNowTime: function () {
+            var d = new Date();
+            var fixZero = function (num) {
+                return num < 10 ? '0' + num : num;
+            };
+
+            return [d.getFullYear(), d.getMonth() + 1, d.getDate()].map(function (value) {
+                return fixZero(value)
+            }).join('-');
+        },
+        saveToAdd: function () {
+
+            var errorText = ''
+            var errorIndex = 0;
+            var fundIdList = {};
+            var flag = this.addListData.some(function (item, index) {
+                for (var keys in item) { //不能为空
+                    if (item[keys] === '') {
+                        errorIndex = index;
+                        if (keys === 'fundid') {
+                            errorText = '基金';
+                            return true;
+                        } else if (keys === 'accptmd') {
+                            errorText = '渠道';
+                            return true;
+                        } else if (keys === 'fundst') {
+                            errorText = '基金状态';
+                            return true;
+                        } else if (keys === 'issuetime' || keys === 'dssubendtime' || keys === 'bidtime') {
+                            errorText = '时间';
+                            return true;
+                        }
+                    }
+                }
+                if (item.issuetime > item.dssubendtime || item.dssubendtime > item.bidtime) { //检查时间关系
+                    errorText = '发行时间 <= 认购结束 <= 开放时间';
+                    return true;
+                }
+                this.fundList.some(function (inItem) {
+                    if (item.fundid === inItem.fundId) {
+                        item.fundName = inItem.fundName;
+                        return true;
+                    }
+                }, this)
+                if (fundIdList[item.fundid] === undefined) { //将fundid添加到对象 准备检查是否有重复渠道
+                    fundIdList[item.fundid] = [item.accptmd]
+                } else {
+                    fundIdList[item.fundid].push(item.accptmd)
+                }
+
+            }, this)
+            if (flag) { //初次检查
+                this.showDialog('lineAdd', 'info', true, `请选择第 ${errorIndex+1} 行的 ${errorText}`)
+            }
+            // accptmdList
+            for (var keys in fundIdList) { //不能为空
+                var status = this.checkChannel(keys, fundIdList[keys]);
+                if (status.flag) {
+                    var data = this.accptmdList.filter(function (item) {
+                        return status.repetitionAccptmd == item.pmco;
+                    })[0].pmnm;
+                    this.showDialog('lineAdd', 'info', true, `基金${keys}的${data}渠道已存在`);
+                    // break;
+                    return;
+                }
+            }
+
+            var sendData = this.addListData.map(function (item) {
+                var issue = item.issuetime.replace(/[:-]/g, '').split(' ');
+                var dssubend = item.dssubendtime.replace(/[:-]/g, '').split(' ');
+                var bid = item.bidtime.replace(/[:-]/g, '').split(' ');
+                return {
+                    content: {
+                        after: {
+                            accptmd: item.accptmd,
+                            fundst: item.fundst,
+                            issuedate: issue[0],
+                            issuetime: issue[1],
+                            dssubenddate: dssubend[0],
+                            dssubendtime: dssubend[1],
+                            dssublastendtime: dssubend[1],
+                            bidtime: bid[1],
+                            biddate: bid[0],
+                            fundid: item.fundid,
+                            fundName: item.fundName,
+                        }
+                    },
+                    service_id: item.fundid,
+                    operate: 1,
+                    status: 2,
+                }
+            })
+            var errorData = []; //错误的基金
+            var msg = ''
+            sendData.some(function (item) {
+                console.log(item)
+                item.content = JSON.stringify(item.content);
+                var falg = false;
+                $.post({
+                    url: '/businessMgmt/IPOMgmtOCReview/publishHandle/addDataForLocal.ajax',
+                    async: false,
+                    data: item,
+                    success: function (result) {
+                        if (result.error == 0) {
+                            msg = result.msg
+                            falg = false
+                        } else {
+                            msg = result.msg
+                            errorData.push(item.service_id)
+                            falg = true
+                        }
+                    }
+                });
+                return falg;
+            })
+
+            if (errorData.length === 0) {
+                this.showDialog('lineAdd', 'info', false, msg);
+            } else {
+                this.showDialog('lineAdd', 'info', false, `基金${errorData[0]}${msg}`);
+            }
+
+
+
+        },
+        pushToAddList: function () {
+            this.addListData.push({
+                fundid: '',
+                accptmd: '',
+                fundst: '',
+                issuedate: '',
+                issuetime: '',
+                dssubenddate: '',
+                dssubendtime:'',
+                bidtime: '2099-12-31 15:00:00',
+                biddate: '',
+                fundName: ''
+            })
+        },
+        showAddDialog: function () {
+            this.addListData = [];
+            this.showDialog('', 'lineAdd')
+        },
+        showLocalOperate: function (item, operate) {
+            var data = Object.assign({}, item);
+            data.content = Object.assign({}, data.content)
+            data.content.after = Object.assign({}, data.content.after, {
+                issuedate: '',
+                issuetime: item.content.after.issuedate ? moment(item.content.after.issuedate + ' ' + item.content.after.issuetime).format("YYYY-MM-DD HH:mm:ss") : '',
+                dssubenddate: '',
+                dssublastendtime: '',
+                dssubendtime: item.content.after.dssubenddate ? moment(item.content.after.dssubenddate + ' ' + item.content.after.dssubendtime).format("YYYY-MM-DD HH:mm:ss") : '',
+                biddate: '',
+                bidtime: item.content.after.biddate ? moment(item.content.after.biddate + ' ' + item.content.after.bidtime).format("YYYY-MM-DD HH:mm:ss") : '',
+            })
+            this.localOperation = data;
+            if (operate) {
+                this.showDialog('', operate === 3 ? 'delectLocal' : 'localOperate')
+            } else {
+                this.showDialog('', 'resubmit')
+            }
+        },
+        localOperate: function () {
+            var content = Object.assign({}, this.localOperation.content);
+            if (!content.after.fundid) {
+                this.showDialog('localOperate', 'info', true, '请选择基金');
+                return
+            }
+            if (!content.after.fundst) {
+                this.showDialog('localOperate', 'info', true, '请选择基金状态');
+                return
+            }
+            if (!content.after.accptmd) {
+                this.showDialog('localOperate', 'info', true, '请选择渠道标志');
+                return
+            }
+            if (!content.after.bidtime || !content.after.dssubendtime || !content.after.issuetime) {
+                this.showDialog('localOperate', 'info', true, '请选择所有时间');
+                return
+            }
+            if (content.after.issuetime > content.after.dssubendtime || content.after.dssubendtime > content.after.bidtime) {
+                this.showDialog('localOperate', 'info', true, '发行时间 < 认购结束 < 开放时间');
+                return
+            }
+            var issue = content.after.issuetime && content.after.issuetime.replace(/[:-]/g, '').split(' ');
+            var dssubend = content.after.dssubendtime && content.after.dssubendtime.replace(/[:-]/g, '').split(' ');
+            var bid = content.after.bidtime && content.after.bidtime.replace(/[:-]/g, '').split(' ');
+            content.after.issuedate = issue && issue[0];
+            content.after.issuetime = issue && issue[1];
+            content.after.dssubenddate = dssubend && dssubend[0];
+            content.after.dssublastendtime = content.after.dssubendtime = dssubend && dssubend[1];
+            content.after.biddate = bid && bid[0];
+            content.after.bidtime = bid && bid[1];
+            var params = {
+                content: JSON.stringify(content),
+                status: 2,
+                update_timestamp: moment(this.localOperation.update_timestamp).format("YYYY-MM-DD HH:mm:ss"),
+                local_id: this.localOperation.local_id,
+                remark: ''
+            }
+            $.post({
+                url: '/businessMgmt/IPOMgmtOCReview/publishHandle/modifyLocalData.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error == 0) {
+                        this.$refs.localComponent.getTableData()
+                        this.showDialog('localOperate', 'info', false, result.msg);
+                    } else {
+                        this.showDialog('localOperate', 'info', true, result.msg);
+                    }
+                }.bind(this)
+            });
+
+        },
+        resubmit: function () {
+            var params = {
+                status: 2,
+                local_id: this.localOperation.local_id,
+                update_timestamp: moment(this.localOperation.update_timestamp).format("YYYY-MM-DD HH:mm:ss"),
+                remark: ''
+
+            }
+            $.post({
+                url: '/businessMgmt/IPOMgmtOCReview/publishHandle/modifyLocalData.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error == 0) {
+                        this.$refs.localComponent.getTableData()
+                        this.showDialog('resubmit', 'info', false, result.msg);
+                    } else {
+                        this.showDialog('resubmit', 'info', true, result.msg);
+                    }
+                }.bind(this)
+            });
+        },
+        delLocal: function () {
+            var params = {
+                local_id: this.localOperation.local_id,
+                update_timestamp: moment(this.localOperation.update_timestamp).format("YYYY-MM-DD HH:mm:ss"),
+            }
+            $.post({
+                url: '/businessMgmt/IPOMgmtOCReview/publishHandle/delLocal.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error == 0) {
+                        this.$refs.localComponent.getTableData()
+                        this.showDialog('delectLocal', 'info', false, result.msg);
+                    } else {
+                        this.showDialog('delectLocal', 'info', true, result.msg);
+                    }
+                }.bind(this)
+            });
+        },
+        showLineOperate: function (item, operate) {
+            this.lineSourceData = Object.assign({}, item)
+            this.operationData = {
+                accptmd: item.accptmd,
+                fundst: item.fundst,
+                issuedate: '',
+                issuetime: item.issuedate ? moment(item.issuedate + ' ' + item.issuetime).format("YYYY-MM-DD HH:mm:ss") : '',
+                dssubenddate: '',
+                dssublastendtime: '',
+                dssubendtime: item.dssubenddate ? moment(item.dssubenddate + ' ' + item.dssubendtime).format("YYYY-MM-DD HH:mm:ss") : '',
+                biddate: '',
+                bidtime: item.biddate ? moment(item.biddate + ' ' + item.bidtime).format("YYYY-MM-DD HH:mm:ss") : '',
+                fundid: item.fundid,
+                serialno: item.serialno,
+                fundName: this.fundList.filter(function (item1) {
+                    if (item.fundid === item1.fundId) {
+                        return item1;
+                    }
+                }, this)[0].fundName
+            }
+            this.operateType = operate;
+            if (operate === 3) {
+                return this.showDialog('', 'delectDia')
+            }
+            this.showDialog('', 'lineModify')
+        },
+        checkChannel: function (fundId, accptmd) {
+            var flag = true;
+            var repetitionAccptmd = '';
+            var params = {
+                fundId: fundId
+            }
+            $.post({
+                url: '/businessMgmt/IPOMgmtOCReview/publishHandle/tableData.ajax',
+                data: params,
+                async: false,
+                success: function (result) {
+                    if (result.error == 0) {
+                        flag = result.data.some(function (item) {
+                            return accptmd.some(function (acc) {
+                                if (item.accptmd == acc) {
+                                    repetitionAccptmd = acc;
+                                    return true;
+                                }
+                            })
+                        })
+                    } else {
+                        this.showDialog('', 'info', false, result.msg);
+                    }
+                }.bind(this)
+            });
+            return {
+                flag: flag,
+                repetitionAccptmd: repetitionAccptmd
+            };
+        },
+        lineOperate: function () {
+            var afterData = Object.assign({}, this.operationData);
+            if (this.operateType == 2) {
+                if (!afterData.fundid) {
+                    this.showDialog('lineModify', 'info', true, '请选择基金');
+                    return
+                }
+                if (!afterData.fundst) {
+                    this.showDialog('lineModify', 'info', true, '请选择基金状态');
+                    return
+                }
+                if (!afterData.accptmd) {
+                    this.showDialog('lineModify', 'info', true, '请选择渠道标志');
+                    return
+                }
+                if (!afterData.dssubendtime || !afterData.bidtime || !afterData.issuetime) {
+                    this.showDialog('lineModify', 'info', true, '请选择所有时间');
+                    return
+                }
+                if (afterData.issuetime > afterData.dssubendtime || afterData.dssubendtime > afterData.bidtime) {
+                    this.showDialog('lineModify', 'info', true, '发行时间 < 认购结束 < 开放时间');
+                    return
+                }
+            }
+            var issue = afterData.issuetime && afterData.issuetime.replace(/[:-]/g, '').split(' ');
+            var dssubend = afterData.dssubendtime && afterData.dssubendtime.replace(/[:-]/g, '').split(' ');
+            var bid = afterData.bidtime && afterData.bidtime.replace(/[:-]/g, '').split(' ');
+            afterData.issuedate = issue && issue[0];
+            afterData.issuetime = issue && issue[1];
+            afterData.dssubenddate = dssubend && dssubend[0];
+            afterData.dssublastendtime = afterData.dssubendtime = dssubend && dssubend[1];
+            afterData.biddate = bid && bid[0];
+            afterData.bidtime = bid && bid[1];
+            var params = {
+                content: {
+                    after: afterData
+                },
+                service_id: afterData.fundid,
+                operate: this.operateType,
+                status: 2,
+            }
+            if (this.operateType === 2) {
+                params.content.before = this.lineSourceData;
+            }
+            params.content = JSON.stringify(params.content);
+            // console.log(params)
+            // return
+            $.post({
+                url: '/businessMgmt/IPOMgmtOCReview/publishHandle/addDataForLocal.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error == 0) {
+                        if (this.operateType !== 3) {
+                            this.showDialog('lineModify', 'info', false, result.msg);
+                        } else {
+                            this.showDialog('delectDia', 'info', false, result.msg);
+                        }
+                    } else {
+                        if (this.operateType !== 3) {
+                            this.showDialog('lineModify', 'info', false, result.msg);
+                        } else {
+                            this.showDialog('delectDia', 'info', false, result.msg);
+                        }
+                    }
+                }.bind(this)
+            });
+
+        },
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            } else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            } else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            } else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            } else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+    },
+    filters: {
+        fundstText: function (val, fundstList) {
+            var data = fundstList.filter(function (item) {
+                return val == item.pmco;
+            })[0];
+            return data ? data.pmnm : ''
+        },
+        accptmdText: function (val, accptmdList) {
+            var data = accptmdList.filter(function (item) {
+                return val == item.pmco;
+            })[0];
+            return data ? data.pmnm : ''
+
+        },
+        formatDateTime: function (val) {
+            if (typeof val === 'string') {
+                if (val.length === 8) {
+                    return val.substr(0, 4) + '-' + val.substr(4, 2) + '-' + val.substr(6, 2);
+                }
+                if (val.length === 6) {
+                    return val.substr(0, 2) + ':' + val.substr(2, 2) + ':' + val.substr(4, 2);
+                }
+                return val;
+            }
+            return val;
+        },
+        formatStatus: function (val, statusList) {
+            var data = statusList.filter(function (item) {
+                return val == item.value;
+            })[0];
+            return data ? data.text : ''
+
+        },
+        formatOperate: function (val, operateList) {
+            var data = operateList.filter(function (item) {
+                return val == item.value;
+            })[0];
+            return data ? data.text : ''
+        }
+    },
+    components: {
+        datePicker: VueBootstrapDatetimePicker,
+        localComponent: {
+            created: function () {
+                $.post({
+                    url: '/businessMgmt/IPOMgmtOCReview/publishHandle/getLocalFundList.ajax',
+                    success: function (result) {
+                        if (result.error == 0) {
+                            this.fundList = result.data
+                        } else {
+                            this.$parent.showDialog('', 'info', false, result.msg);
+                        }
+                    }.bind(this)
+                });
+                this.getTableData()
+            },
+            template: '#children',
+            data: function () {
+                return {
+                    // 主页面相关数据
+                    tableData: [],
+                    //主表格分页数据
+                    currentIndex: 0,
+                    maxSpace: 5,
+                    pageMaxNum: '10',
+                    condition: '',
+                    //查询
+                    fundList: [],
+                    fundId: '',
+                    fundName: '',
+                }
+            },
+            computed: {
+                //主表格分页
+                middleData: function () {
+                    var middleData = [];
+                    var filterData = [];
+                    var pageMaxNum = parseInt(this.pageMaxNum);
+                    var _this = this;
+                    this.tableData.forEach(function (jsonObj) {
+                        var valueArr = [];
+                        for (var prop in jsonObj) {
+                            valueArr.push(jsonObj[prop]);
+                        }
+                        for (var i = 0, len = valueArr.length; i < len; i++) {
+                            if (valueArr[i]) {
+                                if (valueArr[i].toString().indexOf(_this.condition) != -1) {
+                                    filterData.push(jsonObj);
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                    if (filterData.length <= pageMaxNum) {
+                        middleData.push(filterData);
+                        return middleData;
+                    } else {
+                        var i = 0;
+                        while ((i + 1) * pageMaxNum < filterData.length) {
+                            middleData.push(filterData.slice(i * pageMaxNum, (i + 1) * pageMaxNum));
+                            i++;
+                        }
+                        middleData.push(filterData.slice(i * pageMaxNum, filterData.length));
+                        return middleData;
+                    }
+                },
+                viewData: function () {
+                    var currentIndex = parseInt(this.currentIndex);
+                    return this.middleData[currentIndex];
+                },
+                pageList: function () {
+                    var arr = [];
+                    if (this.middleData.length <= 2 * this.maxSpace) {
+                        for (var i = 0; i < this.middleData.length; i++) {
+                            arr.push(i + 1);
+                        }
+                        return arr;
+                    }
+                    if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                        for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                            arr.push(i + 1);
+                        }
+                    } else if (this.currentIndex <= this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                        for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                            arr.push(i + 1);
+                        }
+                    } else if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex <= this.maxSpace) {
+                        var space = this.middleData.length - this.currentIndex;
+                        for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.middleData.length; i++) {
+                            arr.push(i + 1);
+                        }
+                    } else {
+                        for (var i = 0; i < this.middleData.length; i++) {
+                            arr.push(i + 1);
+                        }
+                    }
+                    return arr;
+                },
+            },
+            watch: {
+                pageMaxNum: function () {
+                    this.currentIndex = 0;
+                },
+                condition: function () {
+                    this.currentIndex = 0;
+                }
+            },
+            methods: {
+                getTableData: function () {
+                    var params = {
+                        service_id: this.fundId,
+                        status: this.$parent.statusForParent
+                    }
+                    $.post({
+                        url: '/businessMgmt/IPOMgmtOCReview/publishHandle/getLocalList.ajax',
+                        data: params,
+                        success: function (result) {
+                            if (result.error == 0) {
+                                this.tableData = result.data
+                            } else {
+                                this.$parent.showDialog('', 'info', false, result.msg);
+                            }
+                        }.bind(this)
+                    });
+                },
+                //主表格分页方法
+                prev: function () {
+                    this.currentIndex <= 0 ? 0 : this.currentIndex--;
+                },
+                next: function () {
+                    this.currentIndex >= this.middleData.length - 1 ? this.middleData.length - 1 : this.currentIndex++;
+                },
+                changeIndex: function (index) {
+                    this.currentIndex = index - 1;
+                },
+                toFirst: function () {
+                    this.currentIndex = 0;
+                },
+                toLast: function () {
+                    this.currentIndex = this.middleData.length - 1;
+                },
+            },
+        },
+        lineComponent: {
+            template: '#children',
+            created: function () {
+                $.post({
+                    url: '/businessMgmt/IPOMgmtOCReview/publishHandle/fundIdList.ajax',
+                    success: function (result) {
+                        if (result.error == 0) {
+                            this.$parent.fundList = this.fundList = result.data;
+                        } else {
+                            this.$parent.showDialog('', 'info', false, result.msg);
+                        }
+                    }.bind(this)
+                });
+            },
+            data: function () {
+                return {
+                    // 主页面相关数据
+                    tableData: [],
+                    //主表格分页数据
+                    currentIndex: 0,
+                    maxSpace: 5,
+                    pageMaxNum: '10',
+                    condition: '',
+                    //查询
+                    fundList: [],
+                    fundId: '',
+                    fundName: ''
+                }
+            },
+            computed: {
+                //主表格分页
+                middleData: function () {
+                    var middleData = [];
+                    var filterData = [];
+                    var pageMaxNum = parseInt(this.pageMaxNum);
+                    var _this = this;
+                    this.tableData.forEach(function (jsonObj) {
+                        var valueArr = [];
+                        for (var prop in jsonObj) {
+                            valueArr.push(jsonObj[prop]);
+                        }
+                        for (var i = 0, len = valueArr.length; i < len; i++) {
+                            if (valueArr[i]) {
+                                if (valueArr[i].toString().indexOf(_this.condition) != -1) {
+                                    filterData.push(jsonObj);
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                    if (filterData.length <= pageMaxNum) {
+                        middleData.push(filterData);
+                        return middleData;
+                    } else {
+                        var i = 0;
+                        while ((i + 1) * pageMaxNum < filterData.length) {
+                            middleData.push(filterData.slice(i * pageMaxNum, (i + 1) * pageMaxNum));
+                            i++;
+                        }
+                        middleData.push(filterData.slice(i * pageMaxNum, filterData.length));
+                        return middleData;
+                    }
+                },
+                viewData: function () {
+                    var currentIndex = parseInt(this.currentIndex);
+                    return this.middleData[currentIndex];
+                },
+                pageList: function () {
+                    var arr = [];
+                    if (this.middleData.length <= 2 * this.maxSpace) {
+                        for (var i = 0; i < this.middleData.length; i++) {
+                            arr.push(i + 1);
+                        }
+                        return arr;
+                    }
+                    if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                        for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                            arr.push(i + 1);
+                        }
+                    } else if (this.currentIndex <= this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                        for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                            arr.push(i + 1);
+                        }
+                    } else if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex <= this.maxSpace) {
+                        var space = this.middleData.length - this.currentIndex;
+                        for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.middleData.length; i++) {
+                            arr.push(i + 1);
+                        }
+                    } else {
+                        for (var i = 0; i < this.middleData.length; i++) {
+                            arr.push(i + 1);
+                        }
+                    }
+                    return arr;
+                },
+            },
+            watch: {
+                pageMaxNum: function () {
+                    this.currentIndex = 0;
+                },
+                condition: function () {
+                    this.currentIndex = 0;
+                }
+            },
+            methods: {
+                getTableData: function () {
+                    if (this.fundId === '') {
+                        this.$parent.showDialog('', 'info', false, '请选择基金')
+                        return;
+                    }
+                    var params = {
+                        fundId: this.fundId
+                    }
+                    $.post({
+                        url: '/businessMgmt/IPOMgmtOCReview/publishHandle/tableData.ajax',
+                        data: params,
+                        success: function (result) {
+                            if (result.error == 0) {
+                                this.tableData = result.data
+                            } else {
+                                this.$parent.showDialog('', 'info', false, result.msg);
+                            }
+                        }.bind(this)
+                    });
+                },
+                //主表格分页方法
+                prev: function () {
+                    this.currentIndex <= 0 ? 0 : this.currentIndex--;
+                },
+                next: function () {
+                    this.currentIndex >= this.middleData.length - 1 ? this.middleData.length - 1 : this.currentIndex++;
+                },
+                changeIndex: function (index) {
+                    this.currentIndex = index - 1;
+                },
+                toFirst: function () {
+                    this.currentIndex = 0;
+                },
+                toLast: function () {
+                    this.currentIndex = this.middleData.length - 1;
+                },
+            },
+        }
+    }
+});

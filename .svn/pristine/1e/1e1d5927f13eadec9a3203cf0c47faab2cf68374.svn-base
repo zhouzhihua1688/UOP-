@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        .chosen-single {
+            height: 30px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--编辑弹窗-->
+                <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:700px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">新增限额信息</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form " style="padding: 0 50px 30px 30px;">
+                                    <div style="float:left">
+
+                                        <div class="form-group">
+                                            <label class="control-label">规则编号:</label>
+                                            <input type="text" style="width:150px;" v-model="id"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">最大限额:</label>
+                                            <input type="text" style="width:150px;" placeholder="必填"
+                                                   v-model="maxQuota"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">最小限额:</label>
+                                            <input type="text" style="width:150px;" placeholder="必填"
+                                                   v-model="minQuota"/>
+                                        </div>
+                                        <div class="form-group" style="position:relative;bottom:0px;">
+                                            <label class="control-label">开始时间:</label>
+                                            <input type="text" style="width:150px;" placeholder="必填" id="startTime"
+                                                   class="date-timepicker"/>
+
+                                            <span class="input-group-addon"
+                                                  style="width:30px;display:inline;margin:-5px 0 0 -4px;">
+                                                    <i class="fa fa-clock-o bigger-110"></i>
+                                                </span>
+
+
+                                        </div>
+                                        <div class="form-group" style="position:relative;bottom:0px;">
+                                            <label class="control-label">结束时间:</label>
+                                            <input type="text" style="width:150px;" placeholder="必填" id="endTime"
+                                                   class="date-timepicker"/>
+                                            <span class="input-group-addon"
+                                                  style="width:30px;display:inline;margin:-5px 0 0 -4px;">
+                                                    <i class="fa fa-clock-o bigger-110"></i>
+                                                </span>
+                                        </div>
+                                        <template>
+                                            <div class="form-group">
+                                                <label class="control-label" style="margin-left:28px">渠道:</label>
+                                                <input type="text" style="width:150px;" v-model="channel"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" style="margin-left:28px">备注:</label>
+                                                <input type="text" style="width:150px;" v-model="remark"/>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <div style="float: right">
+                                        <template>
+                                            <div class="form-group">
+                                                <label class="control-label" style="margin-left:28px">产品:</label>
+                                                <input type="text" style="width:60%;" v-model="saveproduct"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">客户类型:</label>
+                                                <input type="text" style="width:60%;" v-model="custType"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">客户编号:</label>
+                                                <input type="text" style="width:60%;" v-model="custNo"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">业务类型:</label>
+                                                <input type="text" style="width:60%;" v-model="apkind"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label">额度类型:</label>
+                                                <input type="text" style="width:60%;" v-model="quotaType"/>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="control-label" style="margin-left:28px">网点:</label>
+                                                <input type="text" style="width:60%;" v-model="branchCode"/>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="saveParam()">保存</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!--修改更新弹窗-->
+                <div class="modal" id="revise" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:700px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">修改限额信息</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form " style="padding: 0 50px 30px 30px;">
+                                    <div style="float:left">
+
+                                        <div class="form-group">
+                                            <label class="control-label">规则编号:</label>
+                                            <input type="text" style="width:60%;" placeholder="必填" v-model="id"
+                                                   class="id"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">最大限额:</label>
+                                            <input type="text" style="width:60%;" placeholder="必填" v-model="maxQuota"
+                                                   class="maxQuota"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">最小限额:</label>
+                                            <input type="text" style="width:60%;" placeholder="必填" v-model="minQuota"
+                                                   class="minQuota"/>
+                                        </div>
+                                        <div class="form-group" style="position:relative;bottom:0px;">
+                                            <label class="control-label">开始时间:</label>
+                                            <input type="text" style="width:60%;" placeholder="必填"
+                                                   class="date-timepicker startTime"/>
+                                            <span class="input-group-addon"
+                                                  style="width:30px;display:inline;margin:-5px 0 0 -4px;">
+                                                <i class="fa fa-clock-o bigger-110"></i>
+                                            </span>
+                                        </div>
+                                        <div class="form-group" style="position:relative;bottom:0px;">
+                                            <label class="control-label">结束时间:</label>
+                                            <input type="text" style="width:60%;" placeholder="必填"
+                                                   class="date-timepicker endTime"/>
+                                            <span class="input-group-addon"
+                                                  style="width:30px;display:inline;margin:-5px 0 0 -4px;">
+                                                <i class="fa fa-clock-o bigger-110"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="update">修改</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--删除弹窗-->
+                <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">删除数据</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确认删除此条数据?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="deleteUser">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--修改弹窗-->
+                <div class="modal" id="update" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">修改</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确认修改已选中数据?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="updateParam()">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--驳回备注弹窗 -->
+                <div class="modal" id="reviewReject" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">请填写驳回原因</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <textarea cols="75" rows="10" v-model="revise_remark" style="resize:none;"></textarea>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="reviewReject">确定
+                                </button>
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--提示信息弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="tabbable">
+                    <ul class="nav nav-tabs padding-12 tab-color-blue background-blue" id="myTab4"
+                        style="position:relative">
+                        <li class="active" style="z-index:99">
+                            <a data-toggle="tab" href="#handle" @click="select2">经办数据</a>
+                        </li>
+                        <li  style="z-index: 99">
+                            <a data-toggle="tab" href="#discount" @click="select">已生效数据</a>
+                        </li>
+                    </ul>
+                    <label class="pos-rel" style="margin-left:20px;position:absolute;top:0px;left:20px;">
+                        <input type="radio" name="num" class="ace" value="1" v-model="type" @click="getTableData(0,1)"
+                               id="type1"/>
+                        <span class="lbl" style="display:none"></span>
+                        <span style="margin-left:10px"></span>
+                    </label>
+                    <label class="pos-rel" style="margin-left:20px;position:absolute;top:0px;left:20px;">
+                        <input type="radio" name="num" class="ace" value="0" v-model="type" @click="getServiceData(0,0)"
+                               id="type0"/>
+                        <span class="lbl" style="display:none"></span>
+                        <span style="margin-left:10px"></span>
+                    </label>
+                </div>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label">产品代码:</label>
+                        <select id="fundNameList" class="chosen-select form-control" v-model="product"
+                                data-placeholder="全部">
+                        </select>
+                    </div>
+
+                    <label class="control-label">交易类型:</label>
+                    <select style="width:120px" v-model.trim='tradeTypes' @change="apkinds(tradeTypes)">
+                        <option value="">全部</option>
+                        <option :value="item.pmco" v-for="(item,index) in tradeList">
+                            {{item.pmnm}}
+                        </option>
+                    </select>
+                    <label class="control-label">业务类型:</label>
+                    <select style="width:120px" v-model.trim='apkindes'>
+                        <option value="">全部</option>
+                        <option :value="item.pmco"
+                                v-for="(item,index) in apkindArr">{{item.pmnm}}
+                        </option>
+                    </select>
+                    <div class="form-group">
+                        <label class="control-label">渠道:</label>
+                        <select style="width:120px" v-model.trim='channels'>
+                            <option value="">全部</option>
+                            <option :value="item.pmco" v-for="(item,index) in channelList">
+                                {{item.pmnm}}
+                            </option>
+                        </select>
+                    </div>
+                    <!--  <label class="pos-rel" style="margin-left:20px">
+                         <input type="radio" name="num" class="ace" value="0" v-model="type" @click="getTableData(0,0)"/>
+                         <span class="lbl"></span>
+                         <span style="margin-left:10px">现有限额</span>
+                     </label>
+                     <label class="pos-rel" style="margin-left:20px">
+                         <input type="radio" name="num" class="ace" value="1" v-model="type"  @click="getTableData(0,1)"/>
+                         <span class="lbl"></span>
+                         <span style="margin-left:10px">由我复核</span>
+                     </label> -->
+
+                    <div class="form-group" style="margin-left:20px" v-show="showMysql">
+                        <label class="control-label">复核状态:</label>
+                        <select name="status" class="form-control" v-model="reviewStatus"
+                                style="width: 100px;">
+                            <option value="">全部</option>
+                            <option value="0">已复核</option>
+                            <option value="2">待复核</option>
+                            <option value="9">复核驳回</option>
+                        </select>
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" v-show="isUpdate"
+                               @click="getServiceData(0,0)">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" v-show="showMysql"
+                               @click="getTableData(0,1)">
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                    <!-- <div class="col-xs-6">
+                        <div class="dataTables_filter">
+                            <label>快速查询:</label>
+                            <input type="text" class="input-sm" v-model="condition">
+                        </div>
+                    </div> -->
+                </div>
+                <!--数据表-->
+                <table class="table table-striped table-bordered table-hover dataTable" style="margin-bottom: 0;">
+                    <thead>
+                    <tr>
+                        <!--<th class="center">-->
+                        <!--<label class="pos-rel">-->
+                        <!--<input type="checkbox" class="ace" v-model="allCheck" @click="selectAll(allCheck)"/>-->
+                        <!--<span class="lbl"></span>-->
+                        <!--</label>-->
+                        <!--</th>-->
+                        <!--<th class="center">规则编号</th>-->
+                        <th class="center">产品代码</th>
+                        <!--<th class="center">产品名称</th>-->
+                        <th class="center">客户类型</th>
+                        <th class="center">交易类型</th>
+                        <th class="center">业务类型</th>
+                        <th class="center">子业务类型</th>
+                        <th class="center">额度类型</th>
+                        <th class="center">渠道</th>
+                        <!--<th class="center">网点</th>-->
+                        <th class="center">银行编号</th>
+                        <th class="center">最大交易额度</th>
+                        <th class="center">最小交易额度</th>
+                        <th class="center" v-show="showMysql">创建人</th>
+                        <th class="center col-md-1">开始时间</th>
+                        <th class="center col-md-1">结束时间</th>
+                        <th class="center">备注</th>
+                        <th class="center" v-if="this.type==1&&this.type==0">操作人</th>
+                        <th class="center" v-show="showMysql">状态</th>
+                        <th class="center" v-show="showMysql">复核状态</th>
+
+                        <th class="center" v-show="showMysql">复核人</th>
+                        <th class="center" v-show="showMysql">复核时间</th>
+                        <th class="center" v-show="showMysql">复核备注</th>
+                        <th class="center" v-show="showMysql">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- <template v-if="tableData.length>0">
+                        <tr v-for="(item,index) in tableData" :key="index"
+                            :style="index%2==0?'background-color: #f9f9f9;':''">
+                            <td class="center">
+                                <label class="pos-rel">
+                                    <input type="checkbox" class="ace" v-model="item.check" @click="check(index)"/>
+                                    <span class="lbl"></span>
+                                </label>
+                            </td>
+                            <td class="center" v-text="item.id"></td>
+                            <td class="center" v-text="item.product"></td>
+                            <td class="center" v-text="item.custType"></td>
+                            <td class="center">{{item.tradeType | tradeType}}</td>
+
+                            <td class="center" v-text="item.showApkind"></td>
+
+                            <td class="center" v-text="item.subApks"></td>
+                            <td class="center">{{item.quotaType | quotaType}}</td>
+                            <td class="center" v-text="item.branchCode"></td>
+                            <td class="center" v-text="item.channel"></td>
+                            <td class="center" v-text="item.bankNo"></td>
+                            <td class="center" v-text="item.maxQuota"></td>
+                            <td class="center" v-text="item.minQuota "></td>
+                            <td class="center" v-text="item.startTime"></td>
+                            <td class="center" v-text="item.endTime"></td>
+                            <td class="center" v-text="item.remark"></td>
+                            <td class="center" v-text="item.operator" v-if="this.type==1&&this.type==0"></td>
+                            <td class="center" v-show="showMysql">
+                                <template v-if="item.delete_flag=='F'">
+                                    <span href="javascript:;" v-text="'正常'"></span>
+                                </template>
+                                <template v-else-if="item.delete_flag=='T'">
+                                    <span href="javascript:;" v-text="'删除'"></span>
+                                </template>
+                            </td>
+
+                            <td class="center" v-show="showMysql">
+                                <template v-if="item.mysqlStatus=='0'">
+                                    <span href="javascript:;" v-text="'已复核'"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='1'">
+                                    <span href="javascript:;" v-text="'未复核'" style="color:red"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='9'">
+                                    <span href="javascript:;" v-text="'复核驳回'" style="color:red"></span>
+                                </template>
+                            </td>
+                            <td class="center" v-show="showMysql">
+                                <a href="javascript:;" @click="reviewPass(item)" v-if="item.mysqlStatus!='0'">复核通过
+                                    <span v-if="item.mysqlStatus=='0'||item.mysqlStatus!='9'">/</span>
+                                </a>
+                                <a href="javascript:;" @click="reviewReject(item)" v-if="item.mysqlStatus!='9'">复核驳回
+                                </a>
+                            </td>
+                        </tr>
+                    </template> -->
+                    <template v-if="tableData.length>0&&this.type!=1" v-show="isUpdate" v-cloak>
+                        <tr v-for="(item,index) in tableData" :key="index"
+                            :style="index%2==0?'background-color: #f9f9f9;':''">
+                            <!--<td class="center">-->
+                            <!--<label class="pos-rel">-->
+                            <!--<input type="checkbox" class="ace" v-model="item.check" @click="check(index)"/>-->
+                            <!--<span class="lbl"></span>-->
+                            <!--</label>-->
+                            <!--</td>-->
+                            <!--<td class="center">-->
+                            <!--<template v-if="type==1&&item.delete_flag==='T'">-->
+                            <!--<s v-text="item.id" class="red"></s>-->
+                            <!--</template>-->
+                            <!--<template v-else-if="type==1&&item.comment=='1'">-->
+                            <!--<span v-text="item.id" class="green"></span>-->
+                            <!--</template>-->
+                            <!--<template v-else-if="type==1&&item.comment!='1'&&item.mysqlStatus!='9'">-->
+                            <!--<span v-for="(item2,index) in tableData2" :key="index">-->
+                            <!--<span v-if="item2.id==item.id">{{item2.id}}</span>-->
+                            <!--</span><br>-->
+                            <!--<span v-text="item.id" class="blue"></span>-->
+                            <!--</template>-->
+                            <!--<template v-else="type==0">-->
+                            <!--<span v-text="item.id"></span>-->
+                            <!--</template>-->
+                            <!--</td>-->
+                            <td class="center">
+                                <template v-if="type==1&&item.delete_flag==='T'">
+                                    <s v-text="item.product" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.comment=='1'">
+                                    <span v-text="item.product" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.comment!='1'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.product}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.product" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.product"></span>
+                                </template>
+                            </td>
+                            <!--<td class="center"></td>-->
+                            <td class="center">
+                                <template v-if="type==1&&item.delete_flag==='T'">
+                                    <s class="red">{{item.custType | custType}}</s>
+                                </template>
+                                <template v-else-if="type==1&&item.comment=='1'">
+                                    <span class="green">{{item.custType | custType}}</span>
+                                </template>
+                                <template v-else-if="type==1&&item.comment!='1'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.custType}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span class="blue">{{item.custType | custType}}</span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span>{{item.custType | custType}}</span>
+                                </template>
+                            </td>
+                            <td class="center">
+                                <template v-if="type==1&&item.delete_flag==='T'">
+                                    <s class="red">{{item.tradeType | tradeType}}</s>
+                                </template>
+                                <template v-else-if="type==1&&item.comment=='1'">
+                                    <span class="green">{{item.tradeType | tradeType}}</span>
+                                </template>
+                                <template v-else-if="type==1&&item.comment!='1'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.tradeType}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span class="blue">{{item.tradeType | tradeType}}</span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span>{{item.tradeType | tradeType}}</span>
+                                </template>
+                            </td>
+
+                            <td class="center">
+                                <template v-if="type==1&&item.delete_flag==='T'">
+                                    <s v-text="item.showApkind" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.comment=='1'">
+                                    <span v-text="item.showApkind" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.comment!='1'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.showApkind}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.showApkind" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.showApkind"></span>
+                                </template>
+                            </td>
+
+                            <td class="center">
+                                <template v-if="type==1&&item.delete_flag==='T'">
+                                    <s v-text="item.subApks" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.comment=='1'">
+                                    <span v-text="item.subApks" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.comment!='1'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.subApks}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.subApks" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.subApks"></span>
+                                </template>
+                            </td>
+                            <td class="center">
+                                <template v-if="type==1&&item.delete_flag==='T'">
+                                    <s class="red">{{item.quotaType | quotaType}}</s>
+                                </template>
+                                <template v-else-if="type==1&&item.comment=='1'">
+                                    <span class="green">{{item.quotaType | quotaType}}</span>
+                                </template>
+                                <template v-else-if="type==1&&item.comment!='1'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.quotaType}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span class="blue">{{item.quotaType | quotaType}}</span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span>{{item.quotaType | quotaType}}</span>
+                                </template>
+                            </td>
+                            <td class="center">
+                                <template v-if="type==1&&item.delete_flag==='T'">
+                                    <s class="red">{{item.channel | channel}}</s>
+                                </template>
+                                <template v-else-if="type==1&&item.comment=='1'">
+                                    <span class="green">{{item.channel | channel}}</span>
+                                </template>
+                                <template v-else-if="type==1&&item.comment!='1'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.channel | channel}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span class="blue">{{item.channel | channel}}</span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span>{{item.channel | channel}}</span>
+                                </template>
+                            </td>
+                            <!--<td class="center">-->
+                            <!--<template v-if="type==1&&item.delete_flag==='T'">-->
+                            <!--<s v-text="item.branchCode" class="red"></s>-->
+                            <!--</template>-->
+                            <!--<template v-else-if="type==1&&item.comment=='1'">-->
+                            <!--<span v-text="item.branchCode" class="green"></span>-->
+                            <!--</template>-->
+                            <!--<template v-else-if="type==1&&item.comment!='1'&&item.mysqlStatus!='9'">-->
+                            <!--<span v-for="(item2,index) in tableData2" :key="index">-->
+                            <!--<span v-if="item2.id==item.id">{{item2.branchCode}}</span>-->
+                            <!--</span><br>-->
+                            <!--<template>-->
+                            <!--<span v-text="item.branchCode" class="blue"></span>-->
+                            <!--</template>-->
+                            <!--</template>-->
+                            <!--<template v-else="type==0">-->
+                            <!--<span v-text="item.branchCode"></span>-->
+                            <!--</template>-->
+                            <!--</td>-->
+                            <td class="center">
+                                <template v-if="type==1&&item.delete_flag==='T'">
+                                    <s v-text="item.bankNo" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.comment=='1'">
+                                    <span v-text="item.bankNo" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.comment!='1'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.bankNo}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.bankNo" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.bankNo"></span>
+                                </template>
+                            </td>
+                            <td class="center">
+                                <template v-if="type==1&&item.delete_flag==='T'">
+                                    <s v-text="item.maxQuota" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.comment=='1'">
+                                    <span v-text="item.maxQuota" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.comment!='1'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.maxQuota}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.maxQuota" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.maxQuota"></span>
+                                </template>
+                            </td>
+                            <td class="center">
+                                <template v-if="type==1&&item.delete_flag==='T'">
+                                    <s v-text="item.minQuota" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.comment=='1'">
+                                    <span v-text="item.minQuota" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.comment!='1'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.minQuota}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.minQuota" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.minQuota"></span>
+                                </template>
+                            </td>
+                            <td class="center">
+                                <template v-if="type==1&&item.delete_flag==='T'">
+                                    <s v-text="item.startTime" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.comment=='1'">
+                                    <span v-text="item.startTime" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.comment!='1'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.startTime}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.startTime" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.startTime"></span>
+                                </template>
+                            </td>
+                            <td class="center">
+                                <template v-if="type==1&&item.delete_flag==='T'">
+                                    <s v-text="item.endTime" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.comment=='1'">
+                                    <span v-text="item.endTime" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.comment!='1'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.endTime}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.endTime" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.endTime"></span>
+                                </template>
+                            </td>
+                            <td class="center" v-text="item.remark"></td>
+
+                            <td class="center" v-text="item.operator" v-if="this.type==1&&this.type==0"></td>
+                            <!-- <td class="center" v-text="item.status" v-show="isUpdate"></td> -->
+                            <td class="center" v-show="showMysql">
+                                <template v-if="item.delete_flag=='F'">
+                                    <span href="javascript:;" v-text="'正常'"></span>
+                                </template>
+                                <template v-else-if="item.delete_flag=='T'">
+                                    <span href="javascript:;" v-text="'删除'"></span>
+                                </template>
+                            </td>
+
+                            <td class="center" v-show="showMysql">
+                                <template v-if="item.mysqlStatus=='0'">
+                                    <span href="javascript:;" v-text="'已复核'"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='1'">
+                                    <span href="javascript:;" v-text="'未复核'" style="color:red"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='9'">
+                                    <span href="javascript:;" v-text="'复核驳回'" style="color:red"></span>
+                                </template>
+                            </td>
+
+                            <!--<td class="center" v-show="isUpdate">-->
+                            <!--<a href="javascript:;" @click="showUpdate(item)">修改</a>-->
+                            <!--/-->
+                            <!--<a class="red" href="javascript:;" @click="showDelete(item)">删除</a>-->
+                            <!--</td>-->
+                            <td class="center" v-show="showMysql">
+                                <a href="javascript:;" @click="reviewPass(item)" v-if="item.mysqlStatus!='0'">复核通过
+                                    <span v-if="item.mysqlStatus=='0'||item.mysqlStatus!='9'">/</span>
+                                </a>
+                                <a href="javascript:;" @click="reviewReject(item)" v-if="item.mysqlStatus!='9'">复核驳回
+                                </a>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else-if="viewData.length>0&&this.type==1" v-show="showMysql" v-cloak>
+                        <tr v-for="(item,index) in viewData" :key="index"
+                            :style="index%2==0?'background-color: #f9f9f9;':''">
+                            <!--<td class="center">-->
+                            <!--<label class="pos-rel">-->
+                            <!--<input type="checkbox" class="ace" v-model="item.check" @click="check(index)"/>-->
+                            <!--<span class="lbl"></span>-->
+                            <!--</label>-->
+                            <!--</td>-->
+                            <!--<td class="center">-->
+                            <!--<template v-if="type==1&&item.operate=='3'">-->
+                            <!--<s v-text="item.id" class="red"></s>-->
+                            <!--</template>-->
+                            <!--<template v-else-if="type==1&&item.operate=='1'">-->
+                            <!--<span v-text="item.id" class="green"></span>-->
+                            <!--</template>-->
+                            <!--<template v-else-if="type==1&&item.operate=='2'&&item.mysqlStatus!='9'">-->
+                            <!--<span v-text="item.id"></span><br>-->
+                            <!--<span v-text="item.id" class="blue"></span>-->
+                            <!--</template>-->
+                            <!--<template v-else="type==0">-->
+                            <!--<span v-text="item.id"></span>-->
+                            <!--</template>-->
+                            <!--</td>-->
+                            <td class="center">
+                                <template v-if="type==1&&item.operate=='3'">
+                                    <s v-text="item.product" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='1'">
+                                    <span v-text="item.product" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='2'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.product}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.product" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.product"></span>
+                                </template>
+                            </td>
+                            <!--<td class="center"></td>-->
+                            <td class="center">
+                                <template v-if="type==1&&item.operate=='3'">
+                                    <s class="red">{{item.custType | custType}}</s>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='1'">
+                                    <span class="green">{{item.custType | custType}}</span>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='2'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.custType | custType}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span class="blue">{{item.custType | custType}}</span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span>{{item.custType | custType}}</span>
+                                </template>
+                            </td>
+                            <td class="center">
+                                <template v-if="type==1&&item.operate=='3'">
+                                    <s class="red">{{item.tradeType | tradeType}}</s>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='1'">
+                                    <span class="green">{{item.tradeType | tradeType}}</span>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='2'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.tradeType | tradeType}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span class="blue">{{item.tradeType | tradeType}}</span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span>{{item.tradeType | tradeType}}</span>
+                                </template>
+                            </td>
+
+                            <td class="center">
+                                <template v-if="type==1&&item.operate=='3'">
+                                    <s v-text="item.showApkind" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='1'">
+                                    <span v-text="item.showApkind" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='2'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.showApkind}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.showApkind" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.showApkind"></span>
+                                </template>
+                            </td>
+
+                            <td class="center">
+                                <template v-if="type==1&&item.operate=='3'">
+                                    <s v-text="item.subApks" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='1'">
+                                    <span v-text="item.subApks" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='2'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.subApks}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.subApks" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.subApks"></span>
+                                </template>
+                            </td>
+                            <td class="center">
+                                <template v-if="type==1&&item.operate=='3'">
+                                    <s class="red">{{item.quotaType | quotaType}}</s>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='1'">
+                                    <span class="green">{{item.quotaType | quotaType}}</span>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='2'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.quotaType | quotaType}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span class="blue">{{item.quotaType | quotaType}}</span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span>{{item.quotaType | quotaType}}</span>
+                                </template>
+                            </td>
+                            <td class="center">
+                                <template v-if="type==1&&item.operate=='3'">
+                                    <s class="red">{{item.channel | channel}}</s>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='1'">
+                                    <span class="green">{{item.channel | channel}}</span>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='2'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.channel | channel}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span class="blue">{{item.channel | channel}}</span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span>{{item.channel | channel}}</span>
+                                </template>
+                            </td>
+                            <!--<td class="center">-->
+                            <!--<template v-if="type==1&&item.operate=='3'">-->
+                            <!--<s v-text="item.branchCode" class="red"></s>-->
+                            <!--</template>-->
+                            <!--<template v-else-if="type==1&&item.operate=='1'">-->
+                            <!--<span v-text="item.branchCode" class="green"></span>-->
+                            <!--</template>-->
+                            <!--<template v-else-if="type==1&&item.operate=='2'&&item.mysqlStatus!='9'">-->
+                            <!--<span v-for="(item2,index) in tableData2" :key="index">-->
+                            <!--<span v-if="item2.id==item.id">{{item2.branchCode}}</span>-->
+                            <!--</span><br>-->
+                            <!--<template>-->
+                            <!--<span v-text="item.branchCode" class="blue"></span>-->
+                            <!--</template>-->
+                            <!--</template>-->
+                            <!--<template v-else="type==0">-->
+                            <!--<span v-text="item.branchCode"></span>-->
+                            <!--</template>-->
+                            <!--</td>-->
+                            <td class="center">
+                                <template v-if="type==1&&item.operate=='3'">
+                                    <s v-text="item.bankNo" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='1'">
+                                    <span v-text="item.bankNo" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='2'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.bankNo}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.bankNo" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.bankNo"></span>
+                                </template>
+                            </td>
+                            <td class="center">
+                                <template v-if="type==1&&item.operate=='3'">
+                                    <s v-text="item.maxQuota" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='1'">
+                                    <span v-text="item.maxQuota" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='2'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.maxQuota}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.maxQuota" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.maxQuota"></span>
+                                </template>
+                            </td>
+                            <td class="center">
+                                <template v-if="type==1&&item.operate=='3'">
+                                    <s v-text="item.minQuota" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='1'">
+                                    <span v-text="item.minQuota" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='2'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.minQuota}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.minQuota" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.minQuota"></span>
+                                </template>
+                            </td>
+                            <td class="center" v-text="item.creator"></td>
+                            <td class="center">
+                                <template v-if="type==1&&item.operate=='3'">
+                                    <s v-text="item.startTime" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='1'">
+                                    <span v-text="item.startTime" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='2'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.startTime}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.startTime" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.startTime"></span>
+                                </template>
+                            </td>
+                            <td class="center">
+                                <template v-if="type==1&&item.operate=='3'">
+                                    <s v-text="item.endTime" class="red"></s>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='1'">
+                                    <span v-text="item.endTime" class="green"></span>
+                                </template>
+                                <template v-else-if="type==1&&item.operate=='2'&&item.mysqlStatus!='9'">
+                                    <span v-for="(item2,index) in tableData2" :key="index">
+                                        <span v-if="item2.id==item.id">{{item2.endTime}}</span>
+                                    </span><br>
+                                    <template>
+                                        <span v-text="item.endTime" class="blue"></span>
+                                    </template>
+                                </template>
+                                <template v-else="type==0">
+                                    <span v-text="item.endTime"></span>
+                                </template>
+                            </td>
+                            <td class="center" v-text="item.remark"></td>
+
+                            <td class="center" v-text="item.operator" v-if="this.type==1&&this.type==0"></td>
+                            <!-- <td class="center" v-text="item.status" v-show="isUpdate"></td> -->
+                            <td class="center" v-show="showMysql">
+                                <!-- <template v-if="item.delete_flag=='F'">
+                                    <span href="javascript:;" v-text="'正常'"></span>
+                                </template>
+                                <template v-else-if="item.delete_flag=='T'">
+                                    <span href="javascript:;" v-text="'删除'"></span>
+                                </template> -->
+                                <template v-if="item.operate==1">
+                                    <span href="javascript:;" v-text="'新增'" style="color:#69AA46"></span>
+                                </template>
+                                <template v-else-if="item.operate==2">
+                                    <span href="javascript:;" v-text="'修改'" style="color:#FF892A"></span>
+                                </template>
+                                <template v-else-if="item.operate==3">
+                                    <span href="javascript:;" v-text="'删除'" style="color:red"></span>
+                                </template>
+                            </td>
+
+                            <td class="center" v-show="showMysql">
+                                <template v-if="item.mysqlStatus=='0'">
+                                    <span href="javascript:;" v-text="'复核通过'" style="color:#69AA46"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='2'">
+                                    <span href="javascript:;" v-text="'待复核'" style="color:red"></span>
+                                </template>
+                                <template v-else-if="item.mysqlStatus=='9'">
+                                    <span href="javascript:;" v-text="'复核驳回'" style="color:red"></span>
+                                </template>
+                            </td>
+
+                            <!--<td class="center" v-show="isUpdate">-->
+                            <!--<a href="javascript:;" @click="showUpdate(item)">修改</a>-->
+                            <!--/-->
+                            <!--<a class="red" href="javascript:;" @click="showDelete(item)">删除</a>-->
+                            <!--</td>-->
+                            <td class="center" v-show="showMysql" v-text="item.reviewer"></td>
+                            <td class="center" v-show="showMysql" v-text="item.review_time"></td>
+                            <td class="center" v-show="showMysql" v-text="item.revise_remark"></td>
+                            <td class="center" v-show="showMysql" v-cloak>
+                                <a href="javascript:;" @click="reviewPass(item)" v-if="item.mysqlStatus!='0'&&item.mysqlStatus!='9'">复核通过
+                                    <span v-if="item.mysqlStatus=='0'||item.mysqlStatus!='9'">/</span>
+                                </a>
+                                <a href="javascript:;" @click="rejects(item)" v-if="item.mysqlStatus!='0'&&item.mysqlStatus!='9'">复核驳回
+                                </a>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'没有数据'" colspan="26"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <!--后端真分页-->
+                <div v-if="tableData.length>0" class="row" v-show="isUpdate"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!--底部假分页页码-->
+                <div v-if="viewData.length>0"  class="row" v-show="showMysql"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+middleData.length+'页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li :class="currentIndex2==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev1">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex2+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in middleData.length" @click="changeIndex1(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li :class="currentIndex2==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next1">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/businessMgmt/businessParamConfigOC/quotaReview.js"></script>
+</body>
+</html>

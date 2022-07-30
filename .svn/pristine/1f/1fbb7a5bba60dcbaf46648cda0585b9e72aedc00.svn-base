@@ -1,0 +1,1066 @@
+module.exports = [{
+        "menuId": "9",
+        "parentMenuId": "",
+        "hasSubmenu": true,
+        "page": false,
+        "type": "2",
+        "name": "业务管理",
+        "url": "/businessMgmt"
+    },
+    {
+        "menuId": "9-0",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "业务参数配置",
+        "url": "/businessMgmt/businessParamConfig"
+    },
+    {
+        "menuId": "9-0-1",
+        "parentMenuId": "9-0",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "折扣经办",
+        "url": "/businessMgmt/businessParamConfig/discountHandle.html"
+    },
+    {
+        "menuId": "9-0-2",
+        "parentMenuId": "9-0",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "折扣复核",
+        "url": "/businessMgmt/businessParamConfig/discountReview.html"
+    },
+    {
+        "menuId": "9-0-3",
+        "parentMenuId": "9-0",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "折扣试算",
+        "url": "/businessMgmt/businessParamConfig/discountTrial.html"
+    },
+    {
+        "menuId": "9-0-4",
+        "parentMenuId": "9-0",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "限额经办",
+        "url": "/businessMgmt/businessParamConfig/quotaHandle.html"
+    },
+    {
+        "menuId": "9-0-5",
+        "parentMenuId": "9-0",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "限额复核",
+        "url": "/businessMgmt/businessParamConfig/quotaReview.html"
+    },
+    {
+        "menuId": "9-0-6",
+        "parentMenuId": "9-0",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "限额试算",
+        "url": "/businessMgmt/businessParamConfig/quotaTrial.html"
+    },
+    {
+        "menuId": "9-0-7",
+        "parentMenuId": "9-0",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "支付经办",
+        "url": "/businessMgmt/businessParamConfig/paymentHandle.html"
+    },
+    {
+        "menuId": "9-0-8",
+        "parentMenuId": "9-0",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "支付复核",
+        "url": "/businessMgmt/businessParamConfig/paymentReview.html"
+    },
+    {
+        "menuId": "9-0-9",
+        "parentMenuId": "9-0",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "产品预计开放日配置",
+        "url": "/businessMgmt/businessParamConfig/productOpenDayMgmt.html"
+    },
+    {
+        "menuId": "9-0-10",
+        "parentMenuId": "9-0",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "不支持特权折扣基金",
+        "url": "/businessMgmt/businessParamConfig/nonsupport.html"
+    },
+    {
+        "menuId": "9-0-11",
+        "parentMenuId": "9-0",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "IPO模式配置",
+        "url": "/businessMgmt/businessParamConfig/IPOPatternSetting.html"
+    },
+    {
+        "menuId": "9-0-12",
+        "parentMenuId": "9-0",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "IPO预热配置",
+        "url": "/businessMgmt/businessParamConfig/IPOPreheatSetting.html"
+    },
+    {
+        "menuId": "9-1",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "业务参数配置_营运",
+        "url": "/businessMgmt/businessParamConfigOC"
+    },
+    {
+        "menuId": "9-1-1",
+        "parentMenuId": "9-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "折扣经办",
+        "url": "/businessMgmt/businessParamConfigOC/discountHandle.html"
+    },
+    {
+        "menuId": "9-1-2",
+        "parentMenuId": "9-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "折扣复核",
+        "url": "/businessMgmt/businessParamConfigOC/discountReview.html"
+    },
+    {
+        "menuId": "9-1-4",
+        "parentMenuId": "9-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "限额经办",
+        "url": "/businessMgmt/businessParamConfigOC/quotaHandle.html"
+    },
+    {
+        "menuId": "9-1-5",
+        "parentMenuId": "9-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "限额复核",
+        "url": "/businessMgmt/businessParamConfigOC/quotaReview.html"
+    },
+
+    {
+        "menuId": "9-5",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "IPO管理_营运",
+        "url": "/businessMgmt/IPOMgmtOC"
+    },
+    {
+        "menuId": "9-5-1",
+        "parentMenuId": "9-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "IPO设置",
+        "url": "/businessMgmt/IPOMgmtOC/IPOSetting.html"
+    },
+    {
+        "menuId": "9-5-2",
+        "parentMenuId": "9-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "IPO设置复核",
+        "url": "/businessMgmt/IPOMgmtOC/IPOSetReview.html"
+    },
+    {
+        "menuId": "9-5-3",
+        "parentMenuId": "9-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基准费率经办",
+        "url": "/businessMgmt/IPOMgmtOC/datumRateHandle.html"
+    },
+    {
+        "menuId": "9-5-4",
+        "parentMenuId": "9-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基准费率复核",
+        "url": "/businessMgmt/IPOMgmtOC/datumRateReview.html"
+    },
+    {
+        "menuId": "9-6",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "IPO管理_电商",
+        "url": "/businessMgmt/IPOMgmtEC"
+    },
+    {
+        "menuId": "9-6-1",
+        "parentMenuId": "9-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "IPO管理",
+        "url": "/businessMgmt/IPOMgmtEC/IPOMgmt.html"
+    },
+    {
+        "menuId": "9-6-2",
+        "parentMenuId": "9-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "IPO管理复核",
+        "url": "/businessMgmt/IPOMgmtEC/IPOMgmtReview.html"
+    },
+    {
+        "menuId": "9-6-3",
+        "parentMenuId": "9-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "IPO文件上传",
+        "url": "/businessMgmt/IPOMgmtEC/IPOUpload.html"
+    },
+    {
+        "menuId": "9-6-4",
+        "parentMenuId": "9-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基金转换经办",
+        "url": "/businessMgmt/IPOMgmtEC/fundChangeHandle.html"
+    },
+    {
+        "menuId": "9-6-5",
+        "parentMenuId": "9-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基金转换复核",
+        "url": "/businessMgmt/IPOMgmtEC/fundChangeReview.html"
+    },
+    {
+        "menuId": "9-6-6",
+        "parentMenuId": "9-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "折扣服务",
+        "url": "/businessMgmt/IPOMgmtEC/discountService.html"
+    },
+    {
+        "menuId": "9-6-7",
+        "parentMenuId": "9-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "限额服务",
+        "url": "/businessMgmt/IPOMgmtEC/quotaService.html"
+    },
+    {
+        "menuId": "9-6-8",
+        "parentMenuId": "9-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "三宝限额白名单配置管理",
+        "url": "/businessMgmt/IPOMgmtEC/whiteList.html"
+    },
+    {
+        "menuId": "9-7",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "高端理财",
+        "url": "/businessMgmt/highFinancialMgmt"
+    },
+    // {
+    //     "menuId": "9-7-0",
+    //     "parentMenuId": "9-7",
+    //     "hasSubmenu": false,
+    //     "type": "2",
+    //     "page": true,
+    //     "name": "电子合同管理",
+    //     "url": "/businessMgmt/highFinancialMgmt/electronicContractMgmt.html"
+    // },
+    {
+        "menuId": "9-7-1",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "额度管理",
+        "url": "/businessMgmt/highFinancialMgmt/quotaMgmt.html"
+    },
+    {
+        "menuId": "9-7-2",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "流水号管理",
+        "url": "/businessMgmt/highFinancialMgmt/bookingCodeMgmt.html"
+    },
+    {
+        "menuId": "9-7-3",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "净值查询权限管理",
+        "url": "/businessMgmt/highFinancialMgmt/netQueryPrivilegeMgmt.html"
+    },
+    {
+        "menuId": "9-7-4",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "观察日管理",
+        "url": "/businessMgmt/highFinancialMgmt/observationDaysMgmt.html"
+    },
+    {
+        "menuId": "9-7-19",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "高端理财认购撤单经办",
+        "url": "/businessMgmt/highFinancialMgmt/vipCancelHandle.html"
+    },
+    {
+        "menuId": "9-7-20",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "高端理财认购撤单复核",
+        "url": "/businessMgmt/highFinancialMgmt/vipCancelReview.html"
+    },
+    {
+        "menuId": "9-7-5",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "产品专区管理",
+        "url": "/businessMgmt/highFinancialMgmt/productAreaMgmt.html"
+    },
+    {
+        "menuId": "9-7-6",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基础参数维护",
+        "url": "/businessMgmt/highFinancialMgmt/basicsParamMaintain.html"
+    },
+    // {
+    //     "menuId": "9-7-7",
+    //     "parentMenuId": "9-7",
+    //     "hasSubmenu": false,
+    //     "type": "2",
+    //     "page": true,
+    //     "name": "产品附加额度管理",
+    //     "url": "/businessMgmt/highFinancialMgmt/extraQuotaMgmt.html"
+    // },
+    {
+        "menuId": "9-7-8",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "产品关注查询",
+        "url": "/businessMgmt/highFinancialMgmt/custCareQry.html"
+    },
+    // {
+    //     "menuId": "9-7-9",
+    //     "parentMenuId": "9-7",
+    //     "hasSubmenu": false,
+    //     "type": "2",
+    //     "page": true,
+    //     "name": "产品类别管理",
+    //     "url": "/businessMgmt/highFinancialMgmt/classificationGroup.html"
+    // },
+    {
+        "menuId": "9-7-10",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "产品到期推荐管理",
+        "url": "/businessMgmt/highFinancialMgmt/recommendOtherFund.html"
+    },
+    {
+        "menuId": "9-7-11",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "产品面向的特殊客户管理",
+        "url": "/businessMgmt/highFinancialMgmt/fundSpecificPopulationList.html"
+    },
+    {
+        "menuId": "9-7-12",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "客群创建",
+        "url": "/businessMgmt/highFinancialMgmt/custGroupInfo.html"
+    },
+    {
+        "menuId": "9-7-13",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "名单管理",
+        "url": "/businessMgmt/highFinancialMgmt/custInfo.html"
+    },
+    {
+        "menuId": "9-7-14",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "补充协议配置",
+        "url": "/businessMgmt/highFinancialMgmt/custGroupMapping.html"
+    },
+    {
+        "menuId": "9-7-15",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "补充协议签署",
+        "url": "/businessMgmt/highFinancialMgmt/custGroupSign.html"
+    },
+    // 20220124 注释掉，已有菜单  业务管理  IPO管理_营运(复核) 高端理财开放日复核 S
+    // {
+    //     "menuId": "9-7-16",
+    //     "parentMenuId": "9-7",
+    //     "hasSubmenu": false,
+    //     "type": "2",
+    //     "page": true,
+    //     "name": "开放日管理复核",
+    //     "url": "/businessMgmt/highFinancialMgmt/openDay.html"
+    // },
+    // 20220124 注释掉，已有菜单  业务管理  IPO管理_营运(复核) 高端理财开放日复核 E
+    // {
+    //     "menuId": "9-7-17",
+    //     "parentMenuId": "9-7",
+    //     "hasSubmenu": false,
+    //     "type": "2",
+    //     "page": true,
+    //     "name": "预期收益率维护",
+    //     "url": "/businessMgmt/highFinancialMgmt/expectYieldService.html"
+    // },
+    {
+        "menuId": "9-7-18",
+        "parentMenuId": "9-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "合格投资者认定审核",
+        "url": "/businessMgmt/highFinancialMgmt/investAudit.html"
+    },
+    {
+        "menuId": "9-8",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "高端理财企业版",
+        "url": "/businessMgmt/highFinancialCompany"
+    },
+    {
+        "menuId": "9-8-1",
+        "parentMenuId": "9-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "企业版额度管理",
+        "url": "/businessMgmt/highFinancialCompany/enterpriseQuotaMgmt.html"
+    },
+    {
+        "menuId": "9-9",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "暂停交易管理",
+        "url": "/businessMgmt/pauseTradeMgmt"
+    },
+    {
+        "menuId": "9-9-1",
+        "parentMenuId": "9-9",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "暂停交易经办",
+        "url": "/businessMgmt/pauseTradeMgmt/pauseTradeHandle.html"
+    },
+    {
+        "menuId": "9-9-6",
+        "parentMenuId": "9-9",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "暂停交易复核",
+        "url": "/businessMgmt/pauseTradeMgmt/pauseTradeReview.html"
+    },
+    {
+        "menuId": "9-9-7",
+        "parentMenuId": "9-9",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "暂停交易状态",
+        "url": "/businessMgmt/pauseTradeMgmt/pauseTradeStatus.html"
+    },
+    {
+        "menuId": "9-10",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "大额限购管理",
+        "url": "/businessMgmt/largeLimitMgmt"
+    },
+    {
+        "menuId": "9-10-1",
+        "parentMenuId": "9-10",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "大额限购经办",
+        "url": "/businessMgmt/largeLimitMgmt/largeLimitHandle.html"
+    },
+    {
+        "menuId": "9-10-2",
+        "parentMenuId": "9-10",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "大额限购复核",
+        "url": "/businessMgmt/largeLimitMgmt/largeLimitReview.html"
+    },
+    {
+        "menuId": "9-11",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "坐席查询",
+        "url": "/businessMgmt/attendQuery"
+    },
+    {
+        "menuId": "9-11-1",
+        "parentMenuId": "9-11",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "客户资料查询",
+        "url": "/businessMgmt/attendQuery/customerDataQuery.html"
+    },
+    {
+        "menuId": "9-12",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "交易信息查询",
+        "url": "/businessMgmt/tradeInfoQuery"
+    },
+    {
+        "menuId": "9-12-1",
+        "parentMenuId": "9-12",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "交易信息查询",
+        "url": "/businessMgmt/tradeInfoQuery/tradeApplyForQuery.html"
+    },
+    {
+        "menuId": "9-14",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "收市管理",
+        "url": "/businessMgmt/closingMgmt"
+    },
+    {
+        "menuId": "9-14-1",
+        "parentMenuId": "9-14",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "收市管理",
+        "url": "/businessMgmt/closingMgmt/closingMgmt.html"
+    },
+    {
+        "menuId": "9-15",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "IPO管理_资金",
+        "url": "/businessMgmt/IPOMgmtFD"
+    },
+    {
+        "menuId": "9-15-1",
+        "parentMenuId": "9-15",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "IPO管理_资金",
+        "url": "/businessMgmt/IPOMgmtFD/IPOMgmtFund.html"
+    },
+    {
+        "menuId": "9-15-2",
+        "parentMenuId": "9-15",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "IPO管理_资金复核",
+        "url": "/businessMgmt/IPOMgmtFD/IPOMgmtFundReview.html"
+    },
+    {
+        "menuId": "9-16",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "开关管理",
+        "url": "/businessMgmt/switchMgmt"
+    },
+    {
+        "menuId": "9-16-1",
+        "parentMenuId": "9-16",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "开关类别管理",
+        "url": "/businessMgmt/switchMgmt/switchCategoryMgmt.html"
+    },
+    {
+        "menuId": "9-16-2",
+        "parentMenuId": "9-16",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基金开关管理",
+        "url": "/businessMgmt/switchMgmt/fundSwitchMgmt.html"
+    },
+    {
+        "menuId": "9-17",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "基金标签",
+        "url": "/businessMgmt/fundTag"
+    },
+    {
+        "menuId": "9-17-1",
+        "parentMenuId": "9-17",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基金标签设置",
+        "url": "/businessMgmt/fundTag/fundTagSetting.html"
+    },
+    {
+        "menuId": "9-17-2",
+        "parentMenuId": "9-17",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基金标签管理",
+        "url": "/businessMgmt/fundTag/fundTagMgmt.html"
+    },
+    {
+        "menuId": "9-17-3",
+        "parentMenuId": "9-17",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "筛选条件管理",
+        "url": "/businessMgmt/fundTag/filterMgmt.html"
+    },
+    {
+        "menuId": "9-17-4",
+        "parentMenuId": "9-17",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基金标签设置(新)",
+        "url": "/businessMgmt/fundTag/fundTagSettingNew.html"
+    },
+    {
+        "menuId": "9-17-5",
+        "parentMenuId": "9-17",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基金标签管理(新)",
+        "url": "/businessMgmt/fundTag/fundTagMgmtNew.html"
+    },
+    {
+        "menuId": "9-18",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "组合产品配置",
+        "url": "/businessMgmt/combinationProductConfig"
+    },
+    {
+        "menuId": "9-18-1",
+        "parentMenuId": "9-18",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "组合产品经办",
+        "url": "/businessMgmt/combinationProductConfig/combinationProductHandle.html"
+    },
+    {
+        "menuId": "9-18-2",
+        "parentMenuId": "9-18",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "组合产品复核",
+        "url": "/businessMgmt/combinationProductConfig/combinationProductReview.html"
+    },
+    {
+        "menuId": "9-18-11",
+        "parentMenuId": "9-18",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "组合详情页配置",
+        "url": "/businessMgmt/combinationProductConfig/groupDetails.html"
+    },
+    {
+        "menuId": "9-18-3",
+        "parentMenuId": "9-18",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "定期报告管理",
+        "url": "/businessMgmt/combinationProductConfig/reportMgmt.html"
+    },
+    {
+        "menuId": "9-18-10",
+        "parentMenuId": "9-18",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "投顾风控监控",
+        "url": "/businessMgmt/combinationProductConfig/investmentRisk.html"
+    },
+    {
+        "menuId": "9-18-4",
+        "parentMenuId": "9-18",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "组合产品池管理",
+        "url": "/businessMgmt/combinationProductConfig/productPoolMgmt.html"
+    },
+    {
+        "menuId": "9-18-5",
+        "parentMenuId": "9-18",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "组合发车产品补充参数",
+        "url": "/businessMgmt/combinationProductConfig/productParamsAdd.html"
+    },
+    {
+        "menuId": "9-18-50",
+        "parentMenuId": "9-18",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "组合发车运作记录",
+        "url": "/businessMgmt/combinationProductConfig/productOperationRecord.html"
+    },
+    {
+        "menuId": "9-18-6",
+        "parentMenuId": "9-18",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "发车系列信息设定",
+        "url": "/businessMgmt/combinationProductConfig/serialInformation.html"
+    },
+    {
+        "menuId": "9-18-7",
+        "parentMenuId": "9-18",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "组合产品交易经办",
+        "url": "/businessMgmt/combinationProductConfig/productTradeHandle.html"
+    },
+    {
+        "menuId": "9-18-8",
+        "parentMenuId": "9-18",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "组合产品交易复核",
+        "url": "/businessMgmt/combinationProductConfig/productTradeReview.html"
+    },
+    {
+        "menuId": "9-18-9",
+        "parentMenuId": "9-18",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "组合目标盈计划设置",
+        "url": "/businessMgmt/combinationProductConfig/productTargetProfitPlanSetting.html"
+    },
+    {
+        "menuId": "9-18-100",
+        "parentMenuId": "9-18",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "三方组合明细配置",
+        "url": "/businessMgmt/combinationProductConfig/triple.html"
+    },
+    {
+        "menuId": "9-18-101",
+        "parentMenuId": "9-18",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "配置投顾费率",
+        "url": "/businessMgmt/combinationProductConfig/investmentAdviser.html"
+    },
+    {
+        "menuId": "9-99",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "基金比对规则",
+        "url": "/businessMgmt/fundComparison"
+    },
+    {
+        "menuId": "9-99-1",
+        "parentMenuId": "9-99",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基金基础信息",
+        "url": "/businessMgmt/fundComparison/basicInformation.html"
+    },
+    {
+        "menuId": "9-99-2",
+        "parentMenuId": "9-99",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基准费率经办",
+        "url": "/businessMgmt/fundComparison/rateHandle.html"
+    },
+    {
+        "menuId": "9-99-3",
+        "parentMenuId": "9-99",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "高端理财开放日",
+        "url": "/businessMgmt/fundComparison/highFinancialOpen.html"
+    },
+    {
+        "menuId": "9-19",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "IPO管理_营运(复核)",
+        "url": "/businessMgmt/IPOMgmtOCReview"
+    },
+    {
+        "menuId": "9-19-1",
+        "parentMenuId": "9-19",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "IPO设置复核-基本信息",
+        "url": "/businessMgmt/IPOMgmtOCReview/IPOBaseInfo.html"
+    },
+    {
+        "menuId": "9-19-6",
+        "parentMenuId": "9-19",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "IPO设置复核-交易限额",
+        "url": "/businessMgmt/IPOMgmtOCReview/IPOLimit.html"
+    },
+    {
+        "menuId": "9-19-7",
+        "parentMenuId": "9-19",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "IPO设置经办-发行设置",
+        "url": "/businessMgmt/IPOMgmtOCReview/publishHandle.html"
+    },
+    {
+        "menuId": "9-19-8",
+        "parentMenuId": "9-19",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "IPO设置复核-发行设置",
+        "url": "/businessMgmt/IPOMgmtOCReview/publishReview.html"
+    },
+    {
+        "menuId": "9-19-2",
+        "parentMenuId": "9-19",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基准费率复核",
+        "url": "/businessMgmt/IPOMgmtOCReview/datumRate.html"
+    },
+    {
+        "menuId": "9-19-4",
+        "parentMenuId": "9-19",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基金转换列表查询",
+        "url": "/businessMgmt/IPOMgmtOCReview/fundTransform.html"
+    },
+    {
+        "menuId": "9-19-5",
+        "parentMenuId": "9-19",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基金转换参数审核",
+        "url": "/businessMgmt/IPOMgmtOCReview/paramsCheck.html"
+    },
+    {
+        "menuId": "9-19-51",
+        "parentMenuId": "9-19",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基金转换关系黑名单",
+        "url": "/businessMgmt/IPOMgmtOCReview/transferBlacklist.html"
+    },
+    {
+        "menuId": "9-19-52",
+        "parentMenuId": "9-19",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "基金转换关系白名单",
+        "url": "/businessMgmt/IPOMgmtOCReview/transferWhitelist.html"
+    },
+    {
+        "menuId": "9-19-3",
+        "parentMenuId": "9-19",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "大额限购复核",
+        "url": "/businessMgmt/IPOMgmtOCReview/largePurchaseLimit.html"
+    },
+    {
+        "menuId": "9-19-9",
+        "parentMenuId": "9-19",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "暂停交易数据复核",
+        "url": "/businessMgmt/IPOMgmtOCReview/pauseTradeDataReview.html"
+    },
+    {
+        "menuId": "9-19-10",
+        "parentMenuId": "9-19",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "高端理财开放日复核",
+        "url": "/businessMgmt/IPOMgmtOCReview/financialOpenDayReview.html"
+    },
+    {
+        "menuId": "9-20",
+        "parentMenuId": "9",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "产品信息配置",
+        "url": "/businessMgmt/productInfoConfig"
+    },
+    {
+        "menuId": "9-20-1",
+        "parentMenuId": "9-20",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "产品扩展信息类型",
+        "url": "/businessMgmt/productInfoConfig/productExpandType.html"
+    },
+    {
+        "menuId": "9-20-2",
+        "parentMenuId": "9-20",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "产品扩展信息内容",
+        "url": "/businessMgmt/productInfoConfig/productExpandContent.html"
+    },
+    {
+        "menuId": "9-20-3",
+        "parentMenuId": "9-20",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "顺风车产品配置",
+        "url": "/businessMgmt/productInfoConfig/freeRideProductConfig.html"
+    }
+];

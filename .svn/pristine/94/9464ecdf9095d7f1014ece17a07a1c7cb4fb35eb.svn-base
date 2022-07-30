@@ -1,0 +1,120 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').combinationProductConfig.serialInformation;
+module.exports = function (app) {
+    // 获取初始数据和查询
+    app.post('/businessMgmt/combinationProductConfig/serialInformation/getTableData.ajax', (req, res, next) => {
+        let option = {
+            session: req.session,
+            url: apiUrlList.getTableData,
+            // body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/combinationProductConfig/serialInformation/getTableData.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/businessMgmt/combinationProductConfig/serialInformation/getTableData.ajax error:', error);
+            console.log('/businessMgmt/combinationProductConfig/serialInformation/getTableData.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/combinationProductConfig/serialInformation/getTableData.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            console.log(result,'---result----');
+            if (result && result.returnCode == '0') {
+                // var resultData=result.body;
+                // resultData.forEach((item) => {
+                //     item.check = false;
+                // });
+                let resultData = {};
+                resultData.tableData = result.body
+                return res.send({error: 0, msg: '查询成功', data: resultData});
+            }
+            else if (result && result.returnCode != 9999) {
+                return res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                return res.send({error: 1, msg: '查询失败'});
+            }
+        });
+    });
+
+    //新增数据
+    app.post('/businessMgmt/combinationProductConfig/serialInformation/saveParam.ajax', (req, res, next) => {
+        let params = {};
+        params.typeName = req.body.typeName;
+        params.typeDesc = req.body.typeDesc;
+        params.shiftType = req.body.shiftType;
+        params.displayOrder = req.body.displayOrder;
+        let option = {
+            session: req.session,
+            url: apiUrlList.saveParam,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/combinationProductConfig/serialInformation/saveParam.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/businessMgmt/combinationProductConfig/serialInformation/saveParam.ajax error:', error);
+            console.log('/businessMgmt/combinationProductConfig/serialInformation/saveParam.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/combinationProductConfig/serialInformation/saveParam.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '保存失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                return res.send({error: 0, msg: '保存成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                return res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                return res.send({error: 1, msg: '保存失败'});
+            }
+        });
+    });
+    //修改数据
+    app.post('/businessMgmt/combinationProductConfig/serialInformation/update.ajax', (req, res, next) => {
+        let params = {};
+        params.serialno = req.body.serialno;
+        params.typeName = req.body.typeName;
+        params.typeDesc = req.body.typeDesc;
+        params.shiftType = req.body.shiftType;
+        params.displayOrder = req.body.displayOrder;
+        let option = {
+            session: req.session,
+            url: apiUrlList.update,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/businessMgmt/combinationProductConfig/serialInformation/update.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/businessMgmt/combinationProductConfig/serialInformation/update.ajax error:', error);
+            console.log('/businessMgmt/combinationProductConfig/serialInformation/update.ajax statusCode:', response && response.statusCode);
+            console.log('/businessMgmt/combinationProductConfig/serialInformation/update.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '修改失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                return res.send({error: 0, msg: '修改成功'});
+            }
+            else if (result && result.returnCode != 9999) {
+                return res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                return res.send({error: 1, msg: '修改失败'});
+            }
+        });
+    });
+};
+

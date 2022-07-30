@@ -1,0 +1,301 @@
+new Vue({
+    el: '#content',
+    data: {
+        //主页面相关数据
+        templateId: '',
+        templateValue: '',
+        tableData: [],
+        diaMsg: '',
+        updateId: '',
+        deleteId: '',
+        placeholderList: [],
+        // 新增弹窗相关数据
+        templateName_dialog: '',
+        templateDescription_dialog: '',
+        templateValue_dialog: '',
+        importClass_dialog: [{value:''}],
+        placeholders_dialog: [],
+        //主表格分页数据
+        currentIndex: 0,
+        maxSpace: 5,
+        totalPage: 0,
+        pageMaxNum: 10
+    },
+    computed: {
+        //主表格分页
+        pageList: function () {
+            var arr = [];
+            if (this.totalPage <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex <= this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex <= this.maxSpace) {
+                var space = this.totalPage - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            } else {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        }
+    },
+    watch: {
+        pageMaxNum: {
+            handler: function (val, oldval) {
+                this.currentIndex = 0;
+            }
+        }
+    },
+    mounted: function () {
+        var _this = this;
+        var dialogs = ['del', 'operate', 'info'];
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        this.search();
+        $.post({
+            url: '/recommendSystem/recommendSystemGroupMgmt/ruleTemplateConfig/placeholdersQuery.ajax',
+            data: {
+                pageNo: "1",
+                pageSize: "99999",
+            },
+            success: function (result) {
+                if (result.error === 0) {
+                    _this.placeholderList = result.data.rows;
+                    // console.log(result)
+                } else {
+                    _this.showDialog('', 'info', false, result.msg);
+                }
+            }
+        });
+    },
+    methods: {
+        //业务方法
+        search: function () {
+            var _this = this;
+            var params = {};
+            params.templateId = this.templateId;
+            params.templateValue = this.templateValue;
+            params.pageNo = this.currentIndex + 1;
+            params.pageSize = this.pageMaxNum;
+            $.post({
+                url: '/recommendSystem/recommendSystemGroupMgmt/ruleTemplateConfig/search.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.tableData = result.data.rows;
+                        _this.currentIndex = result.data.pageNum - 1;
+                        _this.totalPage = result.data.pages;
+                    }
+                    else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        clearOperateDia: function (item) {
+            if (item) {
+                var importClass_dialog=[];
+                    item.importClass.split(',').forEach(function (item1) {
+                        // console.log(item1);
+                        importClass_dialog.push({value:item1})
+                });
+                this.templateName_dialog = item.templateName;
+                this.templateDescription_dialog = item.templateDescription;
+                this.templateValue_dialog = item.templateValue;
+                this.importClass_dialog =importClass_dialog;
+                this.placeholders_dialog = item.placeholders.split(',');
+            }
+            else {
+                this.templateName_dialog = '';
+                this.templateDescription_dialog = '';
+                this.templateValue_dialog = '';
+                this.importClass_dialog = [{value:''}];
+                this.placeholders_dialog = [];
+            }
+        },
+        checkOperateDia: function () {
+            if (!this.templateName_dialog) {
+                this.showDialog('operate', 'info', true, '模板名称不能为空!');
+                return false;
+            }
+            if (!this.templateDescription_dialog) {
+                this.showDialog('operate', 'info', true, '模板描述不能为空!');
+                return false;
+            }
+            if (!this.templateValue_dialog) {
+                this.showDialog('operate', 'info', true, '模板值不能为空!');
+                return false;
+            }
+            if (!this.importClass_dialog) {
+                this.showDialog('operate', 'info', true, '导入类不能为空!');
+                return false;
+            }
+            if (this.placeholders_dialog.length==0) {
+                this.showDialog('operate', 'info', true, '占位符不能为空!');
+                return false;
+            }
+            return true;
+        },
+        showAdd: function () {
+            this.updateId = '';
+            this.clearOperateDia();
+            this.showDialog('', 'operate');
+        },
+        showUpdate: function (item) {
+            this.updateId = item.templateId;
+            this.clearOperateDia(item);
+            this.showDialog('', 'operate');
+        },
+        operate: function () {
+            if (!this.checkOperateDia()) {
+                return;
+            }
+            var _this = this;
+            var params = {};
+            var url = '';
+            if (this.updateId) {
+                params.templateId = this.updateId;
+                url = '/recommendSystem/recommendSystemGroupMgmt/ruleTemplateConfig/update.ajax';
+            }
+            else {
+                url = '/recommendSystem/recommendSystemGroupMgmt/ruleTemplateConfig/add.ajax';
+            }
+            var importClassList=[];
+            this.importClass_dialog.forEach(function (item) {
+                importClassList.push(item.value);
+            });
+            params.templateName = this.templateName_dialog;
+            params.templateDescription = this.templateDescription_dialog;
+            params.templateValue = this.templateValue_dialog;
+            params.importClass = importClassList.join(',');
+            params.placeholders = this.placeholders_dialog.join(',');
+            $.post({
+                url: url,
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('operate', 'info', false, result.msg);
+                        _this.search();
+                    }
+                    else {
+                        _this.showDialog('operate', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+        showDel: function (item) {
+            this.deleteId = item.templateId;
+            this.showDialog('', 'del');
+        },
+        del: function () {
+            var _this = this;
+            $.post({
+                url: '/recommendSystem/recommendSystemGroupMgmt/ruleTemplateConfig/del.ajax',
+                data: {templateId: this.deleteId},
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('del', 'info', false, result.msg);
+                        _this.search();
+                    }
+                    else {
+                        _this.showDialog('del', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        addImClass:function () {
+            this.importClass_dialog.push({value:''})
+        },
+        removeImClass:function (index) {
+            this.importClass_dialog.splice(index,1)
+        },
+        //主表格分页方法
+        prev: function () {
+            if (this.currentIndex <= 0) {
+                return;
+            }
+            this.getTableData(this.currentIndex - 1);
+        },
+        next: function () {
+            if (this.currentIndex >= this.totalPage - 1) {
+                return;
+            }
+            this.getTableData(this.currentIndex + 1);
+        },
+        changeIndex: function (index) {
+            this.getTableData(index - 1);
+        },
+        toFirst: function () {
+            this.getTableData(0);
+        },
+        toLast: function () {
+            this.getTableData(this.totalPage - 1);
+        },
+        //公共方法
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            }
+            else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            }
+            else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            }
+            else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+            else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        overflowHide: function (val) {
+            var str = '';
+            if (val) {
+                str = val.toString();
+                if (str.length > 10) {
+                    str = str.substring(0, 10) + '...'
+                }
+            } else {
+                str = '-'
+            }
+            return str;
+        }
+    }
+});

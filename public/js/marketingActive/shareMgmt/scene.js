@@ -1,0 +1,263 @@
+var vm = new Vue({
+	el: '#content',
+	data: {
+		// 主页面相关数据
+		shareEventName: '',
+		shareEventCode: '',
+		shareEventType: '',
+		tableData: [],
+		diaMsg: '',
+		//主表格分页数据
+		currentIndex: 0,
+		maxSpace: 5,
+		totalPage: 0,
+		pageMaxNum: 10,
+		// 新增
+		updateId: '',
+		deleteId: '',
+		shareEventName_dialog: '',
+		shareEventCode_dialog: '',
+		shareEventType_dialog: '',
+		shareEventTypeList: []
+	},
+	created: function() {
+		this.getShareRventTypeList();
+	},
+	mounted: function() {
+		var dialogs = ['info', 'addDlg', 'updDlg', 'deleteDialog'];
+		var _this = this;
+		dialogs.forEach(function(id) {
+			$('#' + id).on('shown.bs.modal', function() {
+				var $this = $(this);
+				var dialog = $this.find('.modal-dialog');
+				var top = ($(window).height() - dialog.height()) / 2;
+				dialog.css({
+					marginTop: top
+				});
+			});
+		});
+		this.getTableData(0);
+
+	},
+	computed: {
+		pageList: function() {
+			var arr = [];
+			if (this.totalPage <= 2 * this.maxSpace) {
+				for (var i = 0; i < this.totalPage; i++) {
+					arr.push(i + 1);
+				}
+				return arr;
+			}
+			if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+				for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+					arr.push(i + 1);
+				}
+			} else if (this.currentIndex <= this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+				for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+					arr.push(i + 1);
+				}
+			} else if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex <= this.maxSpace) {
+				var space = this.totalPage - this.currentIndex;
+				for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.totalPage; i++) {
+					arr.push(i + 1);
+				}
+			} else {
+				for (var i = 0; i < this.totalPage; i++) {
+					arr.push(i + 1);
+				}
+			}
+			return arr;
+		},
+		checkAll: function() {
+			if (this.tableData.length == 0) {
+				return false;
+			}
+			for (var i = 0; i < this.tableData.length; i++) {
+				if (!this.tableData[i].check) {
+					return false;
+				}
+			}
+			return true;
+		}
+	},
+	watch: {
+		pageMaxNum: function() {
+			this.getTableData(0);
+		}
+	},
+	filters: {
+		shareEventTranslate: function(value, dataList) {
+			console.log(value + ', ', dataList)
+			if (!value) return '';
+			var obj = dataList.filter(function(item) {
+				return item.shareScene == value
+			})[0];
+			return obj ? obj.shareSceneDesc : value;
+		}
+	},
+	methods: {
+		getShareRventTypeList: function() {
+			var _this = this;
+			$.post({
+				url: '/marketingActive/shareMgmt/scene/getShareRventTypeList.ajax',
+				success: function(result) {
+					if (result.error === 0) {
+						_this.shareEventType_dialog = result.data[0] ? result.data[0].shareScene : '';
+						// _this.shareEventTypeList = result.data;
+						setTimeout(()=>{
+							_this.shareEventTypeList = result.data;
+						}, 5000)
+					}
+				}
+			});
+		},
+		getTableData: function(currentIndex) {
+			var params = {};
+			params.shareEventName = this.shareEventName;
+			params.shareEventCode = this.shareEventCode;
+			params.shareEventType = this.shareEventType;
+			params.pageNo = currentIndex + 1;
+			params.pageSize = this.pageMaxNum;
+			var _this = this;
+			$.post({
+				url: '/marketingActive/shareMgmt/scene/getList.ajax',
+				data: params,
+				success: function(result) {
+					if (result.error === 0) {
+						_this.tableData = result.data.rows;
+						_this.currentIndex = result.data.pageNum - 1;
+						_this.totalPage = result.data.pages;
+					} else {
+						_this.tableData = [];
+						_this.currentIndex = 0;
+						_this.totalPage = 0;
+						_this.showDialog('', 'info', false, result.msg);
+					}
+				}
+			});
+		},
+		showAddDialog: function() {
+			this.updateId = '';
+			this.shareEventName_dialog = '';
+			this.shareEventCode_dialog = '';
+			this.shareEventType_dialog = this.shareEventTypeList[0] ? this.shareEventTypeList[0].shareScene : '';
+			this.showDialog('', 'addDlg');
+		},
+		checkDialog: function() {
+			if (!this.shareEventName_dialog) {
+				this.showDialog('addDlg', 'info', true, '未填写场景名称！');
+				return false;
+			}
+			if (!this.shareEventCode_dialog) {
+				this.showDialog('addDlg', 'info', true, '未填写场景码！');
+				return false;
+			}
+			if (!this.shareEventType_dialog) {
+				this.showDialog('addDlg', 'info', true, '未选择场景所属类型！');
+				return false;
+			}
+			return true;
+		},
+		showUpdate: function(item) {
+			this.updateId = item.id;
+			this.shareEventName_dialog = item.shareEventName;
+			this.shareEventCode_dialog = item.shareEventCode;
+			this.shareEventType_dialog = item.shareEventType;
+			this.showDialog('', 'addDlg');
+		},
+		addSave: function() {
+			if (!this.checkDialog()) return;
+			var params = {};
+			params.shareEventName = this.shareEventName_dialog;
+			params.shareEventCode = this.shareEventCode_dialog;
+			params.shareEventType = this.shareEventType_dialog;
+			this.updateId && (params.id = this.updateId);
+			var url = this.updateId ? '/update.ajax' : '/add.ajax';
+			var _this = this;
+			$.post({
+				url: '/marketingActive/shareMgmt/scene' + url,
+				data: params,
+				success: function(result) {
+					if (result.error === 0) {
+						_this.getTableData(0);
+						_this.showDialog('addDlg', 'info', false, result.msg);
+					} else {
+						_this.showDialog('addDlg', 'info', true, result.msg);
+					}
+				}
+			});
+		},
+		showDelete: function(item) {
+			this.deleteId = item.id;
+			this.showDialog('', 'deleteDialog');
+		},
+		deleteData: function() {
+			var _this = this;
+			$.post({
+				url: '/marketingActive/shareMgmt/scene/delete.ajax',
+				data: {},
+				success: function(result) {
+					if (result.error === 0) {
+						this.getTableData(0);
+						this.showDialog('deleteDialog', 'info', false, result.msg);
+					} else {
+						this.showDialog('deleteDialog', 'info', true, result.msg);
+					}
+				}
+			});
+		},
+		goPageSceneTemplate: function(item) {
+			window.location.href = '/marketingActive/shareMgmt/scene.html?pageType=Template&sceneId=' + item.id
+		},
+		showDialog: function(dia1, dia2, callback, msg) {
+			if (msg) {
+				this.diaMsg = msg;
+			} else {
+				msg = '输入条件错误';
+			}
+			if (!dia1) {
+				$('#' + dia2).modal('show');
+			} else if (!dia2) {
+				$('#' + dia1).modal('hide');
+			} else if (!callback) {
+				$('#' + dia1).on("hidden.bs.modal", function() {
+					$('#' + dia2).modal('show');
+					$('#' + dia1).off().on("hidden", "hidden.bs.modal");
+				});
+				$('#' + dia1).modal('hide');
+			} else {
+				$('#' + dia1).on("hidden.bs.modal", function() {
+					$('#' + dia2).on("hidden.bs.modal", function() {
+						$('#' + dia1).modal("show");
+						$('#' + dia2).off().on("hidden", "hidden.bs.modal");
+					});
+					$('#' + dia2).modal("show");
+					$('#' + dia1).off().on("hidden", "hidden.bs.modal");
+				});
+				$('#' + dia1).modal('hide');
+			}
+		},
+		//主表格分页方法
+		prev: function() {
+			if (this.currentIndex <= 0) {
+				return;
+			}
+			this.getTableData(this.currentIndex - 1);
+		},
+		next: function() {
+			if (this.currentIndex >= this.totalPage - 1) {
+				return;
+			}
+			this.getTableData(this.currentIndex + 1);
+		},
+		changeIndex: function(index) {
+			this.getTableData(index - 1);
+		},
+		toFirst: function() {
+			this.getTableData(0);
+		},
+		toLast: function() {
+			this.getTableData(this.totalPage - 1);
+		}
+	}
+});

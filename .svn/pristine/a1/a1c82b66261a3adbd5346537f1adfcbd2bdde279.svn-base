@@ -1,0 +1,106 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').tokenSearch.tokenSearch;
+module.exports = function (app) {
+    //供应商系统查询
+    app.post('/messageCenter/tokenSearch/tokenSearch/query.ajax', (req, res, next) => {
+        let params = {};
+        req.body.customNo && (params.custNo = req.body.customNo);
+        let option = {
+            session: req.session,
+            url: apiUrlList.query,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/tokenSearch/tokenSearch/query.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/messageCenter/tokenSearch/tokenSearch/query.ajax error:', error);
+            console.log('/messageCenter/tokenSearch/tokenSearch/query.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/tokenSearch/tokenSearch/query.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0 && Array.isArray(result.body) && result.body[0]) {
+                res.send({error: 0, msg: '查询成功', data: {pushToken: result.body[0].pushtoken}});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '未找到该客户号信息'});
+            }
+        });
+    });
+    //消息系统查询
+    app.post('/messageCenter/tokenSearch/tokenSearch/search.ajax', (req, res, next) => {
+        let params = {};
+        req.body.customNo && (params.custNo = req.body.customNo);
+        let option = {
+            session: req.session,
+            url: apiUrlList.search,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/tokenSearch/tokenSearch/search.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/messageCenter/tokenSearch/tokenSearch/search.ajax error:', error);
+            console.log('/messageCenter/tokenSearch/tokenSearch/search.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/tokenSearch/tokenSearch/search.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0 && Array.isArray(result.body) && result.body[0]) {
+                res.send({
+                    error: 0,
+                    msg: '查询成功',
+                    data: {
+                        pushToken: result.body[0].pushToken,
+                        os: result.body[0].clientType == 1 ? 'IOS' : 'Android'
+                    }
+                });
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '未找到该客户号信息'});
+            }
+        });
+    });
+    //清除无效token
+    app.post('/messageCenter/tokenSearch/tokenSearch/clearToken.ajax', (req, res, next) => {
+        let params = {};
+        params.batchNo = req.body.batchNo;
+        params.ruleId = req.body.ruleId;
+        let option = {
+            session: req.session,
+            url: apiUrlList.clearToken,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/messageCenter/tokenSearch/tokenSearch/clearToken.ajax option:', option);
+        request(option, (error, response, body) => {
+            sysLogger(3, req, option, body);
+            console.log('/messageCenter/tokenSearch/tokenSearch/clearToken.ajax error:', error);
+            console.log('/messageCenter/tokenSearch/tokenSearch/clearToken.ajax statusCode:', response && response.statusCode);
+            console.log('/messageCenter/tokenSearch/tokenSearch/clearToken.ajax body:', body);
+            if (error) {
+                return res.send({error: 1, msg: '操作失败'});
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                res.send({error: 0, msg: '清除无效token成功,已清除' + result.body + '个'});
+            }
+            else if (result && result.returnCode != 9999) {
+                res.send({error: 1, msg: result.returnMsg});
+            }
+            else {
+                res.send({error: 1, msg: '清除无效token失败'});
+            }
+        });
+    });
+};

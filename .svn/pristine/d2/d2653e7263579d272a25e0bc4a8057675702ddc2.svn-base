@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        .chosen-single {
+            height: 30px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+        }
+        .dia-label {
+            width: 120px;
+            margin-left: 50px;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!-- 提示信息弹窗 -->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 新增弹窗 -->
+                        <div class="modal" id="addLocal" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog" style="width: 60%;">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title inline">数据操作</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form">
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">基金名称:</label>
+                                                <select id="fundListAdd" class="chosen-select form-control"
+                                                        data-placeholder="请选择">
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">业务类型:</label>
+                                                <select style="width: 169px;" v-model="local.dialog_tradeType"
+                                                        :disabled="local.isUpdate">
+                                                    <option value="00">申购</option>
+                                                    <option value="01">认购</option>
+                                                    <option value="02">赎回</option>
+                                                    <option value="03">定投</option>
+                                                    <option value="04">分红</option>
+                                                    <option value="09">其他</option>
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-primary" v-show="!local.isUpdate" @click="addRow">新增一行</button>
+                                            </div>
+                                            <template v-if="!local.isUpdate">
+                                                <template v-for="(item,index) in local.dialog_detail">
+                                                    <div class="form-group">
+                                                        <label class="control-label dia-label">起始金额(含):</label>
+                                                        <input type="text" v-model="item.strAmt">
+                                                        <label class="control-label dia-label">最大金额(不含):</label>
+                                                        <input type="text" v-model="item.endAmt">
+                                                        <input type="button" class="btn btn-sm btn-danger" value="删除" v-show="local.dialog_detail.length>1" @click="deleteRow(index)">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="control-label dia-label">基准费率(%):</label>
+                                                        <input type="text" v-model="item.fee">
+                                                        <label class="control-label dia-label">最大收费额:</label>
+                                                        <input type="text" v-model="item.maxFee">
+                                                    </div>
+                                                    <hr>
+                                                </template>
+                                            </template>
+                                            <template v-else>
+                                                <div class="form-group">
+                                                    <label class="control-label dia-label">起始金额(含):</label>
+                                                    <input type="text" v-model="local.dialog_strAmt">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label dia-label">最大金额(不含):</label>
+                                                    <input type="text" v-model="local.dialog_endAmt">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label dia-label">基准费率(%):</label>
+                                                    <input type="text" v-model="local.dialog_fee">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label dia-label">最大收费额:</label>
+                                                    <input type="text" v-model="local.dialog_maxFee">
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-sm btn-primary" @click="addLocal">确定</button>
+                                            <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                    aria-hidden="true">取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 撤销弹窗 -->
+                        <div class="modal" id="localRevert" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">撤销</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确定撤销该数据？</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" @click="revert">确定
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                aria-hidden="true">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 提交弹窗 -->
+                        <div class="modal" id="localSubmit" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提交</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确定提交该数据？(提交后不可更改)</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" @click="submit">确定
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                aria-hidden="true">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 重新提交弹窗 -->
+                        <div class="modal" id="submitAgain" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title inline">重新提交</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form">
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">基金名称:</label>
+                                                <input type="text" :value="local.submitAgain_fundName" style="width: 50%;" disabled>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">业务类型:</label>
+                                                <select style="width: 169px;" :value="local.submitAgain_tradeType"
+                                                        disabled>
+                                                    <option value="00">申购</option>
+                                                    <option value="01">认购</option>
+                                                    <option value="02">赎回</option>
+                                                    <option value="03">定投</option>
+                                                    <option value="04">分红</option>
+                                                    <option value="09">其他</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">起始金额(含):</label>
+                                                <input type="text" v-model="local.submitAgain_strAmt"
+                                                       :disabled="local.submitAgain_operate==3">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">最大金额(不含):</label>
+                                                <input type="text" v-model="local.submitAgain_endAmt"
+                                                       :disabled="local.submitAgain_operate==3">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">基准费率(%):</label>
+                                                <input type="text" v-model="local.submitAgain_fee"
+                                                       :disabled="local.submitAgain_operate==3">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">最大收费额:</label>
+                                                <input type="text" v-model="local.submitAgain_maxFee"
+                                                       :disabled="local.submitAgain_operate==3">
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-sm btn-primary" @click="submitAgain">确定</button>
+                                            <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                    aria-hidden="true">取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 服务端删除弹窗 -->
+                        <div class="modal" id="serviceToLocalDelete" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">删除</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4>确定删除该数据？</h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm"
+                                                @click="serviceToLocalDelete">确定
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                aria-hidden="true">取消
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 服务端修改弹窗 -->
+                        <div class="modal" id="serviceToLocalUpdate" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                            &times;
+                                        </button>
+                                        <h4 class="modal-title inline">数据操作</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form">
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">基金ID:</label>
+                                                <input type="text" v-model="service.dialog_update_fundId" disabled>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">基金名称:</label>
+                                                <input type="text" style="width: 60%;"
+                                                       v-model="service.dialog_update_fundName" disabled>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">业务类型:</label>
+                                                <select style="width: 169px;" v-model="service.dialog_update_tradeType"
+                                                        disabled>
+                                                    <option value="00">申购</option>
+                                                    <option value="01">认购</option>
+                                                    <option value="02">赎回</option>
+                                                    <option value="03">定投</option>
+                                                    <option value="04">分红</option>
+                                                    <option value="09">其他</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">起始金额(含):</label>
+                                                <input type="text" v-model="service.dialog_update_strAmt">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">最大金额(不含):</label>
+                                                <input type="text" v-model="service.dialog_update_endAmt">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">基准费率(%):</label>
+                                                <input type="text" v-model="service.dialog_update_fee">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label dia-label">最大收费额:</label>
+                                                <input type="text" v-model="service.dialog_update_maxFee">
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-sm btn-primary" @click="serviceToLocalUpdate">确定
+                                            </button>
+                                            <button class="btn btn-sm btn-primary" data-dismiss="modal"
+                                                    aria-hidden="true">取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- DIALOG ENDS -->
+                        <div class="tabbable">
+                            <ul class="nav nav-tabs padding-12 tab-color-blue background-blue">
+                                <li class="active">
+                                    <a data-toggle="tab" href="#local">经办数据</a>
+                                </li>
+                                <li>
+                                    <a data-toggle="tab" href="#service">已生效数据</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div id="local" class="tab-pane in active">
+                                    <!-- 本地数据 -->
+                                    <div class="form-inline" style="padding-bottom: 10px;">
+                                        <div class="form-group">
+                                            <label class="control-label">基金名称:</label>
+                                            <select id="fundListLocal" class="chosen-select form-control"
+                                                    data-placeholder="请选择">
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">业务类型:</label>
+                                            <select style="width: 169px;" v-model="local.tradeType">
+                                                <option value="">全部</option>
+                                                <option value="00">申购</option>
+                                                <option value="01">认购</option>
+                                                <option value="02">赎回</option>
+                                                <option value="03">定投</option>
+                                                <option value="04">分红</option>
+                                                <option value="09">其他</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">操作类型:</label>
+                                            <select style="width: 169px;" v-model="local.operate">
+                                                <option value="">全部</option>
+                                                <option value="1">新增</option>
+                                                <option value="2">修改</option>
+                                                <option value="3">删除</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">复核状态:</label>
+                                            <select style="width: 169px;" v-model="local.status">
+                                                <option value="">全部</option>
+                                                <!--<option value="1">编辑中</option>-->
+                                                <option value="2">待复核</option>
+                                                <option value="0">复核通过</option>
+                                                <option value="9">复核驳回</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group pull-right">
+                                            <input type="button" class="btn btn-sm btn-primary" value="查询"
+                                                   @click="searchLocal">
+                                            <input type="button" class="btn btn-sm btn-primary " value="新增"
+                                                   @click="showAddLocal">
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                    </div>
+                                    <div class="table-header">
+                                        本地表格数据
+                                    </div>
+                                    <!--分页器和快速查询-->
+                                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                        <div class="col-xs-6">
+                                            <div class="dataTables_length">
+                                                <label>每页显示</label>
+                                                <select class="input-sm" name="pageMaxNum" v-model="local.pageMaxNum">
+                                                    <option value="10">10</option>
+                                                    <option value="20">20</option>
+                                                    <option value="50">50</option>
+                                                </select>
+                                                <label>条</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--数据表-->
+                                    <table class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center">基金名称</th>
+                                            <th class="center">业务类型</th>
+                                            <th class="center">起始金额(含)</th>
+                                            <th class="center">最大金额(不含)</th>
+                                            <th class="center">基准费率(%)</th>
+                                            <th class="center">最大收费额</th>
+                                            <th class="center">创建人</th>
+                                            <th class="center">创建时间</th>
+                                            <th class="center">操作类型</th>
+                                            <th class="center">复核状态</th>
+                                            <th class="center">复核人</th>
+                                            <th class="center">复核时间</th>
+                                            <th class="center">备注</th>
+                                            <th class="center">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="viewData_local.length>0">
+                                            <tr v-for="(item,index) in viewData_local" :key="index">
+                                                <td class="center" v-text="item.fundName"></td>
+                                                <td class="center" v-text="item.showTradeType"></td>
+                                                <td class="center" v-text="item.strAmt"></td>
+                                                <td class="center" v-text="item.endAmt"></td>
+                                                <td class="center" v-text="item.fee"></td>
+                                                <td class="center" v-text="item.maxFee"></td>
+                                                <td class="center" v-text="item.creator"></td>
+                                                <td class="center" v-text="item.createTime"></td>
+                                                <td :class="{center:true,green:item.operate==1,orange:item.operate==2,red:item.operate==3}"
+                                                    v-text="item.showOperate"></td>
+                                                <td :class="{center:true,
+                                                green:item.status==0,
+                                                black:item.status==1,
+                                                blue:item.status==2,
+                                                red:item.status==9}"
+                                                    v-text="item.showStatus"></td>
+                                                <td class="center" v-text="item.reviewer"></td>
+                                                <td class="center" v-text="item.reviewTime"></td>
+                                                <td class="center" v-text="item.remark"></td>
+                                                <td class="center">
+                                                    <template v-if="item.status==2">
+                                                        <template v-if="item.operate!=3">
+                                                            <a href="javascript:;" @click="showLocalUpdate(item)">修改</a>
+                                                            <span>/</span>
+                                                        </template>
+                                                        <!--<a href="javascript:;" @click="showSubmit(item)">提交</a>-->
+                                                        <a href="javascript:;" class="red"
+                                                           @click="showRevert(item)">撤销</a>
+                                                    </template>
+                                                    <template v-else-if="item.status==9">
+                                                        <a href="javascript:;" @click="showSubmitAgain(item)">重新提交</a>
+                                                    </template>
+                                                    <template v-else>
+                                                        <span>-</span>
+                                                    </template>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'暂无数据'" colspan="14"></td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                    <!--底部页码-->
+                                    <div v-if="viewData_local.length>0" class="row"
+                                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                        <div class="col-xs-2">
+                                            <div class="dataTables_info"
+                                                 v-text="'共 '+middleData_local.length+' 页'"></div>
+                                        </div>
+                                        <div class="col-xs-10">
+                                            <div class="dataTables_paginate paging_simple_numbers">
+                                                <ul class="pagination">
+                                                    <li class="paginate_button"
+                                                        v-show="pageList_local.length<middleData_local.length&&local.currentIndex>local.maxSpace">
+                                                        <a href="javascript:;" v-text="'1...'" @click="toFirst(2)"></a>
+                                                    </li>
+                                                    <li :class="local.currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                        @click="prev(2)">
+                                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                                    </li>
+                                                    <li :class="value==local.currentIndex+1?'paginate_button active':'paginate_button'"
+                                                        v-for="value in pageList_local" @click="changeIndex(value,2)">
+                                                        <a href="javascript:;" v-text="value"></a>
+                                                    </li>
+                                                    <li class="paginate_button"
+                                                        v-show="pageList_local.length<middleData_local.length&&middleData_local.length-local.currentIndex>local.maxSpace">
+                                                        <a href="javascript:;" v-text="'...'+middleData_local.length"
+                                                           @click="toLast(2)"></a>
+                                                    </li>
+                                                    <li :class="local.currentIndex==middleData_local.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                        @click="next(2)">
+                                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="service" class="tab-pane">
+                                    <!-- 服务端数据 -->
+                                    <div class="form-inline" style="padding-bottom: 10px;">
+                                        <div class="form-group">
+                                            <label class="control-label">基金名称:</label>
+                                            <select id="fundListService" class="chosen-select form-control"
+                                                    data-placeholder="请选择">
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">业务类型:</label>
+                                            <select style="width: 169px;" v-model="service.tradeType">
+                                                <option value="00">申购</option>
+                                                <option value="01">认购</option>
+                                                <option value="02">赎回</option>
+                                                <option value="03">定投</option>
+                                                <option value="04">分红</option>
+                                                <option value="09">其他</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group pull-right">
+                                            <input type="button" class="btn btn-sm btn-primary" value="查询"
+                                                   @click="searchService">
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                    </div>
+                                    <div class="table-header">
+                                        服务端表格数据
+                                    </div>
+                                    <!--分页器和快速查询-->
+                                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                        <div class="col-xs-6">
+                                            <div class="dataTables_length">
+                                                <label>每页显示</label>
+                                                <select class="input-sm" name="pageMaxNum" v-model="service.pageMaxNum">
+                                                    <option value="10">10</option>
+                                                    <option value="20">20</option>
+                                                    <option value="50">50</option>
+                                                </select>
+                                                <label>条</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--数据表-->
+                                    <table class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="center col-sm-3">基金名称</th>
+                                            <th class="center col-sm-2">业务类型</th>
+                                            <th class="center col-sm-2">起始金额(含)</th>
+                                            <th class="center col-sm-2">最大金额(不含)</th>
+                                            <th class="center col-sm-1">基准费率(%)</th>
+                                            <th class="center col-sm-1">最大收费额</th>
+                                            <th class="center col-sm-1">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="viewData_service.length>0">
+                                            <tr v-for="(item,index) in viewData_service" :key="index">
+                                                <td class="center" v-text="item.fundId+' '+item.fundName"></td>
+                                                <td class="center" v-text="item.showTradeType"></td>
+                                                <td class="center" v-text="item.strAmt"></td>
+                                                <td class="center" v-text="item.endAmt"></td>
+                                                <td class="center" v-text="item.fee"></td>
+                                                <td class="center" v-text="item.maxFee"></td>
+                                                <td class="center">
+                                                    <a href="javascript:;"
+                                                       @click="showServiceToLocalUpdate(item)">修改</a>
+                                                    <span>/</span>
+                                                    <a href="javascript:;" class="red"
+                                                       @click="showServiceToLocalDelete(item)">删除</a>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'暂无数据'" colspan="7"></td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                    <!--底部页码-->
+                                    <div v-if="viewData_service.length>0" class="row"
+                                         style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                        <div class="col-xs-2">
+                                            <div class="dataTables_info"
+                                                 v-text="'共 '+middleData_service.length+' 页'"></div>
+                                        </div>
+                                        <div class="col-xs-10">
+                                            <div class="dataTables_paginate paging_simple_numbers">
+                                                <ul class="pagination">
+                                                    <li class="paginate_button"
+                                                        v-show="pageList_service.length<middleData_service.length&&service.currentIndex>service.maxSpace">
+                                                        <a href="javascript:;" v-text="'1...'" @click="toFirst(1)"></a>
+                                                    </li>
+                                                    <li :class="service.currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                        @click="prev(1)">
+                                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                                    </li>
+                                                    <li :class="value==service.currentIndex+1?'paginate_button active':'paginate_button'"
+                                                        v-for="value in pageList_service" @click="changeIndex(value,1)">
+                                                        <a href="javascript:;" v-text="value"></a>
+                                                    </li>
+                                                    <li class="paginate_button"
+                                                        v-show="pageList_service.length<middleData_service.length&&middleData_service.length-service.currentIndex>service.maxSpace">
+                                                        <a href="javascript:;" v-text="'...'+middleData_service.length"
+                                                           @click="toLast(1)"></a>
+                                                    </li>
+                                                    <li :class="service.currentIndex==middleData_service.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                        @click="next(1)">
+                                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/businessMgmt/IPOMgmtOC/datumRateHandle.js"></script>
+</body>
+</html>

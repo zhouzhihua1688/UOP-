@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+
+        .upSlide {
+            height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--提示信息弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!--组合资产详情-->
+                <div class="modal" id="details" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:80%">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;text-align:center">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline;"></h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <div :class="{'upSlide':combinationDirect.length>9}">
+                                        <table id="index" class="table table-bordered table-hover dataTable ">
+                                            <thead>
+                                            <tr>
+                                                <th class="center">{{productId}}</th>
+                                                <th class="center">{{productName}}</th>
+                                                <th class="center">资产</th>
+                                                <th class="center">静态份额</th>
+                                                <th class="center">净值(日期)</th>
+                                                <th class="center">买入在途金额</th>
+                                                <th class="center">卖出在途份额</th>
+                                                <th class="center">赎回充值在途</th>
+                                                <th class="center">分红在途金额</th>
+                                                <th class="center">可用份额</th>
+                                                <th class="center">持有成本</th>
+                                                <th class="center">持有收益</th>
+                                                <th class="center">持有收益率(%)</th>
+                                                <th class="center">累计买入金额</th>
+                                                <th class="center">累计收益</th>
+                                                <th class="center">最新收益</th>
+                                                <th class="center">当日计入手续费</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <template v-if='combinationDirect.length>0'>
+                                                <tr v-for="(item,index) in combinationDirect" :key="index">
+                                                    <td class="center" v-text="item.productId"></td>
+                                                    <td class="center" v-text="item.productName"></td>
+                                                    <td class="center" v-text="numFormat(item.totalAmt)"></td>
+                                                    <td class="center" v-text="numFormat(item.balanceQuty)"></td>
+                                                    <td class="center" v-text="item.nav+' ('+(item.navDate?item.navDate:'--')+')'"></td>
+                                                    <td class="center" v-text="numFormat(item.buyOnWayAmt)"></td>
+                                                    <td class="center" v-text="numFormat(item.sellOnWayQuty)"></td>
+                                                    <td class="center" v-text="numFormat(item.rechargeOnWayAmt)"></td>
+                                                    <td class="center" v-text="numFormat(item.melonOnWayAmt)"></td>
+                                                    <td class="center" v-text="numFormat(item.availableQuty)"></td>
+                                                    <td class="center" v-text="numFormat(item.balanceCost)"></td>
+                                                    <td class="center" v-text="numFormat(item.balanceProfit)"></td>
+                                                    <td class="center" v-text="numFormat(item.balanceProfitRate)"></td>
+                                                    <td class="center" v-text="numFormat(item.totalCost)"></td>
+                                                    <td class="center" v-text="numFormat(item.totalProfit)"></td>
+                                                    <td class="center" v-text="numFormat(item.lastProfit)"></td>
+                                                    <td class="center" v-text="numFormat(item.dayFee)"></td>
+                                                </tr>
+                                            </template>
+                                            <template v-else>
+                                                <tr>
+                                                    <td class="center" colspan="18">暂无数据</td>
+                                                </tr>
+                                            </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="text-center" style="clear: both">
+                                    <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal">取消
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DIALOG ENDS -->
+                <div class="form-inline" style="padding: 10px 0;">
+                    <!--<div class="form-group">-->
+                    <!--<label class="control-label">证件类型:</label>-->
+                    <!--<input type="text">-->
+                    <!--</div>-->
+                    <div class="form-group">
+                        <label class="control-label">证件号:</label>
+                        <input type="text" v-model="idNo">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">客户号:</label>
+                        <input type="text" style="width: 120px;" v-model="custNo">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">币种:</label>
+                        <select name="status" class="form-control" style="width: 100px;" v-model="currencyType">
+                            <option value="">请选择</option>
+                            <option value="156">156-人民币</option>
+                            <option value="840">840-美元</option>
+                        </select>
+                        <span class="red">*必填&nbsp&nbsp</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">资产类型:</label>
+                        <select name="status" class="form-control" style="width: 100px;" v-model="type" @change="showDay">
+                            <option value="">请选择</option>
+                            <option value="1">1-切片</option>
+                            <option value="2">2-实时</option>
+                        </select>
+                        <span class="red">*必填&nbsp&nbsp</span>
+                    </div>
+                    <div class="form-group" v-show="showTime">
+                        <!--<label class="control-label">资产截止日:</label>-->
+                        <!--<input type="text" v-model="tradeAcct">-->
+
+                        <div class="input-group">
+                            <label class="control-label"
+                                   style="text-align: right">资产截止日:</label>
+                            <input type="text" id="endDate" ref="endDate" class="date-timepicker"
+                                   style="width:145px;">
+                            <span class="input-group-addon" style="width: 40px;">
+                                                <i class="fa fa-clock-o bigger-110"></i>
+                                            </span>
+                        </div>
+                        <span class="red">*必填</span>
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                    </div>
+                </div>
+                <!--<div class="table-header">-->
+                <!--<%= cpage %>&#45;&#45;数据-->
+                <!--</div>-->
+                <div style="border-top: 1px solid #eee;"></div>
+
+                <template v-if="tableData.length>0">
+                    <div v-for="(item,index) in tableData" :key="index">
+                        <div class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group">
+                                <label class="control-label">客户姓名:</label>
+                                <span type="text" style="border:0;color:#478FCA" v-text="item.custName"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" style="margin-left:170px">客户号:</label>
+                                <span type="text" style="border:0;color:#478FCA" v-text="item.custNo"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" style="margin-left:160px">证件类型:</label>
+                                <span type="text" style="border:0;color:#478FCA"
+                                      v-text="item.idTp=='0'?'身份证':'--'"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" style="margin-left:160px">证件号:</label>
+                                <span type="text" style="border:0;color:#478FCA" v-text="item.idNo"></span>
+                            </div>
+                        </div>
+                        <div style="border-top: 1px solid #666;"></div>
+                        <div class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group">
+                                <label class="control-label" style="font-weight: bold">全平台总资产</label>
+                                <span type="text" style="border:0;color:#478FCA"></span>
+                            </div>
+                            <br>
+                            <div class="form-group">
+                                <label class="control-label">资产参考市值:</label>
+                                <span type="text" style="border:0;color:#478FCA" v-text="numFormat(item.allAsset.totalAmt)"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" style="margin-left:160px">持有收益:</label>
+                                <span type="text" style="border:0;color:#478FCA"
+                                      v-text="numFormat(item.allAsset.balanceProfit)+' ('+(item.allAsset.balanceProfitRate)+'%)'"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" style="margin-left:160px">累计收益:</label>
+                                <span type="text" style="border:0;color:#478FCA"
+                                      v-text="numFormat(item.allAsset.totalProfit)"></span>
+                            </div>
+                            <!--<br>-->
+                            <!--<div class="form-group">-->
+                            <!--<label class="control-label">美元资产参考市值:</label>-->
+                            <!--<input type="text" style="border:0" onfocus=this.blur()>-->
+                            <!--</div>-->
+                            <!--<div class="form-group">-->
+                            <!--<label class="control-label" style="margin-left:13px">持有收益:</label>-->
+                            <!--<input type="text" style="border:0" onfocus=this.blur()>-->
+                            <!--</div>-->
+                            <!--<div class="form-group">-->
+                            <!--<label class="control-label">累计收益:</label>-->
+                            <!--<input type="text" style="border:0" onfocus=this.blur()>-->
+                            <!--</div>-->
+                        </div>
+                        <div style="border-top: 1px solid #666;"></div>
+                        <div class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group">
+                                <label class="control-label" style="font-weight: bold">直销汇总</label>
+                                <span type="text" style="border:0;color:#478FCA"></span>
+                            </div>
+                            <br>
+                            <div class="form-group">
+                                <label class="control-label">资产参考市值:</label>
+                                <span type="text" style="border:0;color:#478FCA"
+                                      v-text="numFormat(item.directAsset.totalAmt)"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" style="margin-left:160px">持有收益:</label>
+                                <span type="text" style="border:0;color:#478FCA"
+                                      v-text="numFormat(item.directAsset.balanceProfit)+' ('+(item.directAsset.balanceProfitRate)+'%)'"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" style="margin-left:160px">累计收益:</label>
+                                <span type="text" style="border:0;color:#478FCA"
+                                      v-text="numFormat(item.directAsset.totalProfit)"></span>
+                            </div>
+                            <!--<br>-->
+                            <!--<div class="form-group">-->
+                            <!--<label class="control-label">美元资产参考市值:</label>-->
+                            <!--<input type="text" style="border:0" onfocus=this.blur()>-->
+                            <!--</div>-->
+                            <!--<div class="form-group">-->
+                            <!--<label class="control-label" style="margin-left:13px">持有收益:</label>-->
+                            <!--<input type="text" style="border:0" onfocus=this.blur()>-->
+                            <!--</div>-->
+                            <!--<div class="form-group">-->
+                            <!--<label class="control-label">累计收益:</label>-->
+                            <!--<input type="text" style="border:0" onfocus=this.blur()>-->
+                            <!--</div>-->
+                        </div>
+                        <div>
+                            <template v-for="(itemDirect,indexDirect) in item.directAsset.assetSliceList">
+                                <!--超过隐藏出现滚动条-->
+                                <div :class="{'upSlide':itemDirect.items.length>9}" style="margin-top:20px">
+                                    <table class="table table-bordered table-hover dataTable" style="margin-top:20px;">
+                                        <thead>
+                                        <!--0-现金宝，1-基金，2-理财，3-组合，4-高端,6-投顾-->
+                                        <tr v-if="itemDirect.productType=='0'">
+                                            <th class="center">现金宝资产</th>
+                                            <th class="center">产品名称</th>
+                                            <th class="center">资产</th>
+                                            <th class="center">静态份额</th>
+                                            <th class="center">买入在途金额</th>
+                                            <th class="center">卖出在途份额</th>
+                                            <th class="center">可用份额</th>
+                                            <th class="center">累计买入金额</th>
+                                            <th class="center">累计收益</th>
+                                        </tr>
+                                        <tr v-else>
+                                            <th class="center" v-if="itemDirect.productType=='1'">基金资产</th>
+                                            <th class="center" v-else-if="itemDirect.productType=='2'">理财资产</th>
+                                            <th class="center" v-else-if="itemDirect.productType=='3'">组合资产</th>
+                                            <th class="center" v-else-if="itemDirect.productType=='4'">高端资产</th>
+                                            <th class="center" v-else-if="itemDirect.productType=='6'">投顾资产</th>
+                                            <th class="center">产品名称</th>
+                                            <th class="center">资产</th>
+                                            <th class="center" v-text="itemDirect.productType=='3'?'静态份额/金额':'静态份额'"></th>
+                                            <th class="center" v-if="itemDirect.productType!='3'">净值(日期)</th>
+                                            <th class="center">买入在途金额</th>
+                                            <th class="center">卖出在途份额</th>
+                                            <th class="center">赎回充值在途</th>
+                                            <th class="center">分红在途金额</th>
+                                            <th class="center" v-text="itemDirect.productType=='3'?'可用份额/金额':'可用份额'"></th>
+                                            <th class="center">持有成本</th>
+                                            <th class="center">持有收益</th>
+                                            <th class="center">持有收益率(%)</th>
+                                            <th class="center">累计买入金额</th>
+                                            <th class="center">累计收益</th>
+                                            <th class="center">最新收益</th>
+                                            <th class="center">当日计入手续费</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="itemDirect.items.length>0">
+                                            <!--<tr v-if="itemDirect.productType=='0'">-->
+                                            <!--<td class="center">汇总</td>-->
+                                            <!--<td class="center"></td>-->
+                                            <!--<td class="center" v-text="totalAmt(itemDirect.items)"></td>-->
+                                            <!--<td class="center"></td>-->
+                                            <!--<td class="center"></td>-->
+                                            <!--<td class="center"></td>-->
+                                            <!--<td class="center"></td>-->
+                                            <!--<td class="center"></td>-->
+                                            <!--<td class="center"></td>-->
+                                            <!--</tr>-->
+                                            <tr v-for="(itemDirectList,indexDirectList) in itemDirect.items"
+                                                v-if="itemDirect.productType=='0'">
+                                                <!--v-text="item.productId"-->
+                                                <td class="center" v-text="itemDirectList.productId"></td>
+                                                <td class="center" v-text="itemDirectList.productName"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.totalAmt)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.balanceQuty)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.buyOnWayAmt)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.sellOnWayQuty)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.availableQuty)"></td>
+                                                <td class="center" v-text="itemDirectList.totalCost?numFormat(itemDirectList.totalCost):'--'"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.totalProfit)"></td>
+                                            </tr>
+                                            <tr v-else>
+                                                <!--为3-是组合资产-->
+                                                <td class="center" v-if="itemDirect.productType=='3'">
+                                                    <a href="javascript:;" v-text="itemDirectList.productId"
+                                                       @click="directAsset(item,itemDirectList)"></a>
+                                                </td>
+                                                <td class="center" v-else v-text="itemDirectList.productId">
+                                                </td>
+                                                <td class="center" v-text="itemDirectList.productName"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.totalAmt)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.balanceQuty)"></td>
+                                                <td class="center" v-if="itemDirect.productType!='3'" v-text="itemDirectList.nav+' ('+(itemDirectList.navDate?itemDirectList.navDate:'--')+')'"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.buyOnWayAmt)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.sellOnWayQuty)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.rechargeOnWayAmt)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.melonOnWayAmt)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.availableQuty)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.balanceCost)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.balanceProfit)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.balanceProfitRate)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.totalCost)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.totalProfit)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.lastProfit)"></td>
+                                                <td class="center" v-text="numFormat(itemDirectList.dayFee)"></td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'暂无数据'" colspan="18"></td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
+                            <br>
+                        </div>
+                        <!--<div>-->
+                        <!--<table class="table table-bordered table-hover dataTable" style="margin-top:10px">-->
+                        <!--<thead>-->
+                        <!--<tr>-->
+                        <!--<th class="center">基金资产</th>-->
+                        <!--<th class="center">产品名称</th>-->
+                        <!--<th class="center">资产</th>-->
+                        <!--<th class="center">静态份额</th>-->
+                        <!--<th class="center">净值(日期)</th>-->
+                        <!--<th class="center">买入在途金额</th>-->
+                        <!--<th class="center">卖出在途份额</th>-->
+                        <!--<th class="center">赎回充值在途</th>-->
+                        <!--<th class="center">分红在途金额</th>-->
+                        <!--<th class="center">可用份额</th>-->
+                        <!--<th class="center">持有成本</th>-->
+                        <!--<th class="center">持有收益</th>-->
+                        <!--<th class="center">持有收益率</th>-->
+                        <!--<th class="center">累计买入金额</th>-->
+                        <!--<th class="center">累计收益</th>-->
+                        <!--<th class="center">最新收益</th>-->
+                        <!--<th class="center">当日计入手续费</th>-->
+                        <!--</tr>-->
+                        <!--</thead>-->
+                        <!--<tbody>-->
+                        <!--<template v-if="tableData.length>0">-->
+                        <!--<tr v-for="(item,index) in tableData" :key="index">-->
+                        <!--<td class="center" v-text="item.productId"></td>-->
+                        <!--<td class="center" v-text="item.product"></td>-->
+                        <!--<td class="center" v-text="item.totalAmt"></td>-->
+                        <!--<td class="center" v-text="item.balanceQuty"></td>-->
+                        <!--<td class="center" v-text="item.navDate"></td>-->
+                        <!--<td class="center" v-text="item.buyOnWayAmt"></td>-->
+                        <!--<td class="center" v-text="item.sellOnWayQuty"></td>-->
+                        <!--<td class="center" v-text="item.rechargeOnWayAmt"></td>-->
+                        <!--<td class="center" v-text="item.melonOnWayAmt"></td>-->
+                        <!--<td class="center" v-text="item.availableQuty"></td>-->
+                        <!--<td class="center" v-text="item.balanceCost"></td>-->
+                        <!--<td class="center" v-text="item.balanceProfit"></td>-->
+                        <!--<td class="center" v-text="item.balanceProfitRate"></td>-->
+                        <!--<td class="center" v-text="item.totalCost"></td>-->
+                        <!--<td class="center" v-text="item.lastProfit"></td>-->
+                        <!--<td class="center" v-text="item.lastProfit"></td>-->
+                        <!--<td class="center" v-text="item.dayFee"></td>-->
+                        <!--</tr>-->
+                        <!--</template>-->
+                        <!--<template v-else>-->
+                        <!--<tr>-->
+                        <!--<td class="center" v-text="'暂无数据'" colspan="10"></td>-->
+                        <!--</tr>-->
+                        <!--</template>-->
+                        <!--</tbody>-->
+                        <!--</table>-->
+                        <!--</div>-->
+
+                        <div style="border-top: 1px solid #666;margin-top:30px"></div>
+                        <div class="form-inline" style="padding: 10px 0;">
+                            <div class="form-group">
+                                <label class="control-label" style="font-weight: bold">代销汇总</label>
+                                <span type="text" style="border:0;color:#478FCA"></span>
+                            </div>
+                            <br>
+                            <div class="form-group">
+                                <label class="control-label">资产参考市值:</label>
+                                <span type="text" style="border:0;color:#478FCA"
+                                      v-text="numFormat(item.proxyAsset.totalAmt)"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" style="margin-left:160px">持有收益:</label>
+                                <span type="text" style="border:0;color:#478FCA"
+                                      v-text="numFormat(item.proxyAsset.balanceProfit)+' ('+(item.proxyAsset.balanceProfitRate)+'%)'"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" style="margin-left:160px">累计收益:</label>
+                                <span type="text" style="border:0;color:#478FCA"
+                                      v-text="numFormat(item.proxyAsset.totalProfit)"></span>
+                            </div>
+                            <!--<br>-->
+                            <!--<div class="form-group">-->
+                            <!--<label class="control-label">美元资产参考市值:</label>-->
+                            <!--<input type="text" style="border:0" onfocus=this.blur()>-->
+                            <!--</div>-->
+                            <!--<div class="form-group">-->
+                            <!--<label class="control-label" style="margin-left:13px">持有收益:</label>-->
+                            <!--<input type="text" style="border:0" onfocus=this.blur()>-->
+                            <!--</div>-->
+                            <!--<div class="form-group">-->
+                            <!--<label class="control-label">累计收益:</label>-->
+                            <!--<input type="text" style="border:0" onfocus=this.blur()>-->
+                            <!--</div>-->
+                        </div>
+                        <!--<div style="overflow-y: auto">-->
+                        <!--<table class="table table-bordered table-hover dataTable">-->
+                        <!--<thead>-->
+                        <!--<tr>-->
+                        <!--<th class="center" style="width:100px">基金资产</th>-->
+                        <!--<th class="center" style="width:100px">产品名称</th>-->
+                        <!--<th class="center" style="width:100px">资产</th>-->
+                        <!--<th class="center" style="width:100px">静态份额</th>-->
+                        <!--<th class="center" style="width:100px">净值(日期)</th>-->
+                        <!--<th class="center" style="width:120px">买入在途金额</th>-->
+                        <!--<th class="center" style="width:120px">卖出在途份额</th>-->
+                        <!--<th class="center" style="width:120px">分红在途金额</th>-->
+                        <!--<th class="center" style="width:100px">可用份额</th>-->
+                        <!--<th class="center" style="width:100px">持有成本</th>-->
+                        <!--<th class="center" style="width:100px">持有收益</th>-->
+                        <!--<th class="center" style="width:120px">持有收益率</th>-->
+                        <!--<th class="center" style="width:120px">累计买入金额</th>-->
+                        <!--<th class="center" style="width:100px">累计收益</th>-->
+                        <!--<th class="center" style="width:100px">最新收益</th>-->
+                        <!--<th class="center" style="width:120px">当日计入手续费</th>-->
+                        <!--</tr>-->
+                        <!--</thead>-->
+                        <!--<tbody>-->
+                        <!--</tbody>-->
+                        <!--</table>-->
+                        <!--</div>-->
+                        <template v-for="(itemProxy,indexProxy) in item.proxyAsset.assetSliceList">
+                            <div id="consignment" :class="{'upSlide':itemProxy.items.length>9}" style="margin-top:20px">
+                                <table class="table table-bordered table-hover dataTable" style="margin-top:10px">
+                                    <thead>
+                                    <!--0-现金宝，1-基金，2-理财，3-组合，4-高端,6-投顾-->
+                                    <tr v-if="itemProxy.productType=='0'">
+                                        <th class="center">现金宝资产</th>
+                                        <th class="center">产品名称</th>
+                                        <th class="center">资产</th>
+                                        <th class="center">静态份额</th>
+                                        <th class="center">买入在途金额</th>
+                                        <th class="center">卖出在途份额</th>
+                                        <th class="center">可用份额</th>
+                                        <th class="center">累计买入金额</th>
+                                        <th class="center">累计收益</th>
+                                    </tr>
+                                    <tr v-else>
+                                        <th class="center" v-if="itemProxy.productType=='1'">基金资产</th>
+                                        <th class="center" v-else-if="itemProxy.productType=='2'">理财资产</th>
+                                        <th class="center" v-else-if="itemProxy.productType=='3'">组合资产</th>
+                                        <th class="center" v-else-if="itemProxy.productType=='4'">高端资产</th>
+                                        <th class="center" v-else-if="itemProxy.productType=='6'">投顾资产</th>
+                                        <th class="center">产品名称</th>
+                                        <th class="center">资产</th>
+                                        <th class="center" v-text="itemProxy.productType=='3'?'静态份额/金额':'静态份额'"></th>
+                                        <th class="center" v-if="itemProxy.productType!='3'">净值(日期)</th>
+                                        <th class="center">买入在途金额</th>
+                                        <th class="center">卖出在途份额</th>
+                                        <th class="center">分红在途金额</th>
+                                        <th class="center" v-text="itemProxy.productType=='3'?'可用份额/金额':'可用份额'"></th>
+                                        <th class="center">持有成本</th>
+                                        <th class="center">持有收益</th>
+                                        <th class="center">持有收益率(%)</th>
+                                        <th class="center">累计买入金额</th>
+                                        <th class="center">累计收益</th>
+                                        <th class="center">最新收益</th>
+                                        <th class="center">当日计入手续费</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <template v-if="itemProxy.items.length>0">
+                                        <tr v-for="(itemProxyList,indexProxyList) in itemProxy.items"
+                                            v-if="itemProxy.productType=='0'">
+                                            <!--v-text="item.productId"-->
+                                            <td class="center" v-text="itemProxyList.productId"></td>
+                                            <td class="center" v-text="itemProxyList.productName"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.totalAmt)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.balanceQuty)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.buyOnWayAmt)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.sellOnWayQuty)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.availableQuty)"></td>
+                                            <td class="center" v-text="itemProxyList.totalCost?numFormat(itemProxyList.totalCost):'--'"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.totalProfit)"></td>
+                                        </tr>
+                                        <tr v-else>
+                                            <!--为3-是组合资产-->
+                                            <td class="center" v-if="itemProxy.productType=='3'">
+                                                <a href="javascript:;" v-text="itemProxyList.productId"
+                                                   @click="proxyAsset(item,itemProxyList)"></a>
+                                            </td>
+                                            <td class="center" v-else v-text="itemProxyList.productId">
+                                            </td>
+                                            <td class="center" v-text="itemProxyList.productName"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.totalAmt)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.balanceQuty)"></td>
+                                            <td class="center" v-if="itemProxy.productType!='3'" v-text="itemProxyList.nav+' ('+(itemProxyList.navDate?itemProxyList.navDate:'--')+')'"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.buyOnWayAmt)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.sellOnWayQuty)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.melonOnWayAmt)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.availableQuty)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.balanceCost)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.balanceProfit)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.balanceProfitRate)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.totalCost)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.totalProfit)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.lastProfit)"></td>
+                                            <td class="center" v-text="numFormat(itemProxyList.dayFee)"></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr>
+                                            <td class="center" v-text="'暂无数据'" colspan="18"></td>
+                                        </tr>
+                                    </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template v-else>
+                    <div v-text="'暂无数据,请输入条件查询~!'" style="text-align: center;"></div>
+                </template>
+
+                <!--分页器和快速查询-->
+                <!--<div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">-->
+                <!--<div class="col-xs-6">-->
+                <!--<div class="dataTables_length">-->
+                <!--<label>每页显示</label>-->
+                <!--<select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">-->
+                <!--<option value="10">10</option>-->
+                <!--<option value="50">50</option>-->
+                <!--<option value="100">100</option>-->
+                <!--<option value="500">500</option>-->
+                <!--</select>-->
+                <!--<label>条</label>-->
+                <!--</div>-->
+                <!--</div>-->
+                <!--</div>-->
+                <!--数据表-->
+                <!--<table class="table table-bordered table-hover dataTable">-->
+                <!--<thead>-->
+                <!--<tr>-->
+                <!--<th class="center">序号</th>-->
+                <!--<th class="center">客户姓名</th>-->
+                <!--<th class="center">证件类型</th>-->
+                <!--<th class="center">证件号</th>-->
+                <!--<th class="center">测评日期</th>-->
+                <!--<th class="center">测评时间</th>-->
+                <!--<th class="center">测评得分</th>-->
+                <!--<th class="center">测评等级</th>-->
+                <!--<th class="center">操作</th>-->
+                <!--</tr>-->
+                <!--</thead>-->
+                <!--<tbody>-->
+                <!--<template v-if="tableData.length>0">-->
+                <!--<tr v-for="(item,index) in tableData" :key="index">-->
+                <!--<td class="center" v-text="index+1"></td>-->
+                <!--<td class="center" v-text="item.invNm"></td>-->
+                <!--<td class="center" v-text="item.idTpDesc"></td>-->
+                <!--<td class="center" v-text="item.idNo"></td>-->
+                <!--<td class="center">{{item.evalDate | evalDate}}</td>-->
+                <!--<td class="center">{{item.evalTime | evalTime}}</td>-->
+                <!--<td class="center" v-text="item.score"></td>-->
+                <!--<td class="center" v-text="item.riskLevel"></td>-->
+                <!--<td class="center">-->
+                <!--<a href="javascript:;" @click="showDetail(item)">详情</a>-->
+                <!--</td>-->
+                <!--</tr>-->
+                <!--</template>-->
+                <!--<template v-else>-->
+                <!--<tr>-->
+                <!--<td class="center" v-text="'暂无数据'" colspan="10"></td>-->
+                <!--</tr>-->
+                <!--</template>-->
+                <!--</tbody>-->
+                <!--</table>-->
+                <!--后端真分页-->
+                <!--<div v-if="tableData.length>0" class="row"-->
+                <!--style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">-->
+                <!--<div class="col-xs-2">-->
+                <!--<div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>-->
+                <!--</div>-->
+                <!--<div class="col-xs-10">-->
+                <!--<div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">-->
+                <!--<ul class="pagination">-->
+                <!--<li class="paginate_button"-->
+                <!--v-show="pageList.length<totalPage&&currentIndex>maxSpace">-->
+                <!--<a href="javascript:;" v-text="'1...'" @click="toFirst"></a>-->
+                <!--</li>-->
+                <!--<li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"-->
+                <!--@click="prev">-->
+                <!--<a href="javascript:;" v-text="'上一页'"></a>-->
+                <!--</li>-->
+                <!--<li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"-->
+                <!--v-for="value in pageList" @click="changeIndex(value)">-->
+                <!--<a href="javascript:;" v-text="value"></a>-->
+                <!--</li>-->
+                <!--<li class="paginate_button"-->
+                <!--v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">-->
+                <!--<a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>-->
+                <!--</li>-->
+                <!--<li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"-->
+                <!--@click="next">-->
+                <!--<a href="javascript:;" v-text="'下一页'"></a>-->
+                <!--</li>-->
+                <!--</ul>-->
+                <!--</div>-->
+                <!--</div>-->
+                <!--</div>-->
+            </div>
+        </div><!-- /.main-content -->
+    </div>
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/clientMgmt/information/assetDataQuery.js"></script>
+</body>
+</html>

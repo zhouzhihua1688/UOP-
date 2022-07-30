@@ -1,0 +1,336 @@
+var needLoginFilter = {
+	0: '否',
+	1: '是'
+};
+var templateTypeFilter = {
+	0: '默认模板',
+	1: '定制模板'
+};
+
+var vm = new Vue({
+	el: '#content',
+	data: {
+		// 主页面相关数据
+		shareEventName: '--',
+		shareEventCode: '--',
+		shareChannelList: [],
+		tableData: [],
+		diaMsg: '',
+		//主表格分页数据
+		currentIndex: 0,
+		maxSpace: 5,
+		totalPage: 0,
+		pageMaxNum: 10,
+		// filter数据
+		templateTypeList: templateTypeFilter,
+		needLoginList: needLoginFilter,
+		// 新增
+		deleteId: '',
+		updateId: '',
+		shareTemplateName_dialog: '',
+		shareTemplateType_dialog: 0,
+		needLogin_dialog: 0,
+		relateEventId: '',
+		templateInfoList: [{}]
+	},
+	created: function() {
+		this.getScenceDetail(this.getUrlParam('sceneId'));
+		this.getShareChannel();
+		this.getTableData(0);
+	},
+	mounted: function() {
+		var dialogs = ['info', 'deleteDialog'];
+		var _this = this;
+		dialogs.forEach(function(id) {
+			$('#' + id).on('shown.bs.modal', function() {
+				var $this = $(this);
+				var dialog = $this.find('.modal-dialog');
+				var top = ($(window).height() - dialog.height()) / 2;
+				dialog.css({
+					marginTop: top
+				});
+			});
+		});
+	},
+	computed: {
+		pageList: function() {
+			var arr = [];
+			if (this.totalPage <= 2 * this.maxSpace) {
+				for (var i = 0; i < this.totalPage; i++) {
+					arr.push(i + 1);
+				}
+				return arr;
+			}
+			if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+				for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+					arr.push(i + 1);
+				}
+			} else if (this.currentIndex <= this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+				for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+					arr.push(i + 1);
+				}
+			} else if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex <= this.maxSpace) {
+				var space = this.totalPage - this.currentIndex;
+				for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.totalPage; i++) {
+					arr.push(i + 1);
+				}
+			} else {
+				for (var i = 0; i < this.totalPage; i++) {
+					arr.push(i + 1);
+				}
+			}
+			return arr;
+		}
+	},
+	watch: {
+		pageMaxNum: function() {
+			this.getTableData(0);
+		}
+	},
+	filters: {
+		needLoginFilter: function(value) {
+			return needLoginFilter[value];
+		},
+		templateTypeFilter: function(value) {
+			return templateTypeFilter[value];
+		},
+		shareChannelFilter: function(value) {
+			var name = vm.shareChannelList.filter(function(item) {
+				return item.shareChannel == value
+			})[0].shareChannelDesc;
+			return name + '模板';
+		}
+	},
+	methods: {
+		getScenceDetail: function(id) {
+			if (!id) return;
+			var _this = this;
+			$.post({
+				url: '/marketingActive/shareMgmt/sceneTemplate/getScenceDetail.ajax',
+				data: {
+					id: id
+				},
+				success: function(result) {
+					if (result.error === 0) {
+						_this.shareEventName = result.data.shareEventName;
+						_this.shareEventCode = result.data.shareEventCode;
+					}
+				}
+			});
+		},
+		getShareChannel: function() {
+			var _this = this;
+			$.post({
+				url: '/marketingActive/shareMgmt/sceneTemplate/getShareChannel.ajax',
+				success: function(result) {
+					if (result.error === 0) {
+						_this.shareChannelList = result.data;
+						_this.templateInfoList.push({
+							shareChannel: _this.shareChannelList[0].shareChannel,
+							shareTitle: '',
+							shareContent: '',
+							sharePicUrl: '',
+							shareUrl: ''
+						});
+					}
+				}
+			});
+		},
+		getTableData: function(currentIndex) {
+			var params = {};
+			params.pageNo = currentIndex + 1;
+			params.pageSize = this.pageMaxNum;
+			var _this = this;
+			$.post({
+				url: '/marketingActive/shareMgmt/sceneTemplate/getList.ajax',
+				data: params,
+				success: function(result) {
+					if (result.error === 0) {
+						_this.tableData = result.data.rows;
+						_this.currentIndex = result.data.pageNum - 1;
+						_this.totalPage = result.data.pages;
+					} else {
+						_this.tableData = [];
+						_this.currentIndex = 0;
+						_this.totalPage = 0;
+						_this.showDialog('', 'info', false, result.msg);
+					}
+				}
+			});
+		},
+		showAdd: function() {
+			this.updateId = '';
+			this.shareTemplateName_dialog = '';
+			this.shareTemplateType_dialog = 0;
+			this.needLogin_dialog = 0;
+			this.relateEventId = '';
+			this.templateInfoList = [{
+				shareChannel: this.shareChannelList[0].shareChannel,
+				shareTitle: '',
+				shareContent: '',
+				sharePicUrl: '',
+				shareUrl: ''
+			}];
+			this.showDialog('', 'add');
+		},
+		addTemplate: function(shareChannel) {
+			var filterArr = this.templateInfoList.filter(function(item) {
+				return item.shareChannel == shareChannel;
+			});
+			if (filterArr.length == 0) {
+				this.templateInfoList.push({
+					shareChannel: shareChannel,
+					shareTitle: '',
+					shareContent: '',
+					sharePicUrl: '',
+					shareUrl: ''
+				});
+			}
+		},
+		checkDialog: function() {
+			if (!this.shareTemplateName_dialog) {
+				this.showDialog('add', 'info', true, '未填写模板名称！');
+				return false;
+			}
+			if (!this.relateEventId) {
+				this.showDialog('add', 'info', true, '未填写挂钩ID！');
+				return false;
+			}
+			for (var i = 0; i < this.templateInfoList.length; i++) {
+				for (var prop in this.templateInfoList[i]) {
+					if (this.templateInfoList[i][prop] === '') {
+						this.showDialog('add', 'info', true, '模板内容存在未填写项！');
+						return false;
+					}
+				}
+			}
+			return true;
+		},
+		operate: function() {
+			if (!this.checkDialog()) return;
+			var params = {};
+			params.shareTemplateName = this.shareTemplateName_dialog;
+			params.shareTemplateType = this.shareTemplateType_dialog;
+			params.needLogin = this.needLogin_dialog;
+			params.relateEventId = this.relateEventId;
+			params.shareEventCode = this.shareEventCode;
+			params.templateInfoList = JSON.stringify(this.templateInfoList);
+			if(this.updateId){
+				params.id = this.updateId;
+			}
+			var url = this.updateId ? '/update.ajax' : '/add.ajax';
+			var _this = this;
+			$.post({
+				url: '/marketingActive/shareMgmt/sceneTemplate' + url,
+				data: params,
+				success: function(result) {
+					if (result.error === 0) {
+						_this.getTableData(0);
+						_this.showDialog('add', 'info', false, result.msg);
+					} else {
+						_this.showDialog('add', 'info', true, result.msg);
+					}
+				}
+			});
+		},
+		showDelete: function(item) {
+			this.deleteId = item.id;
+			this.showDialog('', 'deleteDialog');
+		},
+		del: function() {
+			var _this = this;
+			$.post({
+				url: '/marketingActive/shareMgmt/sceneTemplate/del.ajax',
+				data: {
+					id: this.deleteId
+				},
+				success: function(result) {
+					if (result.error === 0) {
+						_this.getTableData(0);
+						_this.showDialog('deleteDialog', 'info', false, result.msg);
+					} else {
+						_this.showDialog('deleteDialog', 'info', true, result.msg);
+					}
+				}
+			});
+		},
+		showUpdate: function(item) {
+			this.updateId = item.id;
+			this.shareTemplateName_dialog = item.shareTemplateName;
+			this.shareTemplateType_dialog = item.shareTemplateType;
+			this.needLogin_dialog = item.needLogin;
+			this.relateEventId = item.relateEventId;
+			var _this = this;
+			$.post({
+				url: '/marketingActive/shareMgmt/sceneTemplate/getTemplateContentList.ajax',
+				data: {
+					shareTemplateChannel: item.shareTemplateChannel
+				},
+				success: function(result) {
+					if (result.error === 0) {
+						_this.templateInfoList = result.data;
+						_this.showDialog('', 'add');
+					} else {
+						_this.showDialog('', 'info', false, result.msg);
+					}
+				}
+			});
+		},
+		showDialog: function(dia1, dia2, callback, msg) {
+			if (msg) {
+				this.diaMsg = msg;
+			} else {
+				msg = '输入条件错误';
+			}
+			if (!dia1) {
+				$('#' + dia2).modal('show');
+			} else if (!dia2) {
+				$('#' + dia1).modal('hide');
+			} else if (!callback) {
+				$('#' + dia1).on("hidden.bs.modal", function() {
+					$('#' + dia2).modal('show');
+					$('#' + dia1).off().on("hidden", "hidden.bs.modal");
+				});
+				$('#' + dia1).modal('hide');
+			} else {
+				$('#' + dia1).on("hidden.bs.modal", function() {
+					$('#' + dia2).on("hidden.bs.modal", function() {
+						$('#' + dia1).modal("show");
+						$('#' + dia2).off().on("hidden", "hidden.bs.modal");
+					});
+					$('#' + dia2).modal("show");
+					$('#' + dia1).off().on("hidden", "hidden.bs.modal");
+				});
+				$('#' + dia1).modal('hide');
+			}
+		},
+		//主表格分页方法
+		prev: function() {
+			if (this.currentIndex <= 0) {
+				return;
+			}
+			this.getTableData(this.currentIndex - 1);
+		},
+		next: function() {
+			if (this.currentIndex >= this.totalPage - 1) {
+				return;
+			}
+			this.getTableData(this.currentIndex + 1);
+		},
+		changeIndex: function(index) {
+			this.getTableData(index - 1);
+		},
+		toFirst: function() {
+			this.getTableData(0);
+		},
+		toLast: function() {
+			this.getTableData(this.totalPage - 1);
+		},
+		getUrlParam: function(name) {
+			var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+			var r = window.location.search.substr(1).match(reg); //匹配目标参数
+			if (r != null) return unescape(r[2]);
+			return ''; //返回参数值
+		}
+	}
+});

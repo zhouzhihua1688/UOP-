@@ -1,0 +1,1161 @@
+// 使用剪切图片插件
+Vue.use(window['vue-cropper']);
+var vm = new Vue({
+	el: '#content',
+	data: function () {
+		return {
+			tableData: [],
+			currentIndex: 0,
+			maxSpace: 5,
+			totalPage: 0,
+			pageMaxNum: 10,
+			condition:'',
+			currentIndex2: 0,
+			maxSpace2: 5,
+			totalPage2: 0,
+			pageMaxNum2: 10,
+			diaMsg: '',
+			loadingShow: false, //loading动画
+			showText: '数据加载中...',
+			//主页面所用字段
+			modifyStatus: '0', //0新增1修改
+			// search用字段
+			search: {
+				title:'',
+				productId:this.getUrlParam('fundId'),
+				categoryId:'C000302'
+			},
+			// 弹窗字段
+			operateData: {
+				mediaConfigMode:'0',//0新增1现有材料
+				categoryIdList: ['C000300'], //一级分类
+				productId: this.getUrlParam('fundId'), //产品分类
+				title: '', //标题
+				description: '', //描述
+				rightType: '00', //材料权限
+				sourceType: '00', //来源分类uop：00
+				branchCodeList: ['00'], //来源分类渠道
+				watermarkFlag: '0', //水印 默认否							
+				timelinessType: '0', //素材时效性 默认0无							
+				timelinessCycleValue: '3', //素材时效性 周期值	默认3						
+				timelinessCycleType: '2', //素材时效性 周期类型	默认月			
+				mediaType: 'file', //素材文件类型	 //默认文件		
+				pushStatus: '0', //上架状态		
+				displayImageUrl: '', //上传封面图片	
+				mediaSort: '', //排序
+				secondCategoryId: 'C000302', //材料类型 默认基础材料
+				mediaInfo: {
+					file: {
+						filePath: ''
+					},
+					text: {
+						content: '',
+						imagePaths: []
+					},
+					image: {
+						imagePath: ''
+					},
+					link: {
+						link: ''
+					}
+				},
+				publishTime:'',
+				modifyBy:'',
+				modifyTime:''
+			},
+			// initData
+			initData: {
+				mediaConfigMode:'0',//0新增1现有材料
+				categoryIdList: ['C000300'], //一级分类
+				productId: this.getUrlParam('fundId'), //产品分类
+				title: '', //标题
+				description: '', //描述
+				rightType: '00', //材料权限
+				sourceType: '00', //来源分类uop：00
+				branchCodeList: ['00'], //来源分类渠道
+				watermarkFlag: '0', //水印 默认否							
+				timelinessType: '0', //素材时效性 默认0无							
+				timelinessCycleValue: '3', //素材时效性 周期值	默认3						
+				timelinessCycleType: '2', //素材时效性 周期类型	默认月			
+				mediaType: 'file', //素材文件类型	 //默认文件		
+				pushStatus: '0', //上架状态		
+				displayImageUrl: '', //上传封面图片	
+				mediaSort: '', //排序
+				secondCategoryId: 'C000302', //材料类型 默认基础材料
+				mediaInfo: {
+					file: {
+						filePath: ''
+					},
+					text: {
+						content: '',
+						imagePaths: []
+					},
+					image: {
+						imagePath: []
+					},
+					link: {
+						link: ''
+					}
+				},
+				publishTime:'',
+				modifyTime:'',
+				modifyBy:'',
+			},
+			branchList: [], //渠道权限列表
+			// 产品材料中用到的二级分类列表
+			secondCategoryList:[
+				{categoryName:'营销海报',categoryId:'C000301'},
+				{categoryName:'基础材料',categoryId:'C000302'},
+				{categoryName:'视频材料',categoryId:'C000303'},
+				{categoryName:'媒体文章',categoryId:'C000304'},
+				{categoryName:'运作报告',categoryId:'C000305'},
+				{categoryName:'寓教于乐',categoryId:'C000306'}
+			],
+			// 上传封面图片内容配置
+			// vue-cropper的配置项
+			option: {
+				img: '',
+				size: 1,
+				full: false,
+				outputType: 'png',
+				canMove: true,
+				fixedBox: false, // 20220408修改，可以自定义拖动大小
+				original: false,
+				canMoveBox: true,
+				autoCrop: true,
+				// 只有自动截图开启 宽度高度才生效
+				autoCropWidth: 200,
+				autoCropHeight: 200,
+				centerBox: false,
+				high: true,
+				max: 99999
+			},
+			fileName: '', //上传封面图片本地文件path
+			previews: {}, //剪切后预览
+			limitSize: 10000, //compress压缩文件的最大kb
+			isShowDisplayPic: true, //是否展示封面图片相关配置和地址上传
+			// 添加修改弹窗里的材料熟悉类型
+			materialProperty: [{
+				value: '1',
+				name: '现有材料',
+				checked: false
+			}, {
+				value: '0',
+				name: '新增材料',
+				checked: true
+			}],
+			// 文件类型
+			typeList: [{
+					value: 'file',
+					name: '文件',
+					checked: false
+				},
+				{
+					value: 'text',
+					name: '文字',
+					checked: false
+				},
+				{
+					value: 'image',
+					name: '图片',
+					checked: false
+				}, {
+					value: 'link',
+					name: '链接',
+					checked: false
+				}
+			],
+			uploadingFile: { //上传文件
+				name: '',
+				progressRate: ''
+			},
+			//地址栏获取的数据
+			urlParams: {
+				fundId: this.getUrlParam('fundId'),
+				fundName: this.getUrlParam('fundName'),
+				fundType: this.getUrlParam('fundType'),
+				category:this.getUrlParam('category')
+			},
+			// 一级分类list
+			topDialogCategoryList:[],
+			// 二级分类list
+			secondDialogCategoryList:[],
+			// 三级分类list
+			thirdDialogCategoryList:[],
+			topDialogCategoryId:'',
+			secondDialogCategoryId:'',
+			thirdDialogCategoryId:'',
+			// 现有材料查询List
+			existingMaterialList:[],
+			deleteObj:{},
+			fundTpList:{},
+			searchTitle:'',
+			fakeDelObj:{},
+			baseUrl: '/contentMgmt/productData/productList'
+		}
+	},
+	mounted: function () {
+		var dialogs = ['info', 'del','delImage'];
+		dialogs.forEach(function (id) {
+			$('#' + id).on('shown.bs.modal', function () {
+				var $this = $(this);
+				var dialog = $this.find('.modal-dialog');
+				var top = ($(window).height() - dialog.height()) / 2;
+				dialog.css({
+					marginTop: top
+				});
+			});
+		});
+		$('#dialogBranch').css({
+			'width': '184px'
+		}).select2({
+			closeOnSelect: false
+		})
+		$("#dialogBranch").on("select2:close", function (e) {
+			console.log(e);
+			var value = $("#dialogBranch").val();
+			if (value && value.length > 1 && value.includes('-1')) {
+				value=['-1']
+				$("#dialogBranch").val(value).trigger('change')
+			}
+			if (value && value.length > 1 && value.includes('00')) {
+				value=['00']
+				$("#dialogBranch").val(value).trigger('change')
+			}
+			// e 的话就是一个对象 然后需要什么就 “e.参数” 形式 进行获取
+			this.operateData.branchCodeList = $("#dialogBranch").val() ? $("#dialogBranch").val() : []
+		}.bind(this));
+		this.urlParams.category && (this.search.categoryId = this.urlParams.category);
+		this.getBranchList();
+		this.getTableData();
+		this.getTopCategoryList();
+		this.getfundTpList();
+	},
+	computed: {
+		//主表格假分页
+		middleData: function () {
+			var middleData = [];
+			var filterData = [];
+			var pageMaxNum = parseInt(this.pageMaxNum);
+			var _this = this;
+			this.tableData.forEach(function (jsonObj) {
+				var valueArr = [];
+				for (var prop in jsonObj) {
+					valueArr.push(jsonObj[prop]);
+				}
+				for (var i = 0, len = valueArr.length; i < len; i++) {
+					if (valueArr[i]) {
+						if (valueArr[i].toString().indexOf(_this.condition) != -1) {
+							filterData.push(jsonObj);
+							break;
+						}
+					}
+				}
+			});
+			if (filterData.length <= pageMaxNum) {
+				middleData.push(filterData);
+				return middleData;
+			} else {
+				var i = 0;
+				while ((i + 1) * pageMaxNum < filterData.length) {
+					middleData.push(filterData.slice(i * pageMaxNum, (i + 1) * pageMaxNum));
+					i++;
+				}
+				middleData.push(filterData.slice(i * pageMaxNum, filterData.length));
+				return middleData;
+			}
+		},
+		viewData: function () {
+			var currentIndex = parseInt(this.currentIndex);
+			return this.middleData[currentIndex];
+		},
+		pageList: function () {
+			var arr = [];
+			if (this.middleData.length <= 2 * this.maxSpace) {
+				for (var i = 0; i < this.middleData.length; i++) {
+					arr.push(i + 1);
+				}
+				return arr;
+			}
+			if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+				for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+					arr.push(i + 1);
+				}
+			} else if (this.currentIndex <= this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+				for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+					arr.push(i + 1);
+				}
+			} else if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex <= this.maxSpace) {
+				var space = this.middleData.length - this.currentIndex;
+				for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.middleData.length; i++) {
+					arr.push(i + 1);
+				}
+			} else {
+				for (var i = 0; i < this.middleData.length; i++) {
+					arr.push(i + 1);
+				}
+			}
+			return arr;
+		},
+		pageList2: function () {
+			var arr = [];
+			if (this.totalPage2 <= 2 * this.maxSpace2) {
+				for (var i = 0; i < this.totalPage2; i++) {
+					arr.push(i + 1);
+				}
+				return arr;
+			}
+			if (this.currentIndex2 > this.maxSpace2 && this.totalPage2 - this.currentIndex2 > this.maxSpace2) {
+				for (var i = this.currentIndex2 - this.maxSpace2; i < this.currentIndex2 + this.maxSpace2; i++) {
+					arr.push(i + 1);
+				}
+			} else if (this.currentIndex2 <= this.maxSpace2 && this.totalPage2 - this.currentIndex2 > this.maxSpace2) {
+				for (var i = 0; i < this.currentIndex2 + (2 * this.maxSpace2 - this.currentIndex2); i++) {
+					arr.push(i + 1);
+				}
+			} else if (this.currentIndex2 > this.maxSpace2 && this.totalPage2 - this.currentIndex2 <= this.maxSpace2) {
+				var space = this.totalPage2 - this.currentIndex2;
+				for (var i = this.currentIndex2 - (2 * this.maxSpace2 - space2); i < this.totalPage2; i++) {
+					arr.push(i + 1);
+				}
+			} else {
+				for (var i = 0; i < this.totalPage2; i++) {
+					arr.push(i + 1);
+				}
+			}
+			return arr;
+		},
+		fundTypeFormat: function () {
+			if (this.urlParams.fundType) {
+				return this.urlParams.fundType
+			} else {
+				return '-'
+			}
+		},
+		// 现有材料搜索用到的categoryId
+		searchCategoryId:function(){
+			if(this.topDialogCategoryId&&this.secondDialogCategoryId&&this.thirdDialogCategoryId){
+				return this.thirdDialogCategoryId
+			}else if(this.topDialogCategoryId&&this.secondDialogCategoryId&&!this.thirdDialogCategoryId){
+				return this.secondDialogCategoryId
+			}else if(this.topDialogCategoryId&&!this.secondDialogCategoryId&&!this.thirdDialogCategoryId){
+				return this.topDialogCategoryId
+			}else{
+				return ''
+			}
+		},
+		fundtpTransfer:function(){
+			if(this.urlParams.fundType){
+				var arr = this.urlParams.fundType.split(',');
+				var str = '';
+				arr.forEach(function(item){
+					if(item in this.fundTpList){
+						str+=this.fundTpList[item]+',';
+					}
+				},this)
+				// console.log(str);
+				if(str){
+					return str.substring(0,str.length-1)
+				}else{
+					return '-'
+				}
+			}else{
+				return '-'
+			}
+		}
+	},
+	watch: {
+		// 假分页
+		pageMaxNum: {
+			handler: function () {
+				this.currentIndex = 0;
+			}
+		},
+		'operateData.secondCategoryId': function (newval, oldval) {
+			if (newval == 'C000306') {
+				this.isShowDisplayPic = false
+			} else {
+				this.isShowDisplayPic = true;
+				if (newval == 'C000301') {
+					this.option.autoCropWidth = 220;
+					this.option.autoCropHeight = 391;
+				}
+				if (newval == 'C000302' || newval == 'C000305' || newval == 'C000304') {
+					this.option.autoCropWidth = 200;
+					this.option.autoCropHeight = 200;
+				}
+				if (newval == 'C000303') {
+					this.option.autoCropWidth = 690;
+					this.option.autoCropHeight = 388;
+				}
+			}
+		},
+		'operateData.mediaConfigMode':function(newval,oldval){
+			// 重置checkbox现有材料还是新增
+			this.materialProperty.forEach(item => {
+				item.checked = false;
+			})
+			if(newval=='0'){
+				this.materialProperty[1].checked = true;
+			}else{
+				this.materialProperty[0].checked = true;
+			}
+		},
+		topDialogCategoryId:function(newval,oldval){
+			this.secondDialogCategoryList = this.topDialogCategoryList.find(function(item){
+				return item.categoryId == newval
+			}).categoryConfigList;
+			this.secondDialogCategoryId= '';
+			this.thirdDialogCategoryId = '';
+			this.thirdDialogCategoryList = [];
+		},
+		secondDialogCategoryId:function(newval,oldval){
+			this.thirdDialogCategoryId = '';
+			this.thirdDialogCategoryList = [];
+			this.getThirdDialogCategoryList(newval)
+		},
+		modifyStatus:function(newval,oldval){
+			if(oldval == '1' && newval =='0'){
+				var initData = JSON.parse(JSON.stringify(this.initData))
+				this.operateData = initData;
+				this.uploadingFile.name = '';
+				this.uploadingFile.progressRate = '';
+				this.option.img='';
+				this.previews={};
+				$('#dialogBranch').val(this.operateData.branchCodeList).trigger('change');
+			}
+		}
+	},
+	methods: {
+		//添加修改弹窗里选择材料属性checkbox-单选
+		chooseSingle(index) {
+			this.materialProperty.forEach(item => {
+				item.checked = false;
+			})
+			// 选中当前
+			this.materialProperty[index].checked = true;
+			this.operateData.mediaConfigMode = this.materialProperty[index].value;
+		},
+		// 添加弹窗里选择上架状态
+		changeAddStatus() {
+			if (this.operateData.pushStatus == '0') {
+				this.operateData.pushStatus = '1'
+			} else {
+				this.operateData.pushStatus = '0'
+			}
+		},
+		// 修改已有数据的上架状态
+		changeUpdateStatus(item){
+			// 修改状态
+			this.modifyStatus='1';
+			this.singleQuery(item.mediaId,3);//特殊处理-感觉接口不合理
+		},
+		// 主表格数据
+		getTableData: function () {
+			this.currentIndex = 0;
+			$(".cover").show();
+			this.tableData = [];
+			$.post({
+				url: this.baseUrl+'/getTableDataMaterial.ajax',
+				data: this.search,
+				success: function (result) {
+					$(".cover").hide();
+					if (result.error === 0) {
+						this.tableData = result.data
+					} else {
+						this.tableData = [];
+						this.currentIndex = 0;
+						this.showDialog('', 'info', false, result.msg);
+					}
+				}.bind(this)
+			});
+		},
+		// 获取渠道权限列表
+		getBranchList: function () {
+			$.post({
+				url: this.baseUrl + '/getbranchList.ajax',
+				success: function (result) {
+					if (result.error === 0) {
+						this.branchList = result.data;
+						this.branchList.unshift({
+							branchCode: '-1',
+							branchFullName: '均无权限'
+						})
+						this.branchList.unshift({
+							branchCode: '00',
+							branchFullName: '全部'
+						})
+					}
+				}.bind(this)
+			});
+		},
+		//获取一二级分类列表
+		getTopCategoryList:function(){
+			$.post({
+				url: this.baseUrl + '/classifyListMaterial.ajax',
+				success: function (result) {
+					if (result.error === 0) {
+						var list = result.data;
+						this.secondCategoryList = list.find(function(item){
+							return item.categoryId == "C000300"
+						},this).categoryConfigList;
+						this.topDialogCategoryList = result.data;
+					}
+				}.bind(this)
+			});
+		},
+		//获取三级分类列表
+		getThirdDialogCategoryList:function(parentCategoryId){
+			$.post({
+				url: this.baseUrl + '/threeClassifyListMaterial.ajax',
+				data:{parentCategoryId},
+				success: function (result) {
+					if (result.error === 0) {
+						var list = result.data;
+						this.thirdDialogCategoryList = list.ncmsContentCategoryConfigList;
+					}
+				}.bind(this)
+			});
+		},
+		// 获取现有材料列表根据searchCategoryId
+		getExistingMaterialList:function(currentIndex){
+			var params = {}
+			params.categoryId = this.searchCategoryId;
+			params.pageNo = currentIndex+1;
+			params.pageSize = this.pageMaxNum2;
+			params.pushStatus = '';
+			params.title = this.searchTitle;
+			$.post({
+				url: this.baseUrl + '/getExistingMaterialList.ajax',
+				data:params,
+				success: function (result) {
+					if (result.error === 0) {
+						this.currentIndex2 = currentIndex;
+						this.totalPage2 = Math.ceil(result.data.total / this.pageMaxNum2);
+						var list = result.data.rows;
+						this.existingMaterialList = list;
+					}else{
+						this.existingMaterialList = [];
+						this.currentIndex2 = 0;
+					}
+				}.bind(this)
+			});
+		},	
+		// 获取产品类型
+		getfundTpList: function () {
+			$.post({
+				url: this.baseUrl+'/getfundTpList.ajax',
+				success: function (result) {
+					if (result.error === 0) {
+						// console.log(result);
+						var list = result.data;
+						list.forEach(function(item){
+							this.$set(this.fundTpList, item.pmco, item.pmv1)
+						},this)
+					} 
+				}.bind(this)
+			});
+		},
+		//flag 1：修改，2现有材料，3列表中更改上架状态按钮操作
+		setData: function (item,flag) {
+			// console.log(flag);
+			// 清空封面图片配置
+			this.option.img='';
+			this.previews={};
+			var initData = JSON.parse(JSON.stringify(this.initData))
+			if (item) {
+				this.operateData = {
+					mediaConfigMode: flag==2?'1':item.mediaConfigMode,//0新增1现有材料 flag 2是从现有材料,
+					// mediaConfigMode: '0',
+					categoryIdList: ['C000300'], //一级分类
+					productId: this.getUrlParam('fundId'), //产品分类
+					title: item.title, //标题
+					description: item.description, //描述
+					rightType: item.rightType, //材料权限
+					sourceType: item.sourceType, //来源分类uop：00
+					branchCodeList: item.branchCodeList, //来源分类渠道
+					watermarkFlag: item.watermarkFlag, //水印 默认否							
+					timelinessType: item.timelinessType, //素材时效性 默认0无							
+					timelinessCycleValue: item.timelinessCycleValue, //素材时效性 周期值	默认3						
+					timelinessCycleType: item.timelinessCycleType, //素材时效性 周期类型	默认月			
+					mediaType: item.mediaType, //素材文件类型	 //默认文件		
+					pushStatus: item.pushStatus, //上架状态		
+					displayImageUrl: item.displayImageUrl, //上传封面图片	
+					mediaSort: item.productMediaRsList&&item.productMediaRsList[0]?item.productMediaRsList[0].mediaSort:'', //排序
+					secondCategoryId: item.productMediaRsList&&item.productMediaRsList[0]?item.productMediaRsList[0].contentCategoryId:'', //材料类型 默认基础材料
+					mediaInfo: {
+						file: {
+							filePath: ''
+						},
+						text: {
+							content: '',
+							imagePaths: []
+						},
+						image: {
+							imagePath: ''
+						},
+						link: {
+							link: ''
+						}
+					},
+					publishTime:this.formatTime(item.publishTime),
+					modifyBy:item.modifyBy,
+					modifyTime:item.modifyTime?this.formatTime(item.modifyTime):''
+				};
+				if(this.operateData.mediaType=='link'){
+					this.operateData.mediaInfo[this.operateData.mediaType].link = item.url
+				}else{
+					// this.operateData.mediaInfo[this.operateData.mediaType] = item.mediaDataJson?JSON.parse(item.mediaDataJson):this.operateData.mediaInfo[this.operateData.mediaType];
+					this.operateData.mediaInfo[this.operateData.mediaType] = item.mediaDataMap?item.mediaDataMap:this.operateData.mediaInfo[this.operateData.mediaType];
+				}
+				item.productMediaRsList&&item.productMediaRsList[0]&&(this.operateData.mediaId =item.productMediaRsList[0].mediaId);
+				// item.displayImageUrl&&(this.option.img = item.displayImageUrl)
+				flag&&(this.operateData.boundMediaId = item.mediaId)
+			} 
+			// else {
+			// 	// this.operateData = initData;
+			// 	// this.uploadingFile.name = '';
+			// 	// this.uploadingFile.progressRate = '';
+			// }
+			$('#dialogBranch').val(this.operateData.branchCodeList).trigger('change');
+				// flag 3 是在列表的状态按钮中直接调用修改的
+			if(flag===3){
+				if(this.operateData.pushStatus=='0'){
+					this.operateData.pushStatus = '1'
+				}else{
+					this.operateData.pushStatus = '0'
+				}
+				this.add('3')
+			}
+		},
+		// 新增修改弹窗
+		showAdd: function () {
+			this.modifyStatus = '0'; //弹出新增弹窗
+			this.showDialog('', 'add');
+			this.setData();
+		},
+		showUpdate:function(mediaId){
+			this.modifyStatus = '1'; //弹出弹窗
+			this.singleQuery(mediaId,1);
+			this.showDialog('', 'add');
+		},
+		//现有材料确定按钮时需要再调取接口获取现有材料详情！ 
+		existingMaterialEnter:function(mediaId){
+			this.singleQuery(mediaId,2);
+		},
+		add: function (flag) {
+			if (!this.checkData(this.operateData)) {
+				return false
+			}
+			var url = '';
+			var data;
+			data = JSON.parse(JSON.stringify(this.operateData));
+			if(data.mediaType=='link'){
+				data.url = data.mediaInfo[data.mediaType].link;
+				delete data.mediaInfo
+			}else{
+				data.mediaInfo = data.mediaInfo[data.mediaType];
+				if(data.mediaType=='text'&&data.mediaInfo.contentId){
+					data.mediaInfo.contentId = Number(data.mediaInfo.contentId)
+				}
+			}
+			data.categoryIdList.push(data.secondCategoryId)//这个数组要求存放一级二级分类
+			if(data.pushStatus=='0'){//当为非上架状态时传当前默认时间 publishTime 
+				delete data.publishTime
+			}else{
+				data.publishTime = moment(data.publishTime).format('YYYYMMDDHHmmss')
+			}
+			if(data.secondCategoryId=='C000306'){//寓教于乐不填写displayImageUrl
+				data.displayImageUrl = ''
+			}
+			if(this.modifyStatus=='0'&&data.mediaId){//新增现有材料中的mediaId不传
+				delete data.mediaId
+			}
+			if(data.modifyTime){
+				delete data.modifyTime
+			}
+			if(data.modifyBy){
+				delete data.modifyBy
+			}
+			if (this.modifyStatus == '0') {
+				url = this.baseUrl + '/addMaterial.ajax';
+			} else {
+				url = this.baseUrl + '/updateMaterial.ajax';
+			}
+			console.log(data);
+			// return 
+			$.post({
+				url,
+				data,
+				success: function (result) {
+					if (result.error === 0) {
+						// if(this.modifyStatus=='0'){//如果是新增，只有调成功接口再init数据
+						var initData = JSON.parse(JSON.stringify(this.initData))
+						this.operateData = initData;
+						this.uploadingFile.name = '';
+						this.uploadingFile.progressRate = '';
+						$('#dialogBranch').val(this.operateData.branchCodeList).trigger('change');
+						// }
+						this.getTableData();
+						(flag!=3)&&this.showDialog('add','info',false,result.msg)
+					}else{
+						(flag!=3)&&this.showDialog('add','info',true,result.msg)
+					}
+				}.bind(this)
+			});
+		},
+		// singelquery单条数据详情 flag三种操作状态 1：修改，2现有材料，3列表中更改上架状态按钮操作
+		singleQuery:function(mediaId,flag){
+			$.post({
+				url: this.baseUrl + '/singleQueryMaterial.ajax',
+				data:{materiaIdList:mediaId},
+				success: function (result) {
+					if (result.error === 0) {
+						if(flag==3){
+							this.setData(result.data[0],3)
+						}
+						else if(flag==2){
+							this.setData(result.data[0],2)
+						}
+						else{
+							this.setData(result.data[0],1)
+						}
+					}
+				}.bind(this)
+			});
+		},
+		showDelete:function(item){
+			this.deleteObj = {};
+			this.deleteObj.contentCategoryId = item.categoryId;
+			this.deleteObj.mediaId = item.mediaId;
+			this.deleteObj.productId = this.urlParams.fundId;
+			this.showDialog('','del')
+		},
+		deleteInfo:function(){
+			$.post({
+				url: this.baseUrl + '/deleteMaterial.ajax',
+				data:this.deleteObj,
+				success: function (result) {
+					if (result.error === 0) {
+						this.showDialog('del','info',false,'删除成功')
+						this.getTableData()
+					}else{
+						this.showDialog('','info',result.msg)
+					}
+				}.bind(this)
+			});
+		},
+		checkData: function (item) {
+			if (!item.title) {
+				this.showDialog('add', 'info', true, '请填写标题')
+				return false
+			}
+			if (item.branchCodeList.length===0) {
+				this.showDialog('add', 'info', true, '请填写渠道')
+				return false
+			}
+			if (item.timelinessType == 1) {
+				if (!item.timelinessCycleValue) {
+					this.showDialog('add', 'info', true, '请填写时效时间')
+					return false
+				}
+			}
+			if (!item.secondCategoryId) {
+				this.showDialog('add', 'info', true, '请填写材料类型')
+				return false
+			}
+			if (!item.mediaSort) {
+				this.showDialog('add', 'info', true, '请填写排序值')
+				return false
+			}
+			if (item.secondCategoryId == 'C000301' || item.secondCategoryId == 'C000303') {
+				if (!item.displayImageUrl) {
+					this.showDialog('add', 'info', true, '材料类型为营销海报或者视频材料时，封面图片为必传')
+					return false
+				}
+			}
+			if(item.mediaType == 'file'&&!item.mediaInfo.file.filePath){
+				this.showDialog('add', 'info', true, '请上传本地文件')
+				return false
+			}
+			if(item.mediaType == 'text'){
+				if(!item.mediaInfo.text.content){
+					this.showDialog('add', 'info', true, '请填写内容')
+					return false
+				}
+				if(item.mediaInfo.text.imagePaths&&item.mediaInfo.text.imagePaths.lengt===0){
+					this.showDialog('add', 'info', true, '请上传附加图片')
+					return false
+				}
+				
+			}
+			if(item.mediaType == 'image'&&!item.mediaInfo.image.imagePath){
+				this.showDialog('add', 'info', true, '请上传附加图片')
+				return false
+			}
+			if(item.mediaType == 'link'&&!item.mediaInfo.link.link){
+				this.showDialog('add', 'info', true, '请填写跳转url')
+				return false
+			}
+			return true
+		},
+		//点击选择内容-显示内容数据弹窗
+		showContent: function () {
+			this.topDialogCategoryId = '';
+			this.secondDialogCategoryId = '';
+			this.thirdDialogCategoryId = '';
+			this.topDialogCategoryId = 'C000300';
+			this.showDialog('add', 'contentShow', true);
+		},
+		//文件上传-有进度条
+		uploadsFile(e) {
+			var _this = this;
+			let file = e.target.files[0];
+			this.uploadingFile.name = file.name;
+			console.log("fileName===", file.name);
+			var formdata = new FormData(); //创建formdata对象
+			formdata.append('file', file);
+			$(".cover").show();
+			$.post({
+				url: this.baseUrl + '/uploadImgMaterial.ajax?fundId=' + this.urlParams.fundId,
+				type: 'post',
+				dataType: 'json',
+				data: formdata,
+				processData: false,
+				contentType: false,
+				xhr: function () {
+					var xhr = new XMLHttpRequest();
+					//使用XMLHttpRequest.upload监听上传过程，注册progress事件，打印回调函数中的event事件
+					xhr.upload.addEventListener('progress', function (e) {
+						//loaded代表上传了多少
+						//total代表总数为多少
+						_this.uploadingFile.progressRate = (e.loaded / e.total) * 100 + '%';
+						$('.g-progress').css('width', (e.loaded / e.total) * 100 + '%');
+					})
+					return xhr;
+				},
+				success: function (result) {
+					if (result.error === 0) {
+						$(".cover").hide();
+						_this.operateData.mediaInfo.file.filePath = result.data.imageUrl;
+						console.log(result.data.imageUrl);
+						//解决不能重复添加问题
+						$('#uploadsFile').attr('type', 'text')
+						$('#uploadsFile').attr('type', 'file')
+						_this.showDialog('add', 'info', true, result.msg);
+					} else {
+						_this.showDialog('add', 'info', true, result.msg);
+						//解决不能重复添加问题
+						$('#uploadsFile').attr('type', 'text')
+						$('#uploadsFile').attr('type', 'file')
+					}
+				}
+			})
+
+		},
+		// 公共方法
+		// 本地图片上传 多图片上传
+		uploadImg1(e, preview, filetype) {
+			var _this = this
+			// this.option.img
+			var file = e.target.files[0];
+			this.fileName = file.name;
+			console.log("fileName===", this.fileName);
+			if (!/\.(gif|jpg|jpeg|png|bmp|GIF|JPG|PNG)$/.test(e.target.value)) {
+				alert('图片类型必须是.gif,jpeg,jpg,png,bmp中的一种')
+				return false
+			}
+			var reader = new FileReader()
+			if (preview == 'preview') { // 多图预览并上传
+				reader.readAsDataURL(e.target.files[0])
+				reader.onload = (e) => {
+					var formdata = new FormData();
+					formdata.append('file', file);
+					$(".cover").show();
+					$.post({
+						url: this.baseUrl + '/uploadImgMaterial.ajax?fundId=' + this.urlParams.fundId,
+						// data: res.compressBase64,
+						cache: false,
+						data: formdata,
+						processData: false,
+						contentType: false,
+						success: function (result) {
+							if (result.error === 0) { ////imagesUrl
+								$(".cover").hide();
+								if (filetype == 'text') {
+									_this.operateData.mediaInfo[filetype].imagePaths.push(result.data.imageUrl);
+								} else {
+									_this.operateData.mediaInfo[filetype].imagePath=result.data.imageUrl;
+								}
+								_this.showDialog('add', 'info', true, result.msg);
+							} else {
+								_this.showDialog('add', 'info', true, result.msg);
+							}
+						}
+					});
+				}
+			} else { //上传图片
+				reader.onload = (e) => {
+					let data
+					if (typeof e.target.result === 'object') {
+						// 把Array Buffer转化为blob 如果是base64不需要
+						data = window.URL.createObjectURL(new Blob([e.target.result]))
+					} else {
+						data = e.target.result
+					}
+					this.option.img = data
+				}
+				// 转化为base64
+				// reader.readAsDataURL(file)
+				// 转化为blob
+				this.$refs.uploads.value = '';
+				reader.readAsArrayBuffer(file)
+			}
+		},
+		// 上传封面图片
+		uploadForServer() {
+			// 输出裁剪过的blob
+			var _this = this;
+			this.$refs.cropper.getCropBlob(async (data) => {
+				let [error, res] = await this.awaitWrap(compress(data, this.limitSize)); //获得压缩过的blob
+				if (error) {
+					console.log(error);
+					return
+				}
+				console.log('res', res);
+				var formdata = new FormData();
+				let file = new File([res.compressFile], this.fileName);
+				console.log(file);
+				if (!file.name) {
+					_this.showDialog('add', 'info', true, '请选择要上传的图片!');
+					return false;
+				}
+				console.log(file.name);
+				// console.log(file.size);
+				formdata.append('file', file);
+				$(".cover").show();
+				$.post({
+					url: this.baseUrl + '/uploadImgMaterial.ajax?fundId=' + this.urlParams.fundId,
+					// data: res.compressBase64,
+					cache: false,
+					data: formdata,
+					processData: false,
+					contentType: false,
+					success: function (result) {
+						if (result.error === 0) {
+							$(".cover").hide();
+							_this.operateData.displayImageUrl = result.data.imageUrl;
+							_this.showDialog('add', 'info', true, result.msg);
+							//解决不能重复添加问题
+							$('#uploads').attr('type', 'text')
+							$('#uploads').attr('type', 'file')
+						} else {
+							_this.showDialog('add', 'info', true, result.msg);
+							//解决不能重复添加问题
+							$('#uploads').attr('type', 'text')
+							$('#uploads').attr('type', 'file')
+						}
+					}
+				});
+			})
+		},
+		awaitWrap(promise) { // await 异常处理包装
+			return promise.then(res => [null, res], error => [error, null]);
+		},
+		fakeDel(ty, index, filetype) {
+			this.fakeDelObj = {};
+			this.fakeDelObj = {
+				ty, index, filetype
+			}
+			str = "是否删除此图片";
+			if(ty=='file'){
+				str = '是否删除此文件'
+			}
+			this.showDialog('add','delImage',true,str)
+		},
+		fakeDelComfirm:function(){
+			var {ty,index,filetype} = this.fakeDelObj;
+			if (ty == 'file') {
+				// console.log('我走到了这里-----');
+				this.operateData.mediaInfo.file.filePath = ''
+				this.uploadingFile.name = '';
+				this.uploadingFile.progressRate = '';
+			} else if (ty == 'img') {
+				this.operateData.displayImageUrl = ''
+				this.option.img = ''
+			} else if (ty == '3') {
+				if (filetype == 'text') {
+					this.operateData.mediaInfo[filetype].imagePaths.splice(index, 1);
+				} else {
+					this.operateData.mediaInfo[filetype].imagePath='';
+				}
+			}
+		},
+		// 实时预览函数
+		realTime(data) {
+			this.previews = data
+			// console.log(data)
+		},
+		//主表格分页方法
+		prev: function () {
+			this.currentIndex <= 0 ? 0 : this.currentIndex--;
+		},
+		next: function () {
+			this.currentIndex >= this.middleData.length - 1 ? this.middleData.length - 1 : this.currentIndex++;
+		},
+		changeIndex: function (index) {
+			this.currentIndex = index - 1;
+		},
+		toFirst: function () {
+			this.currentIndex = 0;
+		},
+		toLast: function () {
+			this.currentIndex = this.middleData.length - 1;
+		},
+		prev2: function () {
+			if (this.currentIndex2 <= 0) {
+				return;
+			}
+			this.getExistingMaterialList(this.currentIndex2 - 1);
+		},
+		next2: function () {
+			if (this.currentIndex2 >= this.totalPage2 - 1) {
+				return;
+			}
+			this.getExistingMaterialList(this.currentIndex2 + 1);
+		},
+		changeIndex2: function (index) {
+			this.getExistingMaterialList(index - 1);
+		},
+		toFirst2: function () {
+			this.getExistingMaterialList(0);
+		},
+		toLast2: function () {
+			this.getExistingMaterialList(this.totalPage2 - 1);
+		},
+		showDialog: function (dia1, dia2, callback, msg) {
+			if (msg) {
+				this.diaMsg = msg;
+			} else {
+				msg = '输入条件错误';
+			}
+			if (!dia1) {
+				$('#' + dia2).modal('show');
+			} else if (!dia2) {
+				$('#' + dia1).modal('hide');
+			} else if (!callback) {
+				$('#' + dia1).on("hidden.bs.modal", function () {
+					$('#' + dia2).modal('show');
+					$('#' + dia1).off().on("hidden", "hidden.bs.modal");
+				});
+				$('#' + dia1).modal('hide');
+			} else {
+				$('#' + dia1).on("hidden.bs.modal", function () {
+					$('#' + dia2).on("hidden.bs.modal", function () {
+						$('#' + dia1).modal("show");
+						$('#' + dia2).off().on("hidden", "hidden.bs.modal");
+					});
+					$('#' + dia2).modal("show");
+					$('#' + dia1).off().on("hidden", "hidden.bs.modal");
+				});
+				$('#' + dia1).modal('hide');
+			}
+		},
+		getUrlParam: function (name) {
+			var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+			var r = encodeURI(window.location.search).substr(1).match(reg); //匹配目标参数
+			if (r != null) return decodeURI(unescape(r[2]));
+			return '';
+		},
+		transformTime(createTime) {
+			let date = new Date(Number(createTime));
+			let year = date.getFullYear();
+			let month = date.getMonth() + 1;
+			let day = date.getDate();
+			let h = date.getHours()
+			let i = date.getMinutes()
+			let s = date.getSeconds();
+			month = month < 10 ? '0' + month : month;
+			day = day < 10 ? '0' + day : day;
+			if (h < 10) {
+				h = '0' + h;
+			}
+			if (i < 10) {
+				i = '0' + i;
+			}
+			if (s < 10) {
+				s = '0' + s;
+			}
+			let dateT = year + '-' + month + '-' + day + " " + h + ':' + i + ':' + s
+			return dateT
+		},
+		formatTime(time){
+			return time.slice(0,4)+'-'+time.slice(4,6)+'-'+time.slice(6,8)+' '+time.slice(8,10)+':'+time.slice(10,12)+':'+time.slice(12,14)
+		}
+		
+	},
+	components: {
+		'date-picker': VueBootstrapDatetimePicker
+	},
+	filters:{
+		secondCategoryTransfer:function(val,list){
+			if(val){
+				var obj = list.find(function(item){
+					return item.categoryId == val
+				})
+				if(obj.categoryName){
+					return obj.categoryName
+				}else{
+					return '-'
+				}
+			}else{
+				return '-'
+			}
+		},
+		rightTypeFormat:function(val){
+			var str;
+			if(val){
+				if(val=='00'){
+					str='公开材料'
+				}else if(val=='01'){
+					str='内部材料'
+				}else if(val=='03'){
+					str = '一对一材料'
+				}else{
+					str = val;
+				}
+			}else{
+				str = '-'
+			}
+			return str
+		},
+		timelinessTransfer:function(item){
+			var str = '';
+			if(item.timelinessType=='1'){
+				str+=item.timelinessCycleValue;
+				if(item.timelinessCycleType==2){
+					str+='月'
+				}else if(item.timelinessCycleType==3){
+					str+='周'
+				}else{
+					str+='日'
+				}
+			}else{
+				str+='无'
+			}
+			return str
+		},
+		uglyTimeFormat(val){
+			if(val){
+				var str = val.replace(/ /g,'');
+				var yyyymmdd = val.split('.')[0];
+				var hh = val.split('.')[1];
+				var mm = val.split('.')[2];
+				var ss = val.split('.')[3];
+				return yyyymmdd+' '+hh+':'+mm+':'+ss
+			}else{
+				return '-'
+			}
+		}
+	}
+});

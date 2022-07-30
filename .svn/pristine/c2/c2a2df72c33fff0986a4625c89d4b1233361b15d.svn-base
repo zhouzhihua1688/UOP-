@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div {
+            padding: 10px 0;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+
+
+                    <div class="col-xs-12">
+                        <!--提示信息弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--<div class="modal" id="submitInfo" tabindex="-1" role="dialog" aria-hidden="true"-->
+                             <!--data-backdrop="static">-->
+                            <!--<div class="modal-dialog">-->
+                                <!--<div class="modal-content">-->
+                                    <!--<div class="modal-header" style="padding: 10px;">-->
+                                        <!--<button type="button" class="close" data-dismiss="modal"-->
+                                                <!--aria-hidden="true">×-->
+                                        <!--</button>-->
+                                        <!--<h4 class="modal-title">提示信息</h4>-->
+                                    <!--</div>-->
+                                    <!--<div class="modal-body text-center">-->
+                                        <!--<h4 v-text="diaMsg"></h4>-->
+                                    <!--</div>-->
+                                    <!--<p class="text-center">-->
+                                        <!--<button type="button" class="btn btn-primary btn-sm" @click='submitData'>提交-->
+                                        <!--</button>-->
+                                        <!--<button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消-->
+                                        <!--</button>-->
+                                    <!--</p>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                        <!--</div>-->
+
+
+                        <!-- DIALOG ENDS -->
+
+                        <div class="form-inline">
+
+                            <div class="form-group ">
+                                <label style="width: 80px;">客户姓名：</label>
+                                <input type="text" v-model.trim="invnm" />
+                            </div>
+                            <div class="form-group ">
+                                <label style="width: 100px;">身份证号：</label>
+                                <input type="text" v-model.trim="idno" />
+                            </div>
+                            <div class="form-group pull-right">
+                            <% if(canShow||authorityList.includes('U')) { %>
+                            <input type="button" class="btn btn-sm btn-primary " value="提交" @click="submitTips">
+                            <% } %>
+                        </div>
+                            <div class="form-group pull-right" style="margin-right: 20px;">
+                                <input type="button" class="btn btn-sm btn-primary " value="查询"
+                                       @click="getTableData(0)">
+                            </div>
+                        </div>
+                        <div class="table-header">
+                            <%= cpage %>--表格数据
+                        </div>
+
+                        <!--数据表-->
+                        <table id="simple-table" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <!--<th class="center "></th>-->
+                                <th class="center">客户号</th>
+                                <th class="center">客户名称</th>
+                                <th class="center">证件号码</th>
+                                <th class="center">手机号码</th>
+                                <th class="center">开通状态</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="tableData.length>0">
+                                <tr v-for="(item,index) in tableData" :key="index">
+                                    <!--<td class="center col-md-1">-->
+                                    <!--<label class="pos-rel">-->
+                                    <!--<input type="checkbox" class="ace" :checked="item.check"-->
+                                    <!--@click="active(item)" />-->
+                                    <!--<span class="lbl"></span>-->
+                                    <!--</label>-->
+                                    <!--</td>-->
+                                    <td class="center" v-text='item.custno'></td>
+                                    <td class="center" v-text='item.invnm'></td>
+                                    <td class="center" v-text='item.idno'></td>
+                                    <td class="center" v-text='item.mobileno'></td>
+                                    <td class="center">{{item.switchStatus | status}}</td>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+
+
+                    </div>
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/js/customerService/topUpOrtake/weBankWhite.js"></script>
+</body>
+
+</html>

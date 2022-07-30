@@ -1,0 +1,915 @@
+// 多个分页器的类
+// class Page {
+//     constructor(option) {
+//         console.log(option)
+//         for (let key in option) {
+//             this[key] = option[key];
+//         }
+//         // this.currentIndex = 0;
+//         // this.maxSpace = 5;
+//         // this.totalPage =0;
+//         // this.pageMaxNum = 10;
+//     }
+//
+//     // method(fn, arg) {
+//     //     fn(arg);
+//     // }
+// };
+// 使用剪切图片插件
+Vue.use(window['vue-cropper']);
+var vm = new Vue({
+    el: '#content',
+    data: function () {
+        this.editor = null //富文本
+        return {
+            // page1: new Page({
+                startTime: '', //开始时间
+                endTime: '', //结束时间
+                isSeparate: {
+                    value: 'N',
+                    checked: false
+                }, //y时段UA单独统计n时段UA不单独统计
+                searchKey: '', //搜索关键字
+                tableData: [],
+                productData: [],
+                currentIndex: 0,
+                maxSpace: 5,
+                totalPage: 0,
+                pageMaxNum: 10,
+                // method: function (currentIndex) {
+                //     this.getTableData1(currentIndex)
+                // }.bind(this)
+            // }),
+            // page2: new Page({
+                currentIndex2: 0,
+                maxSpace2: 5,
+                totalPage2: 0,
+                pageMaxNum2: 10,
+                pvData: [],
+                // method: function (currentIndex) {
+                //     this.getPvData(currentIndex)
+                // }.bind(this)
+            // }),
+            // vue-cropper的配置项
+            option: {
+                img: '',
+                size: 1,
+                full: false,
+                outputType: 'png',
+                canMove: true,
+                fixedBox: true,
+                original: false,
+                canMoveBox: true,
+                autoCrop: true,
+                // 只有自动截图开启 宽度高度才生效
+                autoCropWidth: 200,
+                autoCropHeight: 200,
+                centerBox: false,
+                high: true,
+                max: 99999
+            },
+            previews: {},//剪切预览
+            limitSize: 100, //compress压缩文件的最大kb
+            modifyStatus: 1,
+            diaMsg: '',
+            fundCode: '',
+            fundName: '',
+            shareTitle: '',      //分享标题
+            shareCoverImage: '',//图片
+            riskWarning: '', //专题底部文字
+            status: '',
+            updateId: '',   //用做判断
+            userTypeList: [],//用户类型枚举
+            roleId: '',
+            channelList: [], //渠道一级枚举数据
+            channelData: '', //单个一级渠道数据
+            channeSublList: [],//渠道二级级枚举数据
+            channelSubData: '',//单个二级渠道数据
+            pvFundCode: '',  //获取pv产品代码值
+            fileName: '',
+            loadingShow: false,  //loading动画
+            showText:'数据加载中...',
+            showTipText: false
+        }
+    },
+    mounted: function () {
+        var dialogs = ['info', 'del', "selectAuthor"];
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        // this.getTableData(0);
+        $('.date-timepicker').datetimepicker({
+            format: 'YYYY-MM-DD', //use this option to display seconds
+            icons: {
+                time: 'fa fa-clock-o',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-arrows ',
+                clear: 'fa fa-trash',
+                close: 'fa fa-times'
+            }
+        }).next().on(ace.click_event, function () {
+            $(this).prev().focus();
+        });
+
+        //富文本
+        var E = window.wangEditor
+        var editor = new E('#wangEditor')
+        editor.config.onchange = (newHtml) => {
+            // console.log(newHtml);
+            this.riskWarning = newHtml.replace(/target="_blank"/g, "");
+            // this.operateData.content = newHtml.replace(/target="_blank"/g, "");
+        }
+        // 或者 const editor = new E( document.getElementById('div1') )
+        editor.config.height = 500
+        editor.config.showFullScreen = false //关闭全屏功能
+        // editor.config.uploadImgServer = `${this.baseUrl}/uploadImage.ajax` //图片上传地址
+        editor.config.uploadImgMaxLength = 1 //最大同时上传图片数
+        editor.config.uploadImgTimeout = 15000 //上传图片等待时间
+        editor.config.customUploadImg = this.customUploadImg;
+        editor.config.excludeMenus = [
+            'video'
+        ]
+        editor.create()
+        this.editor = editor;
+        this.getTableData1(0);
+        this.productList();
+    },
+    computed: {
+        pageList: function () {
+            var arr = [];
+            if (this.totalPage <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex <= this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex <= this.maxSpace) {
+                var space = this.totalPage - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            } else {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        },
+        pageList2: function () {
+            var arr = [];
+            if (this.totalPage2 <= 2 * this.maxSpace2) {
+                for (var i = 0; i < this.totalPage2; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex2 > this.maxSpace2 && this.totalPage2 - this.currentIndex2 > this.maxSpace2) {
+                for (var i = this.currentIndex2 - this.maxSpace2; i < this.currentIndex2 + this.maxSpace2; i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex2 <= this.maxSpace2 && this.totalPage2 - this.currentIndex2 > this.maxSpace2) {
+                for (var i = 0; i < this.currentIndex2 + (2 * this.maxSpace2 - this.currentIndex2); i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex2 > this.maxSpace2 && this.totalPage2 - this.currentIndex2 <= this.maxSpace2) {
+                var space = this.totalPage2 - this.currentIndex2;
+                for (var i = this.currentIndex2 - (2 * this.maxSpace2 - space); i < this.totalPage2; i++) {
+                    arr.push(i + 1);
+                }
+            } else {
+                for (var i = 0; i < this.totalPage2; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        },
+        //主表格分页方法
+        // prev: function (fn) {
+        //     return function () {
+        //         if (this.currentIndex <= 0) {
+        //             return;
+        //         }
+        //         this.method(this.currentIndex - 1);
+        //         // this.method(fn, this.currentIndex - 1);
+        //     }
+        // },
+        // next: function (fn) {
+        //     return function () {
+        //         if (this.currentIndex >= this.totalPage - 1) {
+        //             return;
+        //         }
+        //         this.method(this.currentIndex + 1);
+        //         // this.method(fn, this.currentIndex + 1);
+        //     }
+        // },
+        // changeIndex: function (fn) {
+        //     return function (index) {
+        //         // this.method(fn, index - 1);
+        //         this.method(index - 1);
+        //     }
+        // },
+        // toFirst: function (fn) {
+        //     return function () {
+        //         // this.method(fn, 0);
+        //         this.method(0);
+        //     }
+        // },
+        // toLast: function (fn) {
+        //     return function () {
+        //         // this.method(fn, this.totalPage - 1);
+        //         this.method(this.totalPage - 1);
+        //     }
+        // },
+
+    },
+    watch: {
+        // 'page1.pageMaxNum': {
+        //     handler: function () {
+        //         this.getTableData1(0);
+        //     }
+        // },
+        pageMaxNum: function () {
+            this.getTableData1(0);
+        },
+        pageMaxNum2: function () {
+            this.getPvData(0,'');
+        },
+        // 渠道二级选择哪个
+        channelData: function () {
+            for (var i = 0; i < this.channelList.length; i++) {
+                if (this.channelData == this.channelList[i].agencyLvl1Id) {
+                    this.channeSublList = this.channelList[i].agencyTwoList;
+                    this.channelSubData = this.channelList[i].agencyTwoList[0].agencyLvl2Id;
+                }
+                if (!this.channelData) {
+                    this.channelSubData = '';
+                }
+            }
+        },
+        fundCode: function () {
+            var _this = this;
+            console.log(_this.fundCode);
+            console.log(_this.modifyStatus);
+            var resultOne = this.productData.some(function (item) {
+                if (item.fundCode == _this.fundCode) {
+                    _this.fundName = item.fundName;
+                    return true;
+                }
+            })
+
+            // if(resultOne==true){
+            //     this.showDialog('add', 'info', true, '产品代码已存在');
+            //     return false;
+            // }
+        }
+
+    },
+    methods: {
+        // moment: moment,
+        // 鼠标放至物料包状态右侧的注释按钮上时
+        showTips() {
+            // this.showTipText=true;
+            $("#showTipText").show()
+        },
+        showLeave() {
+            // this.showTipText=false;
+            $("#showTipText").hide()
+        },
+        //时段UA选择   
+        uaSelect() {
+            this.isSeparate.checked = !this.isSeparate.checked;
+            if (this.isSeparate.value == 'N') {
+                this.isSeparate.value = 'Y'
+            } else {
+                this.isSeparate.value = 'N'
+            }
+        },
+        //物料包状态
+        changeStatus(item, index) {
+            console.log(item);
+            var _this = this;
+            //ajax后执行
+            if (this.tableData[index].status == 'Y') {
+                this.$set(this.tableData[index], 'status', 'N')
+                _this.switchUpdate(item.fundCode, this.tableData[index].status);
+            } else {
+                this.$set(this.tableData[index], 'status', 'Y')
+                _this.switchUpdate(item.fundCode, this.tableData[index].status);
+            }
+        },
+        // 产品列表修改产品的状态-开关
+        switchUpdate(fundCode, status) {
+            var _this = this;
+            var params = {};
+            params.fundCode = fundCode;
+            params.enableFlag = status;
+            console.log(params);
+            $.post({
+                url: '/advertising/productMaterialMgmt/productList/switchUpdate.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        // _this.page1.tableData = result.data;
+                    }
+                    else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+
+        // 获取产品列表已经存在的产品代码，防止在添加和修改操作冲突验证
+        productList() {
+            var _this = this;
+            $.post({
+                url: '/advertising/productMaterialMgmt/productList/getProductList.ajax',
+                success: function (result) {
+                    if (result.error === 0) {
+                        console.log("产品列表", result)
+                        _this.productData = result.data.body;
+                    }
+                    else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        // 主表格数据
+        getTableData1: function (currentIndex) {
+            //   console.log(currentIndex);
+            var _this = this;
+            var params = {};
+            params.searchKey = this.searchKey;
+            params.startTime = this.startTime;
+            params.endTime = this.endTime;
+            params.page = currentIndex + 1;
+            params.size = this.pageMaxNum;
+            params.isSeparate = this.isSeparate.value;
+            console.log(params);
+            $(".cover").show();
+            _this.tableData=[];
+            $.post({
+                url: '/advertising/productMaterialMgmt/productList/getTableData.ajax',
+                data: params,
+                success: function (result) {
+                    $(".cover").hide();
+                    if (result.error === 0) {
+                        _this.currentIndex = currentIndex;
+                        _this.totalPage = Math.ceil(result.data.body.total / params.size);
+                        if(result.data.body.data) {
+                            _this.tableData = result.data.body.data?result.data.body.data:[];
+                        }else{
+                            _this.showText='暂无数据';
+                        }
+                    }
+                    else {
+                        $(".cover").hide();
+                        _this.tableData = [];
+                        _this.showText='暂无数据';
+                        _this.currentIndex = 0;
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+
+        },
+        // 分享标题超过字数
+        change() {
+            if (this.shareTitle.length > 26) {
+                let str = this.shareTitle.substr(0, 26);
+                this.shareTitle = str;
+            }
+        },
+        clearAddDia: function (item) {
+            this.fundCode = item ? item.fundCode : '';
+            this.fundName = item ? item.fundName : '';
+            this.status = item ? item.status : 'N';
+        },
+        showAdd: function () {
+            this.modifyStatus = 0;
+            this.clearAddDia();
+            this.updateId = '';
+            this.fundCode = '';
+            this.shareTitle = '';
+            this.option.img = '';  //显示图片
+            this.editor.txt.clear(); //清空wangeditor富文本的缓存内容
+            this.showDialog('', 'add')
+        },
+        add: function () {
+            var _this = this;
+            var params = {};
+            var api = 'add';
+            if (this.updateId) {
+                params.fundCode = this.updateId;
+                api = 'update';
+            } else {
+                params.fundCode = this.fundCode;
+                var resultOne = _this.productData.some(function (item) {
+                    if (item.fundCode == params.fundCode) {
+                        return true;
+                    }
+                })
+                if (!this.fundName) {
+                    _this.showDialog('add', 'info', true, '请输入产品名称');
+                    return false;
+                }
+                if (!params.fundCode) {
+                    _this.showDialog('add', 'info', true, '请输入产品代码');
+                    return false;
+                }
+                if (resultOne == true) {
+                    _this.showDialog('add', 'info', true, '产品代码已存在');
+                    return false;
+                }
+                if (!this.shareTitle) {
+                    _this.showDialog('add', 'info', true, '请输入分享标题');
+                    return false;
+                }
+                if (!this.shareCoverImage) {
+                    _this.showDialog('add', 'info', true, '请先上传图片');
+                    return false;
+                }
+            }
+            params.fundName = this.fundName;
+            params.shareTitle = this.shareTitle;
+            params.shareCoverImage = this.shareCoverImage;
+            params.riskWarning = this.riskWarning;  //富文本
+            params.status = this.status;
+            console.log(params);
+            $.post({
+                url: '/advertising/productMaterialMgmt/productList/' + api + '.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.getTableData1(0);
+                        _this.showDialog('add', 'info', false, result.msg);
+                    } else {
+                        _this.showDialog('add', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+        //点击修改主页面内容
+        modify: function (item) {
+            var _this = this;
+            _this.fileName='';
+            _this.modifyStatus = 1;
+            _this.clearAddDia(item);
+            _this.updateId = item.fundCode;
+            var params = {};
+            params.fundCode = item.fundCode;
+            // 查询单个产品信息
+            $.post({
+                url: '/advertising/productMaterialMgmt/productList/searchSingle.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        console.log("查询单个产品", result.data)
+                        _this.shareTitle = result.data.body.shareTitle;
+                        _this.option.img = result.data.body.shareCoverImage;  //显示图片
+                        _this.shareCoverImage = result.data.body.shareCoverImage;
+                        _this.editor.txt.html(result.data.body.riskWarning);
+                    } else {
+                        _this.showDialog('add', 'info', false, result.msg);
+                    }
+                }
+            });
+            this.showDialog('', 'add');
+        },
+        deleteDate(item) {
+            var _this = this;
+            var params = {};
+            params.fundCode = item.fundCode;
+            console.log(params);
+            $.post({
+                url: '/advertising/productMaterialMgmt/productList/deleteParam.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.getTableData1(0);
+                        _this.showDialog('', 'info', true, result.msg);
+                    } else {
+                        _this.showDialog('', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+        // 点击PV
+        showPV(item) {
+            var _this = this;
+            this.showDialog('', 'pv');
+            this.pvFundCode = item.fundCode;
+            this.getPvData(0, this.pvFundCode);
+            this.getUserType();
+            this.getChannel();
+        },
+        // 点击UV
+        showUV(item) {
+            var _this = this;
+            this.showDialog('', 'pv');
+            this.pvFundCode = item.fundCode;
+            this.getPvData(0, this.pvFundCode);
+            this.getUserType();
+            this.getChannel();
+        },
+        // 点击PV弹窗里查询按钮
+        searchPvData() {
+            this.getPvData(0, this.pvFundCode);
+        },
+        // 获取PV/UV弹窗里的用户类型
+        getUserType() {
+            var _this = this;
+            $.post({
+                url: '/advertising/productMaterialMgmt/productList/getUserParam.ajax',
+                // data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.userTypeList = result.data.body;
+                        console.log("用户类型", _this.userTypeList)
+                    } else {
+                        _this.showDialog('', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+        // 获取PV/UV弹窗里的渠道
+        getChannel() {
+            var _this = this;
+            $.post({
+                url: '/advertising/productMaterialMgmt/productList/getChannel.ajax',
+                // data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.channelList = result.data.body;
+                        console.log("渠道:", _this.channelList)
+                    } else {
+                        _this.showDialog('', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+        // 获取弹窗数据
+        getPvData: function (currentIndex, fundCode) {
+            //   console.log(currentIndex);
+            var _this = this;
+            var params = {};
+            params.fundCode = fundCode;
+            params.page = currentIndex + 1;
+            params.size = this.pageMaxNum2;
+            params.userType = this.roleId;
+            params.channelCode = this.channelSubData;
+            params.isSeparate = this.isSeparate.value;
+            params.endTime = this.endTime;
+            params.startTime = this.startTime;
+            console.log(params);
+            $(".cover").show();
+            $.post({
+                url: '/advertising/productMaterialMgmt/productList/getPvData.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        $(".cover").hide();
+                        _this.currentIndex2 = currentIndex;
+                        _this.totalPage2 = Math.ceil(result.data.body.total / params.size);
+                        if(result.data.body.data){
+                            _this.pvData = result.data.body.data;
+                        }else{
+                            _this.showText='暂无数据';
+                        }
+                    }
+                    else {
+                        $(".cover").hide();
+                        _this.pvData = [];
+                        _this.currentIndex2 = 0;
+                        _this.showText='暂无数据';
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+
+        },
+        // 本地图片上传
+        uploadImg(e) {
+            //上传图片
+            // this.option.img
+            var file = e.target.files[0];
+            this.fileName = file.name;
+            console.log("fileName===", this.fileName);
+            if (!/\.(gif|jpg|jpeg|png|bmp|GIF|JPG|PNG)$/.test(e.target.value)) {
+                alert('图片类型必须是.gif,jpeg,jpg,png,bmp中的一种')
+                return false
+            }
+            var reader = new FileReader()
+            reader.onload = (e) => {
+                let data
+                if (typeof e.target.result === 'object') {
+                    // 把Array Buffer转化为blob 如果是base64不需要
+                    data = window.URL.createObjectURL(new Blob([e.target.result]))
+                } else {
+                    data = e.target.result
+                }
+                this.option.img = data
+            }
+            // 转化为base64
+            // reader.readAsDataURL(file)
+            // 转化为blob
+            reader.readAsArrayBuffer(file)
+        },
+        uploadForServer() {
+            // 输出裁剪过的blob
+            var _this = this;
+            this.$refs.cropper.getCropBlob(async (data) => {
+                let [error, res] = await this.awaitWrap(compress(data, this.limitSize));//获得压缩过的blob
+                if (error) {
+                    console.log(error);
+                    return
+                }
+                console.log('res', res);
+                // var fileName = res.compressFile.type;
+                // var fileType = fileName.split('/')[fileName.split('/').length - 1];
+                // if (fileType !== 'jpg' && fileType !== 'jpeg' && fileType !== 'png' && fileType !== 'gif') {
+                //     this.showDialog('add', 'info', true, '上传文件格式错误,请上传图片文件');
+                //     return;
+                // }
+
+                // res.compressFile['name']=this.fileName;
+
+                var formdata = new FormData();
+
+                let file = new File([res.compressFile], this.fileName);
+                console.log(file);
+                if (!file.name) {
+                    _this.showDialog('add', 'info', true, '请选择要上传的图片!');
+                    return false;
+                }
+
+                console.log(file.name);
+                // console.log(file.size);
+
+                formdata.append('file', file);
+
+                $.post({
+                    url: '/advertising/productMaterialMgmt/productList/uploadImg.ajax',
+                    // data: res.compressBase64,
+                    cache: false,
+                    data: formdata,
+                    processData: false,
+                    contentType: false,
+                    success: function (result) {
+                        if (result.error === 0) {
+                            _this.shareCoverImage = result.data.imageUrl;
+                            console.log(_this.shareCoverImage);
+                            _this.showDialog('add', 'info', true, result.msg);
+                        } else {
+                            _this.showDialog('add', 'info', true, result.msg);
+                        }
+                    }
+                });
+            })
+        },
+        // 实时预览函数
+        realTime(data) {
+            this.previews = data
+            // console.log(data)
+        },
+        // 导出主数据
+        exportAll() {
+            var _this = this;
+            var url;
+            var params={};
+            params.searchKey = this.searchKey;
+            params.startTime = this.startTime;
+            params.endTime = this.endTime;
+            params.page=this.currentIndex+1;
+            params.size = this.pageMaxNum;
+            params.isSeparate = this.isSeparate.value;
+            console.log(params);
+            url = '/advertising/productMaterialMgmt/productList/exportAll.ajax?searchKey='+params.searchKey+'&isSeparate='+params.isSeparate+'&page='+params.page+'&size='+params.size+'&startTime='+params.startTime+'&endTime='+params.endTime;
+            window.location.href = url;
+            // _this.loadingShow=true;
+            // $(".cover").show();  //动画
+            // $.post({
+            //     url: '/advertising/productMaterialMgmt/productList/exportAll.ajax',
+            //     type:'GET',
+            //     success: function (result) {
+            //         $(".cover").hide();//动画
+            //         if (result.error === 0) {
+            //
+            //         }
+            //         // else {
+            //         //     _this.showDialog('', 'info', false, result.msg);
+            //         // }
+            //     }
+            // });
+        },
+        // 导出PV，UV弹窗数据
+        exportPvData() {
+            var _this = this;
+            var url;
+            var params = {};
+            params.fundCode = this.pvFundCode;
+            params.page = this.currentIndex2 + 1;
+            params.size = this.pageMaxNum2;
+            params.userType = this.roleId;
+            params.channelCode = this.channelSubData;
+            params.isSeparate = this.isSeparate.value;
+            params.endTime = this.endTime;
+            params.startTime = this.startTime;
+            console.log(params);
+            url = '/advertising/productMaterialMgmt/productList/exportPvData.ajax?fundCode=' + params.fundCode+'&isSeparate='+params.isSeparate+'&userType='+params.userType+'&channelCode='+params.channelCode+'&page='+params.page+'&size='+params.size+'&startTime='+params.startTime+'&endTime='+params.endTime;
+            window.location.href = url;
+        },
+        //公共方法
+        awaitWrap(promise) { // await 异常处理包装
+            return promise.then(res => [null, res], error => [error, null]);
+        },
+        verify: function () { // 校验
+
+        },
+        //主表格分页方法
+        prev: function () {
+            if (this.currentIndex <= 0) {
+                return;
+            }
+            this.getTableData1(this.currentIndex - 1);
+        },
+        next: function () {
+            if (this.currentIndex >= this.totalPage - 1) {
+                return;
+            }
+            this.getTableData1(this.currentIndex + 1);
+        },
+        changeIndex: function (index) {
+            this.getTableData1(index - 1);
+        },
+        toFirst: function () {
+            this.getTableData1(0);
+        },
+        toLast: function () {
+            this.getTableData1(this.totalPage - 1);
+        },
+        //弹窗表格分页方法
+        prev2: function () {
+            if (this.currentIndex2 <= 0) {
+                return;
+            }
+            this.getPvData(this.currentIndex2 - 1,this.sourceMaterialType);
+        },
+        next2: function () {
+            if (this.currentIndex >= this.totalPage2 - 1) {
+                return;
+            }
+            this.getPvData(this.currentIndex2 + 1,this.sourceMaterialType);
+        },
+        changeIndex2: function (index) {
+            this.getPvData(index - 1,this.sourceMaterialType);
+        },
+        toFirst2: function () {
+            this.getPvData(0,this.sourceMaterialType);
+        },
+        toLast2: function () {
+            this.getPvData(this.totalPage2 - 1,this.sourceMaterialType);
+        },
+
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            }
+            else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            }
+            else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            }
+            else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+            else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+
+        // showDialog: function (dia1, dia2, callback, msg) {
+        //     // 关掉dia1，打开dia2
+        //     // callback==false:在dia2关掉的时候，直接关掉
+        //     // callback==true:在dia2关掉的时候，重新打开dia1
+        //     this.diaMsg = (msg ? msg : '输入条件错误');
+        //     if (!dia1) {
+        //         $('#' + dia2).modal('show');
+        //     } else if (!dia2) {
+        //         $('#' + dia1).modal('hide');
+        //     } else if (!callback) {
+        //         $('#' + dia1).modal('hide');
+        //         $('#' + dia2).off("hidden.bs.modal").modal('show');
+        //     } else {
+        //         if ($('#' + dia1).data('parentDlg')) {
+        //             // dia1弹窗有父级弹窗，先去除关闭事件，关闭弹窗后，再恢复添加事件
+        //             $('#' + dia1).off("hidden.bs.modal").modal('hide');
+        //             $('#' + dia1).on("hidden.bs.modal", function () {
+        //                 $('#' + $('#' + dia1).data('parentDlg')).modal("show");
+        //             });
+        //         } else {
+        //             // dia1弹窗没有父级弹窗，直接关闭
+        //             $('#' + dia1).modal('hide');
+        //         }
+        //         $('#' + dia2).off("hidden.bs.modal").on("hidden.bs.modal", function () {
+        //             // dia2作为子弹窗，添加关闭事件，关闭弹窗时打开父级弹窗
+        //             $('#' + dia1).modal("show");
+        //             $('#' + dia2).data('parentDlg', dia1);
+        //         });
+        //         $('#' + dia2).modal('show');
+        //     }
+        // },
+        // showNestDialog: function (dia1, dia2, dia3, callback, msg) { //页面内嵌套了多个模态框
+        //     if (msg) {
+        //         this.diaMsg = msg;
+        //     } else {
+        //         msg = '输入条件错误';
+        //     }
+        //     if (!dia1) {
+        //         $('#' + dia2).modal('show');
+        //     } else if (!dia2) {
+        //         $('#' + dia1).modal('hide');
+        //     } else if (!callback) {
+        //         $('#' + dia1).on("hidden.bs.modal", function () {
+        //             $('#' + dia2).modal('show');
+        //             $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+        //         });
+        //         $('#' + dia1).modal('hide');
+        //     } else {
+        //         $('#' + dia1).on("hidden.bs.modal", function () {
+        //             $('#' + dia2).on("hidden.bs.modal", function () {
+        //                 $('#' + dia1).modal("show");
+        //                 $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+        //                 $('#' + dia1).on("hidden.bs.modal", function () {
+        //                     $('#' + dia3).modal('show');
+        //                     $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+        //                 });
+        //             });
+        //             $('#' + dia2).modal("show");
+        //             $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+        //         });
+        //         $('#' + dia1).modal('hide');
+        //     }
+        // },
+        transformTime(createTime) {
+            let date = new Date(Number(createTime));
+            let year = date.getFullYear();
+            let month = date.getMonth() + 1;
+            let day = date.getDate();
+            let h = date.getHours()
+            let i = date.getMinutes()
+            let s = date.getSeconds();
+            month = month < 10 ? '0' + month : month;
+            day = day < 10 ? '0' + day : day;
+            if (h < 10) {
+                h = '0' + h;
+            }
+            if (i < 10) {
+                i = '0' + i;
+            }
+            if (s < 10) {
+                s = '0' + s;
+            }
+            let dateT = year + '-' + month + '-' + day + " " + h + ':' + i + ':' + s
+            return dateT
+        }
+    },
+    components: {
+        'date-picker': VueBootstrapDatetimePicker
+    },
+});

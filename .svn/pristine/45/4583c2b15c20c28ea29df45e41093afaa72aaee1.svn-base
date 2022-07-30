@@ -1,0 +1,218 @@
+var vueSelect = Vue.extend({
+    template: `
+    <div :style='boxCss'>
+         <label>
+            <input :disabled='disabled' type='text' :style='inputCss' @input='search'  @focus='focus' @blur='blur' :value='match'>
+            <span :style='spanCss' ref='opintSpan'></span>
+         </label>
+        <ul :style='[ulCss,ulScroll]' @mousedown='set_module' v-show='start_select' @mousemove='move' >
+                <li :style='[index===float?enterLi:"",index==pitchOn?activeLi:""]' :key='index' v-for='(item,index) in Options' :data-value='item[model]' :data-index='index'>{{showLable(item)}}</li>
+        </ul>
+    </div>`,
+    props: {
+        value: [String, Number],
+        label: {
+            type: [String, Array],
+            required: true
+        },
+        options: {
+            type: [Array, Object],
+            default: () => []
+        },
+        model: {
+            type: String,
+            required: true
+        },
+        maxlist: {
+            type: [Number, String],
+            default: 10
+        },
+        height: {
+            type: [Number, String],
+            default: 30
+        },
+        width: {
+            type: [Number, String],
+            default: 170
+        },
+        disabled: [Boolean, Number, String, Object, Array],
+    },
+    data: function () {
+        return {
+            match: '',
+            Options: [...this.options],
+            boxCss: {
+                'textAlign': 'left',
+                'verticalAlign': 'middle',
+                'textIndent': '5px',
+                'border': '1px solid #D5D5D5',
+                'cursor': 'pointer',
+                'padding': 0,
+                'margin': 0,
+                'color': '#858585',
+                'position': 'relative',
+                'minHeight': this.height + 'px',
+                'width': this.width + 'px',
+                'height': this.height + 'px',
+                'display': 'inline-block',
+                'backgroundColor': '#FFF'
+            },
+            inputCss: {
+                'position': 'absolute',
+                'left': 0,
+                'top': 0,
+                'border': 0,
+                'outline': 'none',
+                'color': '##858585',
+                'lineHeight': this.height + 'px',
+                'textIndent': '5px',
+                'width': this.width - 20 + 'px',
+                'height': this.height - 2 + 'px',
+            },
+            spanCss: {
+                'display': 'inline-block',
+                'position': 'absolute',
+                'top': this.height / 2 - 3 + 'px',
+                'right': '8px',
+                'width': '0',
+                'heigth': '0',
+                'borderTop': '5px solid #888',
+                'borderLeft': '3px solid transparent',
+                'borderRight': '3px solid transparent',
+            },
+            ulCss: {
+                'position': 'absolute',
+                'listStyle': 'none',
+                'padding': 0,
+                'margin': 0,
+                'top': this.height - 2 + 'px',
+                'left': '-1px',
+                'color': '#858585',
+                'fontSize': '14px',
+                'lineHeight': this.height + 'px',
+                'width': this.width + 'px',
+                'backgroundColor': 'white',
+                'border': '1px solid #D5D5D5',
+                'zIndex': 999,
+
+            },
+            ulScroll: {
+                'maxHeight': this.maxlist * this.height + 2 + 'px',
+                'overflowY': 'scroll',
+            },
+            enterLi: {
+                'background-color': '#1E90FF',
+                'color': '#fff',
+            },
+            activeLi: {
+                'background-color': '#1E90FF',
+                'color': '#fff',
+            },
+            float: null,
+            pitchOn: null,
+            start_select: false
+        }
+    },
+    computed: {
+    },
+    created: function () {
+        this.init()
+    },
+    mounted: function () { },
+    watch: {
+        value: function (newval) {
+            this.upadte_value_ofWatch(newval)
+        },
+        Options: {
+            handler: function (newval) {
+                newval.some(function (item, index) {
+                    if (this.value == item[this.model]) {
+                        this.pitchOn = index
+                        return true;
+                    }
+                }, this)
+            },
+            immediate: true
+        },
+        options: function (newval) {
+            this.Options = [...newval]
+            this.upadte_value_ofWatch(this.value)
+        },
+    },
+    methods: {
+        upadte_value_ofWatch: function (newval) {
+            var flag = this.options.some(function (item) {
+                if (newval == item[this.model]) {
+                    this.match = item[this.label]
+                    return true;
+                }
+            }, this)
+            if (!flag) {//如果没有对应的数据，则显示为空
+                this.match = ''
+            }
+        },
+        init: function () {
+            if (this.pitchOn != null) {
+                this.match = this.Options[this.pitchOn][this.label]
+            } else {
+                this.match = ''
+            }
+        },
+        search: function (ele) {
+            var value = ele.target.value;
+            this.match = value;
+            this.Options = this.options.filter(function (item) {
+               if(item[this.label]!=null){
+                return item[this.label].indexOf(value) != -1;
+               }
+            }, this)
+
+        },
+        set_module: function (ele) {
+            if (ele.target.tagName !== 'LI') return;
+            var value = ele.target.dataset.value;
+            var index = ele.target.dataset.index;
+            this.$emit('input', value)
+            this.pitchOn = index;
+        },
+        blur: function () {
+            this.Options = [...this.options]
+            this.start_select = false;
+            this.upadte_value_ofWatch(this.value)
+            this.float = null;
+            this.$refs.opintSpan.style.transform = 'rotateX(0)';
+
+        },
+        focus: function () {
+            this.start_select = true;
+            this.$refs.opintSpan.style.transform = 'rotateX(180deg)';
+        },
+        move: function (ele) {
+            if (ele.target.tagName !== 'LI') return;
+            var value = ele.target.dataset.value
+            var index = ele.target.dataset.index
+            this.float = Number(index);
+        },
+        showLable: function (item) {
+            // if (this.label.__proto__.constructor.name === 'Array') {
+            //     var str = ''
+            //     this.label.forEach(function (val, ind) {
+            //         str += item[val]
+            //     }, this)
+            //     return str;
+            // }
+            return item[this.label]
+        }
+    },
+
+})
+
+/*
+    option     数组包对象  (必须)
+    v-model 绑定vue实例data (必须)
+    lable   展示数据 【】   (必须)
+    model   传输数据    (必须)
+    width   宽          默认170
+    height  高          默认30
+    maxlist 最大展示量   默认10条
+*/

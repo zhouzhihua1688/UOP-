@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<% include ../../common/head.html %>
+	<!-- inline styles related to this page -->
+	<link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+	<link rel="stylesheet" href="/ace/assets/css/bootstrap-multiselect.min.css" />
+	<link rel="stylesheet" href="/css/chosen.min.css">
+	<style>
+		.table>tbody>tr>td {
+			vertical-align: middle;
+		}
+
+		.form-inline>div {
+			padding: 10px 0;
+			text-align: right;
+		}
+
+		.hoverActive {
+			color: #36c;
+			cursor: pointer
+		}
+
+		.hoverActive:hover {
+			color: #f60;
+		}
+
+		.chosen-single {
+			height: 30px !important;
+			line-height: 30px !important;
+			border-radius: 0 !important;
+			text-align: left !important;
+		}
+
+		.chosen-container .chosen-results li {
+			text-align: left;
+		}
+	</style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+	<% include ../../common/sidebar.html %>
+	<% include ../../common/left-menu.html %>
+	<div class="main-content">
+		<div class="main-content-inner">
+			<div class="page-content" id="content">
+				<% include ../../common/breadcrumb.html %>
+				<% include ../../common/ace-settings-container.html %>
+				<!--新增弹窗-->
+				<div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+					 data-backdrop="static">
+					<div class="modal-dialog" style="width:700px;">
+						<div class="modal-content">
+							<div class="modal-header" style="padding: 10px;">
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+									&times;
+								</button>
+								<h4 class="modal-title" style="display: inline">新增信息</h4>
+							</div>
+							<div class="modal-body">
+								<div class="form-group">
+									<div style="text-align:left;">
+										<div class="form-group center" >
+											<label class="control-label" style="margin-left:22px;">客群ID:</label>
+											<select style="width: 150px;" v-model="userGroup">
+												<option value="">请选择</option>
+												<option :value="item.groupId" v-for="(item,index) in groupList">
+												{{item.groupId}}-{{item.groupName}}
+												</option>
+											</select>
+										</div>
+										<!--<div class="form-group center" style="margin-left: 13px;">-->
+											<!--<label class="control-label">客群名称:</label>-->
+											<!--<input type="text" style="width:175px;" v-model="userGroupName"/>-->
+										<!--</div>-->
+										<div class="form-group center" >
+											<label class="control-label" style="margin-left:53px;">可选个数:</label>
+											<!--<select style="width: 150px;" v-model="selectType">-->
+												<!--<option value="62">62-六选2</option>-->
+												<!--<option value="51">51-五选一</option>-->
+											<!--</select>-->
+											<input type="number" style="width:150px;" v-model="canSelectCount"/>
+											<span style="color:red">*填数字</span>
+										</div>
+										<div class="form-group center" style="margin-left:30px;">
+											<label class="control-label">权益包:</label>
+											<select id="quanyiList" multiple class="chosen-select"
+													data-placeholder="请选择" style="width:175px;">
+												<option value=""></option>
+											</select>
+										</div>
+										<div class="form-group center" style="margin-left: 13px;">
+											<label class="control-label">套餐描述:</label>
+											<input type="text" style="width:150px;" v-model="packageDesc"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<p class="text-center" style="clear: both">
+								<button class="btn btn-sm btn-primary" @click="saveParam()">确定</button>
+								<button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+							</p>
+						</div>
+					</div>
+				</div>
+				<!--修改弹窗-->
+				<div class="modal" id="revise" tabindex="-1" role="dialog" aria-hidden="true"
+					 data-backdrop="static">
+					<div class="modal-dialog" style="width:700px;">
+						<div class="modal-content">
+							<div class="modal-header" style="padding: 10px;">
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+									&times;
+								</button>
+								<h4 class="modal-title" style="display: inline">新增信息</h4>
+							</div>
+							<div class="modal-body">
+								<div class="form-group">
+									<div style="text-align:left;">
+										<div class="form-group center" >
+											<label class="control-label" style="margin-left:18px;">客群ID:</label>
+											<select style="width: 150px;" v-model="userGroup">
+												<option value="">请选择</option>
+												<option :value="item.groupId" v-for="(item,index) in groupList">
+													{{item.groupId}}-{{item.groupName}}
+												</option>
+											</select>
+										</div>
+										<!--<div class="form-group center" style="margin-left: 13px;">-->
+										<!--<label class="control-label">客群名称:</label>-->
+										<!--<input type="text" style="width:175px;" v-model="userGroupName"/>-->
+										<!--</div>-->
+										<div class="form-group center" >
+											<label class="control-label" style="margin-left:53px;">可选个数:</label>
+											<!--<select style="width: 175px;" v-model="selectType">-->
+												<!--<option value="62">62-六选2</option>-->
+												<!--<option value="51">51-五选一</option>-->
+											<!--</select>-->
+											<input type="number" style="width:150px;" v-model="canSelectCount"/>
+											<span style="color:red">*填数字</span>
+										</div>
+										<div class="form-group center" style="margin-left: 13px;">
+											<label class="control-label">权益包:</label>
+											<select id="quanyiList1" multiple class="chosen-select"
+													data-placeholder="请选择" style="width:150px;">
+												<option value=""></option>
+											</select>
+										</div>
+										<div class="form-group center" style="margin-left: 13px;">
+											<label class="control-label">套餐描述:</label>
+											<input type="text" style="width:150px;" v-model="packageDesc"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<p class="text-center" style="clear: both">
+								<button class="btn btn-sm btn-primary" @click="update()">确定</button>
+								<button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+							</p>
+						</div>
+					</div>
+				</div>
+				<!--删除弹窗-->
+				<div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header" style="padding: 10px;">
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+								<h4 class="modal-title">删除数据</h4>
+							</div>
+							<div class="modal-body text-center">
+								<h4>确认删除此条数据?</h4>
+							</div>
+							<p class="text-center">
+								<button type="button" class="btn btn-primary btn-sm" @click="del">确定</button>
+								<button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<!--信息提示弹窗-->
+				<div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header" style="padding: 10px;">
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+								<h4 class="modal-title">提示信息</h4>
+							</div>
+							<div class="modal-body text-center">
+								<h4 v-text="diaMsg"></h4>
+							</div>
+							<p class="text-center">
+								<button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+							</p>
+						</div>
+					</div>
+				</div>
+				<div class="form-inline" style="padding: 10px 0;height:70px">
+					<div class="form-group">
+						<label class="control-label">客群ID:</label>
+						<input type="text" style="width:175px;" v-model.trim="userGroups"/>
+					</div>
+					<!--<div class="form-group">-->
+						<!--<label class="control-label">套餐ID:</label>-->
+						<!--<input type="text" style="width:175px;"/>-->
+					<!--</div>-->
+					<!--<div class="input-group center" >-->
+						<!--<label class="control-label">发车日期:</label>-->
+						<!--<input style="width:150px" type="text"-->
+							   <!--ref="startDate"-->
+							   <!--class="date-timepicker">-->
+						<!--<span class="input-group-addon">-->
+                             <!--<i class="fa fa-clock-o bigger-110"></i>-->
+                       <!--</span>-->
+					<!--</div>-->
+					<div class="form-group pull-right" style="vertical-align: middle">
+						<input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+						<% if(canShow||authorityList.includes('C')) { %>
+						<input type="button" class="btn btn-sm btn-primary" value="新增" @click="showAdd()">
+						<% } %>
+					</div>
+
+				</div>
+				<div class="table-header">
+					<%= cpage %>--表格数据
+				</div>
+				<!--分页器和快速查询-->
+				<div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+					<div class="col-xs-6">
+						<div class="dataTables_length" id="dynamic-table_length">
+							<label>每页显示</label>
+							<select class="input-sm" name="pageMaxNum" v-model.trim="pageMaxNum">
+								<option value="10">10</option>
+								<option value="50">50</option>
+								<option value="100">100</option>
+								<option value="500">500</option>
+							</select>
+							<label>条</label>
+						</div>
+					</div>
+				</div>
+				<!--数据表-->
+				<table id="simple-table" class="table table-bordered table-hover dataTable">
+					<thead>
+					<tr>
+						<th class="center col-sm-1 col-md-1 col-lg-1">客群ID</th>
+						<th class="center col-sm-1 col-md-1 col-lg-1">客群名称</th>
+						<!--<th class="center col-sm-1 col-md-1 col-lg-1">套餐ID</th>-->
+						<!--<th class="center col-sm-1 col-md-1 col-lg-1">权益包集合描述</th>-->
+						<th class="center col-sm-1 col-md-1 col-lg-1">可选个数</th>
+						<th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+					</tr>
+					</thead>
+					<tbody>
+					<template v-if="viewData.length>0">
+						<tr v-for="(item,index) in viewData" :key="index">
+							<td class="center" v-text='item.userGroup '></td>
+							<td class="center" v-text='item.userGroupName'></td>
+							<!--<td class="center"></td>-->
+							<!--<td class="center" v-text='item.packageDesc'></td>-->
+							<td class="center" v-text="item.canSelectCount"></td>
+							<td class="center">
+								<% if(canShow||authorityList.includes('U')) { %>
+								<a href="javascript:;" @click="showUpdate(item)">修改</a>
+								<% } %>
+								<% if(canShow||authorityList.includes('D')) { %>
+								<a href="javascript:;" @click="showDelete(item)" class="red">删除</a>
+								<% } %>
+							</td>
+						</tr>
+					</template>
+					<template v-else>
+						<tr>
+							<td class="center" v-text="'没有数据'" colspan="10"></td>
+						</tr>
+					</template>
+					</tbody>
+				</table>
+
+				<!--底部页码-->
+				<div v-if="viewData.length>0"  class="row"
+					 style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+					<div class="col-xs-2">
+						<div class="dataTables_info" v-text="'共 '+middleData.length+'页'"></div>
+					</div>
+					<div class="col-xs-10">
+						<div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+							<ul class="pagination">
+								<li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+									@click="prev">
+									<a href="javascript:;" v-text="'上一页'"></a>
+								</li>
+								<li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+									v-for="value in middleData.length" @click="changeIndex(value)">
+									<a href="javascript:;" v-text="value"></a>
+								</li>
+								<li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+									@click="next">
+									<a href="javascript:;" v-text="'下一页'"></a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+			</div><!-- /.page-content -->
+		</div>
+	</div><!-- /.main-content -->
+	<% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/bootstrap-multiselect.min.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/awardMgmt/highNetWorthEquityMgmt/interestRelationConfig.js"></script>
+</body>
+</html>

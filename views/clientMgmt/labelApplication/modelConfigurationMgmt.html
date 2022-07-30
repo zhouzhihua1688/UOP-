@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-multiselect.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--提示信息弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!--新增弹窗-->
+                <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:1000px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">新增配置</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <div style="text-align:center">
+                                        <div class="form-group" style="float:left">
+                                            <label class="control-label" style="margin-left:12px;">适用场景:</label>
+
+                                            <select name="scenario" class="" style="width:175px;" v-model="scenario"
+                                                    style="width: 150px;">
+                                                <option value="">请选择</option>
+                                                <option :value="item.pmco" v-for="(item,index) in scenarioList">
+                                                    {{item.pmco}}-{{item.pmnm}}
+                                                </option>
+                                            </select>
+                                            <span style="color:red">*必填</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label"
+                                                   style="width: 150px;text-align: right">模型名称:</label>
+                                            <input type="text" style="width: 175px;" v-model="mdlNm"/>
+                                            <span style="color:red">*必填</span>
+                                        </div>
+                                        <!--<div class="form-group" style="float:left">-->
+                                            <!--<label class="control-label" style="margin-left:12px">适用产品:</label>-->
+                                            <!--<select name="" style="width:150px;">-->
+                                                <!--<option value="">请选择</option>-->
+                                                <!--<option value=""></option>-->
+                                            <!--</select>-->
+                                        <!--</div>-->
+                                        <!--<div class="form-group" style="float:left">-->
+                                            <!--<label class="control-label" style="margin-left:12px">适用客户:</label>-->
+                                            <!--<select name="" style="width:150px;">-->
+                                                <!--<option value="">请选择</option>-->
+                                                <!--<option value=""></option>-->
+                                            <!--</select>-->
+                                        <!--</div>-->
+                                        <div class="form-group" style="float:left">
+                                            <label class="control-label" style="text-align: right;vertical-align: top;margin-left:10px">模型描述:</label>
+                                            <textarea name="" id="mdlDesc" cols="20" rows="10"
+                                                      style="height: 50px; width: 300px;" v-model="mdlDesc"></textarea>
+                                        </div>
+                                        <div style="clear: both;border-bottom:1px solid #eee;margin-bottom:20px"></div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float:left;">
+                                                <label class="control-label" style="margin-left:12px">产品运作方式:</label>
+
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue" @change="choosePrdAttr(prdAttrValue)">-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in modelList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+
+                                                <select id="prdAttrValueList" multiple class="chosen-select"
+                                                        data-placeholder="请选择" style="width:150px;">
+                                                    <option value=""></option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:82px" id="qixian">期限:</label>
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue1" class="qixian">-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in termList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+                                                <span>
+                                                    <select id="qixianList" multiple class="chosen-select"
+                                                            data-placeholder="请选择" style="width:150px;">
+                                                        <option value=""></option>
+                                                    </select>
+                                                </span>
+                                                <span style="color:red" id="qixianRed">*必填</span>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:42px">风险等级:</label>
+
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue2">-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in gradeList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+
+                                                <select id="fengxianList" multiple class="chosen-select"
+                                                        data-placeholder="请选择" style="width:150px;">
+                                                    <option value=""></option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div  style="clear: both;">
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">注册距今天数:</label>
+                                                <select name="" style="width:150px;" v-model="compare" @change="chooseList(compare,1)">
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">近半年登陆次数:</label>
+                                                <select name="" style="width:150px;" v-model="compare2" @change="chooseList2(compare2,2)">
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">近一年登陆次数:</label>
+                                                <select name="" style="width:150px;" v-model="compare3" @change="chooseList3(compare3,3)">
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float:left;width:250px;border-right:1px solid #eee">
+                                                <div v-if="compare!=''&&compare!='any'">
+                                                    <label class="control-label" :one="one">{{one}}</label>
+                                                    <input type="text" style="width:80px;" v-model="compareValueStr">
+                                                    <span v-if="compare=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare=='btw'" v-model="compareValueEnd">
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group" style="float:left;width:260px;border-right:1px solid #eee;margin-left:50px">
+                                                <div v-if="compare2!=''&&compare2!='any'">
+                                                    <label class="control-label" :one2="one2">{{one2}}</label>
+                                                    <input type="text" style="width:80px;" v-model="compareValueStr1">
+                                                    <span v-if="compare2=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare2=='btw'" v-model="compareValueEnd1">
+                                                </div>
+                                            </div>
+                                            <div class="form-group" style="float:left;margin-left:118px">
+                                                <div v-if="compare3!=''&&compare3!='any'">
+                                                    <label class="control-label" :one3="one3">{{one3}}</label>
+                                                    <input type="text" style="width:80px;" v-model="compareValueStr2">
+                                                    <span v-if="compare3=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare3=='btw'" v-model="compareValueEnd2">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float: left;">
+                                                <label class="control-label" style="margin-left:12px">是否高净值客户:</label>
+                                                <select name="" style="width:150px;" v-model="highCustomer">
+                                                    <option value="">请选择</option>
+                                                    <option value="Y">Y-是</option>
+                                                    <option value="N">N-否</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;border-bottom:1px solid #eee;margin-bottom:20px"></div>
+                                        <!--<div class="form-group">-->
+                                        <!--<label class="control-label" style="margin-left:-28px">运作结束可选操作:</label>-->
+                                        <!--<label class="pos-rel" style="text-align: center"><input type="checkbox" value="01">赎回</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="02">解散</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="03">转托管</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="04">到期转换</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="05">续期</label>-->
+                                        <!--</div>-->
+                                        <div style="height:200px;overflow-y:auto;">
+                                            <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                                                   style="margin-bottom: 0;">
+                                                <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1">标签类别(ID)</th>
+                                                    <th class="center col-sm-1">标签名称</th>
+                                                    <th class="center col-sm-1">标签权重</th>
+                                                    <!--<th class="center col-sm-1">操作</th>-->
+                                                    <th class="center col-sm-1">
+                                                        <input type="button" class="btn btn-sm btn-primary" value="添加" @click="addSubList()">
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="lableList.length>0">
+                                                    <tr v-for="(item,index) in lableList" :key="index">
+                                                        <td class="center">
+                                                            <!--<select name="" style="width:150px;" v-model="item.tagTp">-->
+                                                                <!--<option value="">请选择</option>-->
+                                                                <!--<option value="001">类别1</option>-->
+                                                                <!--<option value="002">类别2</option>-->
+                                                            <!--</select>-->
+                                                            <select name="" style="width:150px;" v-model="item.tagTp" @change="chooseTagTp(item.tagTp,index)" class="chooseTagTp">
+                                                                <option value="">请选择</option>
+                                                                <option :value="item.pmco" v-for="(item,index) in labelCategoryList">
+                                                                    {{item.pmco}}-{{item.pmnm}}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td class="center">
+                                                            <select name="" style="width:150px;" v-model="item.tagId" @change="chooseTagId(item.tagId,index)" class="chooseTagId">
+                                                                <option value="">请选择</option>
+                                                                <option :value="item.tagId" v-for="(item,index) in labelNameList">
+                                                                    {{item.tagId}}-{{item.tagNm}}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.tagWeight">
+                                                        </td>
+                                                        <td class="center">
+                                                            <a href="javascript:;" @click.prevent="delList(index)">删除</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <!--  <template v-else>
+                                                     <tr>
+                                                         <td class="center" v-text="'没有数据'" colspan="8"></td>
+                                                     </tr>
+                                                 </template> -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div style="height:200px;overflow-y:auto;">
+                                            <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                                                   style="margin-bottom: 0;">
+                                                <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1">下限</th>
+                                                    <th class="center col-sm-1">上限</th>
+                                                    <th class="center col-sm-1">推荐优先级</th>
+                                                    <!--<th class="center col-sm-1">操作</th>-->
+                                                    <th class="center col-sm-1">
+                                                        <input type="button" class="btn btn-sm btn-primary" value="添加" @click="addPriority()">
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="priorityList.length>0">
+                                                    <tr v-for="(item,index) in priorityList" :key="index">
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomScoreStr">
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomScoreEnd">
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomLvl">
+                                                        </td>
+                                                        <td class="center">
+                                                            <a href="javascript:;"  @click.prevent="delPriority(index)">删除</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <!--  <template v-else>
+                                                     <tr>
+                                                         <td class="center" v-text="'没有数据'" colspan="8"></td>
+                                                     </tr>
+                                                 </template> -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="saveParam()">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--查看-->
+                <div class="modal" id="details" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:1000px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">查看配置</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <div style="text-align:center">
+                                        <div class="form-group" style="float:left">
+                                            <label class="control-label" style="margin-left:12px;">适用场景:</label>
+                                            <select name="scenario" class="" style="width:175px;background: #eee" v-model="scenario"
+                                                    style="width: 150px;" disabled>
+                                                <option value="">请选择</option>
+                                                <option :value="item.pmco" v-for="(item,index) in scenarioList">
+                                                    {{item.pmco}}-{{item.pmnm}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label"
+                                                   style="width: 150px;text-align: right">模型名称:</label>
+                                            <input type="text" style="width: 175px;" disabled v-model="mdlNm"/>
+                                        </div>
+                                        <!--<div class="form-group" style="float:left">-->
+                                        <!--<label class="control-label" style="margin-left:12px">适用产品:</label>-->
+                                        <!--<select name="" style="width:150px;">-->
+                                        <!--<option value="">请选择</option>-->
+                                        <!--<option value=""></option>-->
+                                        <!--</select>-->
+                                        <!--</div>-->
+                                        <!--<div class="form-group" style="float:left">-->
+                                        <!--<label class="control-label" style="margin-left:12px">适用客户:</label>-->
+                                        <!--<select name="" style="width:150px;">-->
+                                        <!--<option value="">请选择</option>-->
+                                        <!--<option value=""></option>-->
+                                        <!--</select>-->
+                                        <!--</div>-->
+                                        <div class="form-group" style="float:left">
+                                            <label class="control-label" style="text-align: right;vertical-align: top;margin-left:10px;">模型描述:</label>
+                                            <textarea name="" id="mdlDesc" cols="20" rows="10"
+                                                      style="height: 50px; width: 300px;background: #eee" disabled v-model="mdlDesc"></textarea>
+                                        </div>
+                                        <div style="clear: both;border-bottom:1px solid #eee;margin-bottom:20px"></div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float:left;">
+                                                <label class="control-label" style="margin-left:12px">产品运作方式:</label>
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue" disabled>-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in modelList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+                                                <select id="prdAttrValueList1" multiple class="chosen-select"
+                                                        data-placeholder="请选择" style="width:150px;">
+                                                    <option value=""></option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:82px">期限:</label>
+
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue1" disabled>-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in termList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+
+                                                <select id="qixianList1" multiple class="chosen-select"
+                                                        data-placeholder="请选择" style="width:150px;">
+                                                    <option value=""></option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:52px">风险等级:</label>
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue2" disabled>-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in gradeList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+                                                <select id="fengxianList1" multiple class="chosen-select"
+                                                        data-placeholder="请选择" style="width:150px;">
+                                                    <option value=""></option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div  style="clear: both;">
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">注册距今天数:</label>
+                                                <select name="" style="width:150px;background: #eee" v-model="compare" @change="chooseList(compare,1)" disabled>
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">近半年登陆次数:</label>
+                                                <select name="" style="width:150px;background: #eee" v-model="compare2" @change="chooseList2(compare2,2)" disabled>
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">近一年登陆次数:</label>
+                                                <select name="" style="width:150px;background: #eee" v-model="compare3" @change="chooseList3(compare3,3)" disabled>
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float:left;width:250px;border-right:1px solid #eee">
+                                                <div v-if="compare!=''&&compare!='any'">
+                                                    <label class="control-label" :one="one">{{one}}</label>
+                                                    <input type="text" style="width:80px;background: #eee" v-model="compareValueStr" disabled>
+                                                    <span v-if="compare=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare=='btw'" v-model="compareValueEnd" disabled>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group" style="float:left;width:260px;border-right:1px solid #eee">
+                                                <div v-if="compare2!=''&&compare2!='any'">
+                                                    <label class="control-label" :one2="one2">{{one2}}</label>
+                                                    <input type="text" style="width:80px;background: #eee" v-model="compareValueStr1" disabled>
+                                                    <span v-if="compare2=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare2=='btw'" v-model="compareValueEnd1" disabled>
+                                                </div>
+                                            </div>
+                                            <div class="form-group" style="float:left;margin-left:118px">
+                                                <div v-if="compare3!=''&&compare3!='any'">
+                                                    <label class="control-label" :one3="one3">{{one3}}</label>
+                                                    <input type="text" style="width:80px;background: #eee" v-model="compareValueStr2" disabled>
+                                                    <span v-if="compare3=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare3=='btw'" v-model="compareValueEnd2" disabled>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float: left;">
+                                                <label class="control-label" style="margin-left:12px">是否高净值客户:</label>
+                                                <select name="" style="width:150px;background: #eee" v-model="highCustomer">
+                                                    <option value="">请选择</option>
+                                                    <option value="Y">Y-是</option>
+                                                    <option value="N">N-否</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;border-bottom:1px solid #eee;margin-bottom:20px"></div>
+                                        <!--<div class="form-group">-->
+                                        <!--<label class="control-label" style="margin-left:-28px">运作结束可选操作:</label>-->
+                                        <!--<label class="pos-rel" style="text-align: center"><input type="checkbox" value="01">赎回</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="02">解散</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="03">转托管</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="04">到期转换</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="05">续期</label>-->
+                                        <!--</div>-->
+                                        <div style="height:200px;overflow-y:auto;">
+                                            <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                                                   style="margin-bottom: 0;">
+                                                <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1">标签类别(ID)</th>
+                                                    <th class="center col-sm-1">标签名称</th>
+                                                    <th class="center col-sm-1">标签权重</th>
+                                                    <!--<th class="center col-sm-1">操作</th>-->
+                                                    <th class="center col-sm-1">
+                                                        <input type="button" class="btn btn-sm btn-primary" value="添加" @click="addSubList()">
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="lableList.length>0">
+                                                    <tr v-for="(item,index) in lableList" :key="index">
+                                                        <td class="center">
+                                                            <select name="" style="width:150px;background: #eee" v-model="item.tagTp" disabled>
+                                                                <option value="">请选择</option>
+                                                                <option :value="item.pmco" v-for="(item,index) in labelCategoryList">
+                                                                    {{item.pmco}}-{{item.pmnm}}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td class="center">
+                                                            <select name="" style="width:150px;background: #eee" v-model="item.tagId" disabled>
+                                                                <!--<option value="">请选择</option>-->
+                                                                <!--<option value="1">ID1</option>-->
+                                                                <!--<option value="2">ID2</option>-->
+                                                                <option value="">请选择</option>
+                                                                <option :value="item.tagId" v-for="(item,index) in labelNameList">
+                                                                    {{item.tagId}}-{{item.tagNm}}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.tagWeight" disabled>
+                                                        </td>
+                                                        <td class="center">
+                                                            <a href="javascript:;" @click.prevent="delList(index)">删除</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <!--  <template v-else>
+                                                     <tr>
+                                                         <td class="center" v-text="'没有数据'" colspan="8"></td>
+                                                     </tr>
+                                                 </template> -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div style="height:200px;overflow-y:auto;">
+                                            <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                                                   style="margin-bottom: 0;">
+                                                <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1">下限</th>
+                                                    <th class="center col-sm-1">上限</th>
+                                                    <th class="center col-sm-1">推荐优先级</th>
+                                                    <!--<th class="center col-sm-1">操作</th>-->
+                                                    <th class="center col-sm-1">
+                                                        <input type="button" class="btn btn-sm btn-primary" value="添加" @click="addPriority()">
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="priorityList.length>0">
+                                                    <tr v-for="(item,index) in priorityList" :key="index">
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomScoreStr" disabled>
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomScoreEnd" disabled>
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomLvl" disabled>
+                                                        </td>
+                                                        <td class="center">
+                                                            <a href="javascript:;" @click.prevent="delPriority(index)">删除</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <!--  <template v-else>
+                                                     <tr>
+                                                         <td class="center" v-text="'没有数据'" colspan="8"></td>
+                                                     </tr>
+                                                 </template> -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <!--<button class="btn btn-sm btn-primary" @click="saveParam()">确定</button>-->
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--修改弹窗-->
+                <div class="modal" id="revise" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:1000px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">修改配置</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <div style="text-align:center">
+                                        <div class="form-group" style="float:left">
+                                            <label class="control-label" style="margin-left:12px;">适用场景:</label>
+                                            <select name="scenario" class="" style="width:175px;" v-model="scenario"
+                                                    style="width: 150px;">
+                                                <option value="">请选择</option>
+                                                <option :value="item.pmco" v-for="(item,index) in scenarioList">
+                                                    {{item.pmco}}-{{item.pmnm}}
+                                                </option>
+                                            </select>
+                                            <span style="color:red">*必填</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label"
+                                                   style="width: 150px;text-align: right">模型名称:</label>
+                                            <input type="text" style="width: 175px;" v-model="mdlNm" disabled/>
+                                            <span style="color:red">*必填</span>
+                                        </div>
+                                        <!--<div class="form-group" style="float:left">-->
+                                        <!--<label class="control-label" style="margin-left:12px">适用产品:</label>-->
+                                        <!--<select name="" style="width:150px;">-->
+                                        <!--<option value="">请选择</option>-->
+                                        <!--<option value=""></option>-->
+                                        <!--</select>-->
+                                        <!--</div>-->
+                                        <!--<div class="form-group" style="float:left">-->
+                                        <!--<label class="control-label" style="margin-left:12px">适用客户:</label>-->
+                                        <!--<select name="" style="width:150px;">-->
+                                        <!--<option value="">请选择</option>-->
+                                        <!--<option value=""></option>-->
+                                        <!--</select>-->
+                                        <!--</div>-->
+                                        <div class="form-group" style="float:left">
+                                            <label class="control-label" style="text-align: right;vertical-align: top;margin-left:10px">模型描述:</label>
+                                            <textarea name="" id="mdlDesc" cols="20" rows="10"
+                                                      style="height: 50px; width: 300px;"  v-model="mdlDesc"></textarea>
+                                        </div>
+                                        <div style="clear: both;border-bottom:1px solid #eee;margin-bottom:20px"></div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float:left;">
+                                                <label class="control-label" style="margin-left:12px">产品运作方式:</label>
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue" @change="choosePrdAttr(prdAttrValue)">-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in modelList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+                                                <select id="prdAttrValueList2" multiple class="chosen-select"
+                                                        data-placeholder="请选择" style="width:150px;">
+                                                    <option value=""></option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:82px">期限:</label>
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue1" class="qixian">-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in termList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+                                                <select id="qixianList2" multiple class="chosen-select"
+                                                        data-placeholder="请选择" style="width:150px;">
+                                                    <option value=""></option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:52px">风险等级:</label>
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue2" >-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in gradeList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+                                                <select id="fengxianList2" multiple class="chosen-select"
+                                                        data-placeholder="请选择" style="width:150px;">
+                                                    <option value=""></option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div  style="clear: both;">
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">注册距今天数:</label>
+                                                <select name="" style="width:150px;" v-model="compare" @change="chooseList(compare,1)" >
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">近半年登陆次数:</label>
+                                                <select name="" style="width:150px;" v-model="compare2" @change="chooseList2(compare2,2)" >
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">近一年登陆次数:</label>
+                                                <select name="" style="width:150px;" v-model="compare3" @change="chooseList3(compare3,3)" >
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float:left;width:250px;border-right:1px solid #eee">
+                                                <div v-if="compare!=''&&compare!='any'">
+                                                    <label class="control-label" :one="one">{{one}}</label>
+                                                    <input type="text" style="width:80px;" v-model="compareValueStr" >
+                                                    <span v-if="compare=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare=='btw'" v-model="compareValueEnd" >
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group" style="float:left;width:260px;border-right:1px solid #eee">
+                                                <div v-if="compare2!=''&&compare2!='any'">
+                                                    <label class="control-label" :one2="one2">{{one2}}</label>
+                                                    <input type="text" style="width:80px;" v-model="compareValueStr1" >
+                                                    <span v-if="compare2=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare2=='btw'" v-model="compareValueEnd1" >
+                                                </div>
+                                            </div>
+                                            <div class="form-group" style="float:left;margin-left:118px">
+                                                <div v-if="compare3!=''&&compare3!='any'">
+                                                    <label class="control-label" :one3="one3">{{one3}}</label>
+                                                    <input type="text" style="width:80px;" v-model="compareValueStr2" >
+                                                    <span v-if="compare3=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare3=='btw'" v-model="compareValueEnd2" >
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float: left;">
+                                                <label class="control-label" style="margin-left:12px">是否高净值客户:</label>
+                                                <select name="" style="width:150px;" v-model="highCustomer">
+                                                    <option value="">请选择</option>
+                                                    <option value="Y">Y-是</option>
+                                                    <option value="N">N-否</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;border-bottom:1px solid #eee;margin-bottom:20px"></div>
+                                        <!--<div class="form-group">-->
+                                        <!--<label class="control-label" style="margin-left:-28px">运作结束可选操作:</label>-->
+                                        <!--<label class="pos-rel" style="text-align: center"><input type="checkbox" value="01">赎回</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="02">解散</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="03">转托管</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="04">到期转换</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="05">续期</label>-->
+                                        <!--</div>-->
+                                        <div style="height:200px;overflow-y:auto;">
+                                            <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                                                   style="margin-bottom: 0;">
+                                                <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1">标签类别(ID)</th>
+                                                    <th class="center col-sm-1">标签名称</th>
+                                                    <th class="center col-sm-1">标签权重</th>
+                                                    <!--<th class="center col-sm-1">操作</th>-->
+                                                    <th class="center col-sm-1">
+                                                        <input type="button" class="btn btn-sm btn-primary" value="添加" @click="addSubList()">
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="lableList.length>0">
+                                                    <tr v-for="(item,index) in lableList" :key="index">
+                                                        <td class="center">
+                                                            <select name="" style="width:150px;" v-model="item.tagTp" @change="chooseTagTp1(item.tagTp,index)" class="chooseTagTp1">
+                                                                <option value="">请选择</option>
+                                                                <option :value="item.pmco" v-for="(item,index) in labelCategoryList">
+                                                                    {{item.pmco}}-{{item.pmnm}}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td class="center">
+                                                            <select name="" style="width:150px;" v-model="item.tagId" @change="chooseTagId1(item.tagId,index)" class="chooseTagId1">
+                                                                <option value="">请选择</option>
+                                                                <option :value="item.tagId" v-for="(item,index) in labelNameList">
+                                                                    {{item.tagId}}-{{item.tagNm}}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.tagWeight" >
+                                                        </td>
+                                                        <td class="center">
+                                                            <a href="javascript:;" @click.prevent="delList(index)">删除</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <!--  <template v-else>
+                                                     <tr>
+                                                         <td class="center" v-text="'没有数据'" colspan="8"></td>
+                                                     </tr>
+                                                 </template> -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div style="height:200px;overflow-y:auto;">
+                                            <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                                                   style="margin-bottom: 0;">
+                                                <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1">下限</th>
+                                                    <th class="center col-sm-1">上限</th>
+                                                    <th class="center col-sm-1">推荐优先级</th>
+                                                    <!--<th class="center col-sm-1">操作</th>-->
+                                                    <th class="center col-sm-1">
+                                                        <input type="button" class="btn btn-sm btn-primary" value="添加" @click="addPriority()">
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="priorityList.length>0">
+                                                    <tr v-for="(item,index) in priorityList" :key="index">
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomScoreStr" >
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomScoreEnd" >
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomLvl" >
+                                                        </td>
+                                                        <td class="center">
+                                                            <a href="javascript:;" @click.prevent="delPriority(index)">删除</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <!--  <template v-else>
+                                                     <tr>
+                                                         <td class="center" v-text="'没有数据'" colspan="8"></td>
+                                                     </tr>
+                                                 </template> -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="update()">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--复制弹窗-->
+                <div class="modal" id="copy" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:1000px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">复制配置</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <div style="text-align:center">
+                                        <div class="form-group" style="float:left">
+                                            <label class="control-label" style="margin-left:12px;">适用场景:</label>
+                                            <select name="scenario" class="" style="width:175px;" v-model="scenario"
+                                                    style="width: 150px;">
+                                                <option value="">请选择</option>
+                                                <option :value="item.pmco" v-for="(item,index) in scenarioList">
+                                                    {{item.pmco}}-{{item.pmnm}}
+                                                </option>
+                                            </select>
+                                            <span style="color:red">*必填</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label"
+                                                   style="width: 150px;text-align: right">模型名称:</label>
+                                            <input type="text" style="width: 175px;" v-model="mdlNm"/>
+                                            <span style="color:red">*必填</span>
+                                        </div>
+                                        <!--<div class="form-group" style="float:left">-->
+                                        <!--<label class="control-label" style="margin-left:12px">适用产品:</label>-->
+                                        <!--<select name="" style="width:150px;">-->
+                                        <!--<option value="">请选择</option>-->
+                                        <!--<option value=""></option>-->
+                                        <!--</select>-->
+                                        <!--</div>-->
+                                        <!--<div class="form-group" style="float:left">-->
+                                        <!--<label class="control-label" style="margin-left:12px">适用客户:</label>-->
+                                        <!--<select name="" style="width:150px;">-->
+                                        <!--<option value="">请选择</option>-->
+                                        <!--<option value=""></option>-->
+                                        <!--</select>-->
+                                        <!--</div>-->
+                                        <div class="form-group" style="float:left">
+                                            <label class="control-label" style="text-align: right;vertical-align: top;margin-left:10px">模型描述:</label>
+                                            <textarea name="" id="mdlDesc" cols="20" rows="10"
+                                                      style="height: 50px; width: 300px;"  v-model="mdlDesc"></textarea>
+                                        </div>
+                                        <div style="clear: both;border-bottom:1px solid #eee;margin-bottom:20px"></div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float:left;">
+                                                <label class="control-label" style="margin-left:12px">产品运作方式:</label>
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue" @change="choosePrdAttr(prdAttrValue)">-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in modelList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+                                                <select id="prdAttrValueList3" multiple class="chosen-select"
+                                                        data-placeholder="请选择" style="width:150px;">
+                                                    <option value=""></option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:82px">期限:</label>
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue1" class="qixian">-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in termList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+                                                <select id="qixianList3" multiple class="chosen-select"
+                                                        data-placeholder="请选择" style="width:150px;">
+                                                    <option value=""></option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:52px">风险等级:</label>
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue2" >-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in gradeList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+                                                <select id="fengxianList3" multiple class="chosen-select"
+                                                        data-placeholder="请选择" style="width:150px;">
+                                                    <option value=""></option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div  style="clear: both;">
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">注册距今天数:</label>
+                                                <select name="" style="width:150px;" v-model="compare" @change="chooseList(compare,1)" >
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">近半年登陆次数:</label>
+                                                <select name="" style="width:150px;" v-model="compare2" @change="chooseList2(compare2,2)" >
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">近一年登陆次数:</label>
+                                                <select name="" style="width:150px;" v-model="compare3" @change="chooseList3(compare3,3)" >
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float:left;width:250px;border-right:1px solid #eee">
+                                                <div v-if="compare!=''&&compare!='any'">
+                                                    <label class="control-label" :one="one">{{one}}</label>
+                                                    <input type="text" style="width:80px;" v-model="compareValueStr" >
+                                                    <span v-if="compare=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare=='btw'" v-model="compareValueEnd" >
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group" style="float:left;width:260px;border-right:1px solid #eee">
+                                                <div v-if="compare2!=''&&compare2!='any'">
+                                                    <label class="control-label" :one2="one2">{{one2}}</label>
+                                                    <input type="text" style="width:80px;" v-model="compareValueStr1" >
+                                                    <span v-if="compare2=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare2=='btw'" v-model="compareValueEnd1" >
+                                                </div>
+                                            </div>
+                                            <div class="form-group" style="float:left;margin-left:118px">
+                                                <div v-if="compare3!=''&&compare3!='any'">
+                                                    <label class="control-label" :one3="one3">{{one3}}</label>
+                                                    <input type="text" style="width:80px;" v-model="compareValueStr2" >
+                                                    <span v-if="compare3=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare3=='btw'" v-model="compareValueEnd2" >
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float: left;">
+                                                <label class="control-label" style="margin-left:12px">是否高净值客户:</label>
+                                                <select name="" style="width:150px;" v-model="highCustomer">
+                                                    <option value="">请选择</option>
+                                                    <option value="Y">Y-是</option>
+                                                    <option value="N">N-否</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;border-bottom:1px solid #eee;margin-bottom:20px"></div>
+                                        <!--<div class="form-group">-->
+                                        <!--<label class="control-label" style="margin-left:-28px">运作结束可选操作:</label>-->
+                                        <!--<label class="pos-rel" style="text-align: center"><input type="checkbox" value="01">赎回</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="02">解散</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="03">转托管</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="04">到期转换</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="05">续期</label>-->
+                                        <!--</div>-->
+                                        <div style="height:200px;overflow-y:auto;">
+                                            <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                                                   style="margin-bottom: 0;">
+                                                <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1">标签类别(ID)</th>
+                                                    <th class="center col-sm-1">标签名称</th>
+                                                    <th class="center col-sm-1">标签权重</th>
+                                                    <!--<th class="center col-sm-1">操作</th>-->
+                                                    <th class="center col-sm-1">
+                                                        <input type="button" class="btn btn-sm btn-primary" value="添加" @click="addSubList()">
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="lableList.length>0">
+                                                    <tr v-for="(item,index) in lableList" :key="index">
+                                                        <td class="center">
+                                                            <select name="" style="width:150px;" v-model="item.tagTp" @change="chooseTagTp2(item.tagTp,index)" class="chooseTagTp2">
+                                                                <option value="">请选择</option>
+                                                                <option :value="item.pmco" v-for="(item,index) in labelCategoryList">
+                                                                    {{item.pmco}}-{{item.pmnm}}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td class="center">
+                                                            <select name="" style="width:150px;" v-model="item.tagId" @change="chooseTagId2(item.tagId,index)" class="chooseTagId2">
+                                                                <option value="">请选择</option>
+                                                                <option :value="item.tagId" v-for="(item,index) in labelNameList">
+                                                                    {{item.tagId}}-{{item.tagNm}}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.tagWeight" >
+                                                        </td>
+                                                        <td class="center">
+                                                            <a href="javascript:;" @click.prevent="delList(index)">删除</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <!--  <template v-else>
+                                                     <tr>
+                                                         <td class="center" v-text="'没有数据'" colspan="8"></td>
+                                                     </tr>
+                                                 </template> -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div style="height:200px;overflow-y:auto;">
+                                            <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                                                   style="margin-bottom: 0;">
+                                                <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1">下限</th>
+                                                    <th class="center col-sm-1">上限</th>
+                                                    <th class="center col-sm-1">推荐优先级</th>
+                                                    <!--<th class="center col-sm-1">操作</th>-->
+                                                    <th class="center col-sm-1">
+                                                        <input type="button" class="btn btn-sm btn-primary" value="添加" @click="addPriority()">
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="priorityList.length>0">
+                                                    <tr v-for="(item,index) in priorityList" :key="index">
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomScoreStr" >
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomScoreEnd" >
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomLvl" >
+                                                        </td>
+                                                        <td class="center">
+                                                            <a href="javascript:;" @click.prevent="delPriority(index)">删除</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <!--  <template v-else>
+                                                     <tr>
+                                                         <td class="center" v-text="'没有数据'" colspan="8"></td>
+                                                     </tr>
+                                                 </template> -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="saveCopy()">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--版本记录-->
+                <div class="modal" id="version" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:850px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">版本记录</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <div style="text-align:center">
+                                        <div style="height:400px;overflow-y:auto;">
+                                            <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                                                   style="margin-bottom: 0;">
+                                                <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1">模型ID</th>
+                                                    <th class="center col-sm-1">模型名称</th>
+                                                    <th class="center col-sm-1">版本号</th>
+                                                    <th class="center col-sm-1">状态</th>
+                                                    <th class="center col-sm-1">创建日期</th>
+                                                    <th class="center col-sm-1">最后修改日期</th>
+                                                    <th class="center col-sm-1">操作</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="versionList.length>0">
+                                                    <tr v-for="(item,index) in versionList" :key="index">
+                                                        <td class="center" v-text="item.mdlId"></td>
+                                                        <td class="center" v-text="item.mdlNm"></td>
+                                                        <td class="center" v-text="item.mdlVer"></td>
+                                                        <td class="center">{{item.mdlSt | mdlSt}}</td>
+                                                        <td class="center" v-text="item.createTime.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/, '$1/$2/$3 $4:$5:$6')"></td>
+                                                        <td class="center" v-text="item.updateTime.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/, '$1/$2/$3 $4:$5:$6')"></td>
+                                                        <td class="center">
+                                                            <a href="javascript:;" @click="showLook(item)">查看</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <template v-else>
+                                                     <tr>
+                                                         <td class="center" v-text="'暂无数据'" colspan="8"></td>
+                                                     </tr>
+                                                 </template>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--<p class="text-center" style="clear: both">-->
+                                <!--<button class="btn btn-sm btn-primary" @click="saveParam()">确定</button>-->
+                                <!--<button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>-->
+                            <!--</p>-->
+                        </div>
+                    </div>
+                </div>
+                <!--版本记录里查看回退-->
+                <div class="modal" id="backVersion" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:1000px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">查看回退</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <div style="text-align:center">
+                                        <div class="form-group" style="float:left">
+                                            <label class="control-label" style="margin-left:12px;">适用场景:</label>
+                                            <select name="scenario" class="" style="width:175px;" v-model="scenario"
+                                                    style="width: 150px;">
+                                                <option value="">请选择</option>
+                                                <option :value="item.pmco" v-for="(item,index) in scenarioList">
+                                                    {{item.pmco}}-{{item.pmnm}}
+                                                </option>
+                                            </select>
+                                            <span style="color:red">*必填</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label"
+                                                   style="width: 150px;text-align: right">模型名称:</label>
+                                            <input type="text" style="width: 175px;" v-model="mdlNm" disabled/>
+                                            <span style="color:red">*必填</span>
+                                        </div>
+                                        <!--<div class="form-group" style="float:left">-->
+                                        <!--<label class="control-label" style="margin-left:12px">适用产品:</label>-->
+                                        <!--<select name="" style="width:150px;">-->
+                                        <!--<option value="">请选择</option>-->
+                                        <!--<option value=""></option>-->
+                                        <!--</select>-->
+                                        <!--</div>-->
+                                        <!--<div class="form-group" style="float:left">-->
+                                        <!--<label class="control-label" style="margin-left:12px">适用客户:</label>-->
+                                        <!--<select name="" style="width:150px;">-->
+                                        <!--<option value="">请选择</option>-->
+                                        <!--<option value=""></option>-->
+                                        <!--</select>-->
+                                        <!--</div>-->
+                                        <div class="form-group" style="float:left">
+                                            <label class="control-label" style="text-align: right;vertical-align: top;margin-left:10px">模型描述:</label>
+                                            <textarea name="" id="mdlDesc" cols="20" rows="10"
+                                                      style="height: 50px; width: 300px;"  v-model="mdlDesc"></textarea>
+                                        </div>
+                                        <div style="clear: both;border-bottom:1px solid #eee;margin-bottom:20px"></div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float:left;">
+                                                <label class="control-label" style="margin-left:12px">产品运作方式:</label>
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue" @change="choosePrdAttr(prdAttrValue)">-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in modelList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+                                                <select id="prdAttrValueList4" multiple class="chosen-select"
+                                                        data-placeholder="请选择" style="width:150px;">
+                                                    <option value=""></option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:82px">期限:</label>
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue1" class="qixian">-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in termList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+                                                <select id="qixianList4" multiple class="chosen-select"
+                                                        data-placeholder="请选择" style="width:150px;">
+                                                    <option value=""></option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:52px">风险等级:</label>
+                                                <!--<select name="" style="width:150px;" v-model="prdAttrValue2" >-->
+                                                    <!--<option value="">请选择</option>-->
+                                                    <!--<option :value="item.pmco" v-for="(item,index) in gradeList">-->
+                                                        <!--{{item.pmco}}-{{item.pmnm}}-->
+                                                    <!--</option>-->
+                                                <!--</select>-->
+                                                <select id="fengxianList4" multiple class="chosen-select"
+                                                        data-placeholder="请选择" style="width:150px;">
+                                                    <option value=""></option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div  style="clear: both;">
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">注册距今天数:</label>
+                                                <select name="" style="width:150px;" v-model="compare" @change="chooseList(compare,1)" >
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">近半年登陆次数:</label>
+                                                <select name="" style="width:150px;" v-model="compare2" @change="chooseList2(compare2,2)" >
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style="margin-left:12px">近一年登陆次数:</label>
+                                                <select name="" style="width:150px;" v-model="compare3" @change="chooseList3(compare3,3)" >
+                                                    <option value="">请选择</option>
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value=">=">大于等于</option>
+                                                    <option value="<=">小于等于</option>
+                                                    <option value="btw">介于</option>
+                                                    <option value="any">不限</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float:left;width:250px;border-right:1px solid #eee">
+                                                <div v-if="compare!=''&&compare!='any'">
+                                                    <label class="control-label" :one="one">{{one}}</label>
+                                                    <input type="text" style="width:80px;" v-model="compareValueStr" >
+                                                    <span v-if="compare=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare=='btw'" v-model="compareValueEnd" >
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group" style="float:left;width:260px;border-right:1px solid #eee">
+                                                <div v-if="compare2!=''&&compare2!='any'">
+                                                    <label class="control-label" :one2="one2">{{one2}}</label>
+                                                    <input type="text" style="width:80px;" v-model="compareValueStr1" >
+                                                    <span v-if="compare2=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare2=='btw'" v-model="compareValueEnd1" >
+                                                </div>
+                                            </div>
+                                            <div class="form-group" style="float:left;margin-left:118px">
+                                                <div v-if="compare3!=''&&compare3!='any'">
+                                                    <label class="control-label" :one3="one3">{{one3}}</label>
+                                                    <input type="text" style="width:80px;" v-model="compareValueStr2" >
+                                                    <span v-if="compare3=='btw'">至</span>
+                                                    <input type="text" style="width:80px;" v-if="compare3=='btw'" v-model="compareValueEnd2" >
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;">
+                                            <div class="form-group" style="float: left;">
+                                                <label class="control-label" style="margin-left:12px">是否高净值客户:</label>
+                                                <select name="" style="width:150px;" v-model="highCustomer">
+                                                    <option value="">请选择</option>
+                                                    <option value="Y">Y-是</option>
+                                                    <option value="N">N-否</option>
+                                                </select>
+                                                <span style="color:red">*必填</span>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both;border-bottom:1px solid #eee;margin-bottom:20px"></div>
+                                        <!--<div class="form-group">-->
+                                        <!--<label class="control-label" style="margin-left:-28px">运作结束可选操作:</label>-->
+                                        <!--<label class="pos-rel" style="text-align: center"><input type="checkbox" value="01">赎回</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="02">解散</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="03">转托管</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="04">到期转换</label>-->
+                                        <!--<label class="pos-rel"><input type="checkbox" value="05">续期</label>-->
+                                        <!--</div>-->
+                                        <div style="height:200px;overflow-y:auto;">
+                                            <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                                                   style="margin-bottom: 0;">
+                                                <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1">标签类别(ID)</th>
+                                                    <th class="center col-sm-1">标签名称</th>
+                                                    <th class="center col-sm-1">标签权重</th>
+                                                    <!--<th class="center col-sm-1">操作</th>-->
+                                                    <th class="center col-sm-1">
+                                                        <input type="button" class="btn btn-sm btn-primary" value="添加" @click="addSubList()">
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="lableList.length>0">
+                                                    <tr v-for="(item,index) in lableList" :key="index">
+                                                        <td class="center">
+                                                            <select name="" style="width:150px;" v-model="item.tagTp" @change="chooseTagTp3(item.tagTp,index)" class="chooseTagTp3">
+                                                                <option value="">请选择</option>
+                                                                <option :value="item.pmco" v-for="(item,index) in labelCategoryList">
+                                                                    {{item.pmco}}-{{item.pmnm}}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td class="center">
+                                                            <select name="" style="width:150px;" v-model="item.tagId" @change="chooseTagId3(item.tagId,index)" class="chooseTagId3">
+                                                                <option value="">请选择</option>
+                                                                <option :value="item.tagId" v-for="(item,index) in labelNameList">
+                                                                    {{item.tagId}}-{{item.tagNm}}
+                                                                </option>
+                                                            </select>
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.tagWeight" >
+                                                        </td>
+                                                        <td class="center">
+                                                            <a href="javascript:;" @click.prevent="delList(index)">删除</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <!--  <template v-else>
+                                                     <tr>
+                                                         <td class="center" v-text="'没有数据'" colspan="8"></td>
+                                                     </tr>
+                                                 </template> -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div style="height:200px;overflow-y:auto;">
+                                            <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                                                   style="margin-bottom: 0;">
+                                                <thead>
+                                                <tr>
+                                                    <th class="center col-sm-1">下限</th>
+                                                    <th class="center col-sm-1">上限</th>
+                                                    <th class="center col-sm-1">推荐优先级</th>
+                                                    <!--<th class="center col-sm-1">操作</th>-->
+                                                    <th class="center col-sm-1">
+                                                        <input type="button" class="btn btn-sm btn-primary" value="添加" @click="addPriority()">
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <template v-if="priorityList.length>0">
+                                                    <tr v-for="(item,index) in priorityList" :key="index">
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomScoreStr" >
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomScoreEnd" >
+                                                        </td>
+                                                        <td class="center">
+                                                            <input type="text" v-model="item.recomLvl" >
+                                                        </td>
+                                                        <td class="center">
+                                                            <a href="javascript:;" @click.prevent="delPriority(index)">删除</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                                <!--  <template v-else>
+                                                     <tr>
+                                                         <td class="center" v-text="'没有数据'" colspan="8"></td>
+                                                     </tr>
+                                                 </template> -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <p style="color:red;text-align:center;font-size:16px">确定回退至当前版本!!!</p>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="backVersion()">确定回退</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!--失效恢复正常-->
+                <div class="modal" id="normal" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal" @click="setRight()">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- DIALOG ENDS -->
+                <div class="form-inline" style="padding: 10px 0;">
+                    <!--<div class="form-group">-->
+                    <!--<label class="control-label">证件类型:</label>-->
+                    <!--<input type="text">-->
+                    <!--</div>-->
+                    <div class="form-group">
+                        <label class="control-label">模型名称:</label>
+                        <input type="text" v-model="mdlNms">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">状态:</label>
+                        <!--<input type="text" v-model="mdlSt">-->
+                        <select name="status" class="form-control" style="width: 100px;" v-model="mdlSt">
+                            <option value="">请选择</option>
+                            <option value="N">正常</option>
+                            <option value="C">已撤销</option>
+                            <!--<option value="B">待审核</option>-->
+                            <!--<option value="D">审核未通过</option>-->
+                        </select>
+
+                    </div>
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                        <input type="button" class="btn btn-sm btn-primary" value="新增" @click="showAdd()">
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                    <!--<div class="col-xs-6">-->
+                    <!--<div id="dynamic-table_filter" class="dataTables_filter">-->
+                    <!--<label>快速查询:</label>-->
+                    <!--<input type="text" class="input-sm" v-model="condition">-->
+                    <!--</div>-->
+                    <!--</div>-->
+                </div>
+                <!--数据表-->
+                <table class="table table-bordered table-hover dataTable">
+                    <thead>
+                    <tr>
+                        <th class="center">模型ID</th>
+                        <th class="center">模型名称</th>
+                        <th class="center">适用场景</th>
+                        <th class="center">版本号</th>
+                        <th class="center">模型描述</th>
+                        <th class="center">状态</th>
+                        <th class="center">创建日期</th>
+                        <th class="center">最后修改日期</th>
+                        <th class="center">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="viewData.length>0">
+                        <tr v-for="(item,index) in viewData" :key="index">
+                            <td class="center" v-text="item.mdlId"></td>
+                            <td class="center" v-text="item.mdlNm"></td>
+                            <td class="center">{{item.scenario | scenario}}</td>
+                            <td class="center" v-text="item.mdlVer"></td>
+                            <td class="center" v-text="item.mdlDesc"></td>
+                            <td class="center">{{item.mdlSt | mdlSt}}</td>
+                            <td class="center" v-text="item.createTime.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/, '$1/$2/$3 $4:$5:$6')"></td>
+                            <td class="center" v-text="item.updateTime.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/, '$1/$2/$3 $4:$5:$6')"></td>
+                            <td class="center">
+                                <a href="javascript:;" @click="showDetail(item)">查看</a>
+                                <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                                <a href="javascript:;" @click="showCopy(item)">复制</a>
+                                <span v-if="item.mdlSt=='N'">
+                                    <a href="javascript:;" @click="invalidParam(item)">失效</a>
+                                </span>
+                                <span v-else>
+                                    <a href="javascript:;" @click="setNormal(item)">正常</a>
+                                </span>
+                                <a href="javascript:;" @click="versionRecord(item)">版本记录</a>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'暂无数据'" colspan="10"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <div v-if="viewData.length>0"  class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+middleData.length+'页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in middleData.length" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /.main-content -->
+    </div>
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-multiselect.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/clientMgmt/labelApplication/modelConfigurationMgmt.js"></script>
+</body>
+</html>

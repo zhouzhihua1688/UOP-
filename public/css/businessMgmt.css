@@ -1,0 +1,39 @@
+
+/* header bar S */
+@media only screen and (min-width: 992px) {
+  .no-skin .sidebar.h-sidebar .nav-list>li.active>a {
+    bottom: -2px!important;
+  }
+  .no-skin .sidebar.h-sidebar .nav-list>li.active>a:after 
+  {
+        /* border-width: 0 0 2px;
+        border-color: transparent transparent #FFF;
+        left: 0;
+        right: 0; */
+        top: 0;
+        bottom: 0!important;
+  }
+
+  .sidebar.h-sidebar {
+        margin-top: 5px;
+  }
+}
+
+@media (min-width: 992px) {
+  .user-min .user-menu {
+      padding-top: 0!important;
+  }
+}
+
+/* header bar E */
+
+/*  */
+.page-header {
+    margin: 0 0 0;
+    border-bottom: 1px dotted #E2E2E2;
+    padding-bottom: 5px;
+    padding-top: 0;
+}
+.breadcrumb {
+  margin-left: 0;
+}

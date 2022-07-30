@@ -1,0 +1,428 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').accountMgmt.accountDelete;
+
+module.exports = function(app) {
+	// 通过idNo获取用户信息列表
+	app.post('/clientMgmt/accountMgmt/accountDelete/getCustInfoList.ajax', (req, res, next) => {
+		let params = {};
+		params.idNo = req.body.idNo;
+		let option = {
+			session: req.session,
+			url: apiUrl.getCustInfoByIdNo,
+			qs: params,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/clientMgmt/accountMgmt/accountDelete/getCustInfoList.ajax option:', option);
+		request(option, (error, response, body) => {
+			console.log('/clientMgmt/accountMgmt/accountDelete/getCustInfoList.ajax error:', error);
+			console.log('/clientMgmt/accountMgmt/accountDelete/getCustInfoList.ajax statusCode:', response &&
+				response.statusCode);
+			console.log('/clientMgmt/accountMgmt/accountDelete/getCustInfoList.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '调用失败',
+					data: null
+				});
+			}
+			if (body && body.returnCode == 0 && Array.isArray(body.body)) {
+				return res.send({
+					error: 0,
+					msg: '调用成功',
+					data: body.body
+				});
+			} else if (body && body.returnCode == 9999) {
+				return res.send({
+					error: 1,
+					msg: body.returnMsg,
+					data: null
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '调用失败',
+					data: null
+				});
+			}
+		});
+	});
+	// 获取列表数据
+	app.post('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax', (req, res, next) => {
+		let promise = null;
+		if (!req.body.custNo) { // 前端未传custNo,需要通过tradeAcct和fundAcct获取custNo
+			promise = new Promise((resolve, reject) => {
+				let params = {};
+				params.tradeAcct = req.body.tradeAcct;
+				params.fundAcct = req.body.fundAcct;
+				let option = {
+					session: req.session,
+					url: apiUrl.getCustNo,
+					qs: params,
+					timeout: 15000,
+					json: true
+				};
+				console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getCustNoByAcct option:', option);
+				request(option, (error, response, body) => {
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getCustNoByAcct error:', error);
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getCustNoByAcct statusCode:',
+						response &&
+						response.statusCode);
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getCustNoByAcct body:', body);
+					if (error) {
+						reject({
+							message: '数据获取失败'
+						});
+					}
+					if (body && body.returnCode == 0) {
+						resolve(body.body);
+					} else if (body && body.returnCode == 9999) {
+						reject({
+							message: body.returnMsg
+						});
+					} else {
+						reject({
+							message: '数据获取失败'
+						});
+					}
+				});
+			});
+		} else {
+			promise = new Promise(resolve => {
+				return resolve(req.body.custNo);
+			});
+		}
+
+		// 通过custNo获取证件号
+		let getIdNoByCustNo = (custNo) => {
+			return new Promise((resolve, reject) => {
+				let params = {};
+				params.custNo = custNo;
+				let option = {
+					session: req.session,
+					url: apiUrl.getIdNo,
+					qs: params,
+					timeout: 15000,
+					json: true
+				};
+				console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getIdNoByCustNo option:', option);
+				request(option, (error, response, body) => {
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getIdNoByCustNo error:', error);
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getIdNoByCustNo statusCode:',
+						response &&
+						response.statusCode);
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getIdNoByCustNo body:', body);
+					if (error) {
+						reject({
+							message: '数据获取失败'
+						});
+					}
+					if (body && body.returnCode == 0) {
+						resolve(body.body);
+					} else if (body && body.returnCode == 9999) {
+						reject({
+							message: body.returnMsg
+						});
+					} else {
+						reject({
+							message: '数据获取失败'
+						});
+					}
+				});
+			});
+		};
+		// 通过custNo获取基金账户
+		let getFundAcctByCustNo = (custNo) => {
+			return new Promise((resolve, reject) => {
+				let params = {};
+				params.custNo = custNo;
+				let option = {
+					session: req.session,
+					url: apiUrl.getFundAcct,
+					qs: params,
+					timeout: 15000,
+					json: true
+				};
+				console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getFundAcctByCustNo option:', option);
+				request(option, (error, response, body) => {
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getFundAcctByCustNo error:', error);
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getFundAcctByCustNo statusCode:',
+						response && response.statusCode);
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getFundAcctByCustNo body:', body);
+					if (error) {
+						reject({
+							message: '数据获取失败'
+						});
+					}
+					if (body && body.returnCode == 0) {
+						resolve(body.body);
+					} else if (body && body.returnCode == 9999) {
+						reject({
+							message: body.returnMsg
+						});
+					} else {
+						reject({
+							message: '数据获取失败'
+						});
+					}
+				});
+			});
+		};
+		// 通过custNo获取交易账户
+		let getTradeAcctByCustNo = (custNo) => {
+			return new Promise((resolve, reject) => {
+				let params = {};
+				params.custNo = custNo;
+				params.bizType = '000';
+				let option = {
+					session: req.session,
+					url: apiUrl.getTradeAcct,
+					qs: params,
+					timeout: 15000,
+					json: true
+				};
+				console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getTradeAcctByCustNo option:', option);
+				request(option, (error, response, body) => {
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getTradeAcctByCustNo error:', error);
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getTradeAcctByCustNo statusCode:',
+						response && response.statusCode);
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getTradeAcctByCustNo body:', body);
+					if (error) {
+						reject({
+							message: '数据获取失败'
+						});
+					}
+					if (body && body.returnCode == 0) {
+						resolve(body.body);
+					} else if (body && body.returnCode == 9999) {
+						reject({
+							message: body.returnMsg
+						});
+					} else {
+						reject({
+							message: '数据获取失败'
+						});
+					}
+				});
+			});
+		};
+		// 通过custNo获取直销总资产
+		let getDirectAssetByCustNo = (custNo) => {
+			return new Promise((resolve, reject) => {
+				let params = {};
+				params.custNo = custNo;
+				params.assetMode = 'Direct';
+				let option = {
+					session: req.session,
+					url: apiUrl.getAssetInfo,
+					qs: params,
+					timeout: 15000,
+					json: true
+				};
+				console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getDirectAssetByCustNo option:',
+					option);
+				request(option, (error, response, body) => {
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getDirectAssetByCustNo error:',
+						error);
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getDirectAssetByCustNo statusCode:',
+						response &&
+						response.statusCode);
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getDirectAssetByCustNo body:', body);
+					if (error) {
+						reject({
+							message: '数据获取失败'
+						});
+					}
+					if (body && body.returnCode == 0) {
+						resolve(body.body);
+					} else if (body && body.returnCode == 9999) {
+						reject({
+							message: body.returnMsg
+						});
+					} else {
+						reject({
+							message: '数据获取失败'
+						});
+					}
+				});
+			});
+		};
+		// 通过custNo获取代销总资产
+		let getProxyAssetByCustNo = (custNo) => {
+			return new Promise((resolve, reject) => {
+				let params = {};
+				params.custNo = custNo;
+				params.assetMode = 'Proxy';
+				let option = {
+					session: req.session,
+					url: apiUrl.getAssetInfo,
+					qs: params,
+					timeout: 15000,
+					json: true
+				};
+				console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getProxyAssetByCustNo option:', option);
+				request(option, (error, response, body) => {
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getProxyAssetByCustNo error:',
+						error);
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getProxyAssetByCustNo statusCode:',
+						response &&
+						response.statusCode);
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --getProxyAssetByCustNo body:', body);
+					if (error) {
+						reject({
+							message: '数据获取失败'
+						});
+					}
+					if (body && body.returnCode == 0) {
+						resolve(body.body);
+					} else if (body && body.returnCode == 9999) {
+						reject({
+							message: body.returnMsg
+						});
+					} else {
+						reject({
+							message: '数据获取失败'
+						});
+					}
+				});
+			});
+		};
+		// 判断是否可以销户
+		let canDeleteAccount = (custNo) => {
+			return new Promise((resolve, reject) => {
+				let params = {};
+				params.custNo = custNo;
+				let option = {
+					session: req.session,
+					url: apiUrl.getAssetInfo,
+					qs: params,
+					timeout: 15000,
+					json: true
+				};
+				console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --canDeleteAccount option:', option);
+				request(option, (error, response, body) => {
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --canDeleteAccount error:',
+						error);
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --canDeleteAccount statusCode:',
+						response &&
+						response.statusCode);
+					console.log('/clientMgmt/accountMgmt/accountDelete/getTableList.ajax --canDeleteAccount body:', body);
+					if (error) {
+						reject({
+							message: '数据获取失败'
+						});
+					}
+					if (body && body.returnCode == 0) {
+						let countTotalAsset = function(body, key) {
+							let count = 0;
+							for (let prop in body) {
+								count += body[prop][key];
+							}
+							return count;
+						};
+						resolve(countTotalAsset(body.body, 'totalAmt') === 0 && countTotalAsset(body.body, 'onWayAmt') === 0);
+					} else if (body && body.returnCode == 9999) {
+						reject({
+							message: body.returnMsg
+						});
+					} else {
+						reject({
+							message: '数据获取失败'
+						});
+					}
+				});
+			});
+		};
+
+		promise.then(custNo => {
+			let paramsArr = [];
+			paramsArr.push(getIdNoByCustNo(custNo));
+			paramsArr.push(getFundAcctByCustNo(custNo));
+			paramsArr.push(getTradeAcctByCustNo(custNo));
+			paramsArr.push(getDirectAssetByCustNo(custNo));
+			paramsArr.push(getProxyAssetByCustNo(custNo));
+			paramsArr.push(canDeleteAccount(custNo));
+			Promise.all(paramsArr).then(([custInfo, fundAcct, tradeAcct, directAsset, proxyAsset, canDelete]) => {
+				res.send({
+					error: 0,
+					msg: '调用成功',
+					data: {
+						custInfo,
+						fundAcct,
+						tradeAcct,
+						directAsset,
+						proxyAsset,
+						canDelete
+					}
+				});
+			}).catch(error => {
+				res.send({
+					error: 1,
+					msg: error.message,
+					data: null
+				});
+			});
+		}).catch(error => {
+			res.send({
+				error: 1,
+				msg: error.message,
+				data: null
+			});
+		});
+	});
+	// 删户
+	app.post('/clientMgmt/accountMgmt/accountDelete/del.ajax', (req, res, next) => {
+		let params = {};
+		let url = '';
+		params.custNo = req.body.custNo;
+		if (req.body.invTp == 1) { // 个人账户
+			url = apiUrl.delPersonalAccount;
+		} else if (req.body.invTp == 0 || req.body.invTp == 2) { // 企业账户
+			url = apiUrl.delCompanyAccount;
+		} else {
+			return res.send({
+				error: 1,
+				msg: '删户失败：未能识别该帐户的账户类型',
+				data: null
+			});
+		}
+		let option = {
+			session: req.session,
+			url: url,
+			qs: params,
+			timeout: 15000,
+			json: true
+		};
+		console.log('/clientMgmt/accountMgmt/accountDelete/del.ajax option:', option);
+		request(option, (error, response, body) => {
+			console.log('/clientMgmt/accountMgmt/accountDelete/del.ajax error:', error);
+			console.log('/clientMgmt/accountMgmt/accountDelete/del.ajax statusCode:', response && response.statusCode);
+			console.log('/clientMgmt/accountMgmt/accountDelete/del.ajax body:', body);
+			if (error) {
+				return res.send({
+					error: 1,
+					msg: '删户失败'
+				});
+			}
+			if (body.returnCode == 0) {
+				return res.send({
+					error: 0,
+					msg: '删户成功',
+					data: null
+				});
+			} else if (body && body.returnCode != 9999) {
+				return res.send({
+					error: 1,
+					msg: body.returnMsg,
+					data: null
+				});
+			} else {
+				return res.send({
+					error: 1,
+					msg: '删户失败',
+					data: null
+				});
+			}
+		});
+	});
+};

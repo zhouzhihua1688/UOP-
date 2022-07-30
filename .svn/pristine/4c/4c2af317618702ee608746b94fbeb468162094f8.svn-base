@@ -1,0 +1,604 @@
+new Vue({
+    el: '#content',
+    data: {
+        // 主页面相关数据
+        tableData: [],
+        diaMsg: '',
+
+        //主表格分页数据
+        currentIndex: 0,
+        maxSpace: 5,
+        pageMaxNum: '10',
+        condition: '',
+        // 新增
+        userName: '',
+        custNo: '',
+        querycustNo: '',
+        privilegeSourceId: '',
+        whiteList: true,
+        privilegeType: '01',
+        privilegeId: "",
+        // privilegeValue:'',
+
+        longTimeStatus: false,
+        longTime: '',
+        //查看修改
+        redactStatus: true, //查看时编辑状态
+        viewChange: {
+            // id: '',
+            description: '',
+            privilegeId: '',
+            privilegeType: '',
+            privilegeKey: '',
+            privilegeValue: '',
+            deleteStatus: false,
+            iconUrl: '',
+        },
+        // queryKey: '', //查询
+        // queryId: '',
+        filePath: '',
+        deleteinfo: {},
+        privilegeList: [],
+        sourceList: [],
+        custNoList: [],
+        custNoTable: [],
+
+        watching: false,
+    },
+    created: function () {
+        var _this = this;
+        $.post({
+            url: '/clientMgmt/vipGrade/privilegeHand/privilegeList.ajax',
+            success: function (result) {
+                if (result.error === 0) {
+                    _this.privilegeList = result.data;
+                    console.log(result)
+                } else {
+                    _this.showDialog('', 'info', false, result.msg);
+                }
+            }
+        });
+        $.post({
+            url: '/clientMgmt/vipGrade/privilegeHand/sourceList.ajax',
+            success: function (result) {
+                if (result.error === 0) {
+                    _this.sourceList = result.data;
+                    console.log(result)
+                } else {
+                    _this.showDialog('', 'info', false, result.msg);
+                }
+            }
+        });
+    },
+    mounted: function () {
+        var dialogs = ['info', 'addNotice', 'changeNotice', 'deleteDialog', 'addfile'];
+        var _this = this;
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        $('.date-timepicker').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm:ss', //use this option to display seconds
+            icons: {
+                time: 'fa fa-clock-o',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-arrows ',
+                clear: 'fa fa-trash',
+                close: 'fa fa-times'
+            }
+        }).next().on(ace.click_event, function () {
+            $(this).prev().focus();
+        });
+        this.getTableData(0);
+    },
+    computed: {
+        //主表格分页
+        middleData: function () {
+            var middleData = [];
+            var filterData = [];
+            var pageMaxNum = parseInt(this.pageMaxNum);
+            var _this = this;
+            this.tableData.forEach(function (jsonObj) {
+                var valueArr = [];
+                for (var prop in jsonObj) {
+                    valueArr.push(jsonObj[prop]);
+                }
+                for (var i = 0, len = valueArr.length; i < len; i++) {
+                    if (valueArr[i]) {
+                        if (valueArr[i].toString().indexOf(_this.condition) != -1) {
+                            filterData.push(jsonObj);
+                            break;
+                        }
+                    }
+                }
+            });
+            if (filterData.length <= pageMaxNum) {
+                middleData.push(filterData);
+                return middleData;
+            } else {
+                var i = 0;
+                while ((i + 1) * pageMaxNum < filterData.length) {
+                    middleData.push(filterData.slice(i * pageMaxNum, (i + 1) * pageMaxNum));
+                    i++;
+                }
+                middleData.push(filterData.slice(i * pageMaxNum, filterData.length));
+                return middleData;
+            }
+        },
+        viewData: function () {
+            var currentIndex = parseInt(this.currentIndex);
+            return this.middleData[currentIndex];
+        },
+        pageList: function () {
+            var arr = [];
+            if (this.middleData.length <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex <= this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex <= this.maxSpace) {
+                var space = this.middleData.length - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+            } else {
+                for (var i = 0; i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        },
+        setId: function () {
+            var _this = this;
+            return function (val) {
+                _this.sourceList.forEach(function (item, ind) {
+                    if (item.id == val) {
+                        return val = item.privilegeSource
+                    }
+                })
+                return val
+            }
+        },
+        setInvnm: function () {
+            var _this = this;
+            return function (val) {
+                var str = ''
+                _this.custNoTable.forEach(function (item, ind) {
+                    if (item.custno == val) {
+                        return str = item.invnm
+                    }
+                })
+                return str
+            }
+        },
+        setMobileno: function () {
+            var _this = this;
+            return function (val) {
+                var str = ''
+                _this.custNoTable.forEach(function (item, ind) {
+                    if (item.custno == val) {
+                        return str = item.mobileno
+                    }
+                })
+                return str
+            }
+        },
+    },
+    watch: {
+        pageMaxNum: function (val, oldval) {
+            this.currentIndex = 0;
+        },
+        condition: function () {
+            this.currentIndex = 0;
+        },
+        longTimeStatus: function (newval, old) {
+            if (newval) {
+                this.longTime = '2099-12-31 00:00:00'
+            } else {
+                this.longTime = ''
+            }
+        },
+        privilegeId: function (newval, old) {
+            var _this = this;
+            this.privilegeList.forEach(function (item, ind) {
+                if (item.privilegeId == newval) {
+                    _this.privilegeType = item.privilegeType;
+                    return;
+                }
+            })
+        },
+        // custNoList: function (newval, old) {
+        //     console.log(newval)
+        //     var _this = this
+        //     $.post({
+        //         url: '/clientMgmt/vipGrade/privilegeHand/custNoList.ajax',
+        //         traditional: true,
+        //         data: {
+        //             custNo: newval
+        //         },
+        //         success: function (result) {
+        //             if (result.error === 0) {
+        //                 console.log(result.data)
+        //                 _this.custNoTable = result.data;
+        //             } else {
+        //                 _this.showDialog('', 'info', false, result.msg);
+        //             }
+        //         }
+        //     });
+        // },
+        viewData: function (newval) {
+            // this.custNoList = newval.map(function (item) {
+            //     return item.custNo
+            // })
+
+            var data = newval.map(function (item) {
+                if (typeof (item.custNo) == 'string') {
+                    return item.custNo.trim();
+                }
+                return item.custNo
+            })
+            var _this = this
+            $.post({
+                url: '/clientMgmt/vipGrade/privilegeHand/custNoList.ajax',
+                traditional: true,
+                data: {
+                    custNo: data
+                },
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.custNoTable = result.data;
+                    } else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+
+
+        }
+
+    },
+    methods: {
+        setPrivilegeType: function (item) {
+            console.log(item)
+            this.privilegeType = item.privilegeType
+        },
+        getTableData: function (currentIndex) {
+            var params = {};
+            var _this = this;
+            // params.pageNo = currentIndex + 1;
+            // params.pageSize = this.pageMaxNum;
+            $.post({
+                url: '/clientMgmt/vipGrade/privilegeHand/getList.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.tableData = result.data;
+                        // _this.currentIndex = result.data.pageNum - 1;
+                        // _this.totalPage = result.data.pages;
+
+                        _this.userName = result.userName;
+                        console.log(result)
+                    } else {
+                        _this.tableData = [];
+                        _this.currentIndex = 0;
+                        _this.totalPage = 0;
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            } else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            } else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            } else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            } else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        //主表格分页方法
+        prev: function () {
+            this.currentIndex <= 0 ? 0 : this.currentIndex--;
+        },
+        next: function () {
+            this.currentIndex >= this.middleData.length - 1 ? this.middleData.length - 1 : this.currentIndex++;
+        },
+        changeIndex: function (index) {
+            this.currentIndex = index - 1;
+        },
+        toFirst: function () {
+            this.currentIndex = 0;
+        },
+        toLast: function () {
+            this.currentIndex = this.middleData.length - 1;
+        },
+        add: function () {
+            if (this.$refs.startTime.value > this.$refs.endTime.value && !this.longTimeStatus) {
+                this.showDialog('addNotice', 'info', true, '生效时间不能晚于失效时间');
+                return;
+            }
+            var params = {
+                // modifyBy: this.userName,
+                custNo: this.custNo,
+                privilegeSourceId: this.privilegeSourceId,
+                receiveTime: this.$refs.startTime.value,
+                expireTime: this.longTimeStatus ? this.longTime : this.$refs.endTime.value,
+                whiteList: true,
+                privilegeId: this.privilegeId,
+                privilegeType: this.privilegeType,
+                // privilegeValue: this.privilegeValue,
+                operator: this.userName
+            };
+            var _this = this;
+            $.post({
+                url: '/clientMgmt/vipGrade/privilegeHand/dataAdd.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('addNotice', 'info', false, result.msg);
+                        _this.getTableData(0)
+                        _this.custNo = '';
+                        _this.privilegeSourceId = '';
+                        console.log(result)
+                    } else {
+                        _this.showDialog('addNotice', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        deleteDialog: function (item) {
+            this.deleteinfo.id = item.id
+            this.showDialog("", "deleteDialog")
+        },
+        deleteData: function () {
+            var params = {
+                id: this.deleteinfo.id,
+                // modifyBy: this.userName
+            };
+            console.log(params)
+            var _this = this;
+            $.post({
+                url: '/clientMgmt/vipGrade/privilegeHand/dataDelete.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('deleteDialog', 'info', false, result.msg);
+                        _this.getTableData(0)
+                        console.log(result)
+                    } else {
+                        _this.showDialog('deleteDialog', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        showView: function (item) {
+
+            // var params = {
+            //     cutinPointId: id,
+            // };
+            // console.log(params)
+            var _this = this;
+            _this.redactStatus = true; //查看时为不可编辑
+            // $.post({
+            //     url: '/clientMgmt/vipGrade/privilegeHand/dataQuery.ajax',
+            //     data: params,
+            //     success: function (result) {
+            //         if (result.error == 0) {
+
+            //             _this.viewChange.cutinPointDesc = result.data.cutinPointDesc;
+            //             _this.viewChange.cutinPointName = result.data.cutinPointName;
+            //             _this.viewChange.cutionPointKey = result.data.cutionPointKey;
+            //             _this.viewChange.id = result.data.cutinPointId;
+            //             console.log(result)
+            //         } else {
+            //             _this.showDialog('', 'info', false, '查询失败');
+            //         }
+            //     }
+            // });
+            _this.viewChange.privilegeId = item.privilegeId
+            _this.viewChange.iconUrl = item.iconUrl
+            _this.viewChange.description = item.description
+            _this.viewChange.privilegeType = item.privilegeType
+            _this.viewChange.privilegeKey = item.privilegeKey
+            _this.viewChange.privilegeValue = item.privilegeValue
+            _this.$refs.startTimeX.value = item.startTime;
+            _this.$refs.endTimeX.value = item.endTime;
+
+            this.showDialog('', 'changeNotice', false)
+        },
+        changeDate: function () {
+            var params = {
+                // description: this.viewChange.description,
+                // privilegeId: this.viewChange.privilegeId,
+                // privilegeType: this.viewChange.privilegeType,
+                // privilegeKey: this.viewChange.privilegeKey,
+                // privilegeValue: this.viewChange.privilegeValue,
+                // deleteStatus: this.viewChange.deleteStatus,
+                // iconUrl: this.viewChange.iconUrl,
+                // endTime: this.$refs.endTimeX.value,
+                // startTime: this.$refs.startTimeX.value,
+                // modifyBy: this.userName,
+            };
+            console.log(params)
+            var _this = this;
+            $.post({
+                url: '/clientMgmt/vipGrade/privilegeHand/dataChange.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('changeNotice', 'info', false, result.msg);
+                        _this.redactStatus = true; //查看时为不可编辑
+                        _this.getTableData(0)
+                        console.log(result)
+                    } else {
+                        _this.showDialog('changeNotice', 'info', false, result.msg);
+                        _this.redactStatus = true; //查看时为不可编辑
+                    }
+                }
+            });
+        },
+        queryData: function () {
+            if (this.querycustNo == '') {
+                this.getTableData(0)
+                return;
+            }
+            var params = {};
+            var _this = this;
+            // params.pageNo = 1;
+            params.custNo = this.querycustNo;
+            // params.cutionPointKey = this.queryKey;
+            // params.pageSize = this.pageMaxNum;
+            $.post({
+                url: '/clientMgmt/vipGrade/privilegeHand/queryCustNo.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.currentIndex = 0;
+                        _this.tableData = result.data;
+                        // _this.totalPage = result.data.pages;
+                        // _this.userName = result.userName;
+                        console.log(result)
+                    } else {
+                        // _this.tableData = [];
+                        // _this.currentIndex = 0;
+                        // _this.totalPage = 0;
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        fileUpload: function () {
+            var _this = this;
+            var filePath = this.filePath;
+            var afterFile = filePath.indexOf('.');
+            afterFile = filePath.substr(afterFile - 0 + 1) //获取文件后缀名
+            afterFile = afterFile.toLocaleLowerCase() //转为小写
+            if (afterFile != 'csv') {
+                _this.showDialog('addfile', 'info', true, '只能上传csv文件表格');
+                return;
+            }
+            if (this.filePath != '') {
+                this.watching = true;
+                var fileElementId = 'uploadFileInput';
+                console.log(fileElementId)
+                $.ajaxFileUpload({
+                    url: '/clientMgmt/vipGrade/privilegeHand/ExcelUpload.ajax',
+                    type: 'POST',
+                    dataType: 'json',
+                    secureuri: false,
+                    fileElementId: fileElementId,
+                    success: function (result) {
+                        _this.watching = false;
+                        console.log(result)
+                        if (result.error == 0) {
+                            _this.getTableData(0)
+                            $("#uploadFileInput").on("change", function (event) {
+                                this.showFileName(event)
+                            }.bind(_this));
+                            _this.showDialog('addfile', 'info', false, result.msg)
+                            uploadFileInput.value = ''
+                            _this.filePath = ''
+                        } else {
+                            $("#uploadFileInput").on("change", function (event) {
+                                this.showFileName(event)
+                            }.bind(_this));
+                            _this.showDialog('addfile', 'info', true, result.msg)
+                        }
+                    }
+                });
+            }
+
+        },
+        uploadView: function () {
+            this.showDialog('', 'addfile', false);
+        },
+        select: function () {
+            document.getElementById("uploadFileInput").click();
+        },
+        showFileName: function (event) {
+            console.log(111)
+            if (event.target.files[0]) {
+                this.filePath = event.target.files[0].name
+            } else {
+                this.filePath = ''
+            }
+        },
+
+    },
+    filters: {
+        trim: function (str) {
+            if (typeof (str) == 'string') {
+                return str.trim();
+            }
+            return '';
+        },
+
+        setType: function (val) {
+            if (val == '01') {
+                return '信用卡额度'
+            } else if (val == '02') {
+                return '快取额度'
+            } else if (val == '03') {
+                return '多卡取现'
+            } else if (val == '11') {
+                return '申购优惠'
+            } else if (val == '12') {
+                return '认购优惠'
+            } else if (val == '31') {
+                return '积分翻倍'
+            } else if (val == '51') {
+                return '奖励包'
+            } else if (val == '61') {
+                return '跟我投'
+            } else if (val == '71') {
+                return '赎回特权'
+            } else if (val == '72') {
+                return '组合转换'
+            } else if (val == '91') {
+                return '其它'
+            } else {
+                return val
+            }
+
+        },
+
+    }
+});

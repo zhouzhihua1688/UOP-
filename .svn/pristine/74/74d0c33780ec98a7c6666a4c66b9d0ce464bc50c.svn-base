@@ -1,0 +1,76 @@
+//广告宣传接口总配置
+let advertising = global.envConfig.advertising;
+let uploadFile= global.envConfig.advertisingUploadFile;
+advertising += '/api';
+uploadFile += '/api';
+// let advertising='http://10.50.17.157:9280/api';
+// let uploadFile='http://10.50.17.157:6080/api';
+module.exports = {
+    productMaterialMgmt: {
+        productList: {
+            getTableData: `${advertising}/product/list`,
+            getProductList:`${advertising}/productOptions`,
+            add:`${advertising}/product/add`,
+            update:`${advertising}/product`,
+            searchSingle:`${advertising}/product`,
+            deleteParam:`${advertising}/product`,
+            switchUpdate:`${advertising}/product/enableFlag`,
+            getUserParam:`${advertising}/user/typeOptions`,
+            getChannel:`${advertising}/user/agencySelectList`,
+            getPvData:`${advertising}/product`,
+            upload:`${uploadFile}/file`,
+            // exportAll: `${advertising}/product/list`,
+            exportAll: `${advertising}/product/export`,
+            exportPvData:`${advertising}/product/pvuv`,
+        },
+        contentList: {
+            getTableData: `${advertising}/materialList`,
+            getContentType:`${advertising}/materialTypeOptions`,
+            getProductList:`${advertising}/productOptions`,
+            add:`${advertising}/material`,
+            update:`${advertising}/material`,
+            searchSingle:`${advertising}/material`,
+            deleteParam:`${advertising}/material`,
+            switchUpdate:`${advertising}/materialenableFlag`,
+            getUserParam:`${advertising}/user/typeOptions`,
+            getChannel:`${advertising}/user/agencySelectList`,
+            getPvData:`${advertising}/material`,
+            upload:`${uploadFile}/file`,
+            exportAll: `${advertising}/material/export`,
+            exportPvData:`${advertising}/material/pvuv`,
+        },
+    },
+    materialMgmt: {
+        essayMgmt: {
+            getTableData: `${advertising}/sourceMaterial/textList`,
+            add: `${advertising}/sourceMaterial/textadd`,
+            update:`${advertising}/sourceMaterial`,
+            searchSingle:`${advertising}/sourceMaterial`,
+            deleteParam:`${advertising}/sourceMaterial`,
+        },
+    },
+    // serviceAndRemindMgmt/
+    serviceAndRemindMgmt: {
+        popupMgmt: {
+            getTableData: `${advertising}/popup/list`,
+            getPvData:`${advertising}/popup/articleOptions`,
+            add: `${advertising}/popup/add`,
+            update:`${advertising}/popup`,
+            searchSingle:`${advertising}/popup`,
+            deleteParam:`${advertising}/popup`,
+            switchUpdate:`${advertising}/popup/updateStatus`,
+            getRefresh:`${advertising}/popup/articleOptions/refresh`,
+        },
+        publicMessagePush:{
+            // wxmessage
+            getPopupList: `${advertising}/popup/list`,
+            update:`${advertising}/wxmessage`,
+            getTableData: `${advertising}/wxmessageList`,
+            add: `${advertising}/wxmessage`,
+            getMessageOptions:`${advertising}/templateMessageOptions`,
+            searchSingle:`${advertising}/wxmessage`,
+            deleteParam:`${advertising}/wxmessage`,
+            switchUpdate:`${advertising}/popup/updateStatus`,
+        },
+    },
+};

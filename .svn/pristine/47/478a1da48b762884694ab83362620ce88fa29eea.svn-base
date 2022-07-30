@@ -1,0 +1,25 @@
+module.exports = function (app) {
+    require('./combineContentConfig')(app);
+    require('./informationContentConfig')(app);
+    require('./informTemplateConfig')(app);
+    require('./loadPageConfigMgmt')(app);
+    require('./AppBaseConfig')(app);
+    require('./homePgButtonConfig')(app);
+    require('./fundManagerContentConfig')(app);
+    require('./fundRecommendContentConfig')(app);
+    require('./imgAdContentConfig')(app);
+    require('./wxActivityConfig')(app);
+    require('./appletImgRecommend')(app);
+    require('./appletProductRecommend')(app);
+    require('./wxBaseConfig')(app);
+    require('./wxImgAdConfig')(app);
+    require('./wxFundRecommend')(app);
+    require('./sceneDataConfig')(app);
+    require('./productTemplateConfig')(app);
+    require('./thermalIndexConfig')(app);
+    require('./labelTemplateConfig')(app);
+    require('./wxProductTemplateConfig')(app);
+    require('./wapInformationTemplateConfig')(app);
+    require('./couponConfig')(app);
+    require('./messageTemplateConfig')(app);
+};

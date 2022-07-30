@@ -1,0 +1,62 @@
+{
+  "returnCode":0,
+  "returnMsg":"调用成功",
+"data":
+[
+    {
+    "ymonth": "201809",
+    "status": "N",
+    "remark": "待复核",
+    "checktime": 1539226430899,
+    "operater": "admin",
+    "inserttime": 1539226430899,
+    "updatetime": 1539226430899,
+    "attach1": null,
+    "attach2": null
+},
+    {
+    "ymonth": "201809",
+    "status": "S",
+    "remark": "已复核",
+    "checktime": 1539226430899,
+    "operater": "admin",
+    "inserttime": 1539226430899,
+    "updatetime": 1539226430899,
+    "attach1": null,
+    "attach2": null
+},
+    {
+    "ymonth": "201809",
+    "status": "N",
+    "remark": "待复核",
+    "checktime": 1539226430899,
+    "operater": "admin",
+    "inserttime": 1539226430899,
+    "updatetime": 1539226430899,
+    "attach1": null,
+    "attach2": null
+},
+    {
+    "ymonth": "201809",
+    "status": "N",
+    "remark": "待复核",
+    "checktime": 1539226430899,
+    "operater": "admin",
+    "inserttime": 1539226430899,
+    "updatetime": 1539226430899,
+    "attach1": null,
+    "attach2": null
+},
+    {
+    "ymonth": "201809",
+    "status": "D",
+    "remark": "复核中",
+    "checktime": 1539226430899,
+    "operater": "admin",
+    "inserttime": 1539226430899,
+    "updatetime": 1539226430899,
+    "attach1": null,
+    "attach2": null
+}
+]
+}

@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        /* .date-timepicker{
+            position: absolute;
+            left: 0;
+            top: 0;
+        } */
+        .clearfix:after {
+            content:""; 
+            display: block; 
+            clear:both; 
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+               
+
+                <div class="form-inline" style="padding: 10px 0;border: 1px #eee solid;">
+                    <div class="form-group">
+                        <label class="control-label">检索:</label>
+                        <input type="text" v-model.trim="searchList">
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 10px 0;border: 1px #eee solid;">
+                    <template v-if="filterData.length>0">
+                        <div class="check-box" style="padding: 0 10px;display: inline-block;" v-for="(item,index) in filterData" :key="index" >
+                            <label class="pos-rel">
+                                <input type="checkbox" :id="index" :value="item.thmconfigId" class="ace"
+                                      v-model="thmconfigId" />
+                                <span class="lbl"></span>
+                            </label>
+                            <label :for="index" v-text="item.layoutString"></label>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <template v-if="hasthemeInfoData"><p class="text-center" style="margin: 0;">暂无数据</p></template>   
+                        <template v-else><p class="text-center" style="margin: 0;">正在加载主题...</p></template>     
+                    </template>
+                </div>
+                <div class="table-box clearfix" v-for="(parentItem,parentIndex) in themeContentData" :key="parentIndex" style="background-color: #f1f1f1;">
+                    <!-- 表头 -->
+                    <div class="table-header">
+                        {{parentItem.layoutString}}
+                    </div>
+                     <!--数据表-->
+                     <template v-if="contentTp=='index'">
+                        <table id="index" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">热力指数模板ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">指数编码</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">指数名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.indexCode:item.indexCode'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.indexName:item.indexName'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="9">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='wx_product'">
+                        <table id="wx_product" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">产品模板ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">产品标题</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.prdTitle:item.prdTitle'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" ><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" ><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='manager'">
+                        <table id="manager" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">基金经理名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.dataType=="server"?item.object.managerName:item.managerName'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="7">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='wx_adImg'">
+                        <table id="wx_adImg" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">微信图片ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">微信图片备注</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.remark:item.remark'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='adImg'">
+                        <table id="adImg" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">跳转URl</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">主题下产品排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">备注</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='overflowHide(item.dataType=="server"?item.object.url:item.url)' :title='item.dataType=="server"?item.object.url:item.url'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.remark:item.remark'></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='activity'">
+                        <table id="activity" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">ID编号</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">活动ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">活动名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">图片地址</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">产品排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">创建人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.activityid:item.activityid'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.title:item.title'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.imageUrl:item.imageUrl'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.createBy:item.createBy'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="10">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='funcbtn'">
+                    <table id="funcbtn" class="table table-bordered table-hover dataTable">
+                        <thead>
+                        <tr>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">按钮名称</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">跳转URl</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">图片地址</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                            <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template v-if="parentItem.allData.length>0">
+                            <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                <td class="center" v-text='item.dataType=="server"?item.object.funcBtnName:item.funcBtnName'></td>
+                                <td class="center" v-text='item.dataType=="server"?item.object.url:item.url'></td>
+                                <td class="center" v-text='item.dataType=="server"?item.object.imageUrl:item.imageUrl'></td>
+                                <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                <td class="center" v-text='item.modifyBy'></td>
+                                <td class="center" >
+                                    <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <tr>
+                                <td class="center"  colspan="9">暂无数据</td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+                </template>
+                    <template v-if="contentTp=='fund'">
+                        <table id="fund" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">产品id</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">产品名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">产品副标</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">推荐要素名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.dataType=="server"?item.object.fundId:item.fundId'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.fundTitle:item.fundTitle'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.fundsubTitle:item.fundsubTitle'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.recomelementnm:item.recomelementnm'></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='notice'">
+                        <table id="notice" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">通知内容</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">跳转URl</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.dataType=="server"?item.object.noticeValue:item.noticeValue'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.url:item.url'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="6">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='webanner'">
+                        <table id="webanner" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">小程序图片地址</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">小程序广告标题</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">主题下产品排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.dataType=="server"?item.object.bannerUrl:item.bannerUrl'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.bannerTitle:item.bannerTitle'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="6">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='fundgroup'">
+                        <table id="fundgroup" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">组合ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">组合名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.dataType=="server"?item.object.fundGroupId:item.fundGroupId'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.fundGroupTitle:item.fundGroupTitle'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                       <a href="javascript:;"  @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='custombtn'">
+                        <table id="custombtn" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">按钮名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.dataType=="server"?item.object.btnName:item.btnName'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="7">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='advice'">
+                        <table id="advice" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">对象名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">对象描述</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">主题下产品排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">咨询来源</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">咨询发布时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.dataType=="server"?item.object.adviceTitle:item.adviceTitle'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.adviceDesc:item.adviceDesc'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.dataSource:item.dataSource'></td>
+                                    <td class="center" v-text='formatTime(item.dataType=="server"?item.object.publicTime:item.publicTime)'></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='loadpage'">
+                        <table id="loadpage" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">备注名</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.dataType=="server"?item.object.remark:item.remark'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='product'">
+                        <table id="product" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">产品模板ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">产品标题</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.prdTitle:item.prdTitle'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='tags'">
+                        <table id="tags" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">标签模板ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">标签名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">标签关联子内容类型</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.tagName:item.tagName'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.childContentTp:item.childContentTp'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="9">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='coupon'">
+                        <table id="coupon" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">礼券模板ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">礼券名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="themeContentData.length>0">
+                                <tr v-for="(item,index) in themeContentData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.object.couponno'></td>
+                                    <td class="center" v-text='item.position'></td>
+                                    <td class="center" v-text='formatTime(item.startTime)'></td>
+                                    <td class="center" v-text='formatTime(item.endTime)'></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="showUpdateSecond(item)" >修改</a>/<a href="javascript:;" @click="deleteParamsSecond(item)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='wap_advice'">
+                        <table id="wap_advice" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">对象名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">对象描述</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">主题下产品排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">咨询来源</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">咨询发布时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.dataType=="server"?item.object.adviceTitle:item.adviceTitle'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.adviceDesc:item.adviceDesc'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.dataSource:item.dataSource'></td>
+                                    <td class="center" v-text='formatTime(item.dataType=="server"?item.object.publicTime:item.publicTime)'></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='weprod'">
+                        <table id="weprod" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">小程序产品基金ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">小程序产品功能名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">图片地址</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">主题下产品排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.sceneName:item.sceneName'></td>
+                                    <td class="center" v-text='overflowHide(item.dataType=="server"?item.object.sceneIconUrl:item.sceneIconUrl)' :title='item.dataType=="server"?item.object.sceneIconUrl:item.sceneIconUrl'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="7">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='wx_funcbtn'">
+                        <table id="wx_funcbtn" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">微信按钮ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">微信按钮名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.btnName:item.btnName'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='wx_fund'">
+                        <table id="wx_fund" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">微信推荐要素ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">微信推荐要素名称</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.dataType=="server"?item.object.fundTitle:item.fundTitle'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='leavemsg'">
+                        <table id="leavemsg" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">留言模板ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">类型值</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.typeKey'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='popup'">
+                        <table id="popup" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">弹窗模板ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">类型值</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.typeKey'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='privilege'">
+                        <table id="privilege" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">特权模板ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">类型值</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.typeKey'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='survey'">
+                        <table id="survey" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">问卷ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">类型值</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.typeKey'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template v-if="contentTp=='composite'">
+                        <table id="composite" class="table table-bordered table-hover dataTable">
+                            <thead>
+                            <tr>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">主键ID</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">类型值</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">排序</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">开始时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">结束时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改时间</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">修改人</th>
+                                <th class="center col-sm-1 col-md-1 col-lg-1">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="parentItem.allData.length>0">
+                                <tr v-for="(item,index) in parentItem.allData" :key="index" :class="[item.objconfigId==objconfigId?'red':'']">
+                                    <td class="center" v-text='item.objconfigId'></td>
+                                    <td class="center" v-text='item.typeKey'></td>
+                                    <td class="center" ><input type="number"  v-model="item.position"/></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'startTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" style="position: relative;"><input type="text" :id="'endTime_'+item.thmconfigId+'_'+index" class="date-timepicker" style="width: 145px; margin-left: 2px;"></td>
+                                    <td class="center" v-text='formatTime(item.modifyTime)'></td>
+                                    <td class="center" v-text='item.modifyBy'></td>
+                                    <td class="center" >
+                                        <a href="javascript:;" @click="deleteParams(item,parentIndex,index)" >删除</a>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center"  colspan="8">暂无数据</td>
+                                </tr>
+                            </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <button class="btn btn-primary btn-sm pull-right" style="margin: 10px 0;" @click="saveParams(parentItem)">保存</button>
+                </div>
+
+
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/recommendSystem/recommendSystemConfigMgmt/positionTheThemeMgmtModify.js"></script>
+</body>
+</html>

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content" id="content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row">
+                        <div class="col-xs-12">
+
+
+
+                            <!-- 新增弹窗 -->
+                            <div class="modal" id="addData" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">&times;
+                                            </button>
+                                            <h4 class="modal-title inline">新增</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div enctype="multipart/form-data" class="form-horizontal">
+                                                <template v-for="(value,keys,index) in addData">
+                                                    <div class="form-group" :key="index">
+                                                        <label
+                                                            class="control-label col-lg-2 col-sm-2 col-xs-12">{{keys}}:</label>
+                                                        <template v-if='keys=="pmst"'>
+                                                            <select class="col-lg-8 col-sm-8 col-xs-12"
+                                                                v-model="addData[keys]">
+                                                                <option value="">请选择</option>
+                                                                <option :value="item.pmst"
+                                                                    v-for="(item,index) in initSelectData" :key="index">
+                                                                    {{item.pmst}}</option>
+                                                            </select>
+                                                        </template>
+                                                        <template v-else-if='keys=="pmkey"'>
+                                                            <select class="col-lg-8 col-sm-8 col-xs-12"
+                                                                v-model="addData[keys]">
+                                                                <option value="">请选择</option>
+                                                                <option :value="item.pmkey"
+                                                                    v-for="(item,index) in addFollowPmst" :key="index">
+                                                                    {{item.pmkey}}——{{item.pmnm}}</option>
+                                                            </select>
+                                                        </template>
+                                                        <template v-else>
+                                                            <input type="text" class="col-lg-8 col-sm-8 col-xs-12"
+                                                                v-model="addData[keys]">
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            <p class="text-center">
+                                                <button class="btn btn-sm btn-primary"
+                                                    @click="add('addData')">确定</button>
+                                                <button type="button" class="btn btn-default btn-sm"
+                                                    data-dismiss="modal">取消</button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 新增定义弹窗 -->
+                            <div class="modal" id="addDefine" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">&times;
+                                            </button>
+                                            <h4 class="modal-title inline">新增定义</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div enctype="multipart/form-data" class="form-horizontal">
+                                                <template v-for="(value,keys,index) in addDefine">
+                                                    <div class="form-group" :key="index">
+                                                        <label
+                                                            class="control-label col-lg-2 col-sm-2 col-xs-12">{{keys}}:</label>
+                                                        <input type="text" class="col-lg-8 col-sm-8 col-xs-12"
+                                                            v-model="addDefine[keys]" :disabled='keys=="pmco"'>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            <p class="text-center">
+                                                <button class="btn btn-sm btn-primary"
+                                                    @click="add('addDefine')">确定</button>
+                                                <button type="button" class="btn btn-default btn-sm"
+                                                    data-dismiss="modal">取消</button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 修改弹窗 -->
+                            <div class="modal" id="modify" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">&times;
+                                            </button>
+                                            <h4 class="modal-title inline">修改</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div enctype="multipart/form-data" class="form-horizontal">
+                                                <template v-for="(value,keys,index) in operationData">
+                                                    <div class="form-group" :key="index">
+                                                        <label
+                                                            class="control-label col-lg-2 col-sm-2 col-xs-12">{{keys}}:</label>
+                                                        <input type="text" class="col-lg-8 col-sm-8 col-xs-12"
+                                                            v-model="operationData[keys]"
+                                                            :disabled='keys=="pmco" || keys=="pmkey"|| keys=="pmst"'>
+                                                    </div>
+                                                </template>
+                                                <!-- <div class="form-group">
+                                                    <label
+                                                        class="control-label col-lg-2 col-sm-2 col-xs-12">pmkey:</label>
+                                                    <input type="text" class="col-lg-8 col-sm-8 col-xs-12">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label
+                                                        class="control-label col-lg-2 col-sm-2 col-xs-12">pmco:</label>
+                                                    <input type="text" class="col-lg-8 col-sm-8 col-xs-12">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label
+                                                        class="control-label col-lg-2 col-sm-2 col-xs-12">pmnm:</label>
+                                                    <input type="text" class="col-lg-8 col-sm-8 col-xs-12">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label
+                                                        class="control-label col-lg-2 col-sm-2 col-xs-12">pmv1:</label>
+                                                    <input type="text" class="col-lg-8 col-sm-8 col-xs-12">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label
+                                                        class="control-label col-lg-2 col-sm-2 col-xs-12">pmv2:</label>
+                                                    <input type="text" class="col-lg-8 col-sm-8 col-xs-12">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label
+                                                        class="control-label col-lg-2 col-sm-2 col-xs-12">pmv3:</label>
+                                                    <input type="text" class="col-lg-8 col-sm-8 col-xs-12">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label
+                                                        class="control-label col-lg-2 col-sm-2 col-xs-12">pmv4:</label>
+                                                    <input type="text" class="col-lg-8 col-sm-8 col-xs-12">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label
+                                                        class="control-label col-lg-2 col-sm-2 col-xs-12">pmv5:</label>
+                                                    <input type="text" class="col-lg-8 col-sm-8 col-xs-12">
+                                                </div> -->
+                                            </div>
+                                            <p class="text-center">
+                                                <button class="btn btn-sm btn-primary" @click="modifyParams">确定</button>
+                                                <button type="button" class="btn btn-default btn-sm"
+                                                    data-dismiss="modal">取消</button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--消息提示弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×</button>
+                                            <h4 class="modal-title"></h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm"
+                                                data-dismiss="modal">确定</button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--删除弹窗-->
+                            <div class="modal" id="delete" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×</button>
+                                            <h4 class="modal-title">删除</h4>
+                                        </div>
+                                        <p>
+                                            <div class="modal-body text-center">
+                                                <h4>确认删除该数据吗?</h4>
+                                            </div>
+                                        </p>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm"
+                                                @click="deleteParams(deleteData)">确定</button>
+                                            <button type="button" class="btn btn-default btn-sm"
+                                                data-dismiss="modal">取消</button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-inline" style="padding: 10px 0;">
+                                <div class="form-group">
+                                    <label style="width: 100px;text-align: right">pmst参数系统:</label>
+                                    <select style="width: 169px;" v-model="pmst">
+                                        <option value="">请选择</option>
+                                        <option :value="item.pmst" v-for="(item,index) in initSelectData" :key="index">
+                                            {{item.pmst}}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label style="width: 100px;text-align: right">pmkey参数键:</label>
+                                    <select style="width: 169px;" v-model="pmkey">
+                                        <option value="">请选择</option>
+                                        <option :value="item.pmkey" v-for="(item,index) in followPmst" :key="index">
+                                            {{item.pmkey}}——{{item.pmnm}}</option>
+                                    </select>
+                                </div>
+                                <!-- <div class="form-group">
+                                    <label style="width: 60px;text-align: right">pmco:</label>
+                                    <input type="text" v-model.trim="pmco">
+                                </div> -->
+                                <div class="form-group pull-right">
+                                    <input type="button" class="btn btn-sm btn-primary " value="查询"
+                                        @click="getTableData(0)">
+                                    <input type="button" class="btn btn-sm btn-primary" style="margin-left: 20px;"
+                                        value="新增" @click="addDetail('addData')">
+                                    <input type="button" class="btn btn-sm btn-primary" style="margin-left: 20px;"
+                                        value="新增定义" @click="addDetail('addDefine')">
+                                </div>
+                            </div>
+
+
+
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <!--分页器和快速查询-->
+                            <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                                <div class="col-xs-6">
+                                    <div class="dataTables_length" id="dynamic-table_length">
+                                        <label>每页显示</label>
+                                        <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                            <option value="10">10</option>
+                                            <option value="20">20</option>
+                                            <option value="50">50</option>
+                                        </select>
+                                        <label>条</label>
+                                    </div>
+                                </div>
+                                <!-- <div class="col-xs-6">
+                                    <div id="dynamic-table_filter" class="dataTables_filter">
+                                        <label>快速查询:</label>
+                                        <input type="text" class="input-sm" v-model="condition">
+                                    </div>
+                                </div> -->
+                            </div>
+                            <!--数据表-->
+                            <div class="table-responsive">
+                                <table id="simple-table"
+                                    class="table table-striped table-bordered table-hover dataTable "
+                                    style="margin-bottom: 0;word-break:break-all; word-wrap:break-all;">
+                                    <thead>
+                                        <tr>
+                                            <th class="center">pmst</th>
+                                            <th class="center">pmkey</th>
+                                            <th class="center">pmco</th>
+                                            <th class="center">pmnm</th>
+                                            <th class="center">pmv1</th>
+                                            <th class="center">pmv2</th>
+                                            <th class="center">pmv3</th>
+                                            <th class="center">pmv4</th>
+                                            <th class="center">pmv5</th>
+                                            <th class="center">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template v-if="viewData.length>0">
+                                            <tr v-for="(item,index) in viewData" :key="index">
+                                                <td class=" center col-sm-1 col-md-1 col-lg-1"
+                                                    v-text="item.pmst? item.pmst:'-'">
+                                                </td>
+                                                <td class=" center col-sm-1 col-md-1 col-lg-1"
+                                                    v-text="item.pmkey? item.pmkey:'-'">
+                                                </td>
+                                                <td class=" center col-sm-1 col-md-1 col-lg-1"
+                                                    v-text="item.pmco? item.pmco:'-'">
+                                                </td>
+                                                <td class=" center col-sm-1 col-md-1 col-lg-1"
+                                                    v-text="item.pmnm? item.pmnm:'-'">
+                                                </td>
+                                                <td class=" center col-sm-1 col-md-1 col-lg-1"
+                                                    v-text="item.pmv1? item.pmv1:'-'">
+                                                </td>
+                                                <td class=" center col-sm-1 col-md-1 col-lg-1"
+                                                    v-text="item.pmv2? item.pmv2:'-'">
+                                                </td>
+                                                <td class=" center col-sm-1 col-md-1 col-lg-1"
+                                                    v-text="item.pmv3? item.pmv3:'-'">
+                                                </td>
+                                                <td class=" center col-sm-1 col-md-1 col-lg-1"
+                                                    v-text="item.pmv4? item.pmv4:'-'">
+                                                </td>
+                                                <td class=" center col-sm-1 col-md-1 col-lg-1"
+                                                    v-text="item.pmv5? item.pmv5:'-'">
+                                                </td>
+                                                <td class=" center col-sm-1 col-md-1 col-lg-1">
+                                                    <a href="javascript:;" @click='showModifyDetail(item)'>修改</a>
+                                                    <span style="margin:0 5px;">/</span>
+                                                    <a href="javascript:;" style="color: #f66;"
+                                                        @click='deleteAlert(item)'>删除</a>
+                                                </td>
+
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'没有数据'" colspan="12"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!--底部页码-->
+                            <div v-if="viewData.length>0" class="row"
+                                style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                                <div class="col-xs-2">
+                                    <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                                </div>
+                                <div class="col-xs-10">
+                                    <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                        <ul class="pagination">
+                                            <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                                @click="prev">
+                                                <a href="javascript:;" v-text="'上一页'"></a>
+                                            </li>
+                                            <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                                v-for="value in middleData.length" @click="changeIndex(value)">
+                                                <a href="javascript:;" v-text="value"></a>
+                                            </li>
+                                            <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                                @click="next">
+                                                <a href="javascript:;" v-text="'下一页'"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div><!-- /.col -->
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/publicConfig/paramsMaintain/maintain.js"></script>
+    <!-- <script src="/js/publicConfig/automatedTool/uploadPreview.js"></script> -->
+
+</body>
+
+</html>

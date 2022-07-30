@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache,must-revalidate">
+<meta http-equiv="expires" content="0">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datepicker3.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap24.css"/>
+    <style>
+        .show {
+            display: none;
+        }
+
+        .hide {
+            display: block;
+        }
+        [v-cloak]{
+            display: none!important;
+        }
+
+        .px100{
+            width: 100px;
+        }
+
+        input.error{
+            color: red;
+        }
+
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+
+
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!--提示信息弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 查询窗口 -->
+                        <form class="form-inline" style="padding: 10px 0;">
+
+                            <!--<div class="form-group">
+                                <label class="control-label">渠道代码:</label>
+                                <input type="text" v-model="partnerid">
+                            </div>-->
+                            <div class="form-group">
+                                <label class="control-label">基金代码:</label>
+                                <input type="text" v-model="fundid">
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">路径:</label>
+                                <input type="text" style="width: 550px;" v-model="filepath">
+                            </div>
+
+                            <div class="form-group pull-right"  style="margin-right: 10px">
+                                <input type="button" class="btn btn-sm btn-primary" value="导出" @click='exportExcel'>
+                            </div>
+
+                        </form>
+
+                        <div class="table-header">
+                            <%= cpage %>--表格数据
+                        </div>
+                        <div></div>
+                        <!--数据表-->
+                        <table class="table table-bordered table-hover dataTable"  id="simple-table"  >
+
+                        </table>
+
+                        <!-- PAGE CONTENT ENDS -->
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+
+            </div><!-- /.page-content -->
+        </div>
+
+
+    </div><!-- /.main-content -->
+
+    <% include ../../common/footer.html %>
+
+</div><!-- /.main-container -->
+
+<% include ../../common/basic-scripts.html %>
+
+<script>
+    $("#accordion").accordion();
+    var fundids = ['000330','000600','519008','000397','470010'];
+    $("#autocomplete").autocomplete({
+        source:fundids
+    });
+</script>
+
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<!-- inline scripts related to this page -->
+<script src="/ace/assets/js/jquery-ui.custom.min.js"></script>
+<script src="/ace/assets/js/jquery.ui.touch-punch.min.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/ace/assets/js/spinbox.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/ace/assets/js/autosize.min.js"></script>
+<script src="/ace/assets/js/jquery.inputlimiter.min.js"></script>
+<script src="/ace/assets/js/jquery.maskedinput.min.js"></script>
+<script src="/ace/assets/js/markdown.min.js"></script>
+<script src="/ace/assets/js/bootstrap-markdown.min.js"></script>
+<script src="/ace/assets/js/jquery.hotkeys.index.min.js"></script>
+<script src="/ace/assets/js/bootstrap-wysiwyg.min.js"></script>
+<script src="/ace/assets/js/bootbox.js"></script>
+<script src="/ace/assets/js/jquery.validate.min.js"></script>
+<script src="/js/thirdPartyOperation/products/profileinformation.js"></script>
+<script src="/js/thirdPartyOperation/common/richTextBox.js"></script>
+<script src="/js/thirdPartyOperation/common/ajaxfileupload.js"></script>
+<script src="/ace/assets/js/jquery-typeahead.js"></script>
+<script src="/ace/assets/js/tree.min.js"></script>
+
+</body>
+
+</html>

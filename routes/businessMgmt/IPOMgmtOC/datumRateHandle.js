@@ -1,0 +1,675 @@
+const request = require('./../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').IPOMgmtOC.datumRateHandle;
+const tableName = 'bm_ipo_fundrate';
+
+module.exports = function (app) {
+    // 获取基金列表数据
+    app.post('/businessMgmt/IPOMgmtOC/datumRateHandle/collection.ajax', (req, res, next) => {
+        let option = {
+            pageUrl: '/businessMgmt/IPOMgmtOC/datumRateHandle/collection.ajax',
+            req,
+            url: apiUrl.collection,
+            qs: {
+                fundTypeCustomized: 'all'
+            },
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            if (body && body.returnCode == 0 && Array.isArray(body.body)) {
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: body.body.map(item => {
+                        return {
+                            fundId: item.fundId,
+                            fundName: item.fundName,
+                        };
+                    })
+                });
+            } else if (body.returnCode != 0 && body.returnCode != 9999) {
+                res.send({
+                    error: 1,
+                    msg: body.returnMsg,
+                    data: null
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取数据失败',
+                    data: null
+                });
+            }
+        });
+    });
+    // 获取查询服务端数据
+    app.post('/businessMgmt/IPOMgmtOC/datumRateHandle/queryFeeList.ajax', (req, res, next) => {
+        let p1 = new Promise((resolve, reject) => {
+            let fundId = req.body.fundId;
+            let tradeType = req.body.tradeType;
+            if (!fundId || !tradeType) {
+                return reject({
+                    message: '缺少必传参数'
+                });
+            }
+            let option = {
+                pageUrl: '/businessMgmt/IPOMgmtOC/datumRateHandle/collection.ajax --getServiceList',
+                req,
+                url: apiUrl.queryFeeList[0] + req.body.fundId + apiUrl.queryFeeList[1] + '?tradeType=' + req.body.tradeType,
+                timeout: 15000,
+                json: true
+            };
+            request(option, (error, response, body) => {
+                if (error) {
+                    reject({
+                        message: '获取服务端数据失败'
+                    });
+                }
+                if (body && body.returnCode == 0 && Array.isArray(body.body)) {
+                    resolve(body.body);
+                } else if (body.returnCode != 0 && body.returnCode != 9999) {
+                    reject({
+                        message: body.returnMsg
+                    });
+                } else {
+                    reject({
+                        message: '获取服务端数据失败'
+                    });
+                }
+            });
+        });
+        let p2 = new Promise((resolve, reject) => {
+            let option = {
+                pageUrl: '/businessMgmt/IPOMgmtOC/datumRateHandle/queryFeeList.ajax --getFundList',
+                req,
+                url: apiUrl.collection,
+                qs: {
+                    fundTypeCustomized: 'all'
+                },
+                timeout: 15000,
+                json: true
+            };
+            request(option, (error, response, body) => {
+                if (error) {
+                    reject({
+                        message: '获取基金列表失败'
+                    });
+                }
+                if (body && body.returnCode == 0 && Array.isArray(body.body)) {
+                    resolve(body.body);
+                } else if (body.returnCode != 0 && body.returnCode != 9999) {
+                    reject({
+                        message: body.returnMsg
+                    });
+                } else {
+                    reject({
+                        message: '获取基金列表失败'
+                    });
+                }
+            });
+        });
+        Promise.all([p1, p2]).then(([list, fundList]) => {
+            let resultArr = list.map(item => {
+                let obj = {};
+                let fundInfo = fundList.filter(fundInfo => item.fundid === fundInfo.fundId)[0];
+                if (fundInfo) {
+                    obj.fundName = fundInfo.fundName;
+                } else {
+                    obj.fundName = '暂无基金名称';
+                }
+                obj.tradeType = item.tradeType;
+                if (item.tradeType === '00') {
+                    obj.showTradeType = '申购';
+                } else if (item.tradeType === '01') {
+                    obj.showTradeType = '认购';
+                } else if (item.tradeType === '02') {
+                    obj.showTradeType = '赎回';
+                } else if (item.tradeType === '03') {
+                    obj.showTradeType = '定投';
+                } else if (item.tradeType === '04') {
+                    obj.showTradeType = '分红';
+                } else if (item.tradeType === '09') {
+                    obj.showTradeType = '其他';
+                } else {
+                    obj.showTradeType = item.tradeType;
+                }
+                obj.serialNo = item.serialno;
+                obj.fundId = item.fundid;
+                obj.strAmt = item.stramt;
+                obj.endAmt = item.endamt;
+                obj.fee = item.fee;
+                obj.maxFee = item.maxfee;
+                return obj;
+            });
+            res.send({
+                error: 0,
+                msg: '请求成功',
+                data: resultArr
+            });
+        }).catch(error => {
+            res.send({
+                error: 1,
+                msg: error.message,
+                data: null
+            });
+        });
+    });
+    // 服务端删除操作落本地数据
+    app.post('/businessMgmt/IPOMgmtOC/datumRateHandle/serviceToLocalDelete.ajax', (req, res, next) => {
+        pool.getConnection(function (error, connection) {
+            if (error) {
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/serviceToLocalDelete.ajax 链接本地数据库失败:', error.message);
+                return res.send({
+                    error: 1,
+                    msg: '链接本地数据库失败',
+                    data: null
+                });
+            }
+            let SQL = `INSERT INTO ${tableName} (service_id,content,creator,operate,status) VALUES ('${req.body.service_id}','${req.body.content}','${req.session.loginInfo.userid}',3,2)`;
+            console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/serviceToLocalDelete.ajax run business SQL: ', SQL);
+            connection.query(SQL, function (error, results) {
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/serviceToLocalDelete.ajax run business SQL error:', error);
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/serviceToLocalDelete.ajax run business SQL results:', results);
+                connection.release();
+                if (error) {
+                    return res.send({
+                        error: 1,
+                        msg: error.message,
+                        data: null
+                    });
+                }
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: null
+                });
+            });
+        });
+    });
+    // 服务端修改操作落本地数据
+    app.post('/businessMgmt/IPOMgmtOC/datumRateHandle/serviceToLocalUpdate.ajax', (req, res, next) => {
+        pool.getConnection(function (error, connection) {
+            if (error) {
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/serviceToLocalUpdate.ajax 链接本地数据库失败:', error.message);
+                return res.send({
+                    error: 1,
+                    msg: '链接本地数据库失败',
+                    data: null
+                });
+            }
+            let SQL = `INSERT INTO ${tableName} (service_id,content,creator,operate,status) VALUES ('${req.body.service_id}','${req.body.content}','${req.session.loginInfo.userid}',2,2)`;
+            console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/serviceToLocalUpdate.ajax run business SQL: ', SQL);
+            connection.query(SQL, function (error, results) {
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/serviceToLocalUpdate.ajax run business SQL error:', error);
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/serviceToLocalUpdate.ajax run business SQL results:', results);
+                connection.release();
+                if (error) {
+                    return res.send({
+                        error: 1,
+                        msg: error.message,
+                        data: null
+                    });
+                }
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: null
+                });
+            });
+        });
+    });
+    // 获取本地数据
+    app.post('/businessMgmt/IPOMgmtOC/datumRateHandle/getLocalList.ajax', (req, res, next) => {
+        pool.getConnection(function (error, connection) {
+            if (error) {
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/getLocalList.ajax 链接本地数据库失败', error.message);
+                return res.send({
+                    error: 1,
+                    msg: '链接本地数据库失败',
+                    data: null
+                });
+            }
+            let SQL = `SELECT * FROM ${tableName} WHERE delete_flag='F' AND creator='${req.session.loginInfo.userid}'`;
+            if (req.body.fundId) {
+                SQL += ` AND JSON_EXTRACT(content, '$.fundId')='${req.body.fundId}'`;
+            }
+            if (req.body.tradeType) {
+                SQL += ` AND JSON_EXTRACT(content, '$.tradeType')='${req.body.tradeType}'`;
+            }
+            if (req.body.operate) {
+                SQL += ` AND operate='${req.body.operate}'`;
+            }
+            if (req.body.status) {
+                SQL += ` AND status='${req.body.status}'`;
+            }
+            SQL += ' ORDER BY update_timestamp DESC';
+            console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/getLocalList.ajax run SQL: ', SQL);
+            connection.query(SQL, function (error, results) {
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/getLocalList.ajax run SQL error', error);
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/getLocalList.ajax run SQL results:', results);
+                if (error) {
+                    connection.release();
+                    return res.send({
+                        error: 1,
+                        msg: '运行SQL语句失败',
+                        data: null
+                    });
+                }
+                let resultArr = Array.from(results).map(item => {
+                    let content = JSON.parse(item.content);
+                    let obj = {
+                        local_id: item.local_id,
+                        service_id: item.service_id,
+                        fundId: content.fundId,
+                        fundName: content.fundName,
+                        tradeType: content.tradeType,
+                        strAmt: content.strAmt,
+                        endAmt: content.endAmt,
+                        fee: content.fee,
+                        maxFee: content.maxFee,
+                        creator: item.creator,
+                        createTime: formatTimeStamp(item.create_timestamp),
+                        updateTime: formatTimeStamp(item.update_timestamp),
+                        operate: item.operate,
+                        status: item.status,
+                        reviewer: item.reviewer,
+                        reviewTime: item.review_time,
+                        remark: item.remark
+                    };
+                    if (obj.status == 0) {
+                        obj.showStatus = '复核通过';
+                    } else if (obj.status == 1) {
+                        obj.showStatus = '编辑中';
+                    } else if (obj.status == 2) {
+                        obj.showStatus = '待复核';
+                    } else if (obj.status == 9) {
+                        obj.showStatus = '复核驳回';
+                    } else {
+                        obj.showStatus = obj.status;
+                    }
+                    if (obj.operate == 1) {
+                        obj.showOperate = '新增';
+                    } else if (obj.operate == 2) {
+                        obj.showOperate = '修改';
+                    } else if (obj.operate == 3) {
+                        obj.showOperate = '删除';
+                    } else {
+                        obj.showOperate = obj.operate;
+                    }
+                    if (obj.tradeType === '00') {
+                        obj.showTradeType = '申购';
+                    } else if (obj.tradeType === '01') {
+                        obj.showTradeType = '认购';
+                    } else if (obj.tradeType === '02') {
+                        obj.showTradeType = '赎回';
+                    } else if (obj.tradeType === '03') {
+                        obj.showTradeType = '定投';
+                    } else if (obj.tradeType === '04') {
+                        obj.showTradeType = '分红';
+                    } else if (obj.tradeType === '09') {
+                        obj.showTradeType = '其他';
+                    } else {
+                        obj.showTradeType = obj.tradeType;
+                    }
+                    for (let key in obj) {
+                        if (obj[key] !== 0 && !obj[key]) {
+                            obj[key] = '-';
+                        }
+                    }
+                    return obj;
+                });
+                connection.release();
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: resultArr
+                });
+            });
+        });
+    });
+    // 向本地数据库添加数据
+    app.post('/businessMgmt/IPOMgmtOC/datumRateHandle/addLocalData.ajax', (req, res, next) => {
+        pool.getConnection((error, connection) => {
+            if (error) {
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/addLocalData.ajax 链接本地数据库失败', error.message);
+                return res.send({
+                    error: 1,
+                    msg: '链接本地数据库失败',
+                    data: null
+                });
+            }
+            let addDataToLocal = function (item) {
+                return new Promise((resolve, reject) => {
+                    let content = JSON.stringify(item);
+                    let creator = req.session.loginInfo.userid;
+                    let SQL = `INSERT INTO ${tableName} (content,creator,operate,status) VALUES ('${content}','${creator}',1,2)`;
+                    console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/addLocalData.ajax run SQL: ', SQL);
+                    connection.query(SQL, function (error, results) {
+                        console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/addLocalData.ajax run SQL error:', error);
+                        console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/addLocalData.ajax run SQL results:', results);
+                        if (error) {
+                            reject({
+                                message: `运行SQL语句: ${SQL} 失败,error: ${error.message}`
+                            });
+                        }
+                        resolve();
+                    });
+                });
+            };
+            Promise.all(JSON.parse(req.body.detail).map(item => {
+                item.fundId = req.body.fundId;
+                item.fundName = req.body.fundName;
+                item.tradeType = req.body.tradeType;
+                return addDataToLocal(item);
+            })).then(() => {
+                connection.release();
+                res.send({
+                    error: 0,
+                    msg: '添加成功',
+                    data: null
+                });
+            }).catch(error => {
+                connection.release();
+                res.send({
+                    error: 1,
+                    msg: error.message,
+                    data: null
+                });
+            });
+        });
+    });
+    // 本地数据库删除数据
+    app.post('/businessMgmt/IPOMgmtOC/datumRateHandle/revertLocalData.ajax', (req, res, next) => {
+        pool.getConnection(function (error, connection) {
+            if (error) {
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/revertLocalData.ajax  链接本地数据库失败', error.message);
+                return res.send({
+                    error: 1,
+                    msg: '链接本地数据库失败',
+                    data: null
+                });
+            }
+            let SQL = `UPDATE ${tableName} SET delete_flag='T' WHERE local_id=${req.body.local_id} AND update_timestamp='${req.body.updateTime}'`;
+            console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/revertLocalData.ajax run business SQL: ', SQL);
+            connection.query(SQL, function (error, results) {
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/revertLocalData.ajax run business SQL error:', error);
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/revertLocalData.ajax run business SQL results:', results);
+                connection.release();
+                if (error) {
+                    return res.send({
+                        error: 1,
+                        msg: error.message,
+                        data: null
+                    });
+                }
+                if (results.changedRows) {
+                    res.send({
+                        error: 0,
+                        msg: '调用成功',
+                        data: null
+                    });
+                } else {
+                    res.send({
+                        error: 1,
+                        msg: '数据不存在或已更新,请刷新页面',
+                        data: null
+                    });
+                }
+            });
+        });
+    });
+    // 本地数据库提交数据
+    app.post('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalData.ajax', (req, res, next) => {
+        pool.getConnection(function (error, connection) {
+            if (error) {
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalData.ajax  链接本地数据库失败', error.message);
+                return res.send({
+                    error: 1,
+                    msg: '链接本地数据库失败',
+                    data: null
+                });
+            }
+            // 检查该条数据是否被更改
+            let checkHasSubmit = new Promise((resolve, reject) => {
+                let SQL = `SELECT * FROM ${tableName} WHERE local_id=${req.body.local_id} AND update_timestamp='${req.body.updateTime}'`;
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalData.ajax run check SQL:', SQL);
+                connection.query(SQL, function (error, results) {
+                    console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalData.ajax run check SQL error:', error);
+                    console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalData.ajax run check SQL results:', results);
+                    if (error) {
+                        reject({
+                            message: '检查该条数据是否已被审核SQL语句失败'
+                        });
+                    }
+                    resolve(Array.from(results).length);
+                });
+            });
+            checkHasSubmit.then(hasSubmit => {
+                if (!hasSubmit) {
+                    connection.release();
+                    return res.send({
+                        error: 1,
+                        msg: '数据不存在或已更新，请刷新列表',
+                        data: null
+                    });
+                }
+                let SQL = `UPDATE ${tableName} SET status=2 WHERE local_id=${req.body.local_id}`;
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalData.ajax run business SQL: ', SQL);
+                connection.query(SQL, function (error, results) {
+                    console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalData.ajax run business SQL error:', error);
+                    console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalData.ajax run business SQL results:', results);
+                    if (error) {
+                        connection.release();
+                        return res.send({
+                            error: 1,
+                            msg: error.message,
+                            data: null
+                        });
+                    }
+                    connection.release();
+                    res.send({
+                        error: 0,
+                        msg: '调用成功',
+                        data: req.body.local_id
+                    });
+                });
+            }).catch(error => {
+                connection.release();
+                res.send({
+                    error: 1,
+                    msg: error.message,
+                    data: null
+                });
+            });
+        });
+    });
+    // 本地数据库重新提交数据
+    app.post('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalDataAgain.ajax', (req, res, next) => {
+        pool.getConnection(function (error, connection) {
+            if (error) {
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalDataAgain.ajax  链接本地数据库失败', error.message);
+                return res.send({
+                    error: 1,
+                    msg: '链接本地数据库失败',
+                    data: null
+                });
+            }
+            // 检查该条数据是否被更改
+            let checkHasSubmit = new Promise((resolve, reject) => {
+                let SQL = `SELECT * FROM ${tableName} WHERE local_id=${req.body.local_id} AND update_timestamp='${req.body.updateTime}'`;
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalDataAgain.ajax run check SQL:', SQL);
+                connection.query(SQL, function (error, results) {
+                    console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalDataAgain.ajax run check SQL error:', error);
+                    console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalDataAgain.ajax run check SQL results:', results);
+                    if (error) {
+                        reject({
+                            message: '检查该条数据是否已被审核SQL语句失败'
+                        });
+                    }
+                    resolve(Array.from(results).length);
+                });
+            });
+            // 删除原数据
+            let deleteOriginData = new Promise((resolve, reject) => {
+                let SQL = `UPDATE ${tableName} SET delete_flag='T' WHERE local_id=${req.body.local_id} AND update_timestamp='${req.body.updateTime}'`;
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalDataAgain.ajax run deleteOriginData SQL:', SQL);
+                connection.query(SQL, function (error, results) {
+                    console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalDataAgain.ajax run deleteOriginData SQL error:', error);
+                    console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalDataAgain.ajax run deleteOriginData SQL results:', results);
+                    if (error) {
+                        reject({
+                            message: '删除原数据失败'
+                        });
+                    }
+                    if (results.changedRows === 0) {
+                        reject({
+                            message: '数据不存在或已更新，请刷新列表'
+                        });
+                    }
+                    resolve();
+                });
+            });
+            // 新增申请
+            let addNewSubmit = new Promise((resolve, reject) => {
+                let {
+                    fundId,
+                    fundName,
+                    tradeType,
+                    strAmt,
+                    endAmt,
+                    fee,
+                    maxFee
+                } = req.body;
+                let content = JSON.stringify({
+                    fundId,
+                    fundName,
+                    tradeType,
+                    strAmt,
+                    endAmt,
+                    fee,
+                    maxFee
+                });
+                let creator = req.session.loginInfo.userid;
+                let service_id = (req.body.service_id && req.body.service_id !== '-') ? req.body.service_id : '';
+                let operate = req.body.operate;
+                let SQL = `INSERT INTO ${tableName} (service_id,content,creator,operate,status) VALUES ('${service_id}','${content}','${creator}',${operate},2)`;
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalDataAgain.ajax run addNewSubmit SQL:', SQL);
+                connection.query(SQL, function (error, results) {
+                    console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalDataAgain.ajax run addNewSubmit SQL error:', error);
+                    console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/submitLocalDataAgain.ajax run addNewSubmit SQL results:', results);
+                    if (error) {
+                        reject({
+                            message: '新增申请失败'
+                        });
+                    }
+                    resolve();
+                });
+            });
+            checkHasSubmit.then(hasSubmit => {
+                if (!hasSubmit) {
+                    connection.release();
+                    return res.send({
+                        error: 1,
+                        msg: '数据不存在或已更新，请刷新列表',
+                        data: null
+                    });
+                }
+                deleteOriginData.then(() => {
+                    addNewSubmit.then(() => {
+                        connection.release();
+                        res.send({
+                            error: 0,
+                            msg: '调用成功',
+                            data: null
+                        });
+                    }).catch(error => {
+                        connection.release();
+                        res.send({
+                            error: 1,
+                            msg: error.message,
+                            data: null
+                        });
+                    });
+                }).catch(error => {
+                    connection.release();
+                    res.send({
+                        error: 1,
+                        msg: error.message,
+                        data: null
+                    });
+                });
+            }).catch(error => {
+                connection.release();
+                res.send({
+                    error: 1,
+                    msg: error.message,
+                    data: null
+                });
+            });
+        });
+    });
+    // 本地数据库修改数据
+    app.post('/businessMgmt/IPOMgmtOC/datumRateHandle/updateLocalData.ajax', (req, res, next) => {
+        pool.getConnection(function (error, connection) {
+            if (error) {
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/updateLocalData.ajax 链接本地数据库失败', error.message);
+                return res.send({
+                    error: 1,
+                    msg: '链接本地数据库失败',
+                    data: null
+                });
+            }
+            let content = JSON.stringify({
+                fundId: req.body.fundId,
+                fundName: req.body.fundName,
+                tradeType: req.body.tradeType,
+                strAmt: req.body.strAmt,
+                endAmt: req.body.endAmt,
+                fee: req.body.fee,
+                maxFee: req.body.maxFee,
+            });
+            let SQL = `UPDATE ${tableName} SET content='${content}' WHERE local_id=${req.body.local_id} AND update_timestamp='${req.body.updateTime}'`;
+            console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/updateLocalData.ajax run business SQL: ', SQL);
+            connection.query(SQL, function (error, results) {
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/updateLocalData.ajax run business SQL error:', error);
+                console.log('/businessMgmt/IPOMgmtOC/datumRateHandle/updateLocalData.ajax run business SQL results:', results);
+                connection.release();
+                if (error) {
+                    return res.send({
+                        error: 1,
+                        msg: error.message,
+                        data: null
+                    });
+                }
+                if (results.changedRows) {
+                    res.send({
+                        error: 0,
+                        msg: '调用成功',
+                        data: null
+                    });
+                } else {
+                    res.send({
+                        error: 1,
+                        msg: '数据不存在或已更新,请刷新页面',
+                        data: null
+                    });
+                }
+            });
+        });
+    });
+};
+
+function formatTimeStamp(timestamp) {
+    let d = new Date(timestamp);
+    let fixZero = function (num) {
+        return num < 10 ? '0' + num : num;
+    };
+    return [d.getFullYear(), d.getMonth() + 1, d.getDate()].map(value => fixZero(value)).join('-') +
+        ' ' + [d.getHours(), d.getMinutes(), d.getSeconds()].map(value => fixZero(value)).join(':');
+}

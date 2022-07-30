@@ -1,0 +1,123 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').activeTemplateMgmt.activeTemplateDeploy;
+module.exports = function (app) {
+
+    // 获取  初始数据和查询
+    app.post('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataQueryId.ajax', (req, res, next) => {
+        let params = req.body,
+            userName = req.session.loginInfo.username;
+        let option = {
+            session: req.session,
+            url: apiUrl.dataQueryId,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataQueryId.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataQueryId.ajax error:', error);
+            console.log('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataQueryId.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataQueryId.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            result.body.mcpActCutinPointConfigs.forEach(element => {
+                element.mcpActComponentConfigs = result.body.mcpActComponentConfigs
+            });
+            if (result && result.returnCode == '0') {
+                result.body.userName = userName;
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '获取数据失败'
+                });
+            }
+        });
+    });
+    //修改
+    app.post('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataChange.ajax', (req, res, next) => {
+        let params = req.body;
+        params.cutinPointComponents = JSON.parse(params.cutinPointComponents)
+        let option = {
+            session: req.session,
+            url: apiUrl.dataChange,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataChange.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataChange.ajax error:', error);
+            console.log('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataChange.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataChange.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '保存失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '保存成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '保存失败'
+                });
+            }
+        });
+    });
+    // 新增
+    app.post('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataAdd.ajax', (req, res, next) => {
+        let params = req.body;
+        params.cutinPointComponents = JSON.parse(params.cutinPointComponents)
+        let option = {
+            session: req.session,
+            url: apiUrl.dataAdd,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataAdd.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataAdd.ajax error:', error);
+            console.log('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataAdd.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/activeTemplateMgmt/activeTemplate/deployDataAdd.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '新增失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == '0') {
+                res.send({
+                    error: 0,
+                    msg: '新增成功',
+                    data: result.body
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '新增失败'
+                });
+            }
+        });
+    });
+
+
+};

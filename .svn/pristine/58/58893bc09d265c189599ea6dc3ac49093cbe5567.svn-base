@@ -1,0 +1,423 @@
+module.exports = [{
+        "menuId": "4",
+        "parentMenuId": "",
+        "hasSubmenu": true,
+        "type": "2",
+        "name": "公共配置",
+        "url": "/publicConfig"
+    },
+    {
+        "menuId": "4-1",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "短链接管理",
+        "url": "/publicConfig/shortLink"
+    },
+    {
+        "menuId": "4-1-1",
+        "parentMenuId": "4-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "短链接配置",
+        "url": "/publicConfig/shortLink/linkConfig.html"
+    },
+    {
+        "menuId": "4-2",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "自动化工具",
+        "url": "/publicConfig/automatedTool"
+    },
+    {
+        "menuId": "4-2-1",
+        "parentMenuId": "4-2",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "自动化切片工具",
+        "url": "/publicConfig/automatedTool/sliceTool.html"
+    },
+    {
+        "menuId": "4-2-2",
+        "parentMenuId": "4-2",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "近期产品列表",
+        "url": "/publicConfig/automatedTool/recentProductList.html"
+    },
+    {
+        "menuId": "4-3",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "支付宝相关配置",
+        "url": "/publicConfig/alipayConfig"
+    },
+    {
+        "menuId": "4-3-1",
+        "parentMenuId": "4-3",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "小程序配置",
+        "url": "/publicConfig/alipayConfig/miniConfig.html"
+    },
+    {
+        "menuId": "4-3-2",
+        "parentMenuId": "4-3",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "添财红包配置",
+        "url": "/publicConfig/alipayConfig/makeFutureConfig.html"
+    },
+    {
+        "menuId": "4-3-3",
+        "parentMenuId": "4-3",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "招行小程序配置",
+        "url": "/publicConfig/alipayConfig/cmbMPConfig.html"
+    },
+    {
+        "menuId": "4-4",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "公共参数维护",
+        "url": "/publicConfig/paramsMaintain"
+    },
+    {
+        "menuId": "4-4-1",
+        "parentMenuId": "4-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "公共参数维护",
+        "url": "/publicConfig/paramsMaintain/maintain.html"
+    },
+    {
+        "menuId": "4-5",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "手机后台管理",
+        "url": "/publicConfig/mobileMgmt"
+    },
+    {
+        "menuId": "4-5-1",
+        "parentMenuId": "4-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "系统缓存刷新",
+        "url": "/publicConfig/mobileMgmt/systemRefresh.html"
+    },
+    {
+        "menuId": "4-6",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "定投策略管理",
+        "url": "/publicConfig/AIPstrategyMgmt"
+    },
+    {
+        "menuId": "4-6-1",
+        "parentMenuId": "4-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "定投策略设置",
+        "url": "/publicConfig/AIPstrategyMgmt/planSetting.html"
+    },
+    {
+        "menuId": "4-7",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "APP搜索配置",
+        "url": "/publicConfig/appSearchConfig"
+    },
+    {
+        "menuId": "4-7-1",
+        "parentMenuId": "4-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "多音字配置",
+        "url": "/publicConfig/appSearchConfig/polyphoneConfig.html"
+    },
+    {
+        "menuId": "4-7-2",
+        "parentMenuId": "4-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "功能搜索配置",
+        "url": "/publicConfig/appSearchConfig/searchConfig.html"
+    },
+    {
+        "menuId": "4-7-3",
+        "parentMenuId": "4-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "搜索热词配置",
+        "url": "/publicConfig/appSearchConfig/searchHotWordsConfig.html"
+    },
+    {
+        "menuId": "4-7-4",
+        "parentMenuId": "4-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "近义词配置",
+        "url": "/publicConfig/appSearchConfig/synonymConfig.html"
+    },
+    {
+        "menuId": "4-7-5",
+        "parentMenuId": "4-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "定向搜索配置",
+        "url": "/publicConfig/appSearchConfig/directionalSearchConfig.html"
+    },
+    {
+        "menuId": "4-8",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "资产配置方案管理",
+        "url": "/publicConfig/assetAllocationMgmt"
+    },
+    {
+        "menuId": "4-8-1",
+        "parentMenuId": "4-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "资管方案配置经办",
+        "url": "/publicConfig/assetAllocationMgmt/assetAllocationHandle.html"
+    },
+    {
+        "menuId": "4-8-2",
+        "parentMenuId": "4-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "资管方案配置复核",
+        "url": "/publicConfig/assetAllocationMgmt/assetAllocationReview.html"
+    },
+    {
+        "menuId": "4-9",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "提示内容配置",
+        "url": "/publicConfig/promptContentConfig"
+    },
+    {
+        "menuId": "4-9-1",
+        "parentMenuId": "4-9",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "业务提示内容配置",
+        "url": "/publicConfig/promptContentConfig/businessPromptContent.html"
+    },
+    {
+        "menuId": "4-9-2",
+        "parentMenuId": "4-9",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "固定文案内容配置",
+        "url": "/publicConfig/promptContentConfig/staticTextContent.html"
+    },
+    {
+        "menuId": "4-10",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "亲情账户配置",
+        "url": "/publicConfig/familyAffectionAccount"
+    },
+    {
+        "menuId": "4-10-1",
+        "parentMenuId": "4-10",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "场景名称配置",
+        "url": "/publicConfig/familyAffectionAccount/sceneName.html"
+    },
+    {
+        "menuId": "4-10-2",
+        "parentMenuId": "4-10",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "推荐产品配置",
+        "url": "/publicConfig/familyAffectionAccount/recommendProduct.html"
+    },
+    {
+        "menuId": "4-11",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "工资宝配置",
+        "url": "/publicConfig/salary"
+    },
+    {
+        "menuId": "4-11-1",
+        "parentMenuId": "4-11",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "工资宝产品配置",
+        "url": "/publicConfig/salary/productConfig.html"
+    },
+    {
+        "menuId": "4-111",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "底层货币配置",
+        "url": "/publicConfig/monetary"
+    },
+    {
+        "menuId": "4-111-1",
+        "parentMenuId": "4-111",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "底层货币切换配置",
+        "url": "/publicConfig/monetary/changeConfig.html"
+    },
+    {
+        "menuId": "4-12",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "微信公众平台管理",
+        "url": "/publicConfig/wechatPublicMgmt"
+    },
+    {
+        "menuId": "4-12-1",
+        "parentMenuId": "4-12",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "系统配置管理",
+        "url": "/publicConfig/wechatPublicMgmt/systemConfigMgmt.html"
+    },
+    {
+        "menuId": "4-12-2",
+        "parentMenuId": "4-12",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "回复消息模板管理",
+        "url": "/publicConfig/wechatPublicMgmt/replyMessageTemplateMgmt.html"
+    },
+    {
+        "menuId": "4-12-3",
+        "parentMenuId": "4-12",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "自定义菜单管理",
+        "url": "/publicConfig/wechatPublicMgmt/customMenuMgmt.html"
+    },
+    {
+        "menuId": "4-12-4",
+        "parentMenuId": "4-12",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "微信关注用户标签管理",
+        "url": "/publicConfig/wechatPublicMgmt/wechatUserLabelMgmt.html"
+    },
+    {
+        "menuId": "4-12-5",
+        "parentMenuId": "4-12",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "公众账号关注用户查询",
+        "url": "/publicConfig/wechatPublicMgmt/publicAccountUserQuery.html"
+    },
+    {
+        "menuId": "4-13",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "问卷调查",
+        "url": "/publicConfig/questionnaire"
+    },
+    {
+        "menuId": "4-13-1",
+        "parentMenuId": "4-13",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "问卷配置",
+        "url": "/publicConfig/questionnaire/configuration.html"
+    },
+    {
+        "menuId": "4-13-2",
+        "parentMenuId": "4-13",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "意见反馈",
+        "url": "/publicConfig/questionnaire/feedback.html"
+    },
+    {
+        "menuId": "4-14",
+        "parentMenuId": "4",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "预约报名",
+        "url": "/publicConfig/appointment"
+    },
+    {
+        "menuId": "4-14-1",
+        "parentMenuId": "4-14",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "预约管理",
+        "url": "/publicConfig/appointment/appointmentMgmt.html"
+    },
+    {
+        "menuId": "4-14-2",
+        "parentMenuId": "4-14",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "报名管理",
+        "url": "/publicConfig/appointment/applyMgmt.html"
+    }
+];

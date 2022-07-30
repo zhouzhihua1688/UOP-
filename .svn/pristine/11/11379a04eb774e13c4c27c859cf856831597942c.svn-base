@@ -1,0 +1,56 @@
+module.exports = {
+    index: {
+        name: '公共配置'
+    },
+    shortLink: {
+        index: 'linkConfig.html',
+        name: '短链接管理',
+        child: {
+            linkConfig: '短链接配置'
+        }
+    },
+    automatedTool: {
+        index: 'sliceTool.html',
+        name: '自动化工具',
+        child: {
+            linkConfig: '自动化切片工具',
+            recentProductList: '近期产品列表'
+        }
+    },
+    alipayConfig: {
+        index: 'miniConfig.html',
+        name: '支付宝相关配置',
+        child: {
+            miniConfig: '小程序配置'
+        }
+    },
+    paramsMaintain: {
+        name: '技术参数维护',
+        index: 'maintain.html',
+        child: {
+            maintain: '技术参数维护'
+        }
+    },
+    mobileMgmt: {
+        name: '手机后台管理',
+        index: 'systemRefresh.html',
+        child: {
+            systemRefresh: '系统缓存刷新'
+        }
+    },
+    AIPstrategyMgmt: {
+        name: '定投策略管理',
+        index: 'planSetting.html',
+        child: {
+            planSetting: '定投策略设置'
+        }
+    },
+	appSearchConfig: {
+		name: 'APP搜索配置',
+		index: 'polyphoneConfig.html',
+		child: {
+		    polyphoneConfig: '多音字配置',
+		    searchConfig: '功能搜索配置'
+		}
+	}
+};

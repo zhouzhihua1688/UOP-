@@ -1,0 +1,35 @@
+module.exports = {
+    index:{
+        name:'添富赢家'
+    },
+    userMgmt:{
+        index:'userList.html',
+        name:'用户管理',
+        child:{
+            userList:'用户列表'
+        }
+    },
+    productMaterialMgmt:{
+        index:'productList.html',
+        name:'产品物料管理',
+        child:{
+            productList:'产品列表',
+            contentList:'内容列表'
+        }
+    },
+    materialMgmt:{
+        index:'essayMgmt.html',
+        name:'素材管理',
+        child:{
+            essayMgmt:'文章管理',
+        }
+    },
+    serviceAndRemindMgmt:{
+        index:'popupMgmt.html',
+        name:'服务与提醒管理',
+        child:{
+            popupMgmt:'弹窗管理',
+            publicMessagePush:'公众号消息推送',
+        }
+    }
+};

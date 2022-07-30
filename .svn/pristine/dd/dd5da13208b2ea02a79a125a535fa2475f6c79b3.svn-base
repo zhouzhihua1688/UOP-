@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-multiselect.min.css" />
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .chosen-container-multi {
+            width: 300px !important;
+        }
+
+        .reviseFile {
+            width: 175px;
+            line-height: 28px;
+            height: 30px;
+            display: inline-block;
+            text-align: left;
+            margin-bottom: 5px;
+            margin-left: 5px;
+            /*border: 1px solid #D5D5D5;*/
+            background: #f6f6f6 !important;
+            color: #0066a7 !important;
+            border: none !important;
+        }
+        .mustIcon{
+            color: red;
+        }
+       
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content" id="content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <!--提示信息弹窗-->
+                    <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                    </button>
+                                    <h4 class="modal-title">提示信息</h4>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h4 v-text="diaMsg"></h4>
+                                </div>
+                                <p class="text-center">
+                                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--新增弹窗star-->
+                    <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog" style="width:700px;">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                        &times;
+                                    </button>
+                                    <h4 class="modal-title" style="display: inline">新建徽章</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div style="text-align:center">
+                                        <form>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label"
+                                                    style=" width: 100px; text-align:center;"><i class="mustIcon">*</i>徽章名称:</label>
+                                                <input type="text" style=" width: 300px;" placeholder="10个字以内" maxlength="10" v-model="addBadge.badgeNm" />
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label"
+                                                    style=" width: 100px; height:50px;vertical-align: top;">徽章描述:</label>
+                                                <textarea name="" id="badgeDesc" cols="20" rows="15"
+                                                    style="height: 50px; width: 300px;"
+                                                    placeholder="300个字以内"  maxlength='30'
+                                                    v-model="addBadge.badgeDes"></textarea>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style=" width: 100px;">徽章组:</label>
+                                                <select id="addBadgeGroup" multiple class="chosen-select pulldownIcon"
+                                                    data-placeholder="请选择" style="width:300px;">
+                                                    <!-- <option value=""></option> -->
+                                                </select>
+                                                <!-- <select name="badgeGroup" class="" style="width:200px;"
+                                                    v-model="addBadge.badgeGrpId" style="width: 150px;">
+                                                    <option v-for='(item,index) in badgeGroupData'
+                                                        :value="item.badgeGrpId" :key="index">{{item.badgeGrpNm}}
+                                                    </option>
+
+                                                </select> -->
+                                            </div>
+                                            <!-- 新增 -->
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style=" width: 100px;">徽章图片亮:</label>
+                                                <input type="text" style="width: 200px;" id="uploadInput1"
+                                                    placeholder="请选择徽章图片" disabled
+                                                    class="reviseFile" />
+
+                                                <input type="button" class="btn btn-sm btn-primary" id="selectBtn1"
+                                                    value="选择" />
+                                                <input type="button" class="btn btn-sm btn-primary" value="上传"
+                                                    @click="fileUpload(1)" />
+
+                                                <input type="button" class="btn btn-sm btn-primary" value="删除"
+                                                    @click="clear('#uploadInput1')" />
+                                                <!-- <form enctype="multipart/form-data"> -->
+                                                    <input id="uploadFileInput1" type="file" name="file"
+                                                        style="display: none;"/>
+                                                <!-- </form> -->
+                                            </div>
+                                            <div class="form-group" style="float:left ">
+                                                <label class="control-label" style=" width: 100px;">徽章图片暗:</label>
+                                                <input type="text" style="width: 200px;" id="uploadInput2"
+                                                    placeholder="请选择徽章图片" class="reviseFile"
+                                                    disabled />
+                                                <input type="button" class="btn btn-sm btn-primary" id="selectBtn2"
+                                                    value="选择"/>
+                                                <input type="button" class="btn btn-sm btn-primary" value="上传"
+                                                    @click="fileUpload(2)" />
+                                                <input type="button" class="btn btn-sm btn-primary" value="删除"
+                                                    @click="clear('#uploadInput2')" />
+                                                <form enctype="multipart/form-data">
+                                                    <input id="uploadFileInput2" type="file" name="file"
+                                                        style="display: none;" />
+                                                </form>
+
+
+                                            </div>
+
+                                            <div class="form-group" style="float:left;">
+                                                <div class="input-group">
+                                                    <label class="control-label " style="width: 100px;  ">有效期:</label>
+                                                    <input type="text" id="startTime"
+                                                        class="date-timepicker"
+                                                        style="width: 150px; margin-left: 2px;" />
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group" style="float:left">
+                                                <div class="input-group">
+                                                    <label class="control-label " style="width: 30px;">至</label>
+                                                    <input type="text" id="addEndTime" 
+                                                        class="date-timepicker"
+                                                        style="width: 150px; margin-left: 2px;" >
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style=" width: 100px;">获取条件:</label>
+                                                <select name="badgeGroup" class="" v-model="addBadgeGainBadgeCustTags.custTagId"
+                                                    style="width: 150px;">
+                                                    <option v-for='(item,index) in CustTagInfos'
+                                                    :value="item.tagId" :key="index">{{item.tagNm}}
+                                                </option>
+
+                                                </select>
+                                                <select name="badgeGroup" class="" style="width:100px;"
+                                                    v-model="addBadgeGainBadgeCustTags.compare" style="width: 150px;">
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value="ctn">包含</option>
+                                                </select>
+                                                <input type="text" v-model='addBadgeGainBadgeCustTags.compareValueStr'
+                                                    style="width: 150px; margin-left: 2px;" />
+                                            </div> 
+                                            <div class="form-group" style="float:left">
+                                                <div class="input-group">
+                                                    <label class="control-label " style="width: 100px;">跳转地址:</label>
+                                                    <input type="text" v-model='addBadge.doLink'
+                                                        style="width: 300px; margin-left: 2px;" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style=" width: 100px;"><i class="mustIcon">*</i>状态:</label>
+                                                <select name="badgeGroup" class="" style="width:200px;"
+                                                    v-model="addBadge.badgeSt" style="width: 150px;">
+                                                    <option value="N">启用</option>
+                                                    <option value="P">禁用</option>
+
+                                                </select>
+                                            </div>
+
+                                        </form>
+                                    </div>
+                                </div>
+                                <p class="text-center" style="clear: both">
+                                    <button class="btn btn-sm btn-primary" @click="saveParam()">确定</button>
+                                    <button type="button" class="btn btn-default btn-sm"
+                                        data-dismiss="modal">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--新增弹窗end  -->
+                    <!-- 修改弹窗 star-->
+                    <div class="modal" id="update" tabindex="-1" role="dialog" aria-hidden="true"
+                        data-backdrop="static">
+                        <div class="modal-dialog" style="width:700px;">
+                            <div class="modal-content">
+                                <div class="modal-header" style="padding: 10px;">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                        &times;
+                                    </button>
+                                    <h4 class="modal-title" style="display: inline">修改徽章</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div style="text-align:center">
+                                        <form>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label"
+                                                    style=" width: 100px; text-align:center"><i class="mustIcon">*</i>徽章名称:</label>
+                                                <input type="text" style=" width: 300px;"
+                                                placeholder="10个字以内"  maxlength="10"
+                                                    v-model="updateBadgeData.badgeNm" />
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label"
+                                                    style=" width: 100px; height:50px;vertical-align: top;">徽章描述:</label>
+                                                <textarea name="" id="badgeDesc" cols="20" rows="15"
+                                                    style="height: 50px; width: 300px;"
+                                                    placeholder="300个字以内" 
+                                                    maxlength="300"
+                                                    v-model="updateBadgeData.badgeDes"></textarea>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style=" width: 100px;">徽章组:</label>
+                                                <select id="updateBadgeGroup" multiple class="chosen-select"
+                                                    data-placeholder=" " style="width:300px;">
+                                                    <option value=""></option>
+                                                </select>
+                                                <!-- <select name="badgeGroup" class="" style="width:200px;"  v-model="updateBadgeData.badgeGrpId"
+                                                    style="width: 150px;">
+                                                    <option v-for='(item,index) in badgeGroupData'
+                                                        :value="item.badgeGrpId" :key="index">{{item.badgeGrpNm}}
+                                                    </option>
+
+                                                </select> -->
+                                            </div>
+
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style=" width: 100px;">徽章图片亮:</label>
+                                                <input type="text" style="width: 200px;" id="uploadInput3"
+                                                    placeholder="请选择徽章图片" 
+                                                    disabled class="reviseFile" />
+
+                                                <input type="button" class="btn btn-sm btn-primary" id="selectBtn3"
+                                                    value="选择"  />
+                                                <input type="button" class="btn btn-sm btn-primary" value="上传"
+                                                    @click="fileUpload(3)" />
+
+                                                <input type="button" class="btn btn-sm btn-primary" value="删除"
+                                                    @click="clear('#uploadInput3')" />
+                                                <form enctype="multipart/form-data">
+                                                    <input id="uploadFileInput3" type="file" name="file"
+                                                        style="display: none;"/>
+                                                </form>
+                                            </div>
+                                            <div class="form-group" style="float:left ">
+                                                <label class="control-label" style=" width: 100px;">徽章图片暗:</label>
+                                                <input type="text" style="width: 200px;" id="uploadInput4"
+                                                    placeholder="请选择徽章图片" 
+                                                    class="reviseFile" disabled />
+                                                <input type="button" class="btn btn-sm btn-primary" id="selectBtn4"
+                                                    value="选择"  />
+                                                <input type="button" class="btn btn-sm btn-primary" value="上传"
+                                                    @click="fileUpload(4)" />
+                                                <input type="button" class="btn btn-sm btn-primary" value="删除"
+                                                    @click="clear('#uploadInput4')" />
+                                                <form enctype="multipart/form-data">
+                                                    <input id="uploadFileInput4" type="file" name="file"
+                                                        style="display: none;"  />
+                                                </form>
+
+
+                                            </div>
+
+                                            <div class="form-group" style="float:left;">
+                                                <div class="input-group">
+                                                    <label class="control-label " style="width: 100px;  ">有效期:</label>
+                                                    <input type="text" id="startTime"
+                                                        class="date-timepicker"
+                                                        style="width: 150px; margin-left: 2px;" />
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group" style="float:left">
+                                                <div class="input-group">
+                                                    <label class="control-label " style="width: 30px;">至</label>
+                                                    <input type="text" id="updateEndTime"
+                                                         class="date-timepicker"
+                                                        style="width: 150px; margin-left: 2px;" />
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style=" width: 100px;">获取条件:</label>
+                                                <select name="badgeGroup" class="" v-model="updateGainBadgeCustTags.custTagId"
+                                                    style="width: 150px;">
+                                                    <option v-for='(item,index) in CustTagInfos'
+                                                    :value="item.tagId" :key="index">{{item.tagNm}}
+                                                </option>
+
+                                                </select>
+                                                <select name="badgeGroup" class="" style="width:100px;"
+                                                    v-model="updateGainBadgeCustTags.compare" style="width: 150px;">
+                                                    <option value=">">大于</option>
+                                                    <option value="<">小于</option>
+                                                    <option value="=">等于</option>
+                                                    <option value="ctn">包含</option>
+                                                </select>
+                                                <input type="text" v-model='updateGainBadgeCustTags.compareValueStr'
+                                                    style="width: 150px; margin-left: 2px;" />
+                                            </div> 
+                                            <div class="form-group" style="float:left">
+                                                <div class="input-group">
+                                                    <label class="control-label " style="width: 100px;">跳转地址:</label>
+                                                    <input type="text" v-model='updateBadgeData.doLink'
+                                                        style="width: 300px; margin-left: 2px;" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group" style="float:left">
+                                                <label class="control-label" style=" width: 100px;"><i class="mustIcon">*</i>状态:</label>
+                                                <select name="badgeGroup" class="" style="width:200px;"
+                                                    v-model="updateBadgeData.badgeSt" style="width: 150px;">
+                                                    <option value="N">启用</option>
+                                                    <option value="P">禁用</option>
+
+                                                </select>
+                                            </div>
+
+                                        </form>
+                                    </div>
+                                </div>
+                                <p class="text-center" style="clear: both">
+                                    <button class="btn btn-sm btn-primary" @click="updateBadge()">确定</button>
+                                    <button type="button" class="btn btn-default btn-sm"
+                                        data-dismiss="modal">取消</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 修改弹窗end -->
+                    <!-- DIALOG ENDS -->
+                    <div class="form-inline" style="padding: 10px 0;">
+
+                        <div class="form-group">
+                            <label class="control-label">徽章名称:</label>
+                            <input type="text" @change="getTableData"  v-model="badgeName">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">状态:</label>
+                            <select name="status" class="form-control" style="width: 100px;" v-model="badgeSta"
+                                @change="getTableData">
+                                <option value="">全部</option>
+                                <option value="N">启用</option>
+                                <option value="P">禁用</option>
+
+                            </select>
+
+                        </div>
+                        <div class="form-group pull-right">
+                            <input type="button" class="btn btn-sm btn-primary" value="查询" @click="getTableData(0)">
+                            <input type="button" class="btn btn-sm btn-primary" value="新增" @click="showAdd()">
+                        </div>
+                    </div>
+                    <div class="table-header">
+                        <%= cpage %>--表格数据
+                    </div>
+                    <!--分页器和快速查询-->
+                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="500">500</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!--数据表-->
+                    <table class="table table-bordered table-hover dataTable">
+                        <thead>
+                            <tr>
+                                <th class="center">徽章ID</th>
+                                <th class="center">徽章名称</th>
+                                <th class="center">徽章组</th>
+                                <th class="center">图片亮</th>
+                                <th class="center">有效期</th>
+                                <th class="center">状态</th>
+                                <!-- <th class="center">创建日期</th>
+                        <th class="center">最后修改日期</th> -->
+                                <th class="center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-if="viewData.length>0">
+                                <tr v-for="(item,index) in viewData" :key="index">
+                                    <td class="center" v-text="item.badgeId"></td>
+                                    <td class="center" v-text="item.badgeNm"></td>
+                                    <td class="center">{{item.badgeGrpNm}}</td>
+                                    <td class="center" v-text="item.iconImageLight"></td>
+                                    <td class="center">
+                                        <!-- {{item.endDt}} -->
+                                        {{   this.moment(item.endDt).format('YYYY-MM-DD HH:mm:ss')}}
+                                    </td>
+                                    <td class="center">{{item.badgeSt=='N'?"启用":"禁用"}}</td>
+                                    <!-- <td class="center" v-text="item.createTime.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/, '$1/$2/$3 $4:$5:$6')"></td> -->
+                                    <!-- <td class="center" v-text="item.updateTime.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/, '$1/$2/$3 $4:$5:$6')"></td> -->
+                                    <td class="center">
+                                        <!-- <a href="javascript:;" @click="showDetail(item)">查看</a> -->
+                                        <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                                        <a href="javascript:;" @click="showUpdate(item,'del')">删除</a>
+
+                                    </td>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'暂无数据'" colspan="10"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                    <!--底部页码-->
+                    <div v-if="viewData.length>0" class="row"
+                        style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                        <div class="col-xs-2">
+                            <div class="dataTables_info" v-text="'共 '+middleData.length+'页'"></div>
+                        </div>
+                        <div class="col-xs-10">
+                            <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                                <ul class="pagination">
+                                    <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                        @click="prev">
+                                        <a href="javascript:;" v-text="'上一页'"></a>
+                                    </li>
+                                    <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                        v-for="value in middleData.length" @click="changeIndex(value)">
+                                        <a href="javascript:;" v-text="value"></a>
+                                    </li>
+                                    <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                        @click="next">
+                                        <a href="javascript:;" v-text="'下一页'"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.main-content -->
+        </div>
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/js/lib/zh-cn.js"></script>
+    <script src="/ace/assets/js/bootstrap-multiselect.min.js"></script>
+    <script src="/ace/assets/js/chosen.jquery.min.js"></script>
+    <script src="/js/lib/ajaxfileupload.js"></script>
+    <script src="/js/clientMgmt/badgeManagement/badgeManagement.js"></script>
+</body>
+
+</html>

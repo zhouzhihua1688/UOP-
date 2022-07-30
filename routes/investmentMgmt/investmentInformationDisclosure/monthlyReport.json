@@ -1,0 +1,31 @@
+{
+	"data": {
+		"retCode": "0000",
+		"retMsg": "调用成功",
+		"tableData": [{
+			"mReportNm": "668",
+			"mReportAbstract": "这是摘要668",
+			"mReportCreateTime": "1646981617857",
+			"mReportNo": "1113",
+			"id": "164698161785790"
+		}, {
+			"mReportNm": "669",
+			"mReportAbstract": "这是摘要669",
+			"mReportCreateTime": "1646985634619",
+			"mReportNo": "1114",
+			"id": "164698563461971"
+		}, {
+			"mReportNm": "996",
+			"mReportAbstract": "6",
+			"mReportCreateTime": "1646985666120",
+			"mReportNo": "1115",
+			"id": "164698566612020"
+		}, {
+			"mReportNm": "886",
+			"mReportAbstract": "这是摘要",
+			"mReportCreateTime": "1646986878831",
+			"mReportNo": 1116,
+			"id": "164698687883149"
+		}]
+	}
+}

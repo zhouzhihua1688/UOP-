@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        #base label, #base1 label, #base2 label {
+            width: 144px;
+            text-align: right;
+        }
+        .reviseFile{
+           width: 175px;
+            line-height: 28px;
+            height: 30px;
+            display: inline-block;
+            text-align: left;
+            margin-bottom: 5px;
+            margin-left: 5px;
+            /*border: 1px solid #D5D5D5;*/
+            background: #f6f6f6!important;
+            color:#0066a7!important;
+            border:none!important; 
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--修改弹窗-->
+                <div class="modal" id="revise" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog" style="width:600px;">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding:10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" style="display: inline">修改信息</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding: 0 10px;">
+                                    <div style="text-align:center">
+                                        <div class="form-group">
+                                            <label class="control-label">参数码:</label>
+                                            <input type="text" style="width:175px;" v-model.trim="pmco" disabled />
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">参数名:</label>
+                                            <input type="text" style="width:175px;" v-model.trim="pmnm"/>
+                                        </div>
+                                      <!--   <div class="form-group">
+                                            <label class="control-label">参数值1:</label>
+                                            <input type="text" style="width:175px;" v-model="pmv1"/>
+                                        </div> -->
+                                        <div class="form-group">
+                                            <label class="control-label" style="margin-left:-8px;">参数值1:</label>
+
+                                            <input type="text" style="width:175px;margin-bottom:5px;" placeholder="请选择附件" v-model.trim='pmv1' class="reviseFile" @click='download(pmv1)'/><br>
+                                            <!-- <a href="javascript:;" class="reviseFile" @click='download(pmv1)'>{{pmv1}}</a><br> -->
+                                            <!--<input type="text" class="col-sm-6" placeholder="请选择" disabled/>-->
+
+                                            <input type="button" class="btn btn-sm" value="选择附件" style="margin-right:3px;margin-left:175px;float:left" @click='choose'>
+
+                                            <input type="button" value="上传" class="btn btn-sm" style="margin-right:3px;float:left" @click="fileUpload">
+
+                                            <form enctype="multipart/form-data">
+                                                <input id="uploadFileInput" type="file" name="file" style="display: none;margin-right:3px;float:left" @change='showFileName'/>
+                                            </form>
+
+                                            <input type="button" class="btn btn-sm" value="清除附件" style="margin-right:3px;float:left" @click="clear">
+                                            <!--<button>清除附件</button>-->
+                                        </div>
+                                        <div class="form-group" style="padding-top:20px;clear:both">
+                                            <label class="control-label">参数值2:</label>
+                                            <input type="text" style="width:175px;" v-model.trim="pmv2"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label">参数值3:</label>
+                                            <input type="text" style="width:175px;" v-model.trim="pmv3"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center" style="clear: both">
+                                <button class="btn btn-sm btn-primary" @click="update()">保存</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--提示信息弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal"
+                                        aria-hidden="true">×
+                                </button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--删除数据弹框-->
+                <!--删除弹窗-->
+                <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">删除数据</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4>确认删除此条数据?</h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="deleteList()">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <div>
+                    <!--分页器和快速查询-->
+                    <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                        <div class="col-xs-6">
+                            <div class="dataTables_length" id="dynamic-table_length">
+                                <label>每页显示</label>
+                                <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                    <option value="10">10</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="500">500</option>
+                                </select>
+                                <label>条</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!--数据表-->
+                    <table class="table table-striped table-bordered table-hover dataTable" style="margin-bottom: 0;">
+                        <thead>
+                        <tr>
+                            <!-- <th class="center">
+                                <label class="pos-rel">
+                                    <input type="checkbox" class="ace" v-model="allCheck" @click="selectAll(allCheck)"/>
+                                    <span class="lbl"></span>
+                                </label>
+                            </th> -->
+                            <th class="center">参数码</th>
+                            <th class="center">参数名</th>
+                            <th class="center">参数值1</th>
+                            <th class="center">参数值2</th>
+                            <th class="center">参数值3</th>
+                            <th class="center">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!--真分页业务数据-->
+                        <template v-if="tableData.length>0">
+                            <tr v-for="(item,index) in tableData" :key="index"
+                                :style="index%2==0?'background-color: #f9f9f9;':''">
+                                <!-- <td class="center">
+                                    <label class="pos-rel">
+                                        <input type="checkbox" class="ace" v-model="item.check" @click="check(index)"/>
+                                        <span class="lbl"></span>
+                                    </label>
+                                </td> -->
+                                <td class="center" v-text="item.pmco"></td>
+                                <td class="center" v-text="item.pmnm"></td>
+                                <td class="center" v-text="item.pmv1"></td>
+                                <td class="center" v-text="item.pmv2"></td>
+                                <td class="center" v-text="item.pmv3"></td>
+                                <td class="center">
+                                    <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <tr>
+                                <td class="center" v-text="'没有数据'" colspan="22"></td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+
+                    <!--底部页码-->
+                    <!--后端真分页-->
+                    <!--<div v-if="tableData.length>0" class="row"-->
+                         <!--style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">-->
+                        <!--<div class="col-xs-2">-->
+                            <!--<div class="dataTables_info" v-text="'共 '+totalPage+' 页'"></div>-->
+                        <!--</div>-->
+                        <!--<div class="col-xs-10">-->
+                            <!--<div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">-->
+                                <!--<ul class="pagination">-->
+                                    <!--<li class="paginate_button"-->
+                                        <!--v-show="pageList.length<totalPage&&currentIndex>maxSpace">-->
+                                        <!--<a href="javascript:;" v-text="'1...'" @click="toFirst"></a>-->
+                                    <!--</li>-->
+                                    <!--<li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"-->
+                                        <!--@click="prev">-->
+                                        <!--<a href="javascript:;" v-text="'上一页'"></a>-->
+                                    <!--</li>-->
+                                    <!--<li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"-->
+                                        <!--v-for="value in pageList" @click="changeIndex(value)">-->
+                                        <!--<a href="javascript:;" v-text="value"></a>-->
+                                    <!--</li>-->
+                                    <!--<li class="paginate_button"-->
+                                        <!--v-show="pageList.length<totalPage&&totalPage-currentIndex>maxSpace">-->
+                                        <!--<a href="javascript:;" v-text="'...'+totalPage" @click="toLast"></a>-->
+                                    <!--</li>-->
+                                    <!--<li :class="currentIndex==totalPage-1?'paginate_button next disabled':'paginate_button next'"-->
+                                        <!--@click="next">-->
+                                        <!--<a href="javascript:;" v-text="'下一页'"></a>-->
+                                    <!--</li>-->
+                                <!--</ul>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/js/lib/ajaxfileupload.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/businessMgmt/highFinancialMgmt/basicsParamMaintain.js"></script>
+</body>
+</html>

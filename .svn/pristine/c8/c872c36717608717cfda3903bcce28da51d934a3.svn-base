@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/select2.min.css" />
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!-- loading动画 -->
+                <div class="cover" v-show="loadingShow" style="z-index: 1999;display: none;">
+                    <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                </div>
+                <!-- loading动画end -->
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-inline" style="padding: 10px 0;">
+									<div class="form-group">
+										<label class="control-label">渠道:</label>
+												<select v-model="searchChannelId">
+													<option v-for="item in channelMenu" :value="item.channelId">{{item.channelName}}</option>
+												</select>
+										</div>
+                    <div class="form-group">
+                        <label class="control-label">一级菜单选项:</label>
+                        <select  id="firstMenu" name="state" class="select2" data-placeholder="请选择一级菜单..." v-model="firstMenuData" >
+                            <option v-for="item in firstMenuList" :value="item.LAYOUTID" v-text="item.LAYOUTNAME+'('+item.LAYOUTID+')'"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">二级菜单选项:</label>
+                        <select  v-model="position" style="width: 100px;">
+                            <option v-for="item in positionList" :value="item.POSITION" v-text="'位置'+item.POSITION"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">详情选项:</label>
+                        <select  v-model="positionDetail" style="width: 100px;">
+                            <option v-for="item in positionDetailList" :value="item.FUNCMODID" v-text="item.FUNCMODNAME"></option>
+                        </select>
+                    </div>
+                </div>
+                <div v-show="positionName">
+                    <div class="form-inline" style="padding: 20px 0;">
+                        <div class="form-group">
+                            <label class="control-label">功能模块名称:</label>
+                            <span v-text="positionName" style="display: inline-block;
+    vertical-align: middle;"></span>
+                        </div>
+                        <div class="form-group pull-right" style="padding-bottom: 10px">
+                            <label class="control-label" >关联分组:</label>
+                            <% if(canShow||authorityList.includes('U')) { %>
+                            <input type="button" class="btn btn-sm btn-primary" value="增加模块关联分组" @click="addDom" >
+                            <input type="button" class="btn btn-sm btn-primary" value="保存" @click="add" >
+                            <% } %>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                    <thead>
+                    <tr>
+                        <th class="center col-sm-1 col-md-1 col-lg-1" >分组名称</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1" >权重</th>
+                        <th class="center col-sm-1 col-md-1 col-lg-1" >操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="tableData.length>0">
+                        <tr v-for="(item,index) in tableData" :key="index">
+                            <template v-if="item.newData">
+                                <td class="center" >
+                                    <select name="" id="" v-model="item.groupId">
+                                        <option v-for="item1 in userGroupList" :value="item1.groupId" v-text="item1.groupName"></option>
+                                    </select>
+                                </td>
+                            </template>
+                            <template v-else>
+                                <td class="center" >
+                                    <select name="" id="" v-model="item.groupId">
+                                        <option :value="item.groupId" v-text="translateUserGroup(item.groupId)"></option>
+                                    </select>
+                                </td>
+                            </template>
+
+                            <td class="center" >
+                                <input type="text" v-model="item.weight" >
+                            </td>
+                            <td class="center">
+                                <% if(canShow||authorityList.includes('D')) { %>
+                                <a href="javascript:;" class="red" @click="deleteParams(index)">删除</a>
+                                <% } %>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center"  colspan="3">暂无数据</td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+
+
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/select2.min.js"></script>
+<script src="/js/recommendSystem/recommendSystemConfigMgmt/positionTheGroupConfig.js"></script>
+</body>
+</html>

@@ -1,0 +1,406 @@
+var vm = new Vue({
+    el: '#content',
+    data: {
+        //主页面相关数据
+        contractDesc: '',
+        strategyType: '',
+        operator: '',
+        deleteId: '',
+        updateId: '',
+        tableData: [],
+        diaMsg: '',
+        // 弹窗相关数据
+        dialog_contractDesc: '',
+        dialog_productId: '',
+        dialog_referContentId: '',
+        dialog_productType: 1,
+        dialog_cycle: 'MM',
+        dialog_type: 1,
+        dialog_periodNumber: 0,
+        dialog_targetProfit: 0,
+        dialog_isSupportStrategy: 1,
+        dialog_strategyType: '',
+        dialog_increaseIndex: 0,
+        // dialog_increaseAmt: 0,
+        dialog_decreaseIndex: 0,
+        // dialog_decreaseAmt: 0,
+        dialog_referIndexCode: '',
+        dialog_referAverageCode: '',
+        dialog_achieveTargetPercent: '',
+        dialog_achieveTargetDays: '',
+        //主表格分页数据
+        currentIndex: 0,
+        maxSpace: 5,
+        pageMaxNum: 10
+    },
+    watch: {
+        pageMaxNum: function () {
+            this.currentIndex = 0;
+            this.search();
+        }
+    },
+    computed: {
+        //主表格分页
+        middleData: function () {
+            var middleData = [];
+            var pageMaxNum = parseInt(this.pageMaxNum);
+            if (this.tableData.length <= pageMaxNum) {
+                middleData.push(this.tableData);
+                return middleData;
+            }
+            else {
+                var i = 0;
+                while ((i + 1) * pageMaxNum < this.tableData.length) {
+                    middleData.push(this.tableData.slice(i * pageMaxNum, (i + 1) * pageMaxNum));
+                    i++;
+                }
+                middleData.push(this.tableData.slice(i * pageMaxNum, this.tableData.length));
+                return middleData;
+            }
+        },
+        viewData: function () {
+            var currentIndex = parseInt(this.currentIndex);
+            return this.middleData[currentIndex];
+        },
+        pageList: function () {
+            var arr = [];
+            if (this.middleData.length <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            else if (this.currentIndex <= this.maxSpace && this.middleData.length - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            }
+            else if (this.currentIndex > this.maxSpace && this.middleData.length - this.currentIndex <= this.maxSpace) {
+                var space = this.middleData.length - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            else {
+                for (var i = 0; i < this.middleData.length; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        }
+    },
+    mounted: function () {
+        var dialogs = ['info', 'del'];
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        this.search();
+    },
+    methods: {
+        //模板管理业务方法
+        search: function () {
+            var _this = this;
+            $.post({
+                url: '/publicConfig/AIPstrategyMgmt/planSetting/query.ajax',
+                data: {
+                    contractDesc: _this.contractDesc,
+                    strategyType: _this.strategyType,
+                    operator: _this.operator
+                },
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.tableData = result.data;
+                    }
+                    else {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                }
+            });
+        },
+        setOperateDia: function (item) {
+            this.dialog_contractDesc = item ? item.contractDesc : '';
+            this.dialog_productId = item ? item.productId : '';
+            this.dialog_referContentId = item ? item.referContentId : '';
+            this.dialog_productType = item ? item.productType : 1;
+            this.dialog_cycle = item ? item.cycle : 'MM';
+            if (!item) {
+                this.dialog_type = 1;
+            }
+            else {
+                if (item.isSupportPeriod == 1) {
+                    this.dialog_type = 1;
+                }
+                else if (item.isTargetProfit == 1) {
+                    this.dialog_type = 2;
+                }
+                else {
+                    this.dialog_type = 3;
+                }
+            }
+            this.dialog_periodNumber = item ? item.periodNumber : 0;
+            this.dialog_targetProfit = item ? item.targetProfit : 0;
+            this.dialog_isSupportStrategy = item ? item.isSupportStrategy : 1;
+            this.dialog_strategyType = item ? item.strategyType : '';
+            this.dialog_increaseIndex = item ? item.increaseIndex : 0;
+            // this.dialog_increaseAmt = item ? item.increaseAmt : 0;
+            this.dialog_decreaseIndex = item ? item.decreaseIndex : 0;
+            this.dialog_referIndexCode = item ? item.referIndexCode : '';
+            this.dialog_referAverageCode = item ? item.referAverageCode : '';
+            // this.dialog_decreaseAmt = item ? item.decreaseAmt : 0;
+            this.dialog_achieveTargetPercent = item ? item.achieveTargetPercent : '';
+            this.dialog_achieveTargetDays = item ? item.achieveTargetDays : '';
+        },
+        showAdd: function () {
+            this.updateId = '';
+            this.setOperateDia();
+            this.showDialog('', 'operate');
+        },
+        checkDiaData: function () {
+            if (!this.dialog_contractDesc || this.dialog_contractDesc.length > 100) {
+                this.showDialog('operate', 'info', true, '未填写策略描述或超出100个字符');
+                return false;
+            }
+            if (this.dialog_productId === '') {
+                this.showDialog('operate', 'info', true, '未填写关联产品');
+                return false;
+            }
+            if (this.dialog_referContentId === '') {
+                this.showDialog('operate', 'info', true, '未填写关联contentId产品');
+                return false;
+            }
+            if(this.dialog_productType === ''){
+                this.showDialog('operate', 'info', true, '未选择产品类型');
+                return false;
+            }
+            if (this.dialog_cycle === '') {
+                this.showDialog('operate', 'info', true, '未选择定投周期');
+                return false;
+            }
+            if (this.dialog_type == 1) {
+                if (isNaN(Number(this.dialog_periodNumber)) ||
+                    !/^[1-9]\d*$/.test(this.dialog_periodNumber) ||
+                    Number(this.dialog_periodNumber) > 36) {
+                    this.showDialog('operate', 'info', true, '期数填写错误(取值范围为1-36)');
+                    return false;
+                }
+            }
+
+            if (this.dialog_type == 2) {
+                if (isNaN(Number(this.dialog_targetProfit)) || Number(this.dialog_targetProfit) <= 0 || Number(this.dialog_targetProfit) >= 100) {
+                    this.showDialog('operate', 'info', true, '目标收益率填写格式错误');
+                    return false;
+                }
+            }
+            if (this.dialog_isSupportStrategy === '') {
+                this.showDialog('operate', 'info', true, '未选择定投策略');
+                return false;
+            }
+            if (this.dialog_isSupportStrategy == 1) {
+                if (this.dialog_strategyType === '') {
+                    this.showDialog('operate', 'info', true, '未选择策略类型');
+                    return false;
+                }
+                if((this.dialog_strategyType == '0')){
+                    if (this.dialog_increaseIndex === '') {
+                        this.showDialog('operate', 'info', true, '未填写加码指标');
+                        return false;
+                    }
+                    if (isNaN(Number(this.dialog_increaseIndex)) || Number(this.dialog_increaseIndex) < 0) {
+                        this.showDialog('operate', 'info', true, '加码指标格式填写错误');
+                        return false;
+                    }
+                    if (this.dialog_decreaseIndex === '') {
+                        this.showDialog('operate', 'info', true, '未填写减码指标');
+                        return false;
+                    }
+                    if (isNaN(Number(this.dialog_decreaseIndex)) || Number(this.dialog_decreaseIndex) < 0) {
+                        this.showDialog('operate', 'info', true, '减码指标格式填写错误');
+                        return false;
+                    }
+                }else if((this.dialog_strategyType == '3')){
+                    if (this.dialog_referIndexCode === '') {
+                        this.showDialog('operate', 'info', true, '未填写参考指数代码');
+                        return false;
+                    }
+                    if (this.dialog_referAverageCode === '') {
+                        this.showDialog('operate', 'info', true, '未填写参考均线代码');
+                        return false;
+                    }
+                }
+            }
+            if (this.dialog_achieveTargetPercent !== '' && isNaN(Number(this.dialog_achieveTargetPercent))) {
+                this.showDialog('operate', 'info', true, '初始化数据1应填写数字');
+                return false;
+            }
+            if(Number(this.dialog_achieveTargetPercent) < 0 || Number(this.dialog_achieveTargetPercent) > 100){
+                this.showDialog('operate', 'info', true, '初始化数据1超出取值范围');
+                return false;
+            }
+            if (this.dialog_achieveTargetDays !== '' && !/^[+]{0,1}(\d+)$/.test(this.dialog_achieveTargetDays)) {
+                this.showDialog('operate', 'info', true, '初始化数据2应填写正整数(包含0)');
+                return false;
+            }
+            return true;
+        },
+        operate: function () {
+            if (!this.checkDiaData()) {
+                return;
+            }
+            var _this = this;
+            var params = {};
+            params.contractDesc = this.dialog_contractDesc;
+            params.productId = this.dialog_productId;
+            params.referContentId = this.dialog_referContentId;
+            params.productType = this.dialog_productType;
+            params.cycle = this.dialog_cycle;
+            // 设置期数
+            if (this.dialog_type == 1) {
+                params.isSupportPeriod = 1;
+                params.periodNumber = this.dialog_periodNumber;
+                params.isTargetProfit = 0;
+                params.targetProfit = 0;
+            }
+            // 设置收益率
+            else if (this.dialog_type == 2) {
+                params.isSupportPeriod = 0;
+                params.periodNumber = 0;
+                params.isTargetProfit = 1;
+                params.targetProfit = this.dialog_targetProfit;
+            }
+            // 都不设置
+            else if (this.dialog_type == 3) {
+                params.isSupportPeriod = 0;
+                params.periodNumber = 0;
+                params.isTargetProfit = 0;
+                params.targetProfit = 0;
+            }
+            params.isSupportStrategy = this.dialog_isSupportStrategy;
+            params.strategyType = this.dialog_strategyType;
+            params.increaseIndex = 0;
+            // params.increaseAmt = 0;
+            params.decreaseIndex = 0;
+            // params.decreaseAmt = 0;
+            if (this.dialog_isSupportStrategy == 1) {
+                if(this.dialog_strategyType == '0'){
+                    params.increaseIndex = this.dialog_increaseIndex;
+                    // params.increaseAmt = this.dialog_increaseAmt;
+                    params.decreaseIndex = this.dialog_decreaseIndex;
+                    // params.decreaseAmt = this.dialog_decreaseAmt;
+                }else{
+                    params.referIndexCode = this.dialog_referIndexCode;
+                    params.referAverageCode = this.dialog_referAverageCode;
+                }
+              
+            }
+            params.achieveTargetPercent = this.dialog_achieveTargetPercent;
+            params.achieveTargetDays = this.dialog_achieveTargetDays;
+            var url = '';
+            if (this.updateId) {
+                params.serialNo = this.updateId;
+                url = '/publicConfig/AIPstrategyMgmt/planSetting/update.ajax';
+            }
+            else {
+                url = '/publicConfig/AIPstrategyMgmt/planSetting/add.ajax';
+            }
+            $.post({
+                url: url,
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('operate', 'info', false, '操作成功');
+                        _this.search();
+                    }
+                    else {
+                        _this.showDialog('operate', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+        showDelete: function (item) {
+            this.deleteId = item.serialNo;
+            this.showDialog('', 'del');
+        },
+        deleteData: function () {
+            var _this = this;
+            $.post({
+                url: '/publicConfig/AIPstrategyMgmt/planSetting/del.ajax',
+                data: {serialNo: this.deleteId},
+                success: function (result) {
+                    if (result.error === 0) {
+                        _this.showDialog('del', 'info', false, '删除成功');
+                        _this.search();
+                    }
+                    else {
+                        _this.showDialog('del', 'info', true, result.msg);
+                    }
+                }
+            });
+        },
+        showUpdate: function (item) {
+            this.updateId = item.serialNo;
+            this.setOperateDia(item);
+            this.showDialog('', 'operate');
+        },
+        //主表格分页方法
+        prev: function () {
+            this.currentIndex <= 0 ? 0 : this.currentIndex--;
+        },
+        next: function () {
+            this.currentIndex >= this.middleData.length - 1 ? this.middleData.length - 1 : this.currentIndex++;
+        },
+        changeIndex: function (index) {
+            this.currentIndex = index - 1;
+        },
+        toFirst: function () {
+            this.currentIndex = 0;
+        },
+        toLast: function () {
+            this.currentIndex = this.middleData.length - 1;
+        },
+        //公共方法
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            }
+            else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            }
+            else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            }
+            else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+            else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        }
+    }
+});

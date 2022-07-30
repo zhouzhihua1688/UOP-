@@ -1,0 +1,81 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').accountMgmt.accountDelete;
+
+module.exports = function (app) {
+    // 获取列表数据
+    app.post('/clientMgmt/accountMgmt/accountDelete/getList.ajax', (req, res, next) => {
+        // 通过tradeAcct和fundAcct获取custNo
+        let promise = new Promise((resolve, reject) => {
+            let params = {};
+            params.tradeAcct = req.body.tradeAcct;
+            params.fundAcct = req.body.fundAcct;
+            let option = {
+                session: req.session,
+                url: apiUrl.getCustNo,
+                qs: params,
+                timeout: 15000,
+                json: true
+            };
+            console.log('/clientMgmt/accountMgmt/accountDelete/getList.ajax option:', option);
+            request(option, (error, response, body) => {
+                console.log('/clientMgmt/accountMgmt/accountDelete/getList.ajax error:', error);
+                console.log('/clientMgmt/accountMgmt/accountDelete/getList.ajax statusCode:', response && response.statusCode);
+                console.log('/clientMgmt/accountMgmt/accountDelete/getList.ajax body:', body);
+                if (error) {
+                    reject({message: '数据获取失败'});
+                }
+                if (body && body.returnCode == 0) {
+                    resolve(body.body);
+                }
+                else if (body && body.returnCode == 9999) {
+                    reject({message: body.returnMsg});
+                }
+                else {
+                    reject({message: '数据获取失败'});
+                }
+            });
+        });
+        // 通过custNo获取custInfo
+        let getCustInfoByCustNo = (custNo) => {
+            return new Promise((resolve, reject) => {
+                let params = {};
+                params.custNo = custNo;
+                let option = {
+                    session: req.session,
+                    url: apiUrl.getCustInfo,
+                    qs: params,
+                    timeout: 15000,
+                    json: true
+                };
+                console.log('/clientMgmt/accountMgmt/accountDelete/getList.ajax option:', option);
+                request(option, (error, response, body) => {
+                    console.log('/clientMgmt/accountMgmt/accountDelete/getList.ajax error:', error);
+                    console.log('/clientMgmt/accountMgmt/accountDelete/getList.ajax statusCode:', response && response.statusCode);
+                    console.log('/clientMgmt/accountMgmt/accountDelete/getList.ajax body:', body);
+                    if (error) {
+                        reject({message: '数据获取失败'});
+                    }
+                    if (body && body.returnCode == 0) {
+                        resolve(body.body);
+                    }
+                    else if (body && body.returnCode == 9999) {
+                        reject({message: body.returnMsg});
+                    }
+                    else {
+                        reject({message: '数据获取失败'});
+                    }
+                });
+            });
+        };
+
+        promise.then(custNo => {
+            getCustInfoByCustNo(custNo).then(body => {
+                res.send({error: 0, msg: '请求成功', data: [body]});
+            }).catch(error => {
+                res.send({error: 1, msg: error.message, data: null});
+            });
+        }).catch(error => {
+            res.send({error: 1, msg: error.message, data: null});
+        });
+    });
+};

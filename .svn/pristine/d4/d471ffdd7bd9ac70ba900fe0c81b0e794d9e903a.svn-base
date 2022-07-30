@@ -1,0 +1,621 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrlList = require('../apiConfig').serviceAndRemindMgmt.popupMgmt;
+const baseUrl = '/contentMgmt/serviceAndRemindMgmt/popupMgmt';
+module.exports = function (app) {
+    // 获取初始数据和查询
+    app.post('/contentMgmt/serviceAndRemindMgmt/popupMgmt/getTableData.ajax', (req, res, next) => {
+        let params = {};
+        params.functionModule = req.body.functionModule;
+        params.popupType = req.body.popupType;
+        params.title= req.body.title;
+        params.pageNo = req.body.pageNo;
+        params.pageSize = req.body.pageSize;
+        params.startTime = req.body.startTime;
+        params.endTime = req.body.endTime;
+        let option = {
+            pageUrl: '/contentMgmt/productMaterialMgmt/productList/getTableData.ajax',
+            req,
+            url: apiUrlList.getTableData,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            console.log("body==", body);
+            console.log("result==", result);
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '查询成功',
+                    data: body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '查询失败'
+                });
+            }
+        });
+    });
+    // 新增
+    app.post(`${baseUrl}/add.ajax`, (req, res, next) => {
+        let params = req.body;
+        params.createBy= req.session.loginInfo.userid;
+        params.modifyBy= req.session.loginInfo.userid;
+        let option = {
+            pageUrl: `${baseUrl}/add.ajax`,
+            req: req,
+            // operateType: 1, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrlList.add,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '保存失败',
+                    data: null
+                });
+            }
+            if (body.returnCode === 0) {
+                res.send({
+                    error: 0,
+                    msg: '保存成功',
+                    data: null
+                });
+            } else if (body && body.returnCode != 9999) {
+                res.send({
+                    error: 1,
+                    msg: body.returnMsg,
+                    data: null
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '保存失败',
+                    data: null
+                });
+            }
+        });
+    });
+    // 查询单个弹窗信息
+    app.post('/advertising/serviceAndRemindMgmt/popupMgmt/searchSingle.ajax', (req, res, next) => {
+        let params = {};
+        params.popup = req.body.id;
+        let option = {
+            pageUrl: '/advertising/serviceAndRemindMgmt/popupMgmt/searchSingle.ajax',
+            req,
+            // operateType: 3, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrlList.searchSingle + `/${req.body.id}`,
+            // qs: params,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询单个产品失败',
+                    data: null
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '查询单个产品成功',
+                    data: body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '查询单个产品失败',
+                    data: null
+                });
+            }
+        });
+    });
+
+    // 修改
+    app.post(`${baseUrl}/update.ajax`, (req, res, next) => {
+        let params = req.body;
+        params.createBy= req.session.loginInfo.userid;
+        params.modifyBy= req.session.loginInfo.userid;
+        let option = {
+            pageUrl: `${baseUrl}/update.ajax`,
+            req: req,
+            // operateType: 1, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrlList.update,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '修改失败',
+                    data: null
+                });
+            }
+            if (body.returnCode === 0) {
+                res.send({
+                    error: 0,
+                    msg: '修改成功',
+                    data: null
+                });
+            } else if (body && body.returnCode != 9999) {
+                res.send({
+                    error: 1,
+                    msg: body.returnMsg,
+                    data: null
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: '修改失败',
+                    data: null
+                });
+            }
+        });
+    });
+
+    // 删除
+    app.post('/contentMgmt/serviceAndRemindMgmt/popupMgmt/deleteParam.ajax', (req, res, next) => {
+        let params = {};
+        params.id = req.body.id;
+        let option = {
+            pageUrl: '/contentMgmt/serviceAndRemindMgmt/popupMgmt/deleteParam.ajax',
+            req,
+            operateType: 3, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrlList.deleteParam,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '删除失败',
+                    data: null
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '删除成功',
+                    data: null
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '删除失败',
+                    data: null
+                });
+            }
+        });
+    });
+
+    // 文章列表修改发布的状态-开关
+    // app.post('/advertising/serviceAndRemindMgmt/popupMgmt/switchUpdate.ajax', (req, res, next) => {
+    //     let params = {};
+    //     params.id = req.body.id;
+    //     params.publishStatus = req.body.publishStatus;
+    //     let option = {
+    //         pageUrl: '/advertising/serviceAndRemindMgmt/popupMgmt/switchUpdate.ajax',
+    //         req,
+    //         url: apiUrlList.switchUpdate,
+    //         body: params,
+    //         timeout: 15000,
+    //         json: true
+    //     };
+    //     request.post(option, (error, response, body) => {
+    //         if (error) {
+    //             return res.send({
+    //                 error: 1,
+    //                 msg: '操作发布的状态失败'
+    //             });
+    //         }
+    //         let result = typeof body === 'string' ? JSON.parse(body) : body;
+    //         console.log("body==", body);
+    //         console.log("result==", result);
+    //         if (result && result.returnCode === 0) {
+    //             return res.send({
+    //                 error: 0,
+    //                 msg: '操作发布的状态成功',
+    //                 data: body
+    //             });
+    //         } else if (result && result.returnCode != 9999) {
+    //             return res.send({
+    //                 error: 1,
+    //                 msg: result.returnMsg
+    //             });
+    //         } else {
+    //             return res.send({
+    //                 error: 1,
+    //                 msg: '操作发布的状态失败'
+    //             });
+    //         }
+    //     });
+    // });
+
+    // 查询弹窗里文章列表数据
+    // app.post('/advertising/serviceAndRemindMgmt/popupMgmt/getPvData.ajax', (req, res, next) => {
+    //     let params = {};
+    //     params.searchTitle=req.body.searchTitle;
+    //     params.sourceMaterialType=req.body.sourceMaterialType;
+    //     params.page=req.body.page;
+    //     params.size=req.body.size;
+    //     params.startTime=req.body.startTime;
+    //     params.endTime=req.body.endTime;
+    //     let option = {
+    //         pageUrl: '/advertising/serviceAndRemindMgmt/popupMgmt/searchSingle.ajax',
+    //         req,
+    //         // operateType: 3, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+    //         url: apiUrlList.getPvData,
+    //         body: params,
+    //         timeout: 15000,
+    //         json: true
+    //     };
+    //     request.post(option, (error, response, body) => {
+    //         if (error) {
+    //             return res.send({
+    //                 error: 1,
+    //                 msg: '查询文章列表失败',
+    //                 data: null
+    //             });
+    //         }
+    //         let result = typeof body === 'string' ? JSON.parse(body) : body;
+    //         if (result && result.returnCode === 0) {
+    //             return res.send({
+    //                 error: 0,
+    //                 msg: '查询文章列表成功',
+    //                 data: body
+    //             });
+    //         } else if (result && result.returnCode != 9999) {
+    //             return res.send({
+    //                 error: 1,
+    //                 msg: result.returnMsg
+    //             });
+    //         }else if (result && result.returnCode== 9999) {
+    //             return res.send({
+    //                 error: 1,
+    //                 msg: result.returnMsg
+    //             });
+    //         }
+    //         else {
+    //             return res.send({
+    //                 error: 1,
+    //                 msg: '查询文章列表失败',
+    //                 data: null
+    //             });
+    //         }
+    //     });
+    // });
+
+    // 刷新最新文章
+    app.post('/contentMgmt/serviceAndRemindMgmt/popupMgmt/getRefresh.ajax', (req, res, next) => {
+        // let params = {};
+
+        let option = {
+            pageUrl: '/contentMgmt/serviceAndRemindMgmt/popupMgmt/getRefresh.ajax',
+            req,
+            // operateType: 3, // operateType:操作类型 0:登录 1:新增 2:修改 3:删除 4:修改密码
+            url: apiUrlList.getRefresh,
+            // body: params,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '刷新失败',
+                    data: null
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '查询文章列表成功',
+                    data: null
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }else if (result && result.returnCode== 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+            else {
+                return res.send({
+                    error: 1,
+                    msg: '刷新失败',
+                    data: null
+                });
+            }
+        });
+    });
+
+
+    // 获取内容选择弹窗的一二级查询分类素材
+    app.post('/contentMgmt/serviceAndRemindMgmt/popupMgmt/getTagAll.ajax', (req, res, next) => {
+       
+        new Promise(function (resolve, reject) {
+            let params = {};
+            let option = {
+                pageUrl: '/contentMgmt/serviceAndRemindMgmt/popupMgmt/getTagAll.ajax',
+                req,
+                url: apiUrlList.allClassifyList,
+                // body: params,
+                timeout: 15000,
+                json: true
+            };
+            request(option, (error, response, body) => {
+                if (error) {
+                    return res.send({
+                        error: 1,
+                        msg: '查询一二级分类失败'
+                    });
+                }
+                let result = typeof body === 'string' ? JSON.parse(body) : body;
+                console.log("body==", body);
+                console.log("result==", result);
+                if (result && result.returnCode === 0) {
+                    // return res.send({
+                    //     error: 0,
+                    //     msg: '查询成功',
+                    //     data: body
+                    // });
+
+                    let resultData = {};
+                    resultData.allTagList = result.body;  //所有分类数据
+
+                    let arr=result.body.filter(function(item){  //过滤拿到投教与策略的数据
+                        return item.categoryName=='投教与策略';
+                    });
+                    resultData.investTag =arr;
+                    let getTeachTag=""; 
+                    arr.forEach(function(item){
+                          item.categoryConfigList.filter(function(secondTag){
+                            // return secondTag.categoryName=='投教专区';
+                             if(secondTag.categoryName=='投教专区'){  //获取投教专区的
+                                getTeachTag=secondTag;
+                            }
+                          })   
+                    });
+
+                    resultData.teachTag=getTeachTag;
+                    resolve(resultData);
+                    // return res.send({
+                    //     error: 0,
+                    //     msg: '获取成功',
+                    //     data: resultData
+                    // });
+
+                } else if (result && result.returnCode != 9999) {
+                    return res.send({
+                        error: 1,
+                        msg: result.returnMsg
+                    });
+                } else {
+                    return res.send({
+                        error: 1,
+                        msg: '查询一二级分类失败'
+                    });
+                }
+            });
+        })
+        .then(function (resultData) {
+            return new Promise((resolve, reject) => {
+                let params = {};
+                params.parentCategoryId=resultData.teachTag.categoryId;
+                let option = {
+                    pageUrl: '/contentMgmt/serviceAndRemindMgmt/popupMgmt/threeClassifyList.ajax',
+                    req,
+                    url: apiUrlList.threeClassifyList,
+                    qs: params,
+                    timeout: 15000,
+                    json: true
+                };
+                request(option, (error, response, body) => {
+                    if (error) {
+                        return res.send({
+                            error: 1,
+                            msg: '查询三级分类失败'
+                        });
+                    }
+                    let result = typeof body === 'string' ? JSON.parse(body) : body;
+                    console.log("body==", body);
+                    console.log("result==", result);
+                    if (result && result.returnCode === 0) {
+                        resultData.menuList= result.body;
+                        return res.send({
+                            error: 0,
+                            msg: '查询成功',
+                            data: resultData
+                        });
+                    } else if (result && result.returnCode != 9999) {
+                        return res.send({
+                            error: 1,
+                            msg: result.returnMsg
+                        });
+                    } else {
+                        return res.send({
+                            error: 1,
+                            msg: '查询三级分类失败'
+                        });
+                    }
+                });
+            })
+        })
+        .catch(function (error) {
+            return res.send({
+                error: 1,
+                msg: '查询失败'
+            });
+        })   
+    });
+
+    // 获取三级分类
+    app.post('/contentMgmt/serviceAndRemindMgmt/popupMgmt/threeClassifyList.ajax', (req, res, next) => {
+        let params = {};
+        params.parentCategoryId=req.body.parentCategoryId;
+        let option = {
+            pageUrl: '/contentMgmt/serviceAndRemindMgmt/popupMgmt/threeClassifyList.ajax',
+            req,
+            url: apiUrlList.threeClassifyList,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        request(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询三级分类失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            console.log("body==", body);
+            console.log("result==", result);
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '查询成功',
+                    data: body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '查询三级分类失败'
+                });
+            }
+        });
+    });
+
+    //获取现有素材材料数据
+    app.post('/contentMgmt/serviceAndRemindMgmt/popupMgmt/searchMaterial.ajax', (req, res, next) => {
+        // let params = {};
+        let params = req.body;
+        // params.categoryId =req.body.categoryId; 
+        console.log("------------",params);
+        let option = {
+            pageUrl: '/contentMgmt/serviceAndRemindMgmt/popupMgmt/searchMaterial.ajax',
+            req,
+            url: apiUrlList.searchMaterial,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '查询现有材料失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            console.log("body==", body);
+            console.log("result==", result);
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '查询成功',
+                    data: body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '查询现有材料失败'
+                });
+            }
+        });
+    });
+
+    
+    // 文章列表修改发布的状态-开关
+    app.post('/contentMgmt/serviceAndRemindMgmt/popupMgmt/switchUpdate.ajax', (req, res, next) => {
+        let params = {};
+        params.id = req.body.id;
+        params.enableFlag = req.body.enableFlag;
+        let option = {
+            pageUrl: '/contentMgmt/serviceAndRemindMgmt/popupMgmt/switchUpdate.ajax',
+            req,
+            url: apiUrlList.switchUpdate,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        request.post(option, (error, response, body) => {
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '操作发布的状态失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            console.log("body==", body);
+            console.log("result==", result);
+            if (result && result.returnCode === 0) {
+                return res.send({
+                    error: 0,
+                    msg: '操作发布的状态成功',
+                    data: body
+                });
+            } else if (result && result.returnCode != 9999) {
+                return res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            } else {
+                return res.send({
+                    error: 1,
+                    msg: '操作发布的状态失败'
+                });
+            }
+        });
+    });
+
+}

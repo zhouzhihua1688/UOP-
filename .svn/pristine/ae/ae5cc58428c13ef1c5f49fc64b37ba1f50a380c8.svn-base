@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache,must-revalidate">
+<meta http-equiv="expires" content="0">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datepicker3.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap24.css"/>
+    <style>
+        .show {
+            display: none;
+        }
+
+        .hide {
+            display: block;
+        }
+
+        [v-cloak] {
+            display: none !important;
+        }
+
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                <% include ../breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <div class="row" id="content">
+                    <div class="col-xs-12">
+                        <!--提示信息弹窗-->
+                        <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h4 v-text="diaMsg"></h4>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--删除-->
+                        <div class="modal" id="del" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <h5 v-text="diaMsg"></h5>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm"
+                                                @click="deleteGroup" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--未选中渠道 导出 弹框-->
+                        <div class="modal" id="dexp1" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close cha" data-dismiss="modal" aria-hidden="true">
+                                            ×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <h5 style="text-align: center" v-text="diaMsg"></h5>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                                @click="exportCheck('0')">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal" id="dexp2" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close cha" data-dismiss="modal" aria-hidden="true">
+                                            ×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <h5 style="text-align: center" v-text="diaMsg"></h5>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                                @click="exportCheck('0')">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--公用 弹框-->
+                        <div class="modal" id="comMsg" tabindex="-1" role="dialog" aria-hidden="true"
+                             data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header" style="padding: 10px;">
+                                        <button type="button" class="close cha" data-dismiss="modal" aria-hidden="true">
+                                            ×
+                                        </button>
+                                        <h4 class="modal-title">提示信息</h4>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <h5 style="text-align: center" v-text="diaMsg"></h5>
+                                    </div>
+                                    <p class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--<div class="table-header"> 报表导出</div>-->
+
+                        <div class="form-inline" style="padding: 10px 0;">
+                            <label class="control-label">年月:</label>
+                            <div class="form-group">
+                                <input id="ymonth" name="" type="text" class="date-picker pull-left "
+                                       placeholder="请输入时间">
+                                <!--v-model="ymonth">-->
+                                <span class="input-group-addon pull-left"
+                                      style="width:34px;height: 34px;padding: 9px 9px; ">
+                                    <i class="fa fa-clock-o bigger-110"></i>
+                                </span>
+                            </div>
+
+                            <div class="form-group feiyong">
+                                <label class="control-label">费用类型:</label>
+                                <select id="feiyong" name="faretype" class="form-control select" style="width: 170px;"
+                                        @change='changeFaretype(selectFaretype)' v-model="selectFaretype">
+                                    <option value="1">手续费</option>
+                                    <option value="2">交易费</option>
+                                    <option value="3">代销尾佣</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group group">
+                                <label class="control-label">分组:</label>
+                                <select id="sg" name="groups" style="width: 170px;" v-model="selectNm"
+                                        @change='changeTable(groupnm)'>
+                                    <div v-if="groups.groupnm">
+                                        <option v-for="(item,index) in groups" :value="item.groupnm">{{item.groupnm}}
+                                        </option>
+                                    </div>
+                                    <option :value="0">&lt;新增分组&gt;</option>
+                                </select>
+                                <div>
+                                </div>
+                            </div>
+                            <!--@click.stop="select(one,)"-->
+
+                            <div class="form-group pull-right">
+                                <div class="form-group right">
+                                    <input type="button" class="btn btn-sm btn-primary right" value="导出汇总"
+                                           @click='exportExcel("1")'>
+                                </div>
+
+                                <div class="form-group right" style="margin-right: 10px">
+                                    <input type="button" class="btn btn-sm btn-primary right" value="导出明细"
+                                           @click='exportExcel("2")'>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="table-header">分组渠道显示</div>
+                        <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                            <div class="form-inline">
+                                <div class="form-group">
+                                    <label class="control-label">分组名称:</label>
+                                    <span v-if="groups">
+                                    <!--<input  :value="gName" type="text"  @input="getInputVal($event)">-->
+                                    <input type="text" v-model="gName">
+                                    </span>
+                                    <span v-else>
+                                        <input type="text">
+                                    </span>
+                                </div>
+
+                                <label class="pos-rel" style="margin-left: 20px">
+                                    <input type="checkbox" class="ace" v-model="allCheck" @click="selectAll(allCheck)"/>
+                                    <span class="lbl">&nbsp;&nbsp;全选</span>
+                                </label>
+                                <label class="pos-rel" style="margin-left: 20px">
+                                    <input type="checkbox" class="ace" v-model="invertCheck" @click="invertSelection(invertCheck)"/>
+                                    <span class="lbl">&nbsp;&nbsp;反选</span>
+                                </label>
+
+                                <div class="form-group pull-right">
+                                    <div class="form-group right">
+                                        <input type="button" class="btn btn-sm btn-primary" value="更新分组"
+                                               @click="updateGroup">
+                                    </div>
+                                    <div class="form-group right">
+                                        <input type="button" class="btn btn-sm btn-primary" value="保存分组"
+                                               @click="saveGroup">
+                                    </div>
+
+                                    <div class="form-group right " style="margin-right: 10px">
+                                        <input type="button" class="btn btn-sm btn-primary right" value="删除分组"
+                                               @click="showDeleteGroup">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--数据表-->
+                        <table class="table table-striped table-bordered table-hover dataTable"
+                               style="margin-bottom: 0;">
+                            <thead>
+                            <tr>
+                                <!--<th class="left">渠道</th>-->
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <template v-if="tableData.length>0">
+                                <tr v-for="(item1,index) in tableData">
+                                    <template v-for="item in item1">
+
+                                        <td class="left col-md-1">
+                                            <label class="pos-rel ">
+                                                <input type="checkbox" class="ace" :value="item.branchCode"
+                                                       name="checkBranch" v-model="item.isCheck"
+                                                />
+                                                <span class="lbl">&nbsp;&nbsp;&nbsp;{{item.branchCode}}&nbsp;&nbsp;&nbsp;{{item.branchNm}}</span>
+                                            </label>
+                                        </td>
+
+                                    </template>
+                                </tr>
+                            </template>
+                            <template v-else>
+                                <tr>
+                                    <td class="center" v-text="'没有数据'" colspan="15"></td>
+                                </tr>
+                            </template>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.page-content -->
+</div>
+
+
+<% include ../../common/footer.html %>
+
+</div><!-- /.main-container -->
+
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/jquery-ui.custom.min.js"></script>
+<script src="/ace/assets/js/jquery.ui.touch-punch.min.js"></script>
+<script src="/ace/assets/js/markdown.min.js"></script>
+<script src="/ace/assets/js/bootstrap-markdown.min.js"></script>
+<script src="/ace/assets/js/spinbox.min.js"></script>
+<script src="/ace/assets/js/bootstrap-datepicker.min.js"></script>
+<script src="/ace/assets/js/autosize.min.js"></script>
+<script src="/ace/assets/js/jquery.inputlimiter.min.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/cashMgmt/livingPay/validate.min.js"></script>
+<script src="/js/thirdPartyOperation/expenseMgmt/export.js"></script>
+<script>
+    $('.date-picker').datepicker({
+        autoclose: true,
+        todayHighlight: true,
+        format: 'yyyy-mm',
+        language: 'cn',
+        startView: 'year',
+        maxViewMode: 'years',
+        minViewMode: 'years',
+        // startView:'months',
+        // maxViewMode:'months',
+        minViewMode: 'months'
+    }).next().on(ace.click_event, function () {
+        $(this).prev().focus();
+    });
+
+    $(".group select").each(function () {
+        $(this).val($(this).find("option:first-child").val()).trigger("change");
+    });
+    $(".feiyong select").each(function () {
+        $(this).val($(this).find("option:first-child").val()).trigger("change");
+        console.log($(this).val($(this).find("option:first-child").val()))
+    });
+    // $(".select").change(function () {
+    //     console.log($(this).children('option:selected').val())
+    // });
+</script>
+
+</body>
+
+</html>

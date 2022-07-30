@@ -1,0 +1,417 @@
+module.exports = [
+    {
+        "menuId": "2",
+        "parentMenuId": "",
+        "hasSubmenu": true,
+        "type": "2",
+        "name": "消息中心",
+        "url": "/messageCenter"
+    },
+    {
+        "menuId": "2-1",
+        "parentMenuId": "2",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "消息模板管理",
+        "url": "/messageCenter/templateMgmt"
+    },
+    {
+        "menuId": "2-1-1",
+        "parentMenuId": "2-1",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "消息模板管理",
+        "url": "/messageCenter/templateMgmt/templateMgmt.html"
+    },
+    {
+        "menuId": "2-2",
+        "parentMenuId": "2",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "消息分类管理",
+        "url": "/messageCenter/classMgmt"
+    },
+    {
+        "menuId": "2-2-1",
+        "parentMenuId": "2-2",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "消息分类管理",
+        "url": "/messageCenter/classMgmt/classMgmt.html"
+    },
+	{
+	    "menuId": "2-2-2",
+	    "parentMenuId": "2-2",
+	    "hasSubmenu": false,
+	    "type": "2",
+	    "page": true,
+	    "name": "消息二级分类管理",
+	    "url": "/messageCenter/classMgmt/secondClassMgmt.html"
+	},
+    {
+        "menuId": "2-3",
+        "parentMenuId": "2",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "消息规则管理",
+        "url": "/messageCenter/ruleMgmt"
+    },
+    {
+        "menuId": "2-3-1",
+        "parentMenuId": "2-3",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "消息规则管理",
+        "url": "/messageCenter/ruleMgmt/ruleMgmt.html"
+    },
+    {
+        "menuId": "2-4",
+        "parentMenuId": "2",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "人工发送管理",
+        "url": "/messageCenter/manualMgmt"
+    },
+    {
+        "menuId": "2-4-1",
+        "parentMenuId": "2-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "人工发送管理",
+        "url": "/messageCenter/manualMgmt/manualMgmt.html"
+    },
+    {
+        "menuId": "2-4-2",
+        "parentMenuId": "2-4",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "删除历史站内信",
+        "url": "/messageCenter/manualMgmt/deleteMsg.html"
+    },
+    {
+        "menuId": "2-5",
+        "parentMenuId": "2",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "场景发送管理",
+        "url": "/messageCenter/scenceMgmt"
+    },
+    {
+        "menuId": "2-5-1",
+        "parentMenuId": "2-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "场景规则列表",
+        "url": "/messageCenter/scenceMgmt/scenceList.html"
+    },
+    {
+        "menuId": "2-5-2",
+        "parentMenuId": "2-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "场景规则新增",
+        "url": "/messageCenter/scenceMgmt/scenceAdd.html"
+    },
+    {
+        "menuId": "2-5-3",
+        "parentMenuId": "2-5",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "上行回复规则",
+        "url": "/messageCenter/scenceMgmt/upReplyRule.html"
+    },
+    {
+        "menuId": "2-6",
+        "parentMenuId": "2",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "消息统计查询",
+        "url": "/messageCenter/sendCount"
+    },
+    {
+        "menuId": "2-6-1",
+        "parentMenuId": "2-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "App推送查询",
+        "url": "/messageCenter/sendCount/sendCount.html"
+    },
+    {
+        "menuId": "2-6-2",
+        "parentMenuId": "2-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "短信详情查询",
+        "url": "/messageCenter/sendCount/msgSearch.html"
+    },
+    {
+        "menuId": "2-6-3",
+        "parentMenuId": "2-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "微信详情查询",
+        "url": "/messageCenter/sendCount/WXSearch.html"
+    },
+    {
+        "menuId": "2-6-4",
+        "parentMenuId": "2-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "单次推送查询",
+        "url": "/messageCenter/sendCount/singlePush.html"
+    },
+    {
+        "menuId": "2-6-5",
+        "parentMenuId": "2-6",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "上行回复查询",
+        "url": "/messageCenter/sendCount/upReplyQuery.html"
+    },
+    {
+        "menuId": "2-7",
+        "parentMenuId": "2",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "推送token查询",
+        "url": "/messageCenter/tokenSearch"
+    },
+    {
+        "menuId": "2-7-1",
+        "parentMenuId": "2-7",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "推送token查询",
+        "url": "/messageCenter/tokenSearch/tokenSearch.html"
+    },
+    {
+        "menuId": "2-8",
+        "parentMenuId": "2",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "审核管理",
+        "url": "/messageCenter/auditMgmt"
+    },
+    {
+        "menuId": "2-8-1",
+        "parentMenuId": "2-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "留言管理",
+        "url": "/messageCenter/auditMgmt/leaveWordMgmt.html"
+    },
+    {
+        "menuId": "2-8-2",
+        "parentMenuId": "2-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "头像审核",
+        "url": "/messageCenter/auditMgmt/headToReview.html"
+    },
+    {
+        "menuId": "2-8-3",
+        "parentMenuId": "2-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "昵称审核",
+        "url": "/messageCenter/auditMgmt/nicknameToReview.html"
+    },
+    {
+        "menuId": "2-8-4",
+        "parentMenuId": "2-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "证件照审核经办",
+        "url": "/messageCenter/auditMgmt/idCardHandle.html"
+    },
+    {
+        "menuId": "2-8-5",
+        "parentMenuId": "2-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "证件照审核复核",
+        "url": "/messageCenter/auditMgmt/idCardReview.html"
+    },
+    {
+        "menuId": "2-8-6",
+        "parentMenuId": "2-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "社区动态管理",
+        "url": "/messageCenter/auditMgmt/communityDynamic.html"
+    },
+    {
+        "menuId": "2-8-7",
+        "parentMenuId": "2-8",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "评论管理",
+        "url": "/messageCenter/auditMgmt/comment.html"
+    },
+    {
+        "menuId": "2-9",
+        "parentMenuId": "2",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "社交管理",
+        "url": "/messageCenter/socialMgmt"
+    },
+    {
+        "menuId": "2-9-1",
+        "parentMenuId": "2-9",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "参数配置",
+        "url": "/messageCenter/socialMgmt/parameterMgmt.html"
+    },
+    {
+        "menuId": "2-9-2",
+        "parentMenuId": "2-9",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "实盘公开审核",
+        "url": "/messageCenter/socialMgmt/publicOfferReview.html"
+    },
+    {
+        "menuId": "2-9-3",
+        "parentMenuId": "2-9",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "实盘排行",
+        "url": "/messageCenter/socialMgmt/firmOfferRank.html"
+    },
+    {
+        "menuId": "2-9-4",
+        "parentMenuId": "2-9",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "话题分类管理",
+        "url": "/messageCenter/socialMgmt/topicClassify.html"
+    },
+    {
+        "menuId": "2-9-5",
+        "parentMenuId": "2-9",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "话题管理",
+        "url": "/messageCenter/socialMgmt/topic.html"
+    },
+    {
+        "menuId": "2-9-6",
+        "parentMenuId": "2-9",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "账号管理",
+        "url": "/messageCenter/socialMgmt/account.html"
+    },
+    {
+        "menuId": "2-9-7",
+        "parentMenuId": "2-9",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "文章管理",
+        "url": "/messageCenter/socialMgmt/article.html"
+    },
+    // 20220118注释掉，社区投票配置在公共配置-问卷调查，vt开头的id
+    // {
+    //     "menuId": "2-9-8",
+    //     "parentMenuId": "2-9",
+    //     "hasSubmenu": false,
+    //     "type": "2",
+    //     "page": true,
+    //     "name": "投票管理",
+    //     "url": "/messageCenter/socialMgmt/vote.html"
+    // },
+    {
+        "menuId": "2-9-9",
+        "parentMenuId": "2-9",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "卡片管理",
+        "url": "/messageCenter/socialMgmt/card.html"
+    },
+    {
+        "menuId": "2-9-10",
+        "parentMenuId": "2-9",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        // "name": "基金热聊管理",
+        "name": "关联推荐管理",  // 20210910修改
+        "url": "/messageCenter/socialMgmt/hotChat.html"
+    },
+    {
+        "menuId": "2-10",
+        "parentMenuId": "2",
+        "hasSubmenu": true,
+        "type": "2",
+        "page": false,
+        "name": "客群名单管理",
+        "url": "/messageCenter/blackListMgmt"
+    },
+    {
+        "menuId": "2-10-1",
+        "parentMenuId": "2-10",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "短信黑名单管理",
+        "url": "/messageCenter/blackListMgmt/shortMessageMgmt.html"
+    },
+    {
+        "menuId": "2-10-2",
+        "parentMenuId": "2-10",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "反洗钱客户名单管理",
+        "url": "/messageCenter/blackListMgmt/amlMgmt.html"
+    },
+    {
+        "menuId": "2-10-3",
+        "parentMenuId": "2-10",
+        "hasSubmenu": false,
+        "type": "2",
+        "page": true,
+        "name": "交易短信退订查询",
+        "url": "/messageCenter/blackListMgmt/unsubscribeQuery.html"
+    }
+];

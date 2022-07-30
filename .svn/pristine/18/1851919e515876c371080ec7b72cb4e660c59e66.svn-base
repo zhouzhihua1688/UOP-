@@ -1,0 +1,484 @@
+new Vue({
+    el: '#content',
+    data: {
+        // page data
+        title: '',
+        branchcode:'',
+        branchnm:'',
+        fileCode:'',
+        fileDesc:'',
+        tano:'',
+        ioType:'',
+        expSt:'',
+        uploadSt:'',
+        status: '',
+        diaMsg: '',
+        today:'',
+        operator: '',
+        userId: '',
+        dialogData: [],
+        // table data
+        tableData: [],
+        currentIndex: 0,
+        pageMaxNum: '50',
+        condition: '',
+        // loading动画
+        progress: false,
+    },
+    computed: {
+        middleData: function () {
+            var middleData = [];
+            var filterData = [];
+            var pageMaxNum = parseInt(this.pageMaxNum);
+            var _this = this;
+            this.tableData.forEach(function (jsonObj) {
+                var valueArr = [];
+                for (var prop in jsonObj) {
+                    valueArr.push(jsonObj[prop]);
+                }
+                for (var i = 0, len = valueArr.length; i < len; i++) {
+                    if (valueArr[i]) {
+                        if (valueArr[i].toString().indexOf(_this.condition) != -1) {
+                            filterData.push(jsonObj);
+                            break;
+                        }
+                    }
+                }
+            });
+            if (filterData.length <= pageMaxNum) {
+                middleData.push(filterData);
+                return middleData;
+            } else {
+                var i = 0;
+                while ((i + 1) * pageMaxNum < filterData.length) {
+                    middleData.push(filterData.slice(i * pageMaxNum, (i + 1) * pageMaxNum));
+                    i++;
+                }
+                middleData.push(filterData.slice(i * pageMaxNum, filterData.length));
+                return middleData;
+            }
+        },
+        viewData: function () {
+            let currentIndex = parseInt(this.currentIndex);
+            return this.middleData[currentIndex];
+        },
+        
+    },
+    watch: {
+        pageMaxNum: {
+            handler: function (val, oldval) {
+                this.currentIndex = 0;
+            }
+        },
+        condition: {
+            handler: function (val, oldval) {
+                this.currentIndex = 0;
+            }
+        }
+    },
+    mounted: function () {
+        var _this=this;
+        var dialogs = ['', '', '', 'info'];
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+       
+        var urlDate=_this.getUrlParam("date");
+        if(!urlDate){
+            var date= new Date();
+            var year = date.getFullYear();
+            var month = date.getMonth()+1;
+            var day = date.getDate();
+            if(month<10){
+                month="0"+month;
+            }
+            if(day<10){
+                day="0"+day;
+            }
+            year=year.toString();
+            month=month.toString();
+            day=day.toString();
+            var newDate = year+month+day;
+            _this.today = newDate;
+            var params = {};
+            params.date= newDate;
+            $.get({
+                url: '/thirdPartyOperation/channelMaintain/fileInteraction/search.ajax',
+                data: params,
+                success: function (result) {
+                    console.log(result)
+                    if (result.error == 0) {
+                        
+                            _this.tableData = result.data;
+                          
+                    }
+                    else {
+                        _this.showDialog('', 'info1', false);  
+                    }
+                },
+                error: function () {
+                        _this.showDialog('', 'info', false,  result.msg);
+                    }
+            });
+        }else{
+            _this.today = urlDate;
+            var params = {};
+            params.date= urlDate;
+        
+            console.log(params.date);
+            $.get({
+                url: '/thirdPartyOperation/channelMaintain/fileInteraction/search.ajax',
+                data: params,
+                success: function (result) {
+                    console.log(params)
+                    console.log(result)
+                    if (result.error == 0) {
+                        
+                            _this.tableData = result.data;
+                          
+                    }
+                    else {
+                        _this.showDialog('', 'info1', false);  
+                    }
+                },
+                error: function () {
+                        _this.showDialog('', 'info', false,  result.msg);
+                    }
+            });
+        };
+        
+        $('.date-picker').datepicker({
+                autoclose: true,
+                todayHighlight: true,
+                format: 'yyyymmdd',
+                language: 'cn'
+            })
+            //show datepicker when clicking on the icon
+            .next().on(ace.click_event, function () {
+                $(this).prev().focus();
+            });
+    },
+   
+    methods: {
+        prev: function () {
+            this.currentIndex <= 0 ? 0 : this.currentIndex--;
+        },
+        next: function () {
+            this.currentIndex >= this.middleData.length - 1 ? this.middleData.length - 1 : this.currentIndex++;
+        },
+        changeIndex: function (index) {
+            this.currentIndex = index - 1;
+        },
+        search: function () {
+            var _this = this;
+            _this.currentIndex = 0;
+            var date=$(".date-picker").val();
+           
+              //  function replaceParamVal(paramName,replaceWith){
+               //     var oUrl = this.location.href.toString();
+               //     var re = eval('/('+paramName+'=)([^&]*)/gi');
+               //     var nUrl = oUrl.replace(re,paramName+'='+replaceWith);
+              //      this.location = nUrl;
+               //     window.location.href = nUrl
+              //  }
+             //   replaceParamVal("date",date);
+            
+           
+
+            console.log(date);
+            _this.today = date;
+            
+                var params = {};
+                params.date= date;
+                params.branchnm = this.branchnm;
+                params.fileDesc = this.fileDesc;
+                console.log(params.branchnm)
+                console.log(params.fileDesc)
+            $.get({
+                url: '/thirdPartyOperation/channelMaintain/fileInteraction/search.ajax',
+                data: params,
+                success: function (result) {
+                    console.log(params)
+                    console.log(result)
+                    if (result.error == 0) {
+                        
+                            _this.tableData = result.data; 
+                          
+                    }
+                    else {
+                        _this.showDialog('', 'info1', false);   
+                    }
+                },
+                error: function () {
+                        _this.showDialog('', 'info', false, '数据获取失败');
+                    }
+            });
+            
+        },
+        //人工执行
+        implement: function () {
+            var _this = this;
+            var forceIds = [];
+            $("[name='forceIds']:checked").each(function(){
+                forceIds.push($(this).val());
+            })
+            console.log(forceIds);
+            var params = {};
+            params.forceIds = forceIds;
+       
+            params.operator = this.operator;
+         
+            console.log(params);
+            $.post({
+                url: '/thirdPartyOperation/channelMaintain/fileInteraction/implement.ajax',
+                data: params,
+                success: function (result) {
+                    console.log(params)
+                    console.log(result)
+                    if (result.error == 0) {
+                        
+                            _this.tableData = result.data; 
+                    }
+                    else {
+                       _this.showDialog('', 'info', false, '数据获取失败');  
+                    }
+                },
+                error: function () {
+                        _this.showDialog('', 'info', false, '数据获取失败');
+                    }
+            });
+           
+        },
+        //人工执行弹框
+        showimplement: function(){
+            var _this = this;
+            var forceIds = [];
+            $("[name='forceIds']:checked").each(function(){
+                forceIds.push($(this).val());
+            })
+            if(forceIds.length == 0){
+                _this.showDialog('', 'gouxuan', false); 
+                return
+            } else{
+                _this.showDialog('', 'option', false
+                ); 
+            }
+        },
+        //人工执行刷新页面
+        breaksimplement: function () {
+            var _this = this;
+            _this.implement();
+            var date=$(".date-picker").val();
+            window.location.href="/thirdPartyOperation/channelMaintain/fileInteraction.html?date="+date;
+         
+        },
+        //系统执行刷新页面
+        breaksimplements: function () {
+            var _this = this;
+            _this.implements();
+            var date=$(".date-picker").val();
+            //var branchnm = _this.branchnm;
+           // var fileDesc = _this.fileDesc;
+            window.location.href="/thirdPartyOperation/channelMaintain/fileInteraction.html?date="+date;
+         
+        },
+        //初始化当日对账清单刷新页面
+        breaks: function () {
+            var _this = this;
+            _this.resetTask();
+            var date=$(".date-picker").val();
+            setTimeout(function(){
+                var date=$(".date-picker").val();
+                window.location.href="/thirdPartyOperation/channelMaintain/fileInteraction.html?date="+date;
+            },500)
+           
+           
+        },
+        
+        showresetTask: function(){
+            var _this = this;
+            _this.showDialog('', 'chu', false)
+        },
+        //系统执行弹框
+        showimplements: function(){
+            var _this = this;
+            var resetIds = [];
+            $("[name='resetIds']:checked").each(function(){
+                resetIds.push($(this).val());
+            })
+            if(resetIds.length == 0){
+                _this.showDialog('', 'gouxuan', false); 
+                return
+            } else{
+                _this.showDialog('', 'syst', false
+                ); 
+            }
+        },
+        //系统执行
+        implements: function () {
+            var _this = this;
+            var resetIds = [];
+            $("[name='resetIds']:checked").each(function(){
+                resetIds.push($(this).val());
+            })
+        
+            console.log(resetIds);
+            var params = {};
+            params.resetIds = resetIds;
+            params.operator = this.operator;
+         
+            console.log(params);
+            $.post({
+                url: '/thirdPartyOperation/channelMaintain/fileInteraction/implements.ajax',
+                data: params,
+                success: function (result) {
+                    console.log(params)
+                    console.log(result)
+                    if (result.error == 0) {
+                        
+                            _this.tableData = result.data; 
+                    }
+                    else {
+                       _this.showDialog('', 'info', false, '数据获取失败');  
+                    }
+                },
+                error: function () {
+                        _this.showDialog('', 'info', false, '数据获取失败');
+                    }
+            });
+          
+          
+        },
+        //初始化当日任务清单
+        resetTask: function () {
+            var _this = this;
+            var date=$(".date-picker").val();
+                var params = {};
+                params.date= date;
+                params.operator = this.operator;
+            $.get({
+                url: '/thirdPartyOperation/channelMaintain/fileInteraction/resetTask.ajax',
+                data: params,
+                success: function (result) {
+                    console.log(params)
+                    console.log(result)
+                    if (result.error == 0) {
+                        
+                        _this.tableData = result.data; 
+                    }
+                    else {
+                       _this.showDialog('', 'info', false, '数据获取失败');  
+                    }
+                },
+                error: function () {
+                        _this.showDialog('', 'info', false, '数据获取失败');
+                    }
+            });  
+    
+        },
+        //操作日志
+        record: function () {
+            var _this = this;
+            this.showDialog('', 'create');
+                var params = {};
+            $.get({
+                url: '/thirdPartyOperation/channelMaintain/fileInteraction/record.ajax',
+                data: params,
+                success: function (result) {
+                    console.log(params)
+                    console.log(result)
+                    if (result.error == 0) {
+                       
+                        _this.dialogData = result.data;
+                     
+                        console.log(result.data);
+                    }
+                    else {
+                       _this.showDialog('', 'info', false, '数据获取失败');  
+                    }
+                },
+                error: function () {
+                        _this.showDialog('', 'info', false, '数据获取失败');
+                    }
+            });  
+          
+        },
+        // 公共方法
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            }
+            else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            }
+            else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            }
+            else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+            else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        getUrlParam:function (name) {
+            var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+            var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+            if (r!=null) return unescape(r[2]); return ''; //返回参数值
+        }
+        
+        
+    },
+    filters: {//格式化时间戳
+        time: function (obj) {
+            var date = new Date(obj);
+            var y = date.getFullYear();  
+            var m = date.getMonth() + 1;  
+            m = m < 10 ? ('0' + m) : m;  
+            var d = date.getDate();  
+            d = d < 10 ? ('0' + d) : d;  
+            var h = date.getHours();
+            h = h < 10 ? ('0' + h) : h;
+            var minute = date.getMinutes();
+            var second = date.getSeconds();
+            minute = minute < 10 ? ('0' + minute) : minute;  
+            second = second < 10 ? ('0' + second) : second; 
+            return y + '-' + m + '-' + d+' '+h+':'+minute+':'+second;
+        },
+        // 状态
+        status:function(item){
+            item = item.toUpperCase()
+            if (item==="N") {
+                return "待复核"
+            }else if(item==="D"){
+                return "复核中"
+            }else if(item==="S"){
+                return "已复核"
+            }else{
+                return item 
+            }
+        },      
+    }
+});

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datepicker3.min.css"/>
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        .chosen-single {
+            height: 34px !important;
+            line-height: 34px !important;
+            border-radius: 0 !important;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!-- loading动画 -->
+                <div class="cover" v-show="loadingShow" style="z-index: 1999;display: none;">
+                    <img src="/img/loading.gif" alt="上传中" style="position: absolute;top: 50%;left: 50%;">
+                </div><!-- loading动画 -->
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--新增弹窗-->
+                <div class="modal" id="add" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content col-lg-12">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">新增规则</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form">
+                                    <div class="form-group">
+                                        <label class="control-label">
+                                            <label class="control-label">规则名称:</label>
+                                            <input type="text" placeholder="必填" v-model="diaRuleName"/>
+                                        </label>
+                                        <label class="control-label pull-right">
+                                            <label class="control-label">消息类别:</label>
+                                            <select class="form-control" style="width: 170px;display: inline"
+                                                    v-model="diaClassType">
+                                                <option v-for="(item,index) in diaClassList" :value="item.categoryId"
+                                                        v-text="item.categoryName"></option>
+                                                <option value="30" v-text="'系统消息'"></option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label">发送渠道:</label>
+                                        <label class="control-label">
+                                            <label class="pos-rel">
+                                                <input type="checkbox" id="App" value="1" class="ace"
+                                                       v-model="diaChannelType"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="App">App站内信</label>
+                                            <label class="pos-rel">
+                                                <input type="checkbox" id="App-push" value="2" class="ace"
+                                                       v-model="diaChannelType"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="App-push">App-push</label>
+                                            <label class="pos-rel">
+                                                <input type="checkbox" id="shortMsg" value="3" class="ace"
+                                                       v-model="diaChannelType"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="shortMsg">短信</label>
+                                            <label class="pos-rel">
+                                                <input type="checkbox" id="WX" value="4" class="ace"
+                                                       v-model="diaChannelType"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="WX">微信</label>
+                                            <label class="pos-rel">
+                                                <input type="checkbox" id="WXHigh" value="5" class="ace"
+                                                       v-model="diaChannelType"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label for="WXHigh">微信高端</label>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="control-label" v-show="hasAppMsg">
+                                            <label class="control-label">App站内信模板:</label>
+                                            <select id="diaAppMsgList" class="chosen-select form-control"
+                                                    data-placeholder="请选择">
+                                                <option value=""></option>
+                                            </select>
+                                        </label>
+                                        <label class="control-label pull-right" v-show="hasAppPush">
+                                            <label class="control-label">App-push模板:</label>
+                                            <select id="diaAppPushList" class="chosen-select form-control"
+                                                    data-placeholder="请选择">
+                                                <option value=""></option>
+                                            </select>
+                                        </label>
+                                        <div style="clear: both;"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="control-label" v-show="hasShortMsg">
+                                            <label class="control-label">短信模板:</label>
+                                            <select id="diaShortMsgList" class="chosen-select form-control"
+                                                    data-placeholder="请选择">
+                                                <option value=""></option>
+                                            </select>
+                                        </label>
+                                        <label class="control-label" v-show="hasWX">
+                                            <label class="control-label">微信模板:</label>
+                                            <select id="diaWXList" class="chosen-select form-control"
+                                                    data-placeholder="请选择">
+                                                <option value=""></option>
+                                            </select>
+                                        </label>
+                                        <div style="clear: both;"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="control-label" v-show="hasWXHigh">
+                                            <label class="control-label">微信高端模板:</label>
+                                            <select id="diaWXHighList" class="chosen-select form-control"
+                                                    data-placeholder="请选择">
+                                                <option value=""></option>
+                                            </select>
+                                        </label>
+                                        <div style="clear: both;"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="control-label">发送方式:</label>
+                                        <select class="form-control" style="width: 170px;display: inline"
+                                                v-model="diaPushType">
+                                            <option value="0">实时</option>
+                                            <option value="1">外部系统调用</option>
+                                            <option value="2">场景化</option>
+                                            <option value="3">定时</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" v-if="showRuleKey">
+                                        <label class="control-label">
+                                            <label class="control-label">规则编码:</label>
+                                            <input type="text" placeholder="必填" v-model="diaRuleKey"/>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-group" v-show="diaPushType==2||diaPushType==3">
+                                        <div class="input-group">
+                                            <label id="cronLabel" class="control-label">发送时间:</label>
+                                            <input id="cron"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="control-label">
+                                            <label class="control-label">规则来源:</label>
+                                            <select id="diaRuleSource" class="chosen-select form-control"
+                                                    data-placeholder="请选择" style="display: inline">
+                                                <option value="e7ad0120840f4ce94e25771f97d4721d">电商直销</option>
+                                                <option value="acc">活动中心</option>
+                                                <option value="DSC">柜台系统</option>
+                                                <option value="HOP">对外合作平台</option>
+                                                <option value="smac">现金宝系统</option>
+                                                <option value="fundgroup">组合系统</option>
+                                                <option value="fundpay">汇闪付</option>
+                                                <option value="crm">crm</option>
+                                                <option value="BE">银行引擎</option>
+                                                <option value="ags">养老金</option>
+                                                <option value="uaa">统一认证授权</option>
+                                                <option value="ats">预约交易系统</option>
+                                                <option value="icif">账户系统</option>
+                                                <option value="fts">基金系统</option>
+                                                <option value="vip">高端系统</option>
+                                                <option value="credit">信用卡系统</option>
+                                                <option value="BigData">大数据</option>
+                                                <option value="CTS">核心交易系统</option>
+                                                <option value="sfs">社交系统</option>
+                                                <option value="AOS">自动化运营</option>
+                                                <option value="cos">安全中心</option>
+                                                <option value="uop">统一运营平台</option>
+                                                <option value="reward">奖励系统</option>
+                                            </select>
+                                        </label>
+                                        <label class="control-label pull-right" v-if="diaPushType==1">
+                                            <label class="control-label">事件类型:</label>
+                                            <select class="form-control" style="width: 170px;display: inline"
+                                                    v-model="diaEventType">
+                                                <template v-if="showOption">
+                                                    <option value="50">自定义</option>
+                                                </template>
+                                                <template v-else>
+                                                    <option v-for="(item,index) in diaEventTypeList"
+                                                            :value="item.eventType"
+                                                            v-text="item.eventName"></option>
+                                                </template>
+                                            </select>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <label class="control-label">失效时间:</label>
+                                            <input type="text" id="expiredTime" class="date-timepicker">
+                                            <span class="input-group-addon" style="width: 15%;">
+                                                <i class="fa fa-clock-o bigger-110"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="control-label">
+                                            <label class="control-label" style="margin-right: 15px;">优先级:</label>
+                                            <select class="form-control" style="width: 170px;display: inline"
+                                                    v-model="diaPriority">
+                                                <option value="1">高</option>
+                                                <option value="2">中</option>
+                                            </select>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-group" v-show="showGroup">
+                                        <label class="control-label" style="vertical-align:top;">
+                                            <label class="control-label">发送客群:</label>
+                                        </label>
+                                        <label class="control-label" style="vertical-align:top;">
+                                            <label class="pos-rel">
+                                                <input type="radio" id="jingtai" value="1" class="ace"
+                                                       v-model="diagroupType"/>
+                                                <span class="lbl"></span>
+                                            </label>
+                                            <label class="control-label" for="jingtai"
+                                                   style="margin-right: 20px;">静态客群</label>
+                                        </label>
+                                        <label class="control-label col-sm-8" style="float: none;">
+                                            <span v-for="(item,index) in selectgroupList" :key="index"
+                                                  v-text="item.groupName+' '"></span>
+                                            <a href="javascript:;" @click="showgroup">重新选择</a>
+                                        </label>
+                                        <br>
+                                        <label class="control-label col-lg-12" style="margin-bottom: 30px;">
+                                            <label class="control-label" style="margin-left: 52px;">
+                                                <label class="pos-rel">
+                                                    <input type="radio" id="zidingyi" value="2" class="ace"
+                                                           v-model="diagroupType"/>
+                                                    <span class="lbl"></span>
+                                                </label>
+                                                <label class="control-label" for="zidingyi" style="margin-right: 6px;">自定义客群</label>
+                                            </label>
+                                            <input type="text" style="width: 55%;" id="uploadInput" placeholder="请选择"
+                                                   disabled/>
+                                            <input type="button" class="btn btn-sm btn-primary" id="uploadBtn"
+                                                   value="上传">
+                                            <input id="uploadFileInput" type="file" name="file" style="display: none"
+                                                   class="upload"/>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="add">保存</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--客群列表弹窗-->
+                <div class="modal" id="groupList" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">静态客群选择</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <div class="widget-container-col ui-sortable">
+                                    <div class="widget-box widget-color-blue">
+                                        <div class="widget-body">
+                                            <div class="widget-main no-padding"
+                                                 style="max-height: 400px;overflow-y:auto;">
+                                                <table class="table table-striped table-bordered table-hover">
+                                                    <thead class="thin-border-bottom">
+                                                    <tr>
+                                                        <th class="center col-sm-2">选择</th>
+                                                        <th class="center col-sm-7">客群名称</th>
+                                                        <th class="center col-sm-3">客群人数</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <tr v-for="(item, index) in groupList" :key="index">
+                                                        <td>
+                                                            <label class="pos-rel">
+                                                                <input type="checkbox" class="ace" :checked="item.check"
+                                                                       @click="groupAdd(index)"/>
+                                                                <span class="lbl"></span>
+                                                            </label>
+                                                        </td>
+                                                        <td class="center" v-text="item.groupName"></td>
+                                                        <td :class="item.groupNum=='获取失败'?'red center':'center'"
+                                                            v-text="item.groupNum"></td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="savegroup">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--模板详情列表-->
+                <div class="modal" id="templateList" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">模板详情列表</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <div class="widget-container-col ui-sortable">
+                                    <div class="widget-box widget-color-blue">
+                                        <div class="widget-body">
+                                            <div class="widget-main no-padding"
+                                                 style="max-height: 400px;overflow-y:auto;">
+                                                <table class="table table-striped table-bordered table-hover">
+                                                    <thead class="thin-border-bottom">
+                                                    <tr>
+                                                        <th class="center col-sm-5">模板名称</th>
+                                                        <th class="center col-sm-4">消息渠道</th>
+                                                        <th class="center col-sm-3">操作</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <tr v-for="(item, index) in templateDetailList" :key="index">
+                                                        <td class="center" v-text="item.templateName"></td>
+                                                        <td class="center" v-text="item.showChannelType"></td>
+                                                        <td class="center">
+                                                            <a href="javascript:;"
+                                                               @click="showTemplateDetail(item)">查看</a>
+                                                        </td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">返回</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--模板详情展示-->
+                <div class="modal" id="templateDetail" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title inline">模板详情</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding: 0 12px;">
+                                    <div class="form-group">
+                                        <label class="control-label">
+                                            <label class="control-label" style="width: 70px;">模板名称:</label>
+                                            <input type="text" v-model="diaTemplateDetail.templateName">
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label">
+                                            <label class="control-label" style="width: 70px;">消息渠道:</label>
+                                            <input type="text" v-model="diaTemplateDetail.showChannelType">
+                                        </label>
+                                    </div>
+                                    <div class="form-group" v-show="diaTemplateDetail.channelType==1">
+                                        <label class="control-label" style="width: 70px;">模板摘要:</label>
+                                        <input type="text" style="width: 80%;" v-model="diaTemplateDetail.summary">
+                                    </div>
+                                    <div class="form-group" v-show="diaTemplateDetail.channelType==1">
+                                        <label class="control-label" style="width: 70px;">标题:</label>
+                                        <input type="text" style="width: 80%;" v-model="diaTemplateDetail.title">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label" style="margin-right: -55px;">
+                                            <label class="control-label" style="width: 70px;">模板内容:</label>
+                                            <textarea cols="58" rows="6" style="vertical-align:top;"
+                                                      v-model="diaTemplateDetail.content"></textarea>
+                                        </label>
+                                    </div>
+                                    <div class="form-group" v-if="jumpLinkShow">
+                                        <label class="control-label" style="width: 70px;">链接地址:</label>
+                                        <input type="text" style="width: 80%;" v-model="diaTemplateDetail.url">
+                                    </div>
+                                    <div class="form-group" style="position: relative;"
+                                         v-show="diaTemplateDetail.channelType==1">
+                                        <div class="input-group">
+                                            <label class="control-label" style="width: 70px;">开始时间:</label>
+                                            <input type="text" id="startTime" class="date-timepicker"
+                                                   style="width: 145px;">
+                                            <span class="input-group-addon" style="width: 16%;">
+                                                <i class="fa fa-clock-o bigger-110"></i>
+                                            </span>
+                                        </div>
+                                        <div class="input-group" style="position: absolute;top: 0;right: 0;">
+                                            <label class="control-label" style="width: 70px;">结束时间:</label>
+                                            <input type="text" id="endTime" class="date-timepicker"
+                                                   style="width: 145px;">
+                                            <span class="input-group-addon" style="width: 16%;">
+                                                <i class="fa fa-clock-o bigger-110"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--删除弹窗-->
+                <div class="modal" id="delete" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <p>
+                            <div class="modal-body text-center">
+                                <h4>是否确认删除?</h4>
+                            </div>
+                            </p>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" @click="deleteData">确定</button>
+                                <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">取消</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--csv批量上传弹窗-->
+                <div class="modal" id="uploadCSV" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title inline">上传csv文件</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding: 0 12px;">
+                                    <div class="form-group" style="margin-top: 20px;">
+                                        <span class="control-label" style="margin-right: 20px;">选择文件:</span>
+                                        <input type="text" style="width: 55%;" id="uploadInputCSV" placeholder="请选择"
+                                               disabled/>
+                                        <input type="button" class="btn btn-sm btn-primary" id="uploadBtnCSV"
+                                               value="选择">
+                                        <input id="uploadFileInputCSV" type="file" name="file" style="display: none"
+                                               class="upload"/>
+                                    </div>
+                                </div>
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary" @click="addCSV">上传</button>
+                                    <button class="btn btn-sm btn-primary" data-dismiss="modal" aria-hidden="true">取消
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--excel批量上传弹窗-->
+                <div class="modal" id="uploadExcel" tabindex="-1" role="dialog" aria-hidden="true"
+                     data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+                                </button>
+                                <h4 class="modal-title inline">上传Excel文件</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form" style="padding: 0 12px;">
+                                    <div class="form-group" style="margin-top: 20px;">
+                                        <span class="control-label" style="margin-right: 20px;">选择文件:</span>
+                                        <input type="text" style="width: 55%;" id="uploadInputExcel" placeholder="请选择"
+                                               disabled/>
+                                        <input type="button" class="btn btn-sm btn-danger" id="uploadBtnExcel"
+                                               value="选择">
+                                        <input id="uploadFileInputExcel" type="file" name="file" style="display: none"
+                                               class="upload"/>
+                                        <button class="btn btn-sm btn-primary" @click="downloadExcelFile">下载模板文件
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-danger" @click="addExcel">上传</button>
+                                    <button class="btn btn-sm btn-primary" data-dismiss="modal" aria-hidden="true">取消
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label">规则ID:</label>
+                        <input type="text" v-model="ruleId">
+                    </div>
+                    <!--<div class="form-group">-->
+                    <!--<label class="control-label">规则名称:</label>-->
+                    <!--<input type="text" v-model="ruleName">-->
+                    <!--</div>-->
+                    <!--<div class="form-group">-->
+                    <!--<label class="control-label">创建人:</label>-->
+                    <!--<input type="text" v-model="creator">-->
+                    <!--</div>-->
+                    <div class="form-group pull-right">
+                        <input type="button" class="btn btn-sm btn-primary" value="Excel批量上传" @click="showExcelUpload">
+                        <input type="button" class="btn btn-sm btn-primary" value="csv批量上传" @click="showUpload">
+                        <input type="button" class="btn btn-sm btn-primary" value="查询" @click="search">
+                        <input type="button" class="btn btn-sm btn-primary" value="新增" @click="showAdd">
+                    </div>
+                </div>
+
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+
+                <!--分页器和快速查询-->
+                <div class="row" style="padding:8px 0;background-color: #EFF3F8; margin: 0;">
+                    <div class="col-xs-6">
+                        <div class="dataTables_length">
+                            <label>每页显示</label>
+                            <select class="input-sm" name="pageMaxNum" v-model="pageMaxNum">
+                                <option value="10">10</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                            </select>
+                            <label>条</label>
+                        </div>
+                    </div>
+                    <div class="col-xs-6">
+                        <div id="dynamic-table_filter" class="dataTables_filter">
+                            <label>快速查询:</label>
+                            <input type="text" class="input-sm" v-model="condition">
+                        </div>
+                    </div>
+                </div>
+                <!--数据表-->
+                <table id="simple-table" class="table table-striped table-bordered table-hover dataTable"
+                       style="margin-bottom: 0;">
+                    <thead>
+                    <tr>
+                        <th class="center">规则ID</th>
+                        <th class="center">规则名称</th>
+                        <th class="center">规则编码</th>
+                        <th class="center">消息类别</th>
+                        <th class="center">发送渠道</th>
+                        <th class="center">发送客群</th>
+                        <th class="center">发送方式</th>
+                        <th class="center">失效时间</th>
+                        <th class="center">优先级</th>
+                        <th class="center">规则来源</th>
+                        <th class="center">创建人</th>
+                        <th class="center">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="viewData.length>0">
+                        <tr v-for="(item,index) in viewData" :key="index">
+                            <td class="center col-sm-1" v-text="item.ruleId"></td>
+                            <td class="center col-sm-1">
+                                <a href="javascript:;"
+                                   @click="showTemplate(item.templateChannelList)"
+                                   v-text="item.ruleName"></a>
+                            </td>
+                            <td class="center col-sm-1" v-text="item.showRuleKey"></td>
+                            <td class="center col-sm-1" v-text="item.showCategoryName"></td>
+                            <td class="center col-sm-1" v-text="item.channelInfo"></td>
+                            <td class="center col-sm-1" v-text="item.showGroup"></td>
+                            <td class="center col-sm-1" v-text="item.showPushType"></td>
+                            <td class="center col-sm-1" v-text="item.expiredTime"></td>
+                            <td class="center col-sm-1" v-text="item.showPriority"></td>
+                            <td class="center col-sm-1" v-text="item.showRuleSource"></td>
+                            <td class="center col-sm-1" v-text="item.creator"></td>
+                            <td class="center col-sm-1">
+                                <a href="javascript:;" @click="showUpdate(item)">修改</a>
+                                /
+                                <a href="javascript:;" class="red" @click="showDelete(index)">删除</a>
+                            </td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td class="center" v-text="'没有数据'" colspan="12"></td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--底部页码-->
+                <div v-if="viewData.length>0" class="row"
+                     style="border-bottom: 1px solid #e0e0e0;padding-top: 12px;padding-bottom: 12px;background-color: #EFF3F8;margin: 0;">
+                    <div class="col-xs-2">
+                        <div class="dataTables_info" v-text="'共 '+middleData.length+' 页'"></div>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'1...'" @click="toFirst"></a>
+                                </li>
+                                <li :class="currentIndex==0?'paginate_button previous disabled':'paginate_button previous'"
+                                    @click="prev">
+                                    <a href="javascript:;" v-text="'上一页'"></a>
+                                </li>
+                                <li :class="value==currentIndex+1?'paginate_button active':'paginate_button'"
+                                    v-for="value in pageList" @click="changeIndex(value)">
+                                    <a href="javascript:;" v-text="value"></a>
+                                </li>
+                                <li class="paginate_button"
+                                    v-show="pageList.length<middleData.length&&middleData.length-currentIndex>maxSpace">
+                                    <a href="javascript:;" v-text="'...'+middleData.length" @click="toLast"></a>
+                                </li>
+                                <li :class="currentIndex==middleData.length-1?'paginate_button next disabled':'paginate_button next'"
+                                    @click="next">
+                                    <a href="javascript:;" v-text="'下一页'"></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!--模板上传文件示例-->
+                <table id="data-table" border="1" style="display: none;">
+                    <tr>
+                        <td>ruleName</td>
+                        <td>categoryId</td>
+                        <td>templateChannelList</td>
+                        <td>pushType</td>
+                        <td>ruleKey</td>
+                        <td>eventType</td>
+                        <td>schedulePushTime</td>
+                        <td>expiredTime</td>
+                        <td>priority</td>
+                        <td>ruleSource</td>
+                        <td>groupId</td>
+                        <td>csvfileName</td>
+                    </tr>
+                    <tr>
+                        <td>实时发送方式模板</td>
+                        <td>1</td>
+                        <td>[{"templateId":"c79c3684a5db46e5993e6b5122b6f58c","channelType":3}]</td>
+                        <td>0</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>2019-01-01 00:00:00</td>
+                        <td>1</td>
+                        <td>acc</td>
+                        <td>10000</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>外部系统调用方式模板</td>
+                        <td>1</td>
+                        <td>[{"templateId":"c79c3684a5db46e5993e6b5122b6f58c","channelType":3}]</td>
+                        <td>1</td>
+                        <td>FTS-8124</td>
+                        <td>50</td>
+                        <td></td>
+                        <td>2019-01-01 00:00:00</td>
+                        <td>1</td>
+                        <td>acc</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>场景化方式模板</td>
+                        <td>1</td>
+                        <td>[{"templateId":"c79c3684a5db46e5993e6b5122b6f58c","channelType":3}]</td>
+                        <td>2</td>
+                        <td>FTS-8124</td>
+                        <td></td>
+                        <td>* * * ?</td>
+                        <td>2019-01-01 00:00:00</td>
+                        <td>1</td>
+                        <td>acc</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>定时方式模板</td>
+                        <td>1</td>
+                        <td>[{"templateId":"c79c3684a5db46e5993e6b5122b6f58c","channelType":3}]</td>
+                        <td>3</td>
+                        <td></td>
+                        <td></td>
+                        <td>* * * ?</td>
+                        <td>2019-01-01 00:00:00</td>
+                        <td>1</td>
+                        <td>acc</td>
+                        <td>10000</td>
+                        <td></td>
+                    </tr>
+                </table>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/ace/assets/js/bootstrap-timepicker.min.js"></script>
+<script src="/ace/assets/js/moment.min.js"></script>
+<script src="/js/lib/cronGen.simple.js"></script>
+<script src="/js/lib/zh-cn.js"></script>
+<script src="/js/lib/xlsx.core.min.js"></script>
+<script src="/js/lib/ajaxfileupload.js"></script>
+<script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/js/messageCenter/ruleMgmt.js"></script>
+</body>
+</html>

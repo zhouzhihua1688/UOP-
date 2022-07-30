@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" />
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div label {
+            padding: 10px 0;
+            text-align: right;
+        }
+
+        .form-inline span {
+            text-align: left;
+        }
+
+        @media (min-width: 768px) {
+            .modal-dialog {
+                width: 700px;
+                margin: 30px auto;
+            }
+        }
+
+				.chosen-single {
+            text-align: left;
+            height: 34px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+        }
+        .chosen-container .chosen-results{
+            text-align: left;
+        }
+        .custom_productList {
+            display: flex;
+            justify-content:space-around;
+            align-items: center;
+        }
+				.yellow{
+					color: yellow;
+				}
+				.red{
+					color: red;
+				}
+				/* 默认class sorting 0*/
+				table>thead>tr>th[class*=sort]:after {
+						float: right;
+						display: inline;
+						content: "\f0dc";
+						font-family: FontAwesome;
+						font-size: 13px;
+						font-weight: 400;
+						color: #555;
+				}
+				/* 升序class  sorting_asc  1*/ 
+				table>thead>tr>th.sorting_asc:after {
+						content: "\f0de";
+						top: 4px;
+						color: #307ECC;
+				}
+				/* 降序class sorting_desc 2*/
+				table>thead>tr>th.sorting_desc:after {
+						content: "\f0dd";
+						top: -6px;
+						color: #307ECC;
+				}
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+														<!-- 添加操作 -->
+														<div class="modal" id="setting1" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">监控指标配置</h4>
+                                        </div>
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    一级平台:</label>
+                                                <div class="col-sm-4" @click.stop="addLabelQuery('ParentPlatform')">
+                                                    <select-chosen1 :list='opreateParentPlatformList' v-model='operateData.parentPlatform' ></select-chosen1>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    二级平台:</label>
+                                                <div class="col-sm-4" @click.stop ="addLabelQuery('SalePlatform')">
+                                                    <!-- <select style="width: 140px;" v-model='operateData.salePlatform' >
+                                                        <option value="">全部</option>
+                                                        <option :value="val.labelId" v-for='val in opreatePlatformList' v-text='val.labelContent'></option>
+                                                    </select> -->
+                                                    <select-chosen1 :list='opreatePlatformList' v-model='operateData.salePlatform' ></select-chosen1>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    专区:</label>
+                                                <div class="col-sm-4" @click.stop ="addLabelQuery('SalePosition')">
+                                                    <select-chosen1 :list='opreatePositionList' v-model='operateData.salePosition' ></select-chosen1>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    赛道:</label>
+                                                <div class="col-sm-4" @click.stop ="addLabelQuery('InvestArea')">
+                                                    <!-- <select style="width: 140px;" v-model='operateData.investArea' >
+                                                        <option value="">全部</option>
+                                                        <option :value="val.labelId" v-for='val in opreateInvestAreaList' v-text='val.labelContent'></option>
+                                                    </select> -->
+                                                    <select-chosen1 :list='opreateInvestAreaList' v-model='operateData.investArea' ></select-chosen1>
+                                                </div>
+                                            </div>
+                                        </div>
+																				<div class="form-horizontal">
+																					<div class="form-group">
+																							<label class="col-sm-3 control-label">
+																									预警值:</label>
+																							<div class="col-sm-4">
+																									<input type="number" style="width: 100%;" v-model.number='operateData.alarmValue'>
+																							</div>
+																					</div>
+																			  </div>
+																				<div class="form-horizontal">
+																					<div class="form-group">
+																							<label class="col-sm-3 control-label">
+																									监控值:</label>
+																							<div class="col-sm-4">
+																									<input type="number" style="width: 100%;"
+																											v-model.number='operateData.targetValue'>
+																							</div>
+																					</div>
+																			</div>
+                                        <!-- <p>
+                                            监控指标:
+                                        </p> -->
+                                        <hr>
+                                        <div v-for='(item,key) of monitorIndex' :key="key">
+                                            <h5 style="margin-left: 20px;">{{key | titleToText}}
+                                                <!-- <button v-if='key==3||key==4' style="font-size: 12px;margin-left: 20px;"
+                                                    @click='showCustom(key)'>自定义</button> -->
+                                            </h5>
+                                            <div>
+                                                <label v-for='(item1,index) of item' style="margin-left: 20px;">
+                                                    <input name="form-field-checkbox" v-model='item1.checked'
+                                                        type="checkbox" class="ace" />
+                                                    <span class="lbl"><span
+                                                            style="margin-left: 5px;">{{item1.indexName}}</span></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-info btn-sm" type="button" @click='addMonitor'>
+                                                确定
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+                                                取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+														<div class="modal" id="setting2" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">风险指标自定义</h4>
+                                        </div>
+                                        <div style="margin-top: 10px;">
+                                            <label style="text-align: right;width: 100px;">
+                                                指标名称:</label>
+                                            <input type="text" v-model='operateCustom.indexName'>
+                                        </div>
+                                        <!-- <div>
+                                            <label style="text-align: right;width: 100px;">
+                                                产品ID:</label>
+                                            <select class="chosen-select form-control selectCalc"
+                                                data-placeholder="请选择">
+                                                <option value="">实时试算 请选择</option>
+                                                <option v-for='(item,index) of selectProductid'></option>
+                                            </select>
+                                        </div> -->
+                                        <div style="margin-top: 10px;" @click.stop ="addLabelQuery('ParentPlatform',true)">
+                                            <label style="text-align: right;width: 100px;">
+                                                一级平台:</label>
+                                            <select-chosen1 :list='settingParentPlatformList' v-model='operateCustom.parentPlatform' ></select-chosen1>
+                                        </div>
+                                        <div style="margin-top: 10px;"@click.stop ="addLabelQuery('SalePlatform',true)">
+                                            <label style="text-align: right;width: 100px;">
+                                                二级平台:</label>
+                                            <select-chosen1 :list='settingPlatformList' v-model='operateCustom.salePlatform' ></select-chosen1>
+                                        </div>
+                                        <div style="margin-top: 10px;" @click.stop ="addLabelQuery('SalePosition',true)">
+                                            <label style="text-align: right;width: 100px;">
+                                                专区:</label>
+                                            <select-chosen1 :list='settingPositionList' v-model='operateCustom.salePosition' ></select-chosen1>
+                                        </div>
+                                        <div style="margin-top: 10px;" @click.stop ="addLabelQuery('InvestArea',true)">
+                                            <label style="text-align: right;width: 100px;">
+                                                赛道:</label>
+                                            <select-chosen1 :list='settingInvestAreaList' v-model='operateCustom.investArea' ></select-chosen1>
+                                        </div>
+                                        <div style="margin-top: 10px;" @click ="addLabelQuery('ProductId',true)">
+                                            <label style="text-align: right;width: 100px;">
+                                                产品:</label>
+                                            <select-chosen1 :list='settingProductList' v-model='operateCustom.productid' ></select-chosen1>
+                                        </div>
+                                        <div style="display: flex;margin-top: 10px;">
+                                            <div>
+                                                <label style="text-align: right;width: 100px;">
+                                                    统计区间:</label>
+                                            </div>
+                                            <div>
+                                                <label v-for='(item,index) in dateList' :key='index' v-if="item.value!=7"
+                                                    style="margin-left: 20px;" >
+                                                    <input name="radio" type="radio" :value="item.value"
+                                                        v-model='operateCustom.indexConfig.calcUnit'  />
+                                                    <span class="lbl" v-text=' item.name'></span>
+                                                </label>
+                                                <label style="margin-left: 60px;vertical-align: text-top;">
+                                                    n=<input type="number" style="width: 80%;"
+                                                        :disabled='operateCustom.indexConfig.calcUnit==5||operateCustom.indexConfig.calcUnit==7'
+                                                        v-model.number='operateCustom.indexConfig.calcValue' >
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex;margin-top: 10px;">
+                                            <div>
+                                                <label style="text-align: right;width: 100px;">
+                                                    风险指标:</label>
+                                            </div>
+                                            <div>
+                                                <label v-for='(item,index) in riskList' :key='index'
+                                                    style="margin-left: 20px;">
+                                                    <input name="risk" type="radio" :value="item.value"
+                                                        v-model='operateCustom.indexCategory' />
+                                                    <span class="lbl" v-text='item.name'></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="col-sm-7 control-label">
+                                                    指标值：{{calcValue}}</label>
+                                            </div>
+                                        </div>
+
+                                        <p class="text-center">
+                                            <button class="btn btn-info btn-sm" type="button" @click='calc'>
+                                                实时试算
+                                            </button>
+                                            <button type="button" class="btn btn-info btn-sm" @click='createIndex'
+                                                style="margin-left: 60px;">
+                                                生成指标
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal" id="setting3" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">胜率指标自定义</h4>
+                                        </div>
+                                        <div style="margin-top: 10px;">
+                                            <label style="text-align: right;width: 100px;">
+                                                指标名称:</label>
+                                            <input type="text" v-model='operateCustom.indexName'>
+                                        </div>
+                                        <!-- <div style="margin-top: 10px;">
+                                            <label style="text-align: right;width: 100px;">
+                                                产品ID:</label>
+                                            <select class="chosen-select form-control selectCalc"
+                                                data-placeholder="请选择">
+                                                <option value="">实时试算 请选择</option>
+                                                <option v-for='(item,index) of selectProductid'></option>
+                                            </select>
+                                        </div> -->
+                                        <div style="margin-top: 10px;" @click.stop ="addLabelQuery('ParentPlatform',true)">
+                                            <label style="text-align: right;width: 100px;">
+                                                一级平台:</label>
+                                            <select-chosen1 :list='settingParentPlatformList' v-model='operateCustom.parentPlatform' ></select-chosen1>
+                                        </div>
+                                        <div style="margin-top: 10px;" @click.stop ="addLabelQuery('SalePlatform',true)">
+                                            <label style="text-align: right;width: 100px;">
+                                                二级平台:</label>
+                                            <select-chosen1 :list='settingPlatformList' v-model='operateCustom.salePlatform' ></select-chosen1>
+                                        </div>
+                                        <div style="margin-top: 10px;" @click.stop ="addLabelQuery('SalePosition',true)">
+                                            <label style="text-align: right;width: 100px;">
+                                                专区:</label>
+                                            <select-chosen1 :list='settingPositionList' v-model='operateCustom.salePosition' ></select-chosen1>
+                                        </div>
+                                        <div style="margin-top: 10px;" @click.stop ="addLabelQuery('InvestArea',true)">
+                                            <label style="text-align: right;width: 100px;">
+                                                赛道:</label>
+                                            <select-chosen1 :list='settingInvestAreaList' v-model='operateCustom.investArea' ></select-chosen1>
+                                        </div>
+                                        <div style="margin-top: 10px;" @click ="addLabelQuery('ProductId',true)">
+                                            <label style="text-align: right;width: 100px;">
+                                                产品:</label>
+                                            <select-chosen1 :list='settingProductList' v-model='operateCustom.productid' ></select-chosen1>
+                                        </div>
+                                        <div style="display: flex;margin-top: 10px;">
+                                            <div>
+                                                <label style="text-align: right;width: 100px;">
+                                                    统计区间:</label>
+                                            </div>
+                                            <div>
+                                                <label v-for='(item,index) in dateList' :key='index'
+                                                    style="margin-left: 20px;">
+                                                    <input name="calcUnit" type="radio" :value="item.value"
+                                                        v-model='operateCustom.indexConfig.calcUnit' />
+                                                    <span class="lbl" v-text='item.name'></span>
+                                                </label>
+                                                <label style="margin-left: 60px;vertical-align: text-top;">
+                                                    n=<input type="number" style="width: 80%;"
+                                                    :disabled='operateCustom.indexConfig.calcUnit==5||operateCustom.indexConfig.calcUnit==7'
+                                                        v-model.number='operateCustom.indexConfig.calcValue'>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex;margin-top: 10px;">
+                                            <div>
+                                                <label style="text-align: right;width: 100px;">
+                                                    任意持有:</label>
+                                            </div>
+                                            <div>
+                                                <label
+                                                    v-for='(item,index) in [{name:"n天",value:1},{name:"n月(从月初开始)",value:3},{name:"单个持有期",value:7}]'
+                                                    :key='index' style="margin-left: 20px;">
+                                                    <input name="holdUnit" type="radio" :value="item.value"
+                                                        v-model.number='operateCustom.indexConfig.holdUnit' />
+                                                    <span class="lbl" v-text='item.name'></span>
+                                                </label>
+                                                <label style="margin-left: 60px;vertical-align: text-top;" v-show="operateCustom.indexConfig.holdUnit!=7">
+                                                    n=<input type="number" style="width: 80%;"
+                                                        v-model.number='operateCustom.indexConfig.holdValue'>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex;margin-top: 10px;">
+                                            <div>
+                                                <label style="text-align: right;width: 100px;">
+                                                    计算胜率:</label>
+                                            </div>
+                                            <div>
+                                                <label style="margin-left: 20px;">
+                                                    <input name="indexCategory" type="radio" :value="8"
+                                                        v-model.number='operateCustom.indexCategory' />
+                                                    <span class="lbl">持有期收益率大于等于x%的概率</span>
+                                                </label>
+                                                <label style="margin-left: 20px;vertical-align: text-top;">
+                                                    x=<input type="text" style="width: 60%;"
+                                                        v-model.number='operateCustom.indexConfig.expectancyValue'>
+                                                </label>
+                                                <label style="margin-left: 20px;">
+                                                    <input name="indexCategory" type="radio" :value="9"
+                                                        v-model.number='operateCustom.indexCategory' />
+                                                    <span class="lbl">日正收益概率最小值</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="col-sm-7 control-label">
+                                                    指标值：{{calcValue}}</label>
+                                            </div>
+                                        </div>
+                                        <p class="text-center">
+                                            <button class="btn btn-info btn-sm" type="button" @click='calc'>
+                                                实时试算
+                                            </button>
+                                            <button type="button" class="btn btn-info btn-sm" @click='createIndex'
+                                                style="margin-left: 60px;">
+                                                生成指标
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- DIALOG ENDS -->
+                         
+                            <div class="form-inline" style="height: 50px;margin-top: 10px;">
+                                <div class="form-group ">
+                                    <label>日期：</label>
+                                    <date-picker v-model='calcDate' :config="{format:'YYYY-MM-DD'}"
+                                        style="width: 140px;">
+                                        <span class="input-group-addon" slot='right'>
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </date-picker>
+                                </div>
+																<div class="form-group">
+																	<input type="button" class="btn btn-sm btn-primary " value="添加"
+																			@click="showSettingDialog">
+																</div>
+																<!-- <div class="form-group pull-right" style="height:40px;line-height: 40px;">报表日期：{{calcDate}}</div> -->
+                            </div> 
+                            <!--数据表-->
+														<template v-if="tableData.length>0">
+															<div>
+																<div style="width: 100%;" v-for="(item,index) in tableData" :key="index">
+																	<div class="table-header">
+																		市场的竞品情况（平台：{{item.parentPlatform}}；赛道：{{item.investArea}}）
+																	</div>
+																	<table id="simple-table" class="table table-bordered table-hover dataTable">
+																			<thead>
+																					<tr>
+																							<th class="center col-sm-1 " rowspan="2">基金代码</th>
+																							<th class="center col-sm-1 " rowspan="2">基金名称</th>
+																							<th class="center col-sm-1 " rowspan="2">上线平台</th>
+																							<th class="center col-sm-1 " rowspan="2">所处赛道</th>
+																							<th class="center "  :colspan="item.productAllPrdMonitorDetailVOList[0].prdMonitorIndexShowVOList.length">最新各类指标情况</th>
+																					</tr>
+																					<tr >
+																						<th class="col-sm-1" :class="theadItem.sort==0?'sorting':theadItem.sort==1?'sorting_asc':'sorting_desc'" v-for = "(theadItem,theadIndex) in item.productAllPrdMonitorDetailVOList[0].prdMonitorIndexShowVOList" @click="sort(item,index,theadIndex,theadItem)">{{theadItem.indexName}}</th>
+																					</tr>
+																			</thead>
+																			<tbody>
+																					<template v-if="item.productAllPrdMonitorDetailVOList.length>0">
+																						<tr v-for ="citem in item.productAllPrdMonitorDetailVOList">
+																							<td class="center">{{citem.productId}}</td>
+																							<td class="center">{{citem.productName}}</td>
+																							<td class="center">{{citem.salePlatform}}</td>
+																							<td class="center">{{citem.investArea}}</td>
+																							<td class="center" :class="sitem.showColor==1?'yellow':sitem.showColor==2?'red':''" v-for = "sitem in citem.prdMonitorIndexShowVOList">{{sitem.indexValueDesc}}</td>
+																						</tr>
+																					</template>
+																					<template v-else>
+																							<tr>
+																									<td class="center" v-text="'没有数据'" :colspan="item.productAllPrdMonitorDetailVOList[0].prdMonitorIndexShowVOList.length+4"></td>
+																							</tr>
+																					</template>
+																			</tbody>
+																	</table>
+																</div>
+															</div>
+															
+														</template>
+														<template v-if="tableData.length===0">
+															<div style="width:100%;height:50px;line-height: 50px;background-color: #eee;text-align: center;">
+																	没有数据
+															</div>
+														</template>
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/ace/assets/js/v-datetimepicker.js"></script>
+		<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+    <script src="/js/productIndexes/monitoring/reportForms.js"></script>
+</body>
+
+</html>

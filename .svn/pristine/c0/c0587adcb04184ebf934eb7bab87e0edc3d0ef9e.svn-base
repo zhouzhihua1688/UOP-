@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group center">
+                        <label class="control-label" style="width: 70px;">产品ID:</label>
+                        <input type="text" v-model="productId" style="width: 150px;height: 30px;" :disabled="isUpdate">
+                    </div>
+                    <div class="form-group center">
+                        <label class="control-label" style="width: 70px;">产品类型:</label>
+                        <select style="width:150px" v-model="extendCategory" :disabled="isUpdate">
+                            <option value="FND">基金</option>
+                            <option value="GRP">组合</option>
+                        </select>
+                    </div>
+                </div>
+                <hr style="margin: 0;">
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="row">
+                        <div class="col-sm-4" style="margin-bottom: 10px;" v-for="(item,index) in valueList" :key="index">
+                            <label class="control-label" v-text="item.extColumnDesc+':'"></label>
+                            <input type="text" style="width: 150px;height: 30px;" v-model="item.extValue">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-inline center" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <input type="button" class="btn btn-sm btn-primary" value="保存" @click="save">
+                        <input type="button" class="btn btn-sm btn-primary" value="返回" @click="goBack">
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script src="/js/businessMgmt/productInfoConfig/productExpandContentOperate.js"></script>
+</body>
+</html>

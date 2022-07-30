@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div {
+            padding: 10px 0;
+            text-align: right;
+        }
+        .images img {
+            max-width: 300px;
+            max-height: 300px;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--二次确认-->
+                            <div class="modal" id="operate" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm"
+                                                @click='audit(status)'>确定
+                                            </button>
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--通过提示信息弹窗-->
+                            <div class="modal" id="passinfo" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                                @click='goBack'>确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--不通过提示信息弹窗-->
+                            <!-- <div class="modal" id="falseinfo" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <h4 class="modal-title">短信提示</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <textarea cols="30" rows="5" v-model='content'></textarea>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"
+                                                @click='sendSms'>发送
+                                            </button>
+                                            <button type="button" @click='goBack' class="btn btn-primary btn-sm"
+                                                data-dismiss="modal">取消
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div> -->
+
+
+                            <!-- DIALOG ENDS -->
+                            <div>
+                                <h4>客户个人信息</h4>
+                                <div class="form-inline">
+                                    <div class="form-group ">
+                                        <label style="width: 100px;">客户号：</label>
+                                        <span v-text='tableData.custNo'></span>
+                                    </div>
+                                    <div class="form-group ">
+                                        <label style="width: 100px;">客户姓名：</label>
+                                        <span v-text='tableData.custName'></span>
+                                    </div>
+                                    <div class="form-group ">
+                                        <label style="width: 100px;">开户证件号：</label>
+                                        <span v-text='tableData.idNo'></span>
+                                    </div>
+                                    <div class="form-group ">
+                                        <label style="width: 100px;">手机号码：</label>
+                                        <span v-text='tableData.mobileNo'></span>
+                                    </div>
+                                    <div class="form-group ">
+                                        <label style="width: 100px;">归属地：</label>
+                                        <span v-text='tableData.mobileAddr'></span>
+                                    </div>
+                                </div>
+                                <div class="form-inline">
+                                    <div class="form-group ">
+                                        <label style="width: 100px;">原银行行号：</label>
+                                        <span v-text='tableData.oldBankno'></span>
+                                    </div>
+                                    <div class="form-group ">
+                                        <label style="width: 100px;">原卡卡号：</label>
+                                        <span v-text='tableData.oldBankacco'></span>
+                                    </div>
+                                </div>
+                                <div class="form-inline">
+                                    <div class="form-group ">
+                                        <label style="width: 100px;">新银行行号：</label>
+                                        <span v-text='tableData.newBankno'></span>
+                                    </div>
+                                    <div class="form-group ">
+                                        <label style="width: 100px;">新卡卡号：</label>
+                                        <span v-text='tableData.newBankacco'></span>
+                                    </div>
+                                </div>
+                                <div class="form-inline">
+                                    <div class="form-group ">
+                                        <label style="width: 100px;">备注：</label>
+                                        <textarea v-model='tableData.remark' cols="30" rows="3"
+                                            :disabled='type==="record"'></textarea>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="images">
+                                <h4>客户证件照片</h4>
+                                <p>现金宝开户证件正反面照：</p>
+                                <p v-if='tableData&&tableData.rsv3&&tableData.rsv3.length>0'><img
+                                        v-for="(item,index) in tableData.rsv3.split(',')"
+                                        :key="'rsv3'+index" v-if='item!=="null"'
+                                        :src="getImg(item)"
+                                        @click='fullView'>
+                                        <!-- :src="'/customerService/bankCardAudit/businessHandle~businessReview~applyRecord/img.ajax?fileName='+item" -->
+                                </p>
+                                <p>手持开户证件正面照：</p>
+                                <p v-if='tableData&&tableData.handIdFacePhoto&&tableData.handIdFacePhoto.length>0'><img
+                                        v-for="(item,index) in tableData.handIdFacePhoto.split(',')"
+                                        :key="'handIdFacePhoto'+index" v-if='item!=="null"'
+                                        :src="getImg(item)"
+                                        @click='fullView'>
+                                        <!-- :src="'/customerService/bankCardAudit/businessHandle~businessReview~applyRecord/img.ajax?fileName='+item" -->
+                                </p>
+                                <p>银行卡凭证：</p>
+                                <p v-if='tableData&&tableData.bankCardPhoto&&tableData.bankCardPhoto.length>0'><img
+                                        v-for="(item,index) in tableData.bankCardPhoto.split(',')"
+                                        :key="'bankCardPhoto'+index" v-if='item!=="null"'
+                                        :src="getImg(item)"
+                                        @click='fullView'>
+                                        <!-- :src="'/customerService/bankCardAudit/businessHandle~businessReview~applyRecord/img.ajax?fileName='+item" -->
+                                </p>
+
+                                <p>新银行卡凭证</p>
+                                <p v-if='tableData&&tableData.newBankCardPhoto&&tableData.newBankCardPhoto.length>0'>
+                                    <img v-for="(item,index) in tableData.newBankCardPhoto.split(',')"
+                                        :key="'newBankCardPhoto'+index" v-if='item!=="null"'
+                                        :src="getImg(item)"
+                                        @click='fullView'>
+                                        <!-- :src="'/customerService/bankCardAudit/businessHandle~businessReview~applyRecord/img.ajax?fileName='+item" -->
+                                </p>
+                            </div>
+
+                            <div class="form-inline" v-if='type!=="record"'>
+
+                                <div class="form-group " style="margin-left: 30%">
+                                    <button type="button" class="btn btn-primary  center-block" data-dismiss="modal"
+                                        @click='operate(true,"审核通过")'>审核通过
+                                    </button>
+                                </div>
+                                <div class="form-group " style="margin-left: 10%">
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal"
+                                        @click='operate(false,"审核不通过")'>审核不通过
+                                    </button>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/js/customerService/bankCardAudit/review.js"></script>
+</body>
+
+</html>

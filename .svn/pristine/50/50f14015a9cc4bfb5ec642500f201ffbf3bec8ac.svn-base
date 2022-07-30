@@ -1,0 +1,286 @@
+const request = require('../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').taskManage.rulePlaceholders;
+module.exports = function (app) {
+
+    // 获取  初始数据和查询
+    app.post('/marketingActive/taskManage/rulePlaceholders/getList.ajax', (req, res, next) => {
+        let params = req.body,
+        userName = req.session.loginInfo.username;
+        let option = {
+            session: req.session,
+            url: apiUrl.dataList,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/taskManage/rulePlaceholders/getList.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/taskManage/rulePlaceholders/getList.ajax error:', error);
+            console.log('/marketingActive/taskManage/rulePlaceholders/getList.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/taskManage/rulePlaceholders/getList.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                result.body.userName = userName;
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+    // 获取 占位符
+    app.post('/marketingActive/taskManage/rulePlaceholders/placeholdersQuery.ajax', (req, res, next) => {
+        let params = req.body,
+        userName = req.session.loginInfo.username;
+        let option = {
+            session: req.session,
+            url: apiUrl.placeholdersQuery,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/taskManage/rulePlaceholders/placeholdersQuery.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/taskManage/rulePlaceholders/placeholdersQuery.ajax error:', error);
+            console.log('/marketingActive/taskManage/rulePlaceholders/placeholdersQuery.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/taskManage/rulePlaceholders/placeholdersQuery.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                result.body.userName = userName;
+                res.send({
+                    error: 0,
+                    msg: '调用成功',
+                    data: result.body
+                });
+            }else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '数据获取失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+    // 新增
+    app.post('/marketingActive/taskManage/rulePlaceholders/dataAdd.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.dataAdd,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/taskManage/rulePlaceholders/dataAdd.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/marketingActive/taskManage/rulePlaceholders/dataAdd.ajax error:', error);
+            console.log('/marketingActive/taskManage/rulePlaceholders/dataAdd.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/taskManage/rulePlaceholders/dataAdd.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '新增失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                res.send({
+                    error: 0,
+                    msg: '新增成功',
+                    data: result.body
+                });
+            }else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '新增失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+    // // 展示
+    // app.post('/marketingActive/taskManage/rulePlaceholders/showData.ajax', (req, res, next) => {
+    //     let params = req.body;
+    //     let option = {
+    //         session: req.session,
+    //         url: apiUrl.showData,
+    //         body: params,
+    //         timeout: 15000,
+    //         json: true
+    //     };
+    //     console.log('/marketingActive/taskManage/rulePlaceholders/showData.ajax option:', option);
+    //     request.post(option, (error, response, body) => {
+    //         console.log('/marketingActive/taskManage/rulePlaceholders/showData.ajax error:', error);
+    //         console.log('/marketingActive/taskManage/rulePlaceholders/showData.ajax statusCode:', response && response.statusCode);
+    //         console.log('/marketingActive/taskManage/rulePlaceholders/showData.ajax body:', body);
+    //         if (error) {
+    //             return res.send({
+    //                 error: 1,
+    //                 msg: '请求失败'
+    //             });
+    //         }
+    //         let result = typeof body === 'string' ? JSON.parse(body) : body;
+    //         if (result && result.returnCode == 0) {
+    //             res.send({
+    //                 error: 0,
+    //                 msg: '请求成功',
+    //                 data: result.body
+    //             });
+    //         } else {
+    //             res.send({
+    //                 error: 1,
+    //                 msg: '请求失败'
+    //             });
+    //         }
+    //     });
+    // });
+    // 修改
+    app.post('/marketingActive/taskManage/rulePlaceholders/dataChange.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.dataChange,
+            body: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/taskManage/rulePlaceholders/dataChange.ajax option:', option);
+        request.post(option, (error, response, body) => {
+            console.log('/marketingActive/taskManage/rulePlaceholders/dataChange.ajax error:', error);
+            console.log('/marketingActive/taskManage/rulePlaceholders/dataChange.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/taskManage/rulePlaceholders/dataChange.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '修改失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                res.send({
+                    error: 0,
+                    msg: '修改成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '修改失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+    // 删除
+    app.post('/marketingActive/taskManage/rulePlaceholders/dataDelete.ajax', (req, res, next) => {
+        let params = req.body;
+        let option = {
+            session: req.session,
+            url: apiUrl.dataDelete,
+            qs: params,
+            timeout: 15000,
+            json: true
+        };
+        console.log('/marketingActive/taskManage/rulePlaceholders/dataDelete.ajax option:', option);
+        request(option, (error, response, body) => {
+            console.log('/marketingActive/taskManage/rulePlaceholders/dataDelete.ajax error:', error);
+            console.log('/marketingActive/taskManage/rulePlaceholders/dataDelete.ajax statusCode:', response && response.statusCode);
+            console.log('/marketingActive/taskManage/rulePlaceholders/dataDelete.ajax body:', body);
+            if (error) {
+                return res.send({
+                    error: 1,
+                    msg: '删除失败'
+                });
+            }
+            let result = typeof body === 'string' ? JSON.parse(body) : body;
+            if (result && result.returnCode == 0) {
+                res.send({
+                    error: 0,
+                    msg: '删除成功',
+                    data: result.body
+                });
+            } else if (result && result.returnCode == 9999) {
+                res.send({
+                    error: 1,
+                    msg: '删除失败'
+                });
+            } else {
+                res.send({
+                    error: 1,
+                    msg: result.returnMsg
+                });
+            }
+        });
+    });
+    // // 查询单个数据
+    // app.post('/marketingActive/taskManage/rulePlaceholders/dataQuery.ajax', (req, res, next) => {
+    //     let params = req.body;
+    //     let option = {
+    //         session: req.session,
+    //         url: apiUrl.dataQuery,
+    //         qs: params,
+    //         timeout: 15000,
+    //         json: true
+    //     };
+    //     console.log('/marketingActive/taskManage/rulePlaceholders/dataQuery.ajax option:', option);
+    //     request(option, (error, response, body) => {
+    //         console.log('/marketingActive/taskManage/rulePlaceholders/dataQuery.ajax error:', error);
+    //         console.log('/marketingActive/taskManage/rulePlaceholders/dataQuery.ajax statusCode:', response && response.statusCode);
+    //         console.log('/marketingActive/taskManage/rulePlaceholders/dataQuery.ajax body:', body);
+    //         if (error) {
+    //             return res.send({
+    //                 error: 1,
+    //                 msg: '查询失败'
+    //             });
+    //         }
+    //         let result = typeof body === 'string' ? JSON.parse(body) : body;
+    //         if (result && result.returnCode == 0) {
+    //             res.send({
+    //                 error: 0,
+    //                 msg: '查询成功',
+    //                 data: result.body
+    //             });
+    //         } else {
+    //             res.send({
+    //                 error: 1,
+    //                 msg: '查询失败'
+    //             });
+    //         }
+    //     });
+    // });
+};

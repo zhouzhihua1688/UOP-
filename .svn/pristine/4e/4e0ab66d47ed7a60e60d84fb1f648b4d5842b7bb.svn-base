@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <link rel="stylesheet" href="/css/chosen.min.css">
+    <link rel="stylesheet" href="/ace/assets/css/bootstrap-datepicker3.min.css"/>
+    <style>
+        .table > tbody > tr > td {
+            vertical-align: middle;
+        }
+        .chosen-single {
+            height: 34px!important;
+            line-height: 34px!important;
+            border-radius: 0px!important;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--消息提示弹窗-->
+                <div class="form" style="padding: 10px 0;">
+                    <label class="control-label">规则名称:</label>
+                    <select id="ruleInfoList" class="chosen-select form-control" data-placeholder="请选择">
+                        <option value=""></option>
+                    </select>
+                    <!--<input type="text" v-model="ruleId"/>-->
+                    <label class="control-label">批次ID:</label>
+                    <select id="batchList" class="chosen-select form-control" data-placeholder="请选择">
+                        <option value=""></option>
+                    </select>
+                    <!--<label class="control-label">规则名称:-->
+                    <!--<input type="text" v-model="ruleName" />-->
+                    <!--</label>-->
+                    <label class="control-label">模板名称:</label>
+                    <input type="text" :value="templateInfo.templateName"/>
+                    <div class="pull-right">
+                        <button class="btn btn-sm btn-primary" @click='queryData'>查询</button>
+                        <button class="btn btn-sm btn-primary" @click="download">导出</button>
+                    </div>
+                </div>
+                <div class="table-header">
+                    <%= cpage %>--表格数据
+                </div>
+                <table id="simple-table" class="table table-striped table-bordered table-hover dataTable">
+                    <thead>
+                    <tr>
+                        <th class="center">批次ID</th>
+                        <th class="center">规则ID</th>
+                        <th class="center">规则名称</th>
+                        <th class="center">模板ID</th>
+                        <th class="center">模板名称</th>
+                        <th class="center">最新发送时间</th>
+                        <th class="center">发送总条数</th>
+                        <th class="center">总成功到达数</th>
+                        <th class="center">IOS</th>
+                        <th class="center">IOS成功数</th>
+                        <th class="center">Android</th>
+                        <th class="center">Android成功数</th>
+                        <th class="center">已读数</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-if="tableData.length>0">
+                        <tr v-for="(item,index) in tableData" :key="index">
+                            <td class="center">{{item.batchId}}</td>
+                            <td class="center">{{item.ruleId}}</td>
+                            <td class="center">{{item.ruleName}}</td>
+                            <td class="center">{{item.templateId}}</td>
+                            <td class="center">{{item.templateName}}</td>
+                            <td class="center">{{item.lastPushTime}}</td>
+                            <td class="center">{{item.total}}</td>
+                            <td class="center">{{item.successNum}}</td>
+                            <td class="center">{{item.iosNum}}</td>
+                            <td class="center">{{item.iosSuccNum}}</td>
+                            <td class="center">{{item.androidNum}}</td>
+                            <td class="center">{{item.androidSuccNum}}</td>
+                            <td class="center">{{item.readNum}}</td>
+                        </tr>
+                    </template>
+                    <template v-else>
+                        <tr>
+                            <td colspan="13" class="center">没有数据</td>
+                        </tr>
+                    </template>
+                    </tbody>
+                </table>
+                <!--消息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.row -->
+        </div><!-- /.page-content -->
+    </div>
+</div><!-- /.main-content -->
+<% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<script src="/ace/assets/js/chosen.jquery.min.js"></script>
+<script src="/js/lib/vue.js"></script>
+<script src="/js/messageCenter/sendCount.js"></script>
+</body>
+</html>

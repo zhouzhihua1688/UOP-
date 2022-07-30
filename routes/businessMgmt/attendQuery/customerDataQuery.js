@@ -1,0 +1,575 @@
+/**
+ * Created by admin on 2019/5/7.
+ */
+
+const request = require('../../../local_data/requestWrapper');
+const apiUrl = require('../apiConfig').attendQuery;
+module.exports = function (app) {
+
+    // 获取  初始数据和查询
+    app.post('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax', (req, res, next) => {
+        // 获取custNo
+        function getCustNo() {
+            return new Promise((resolve, reject) => {
+                let option = {
+                    req: req,
+                    url: apiUrl.customerDataQuery,
+                    body: req.body,
+                    timeout: 15000,
+                    json: true
+                };
+                console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getCustNo option:', {...option,req:'#',body:'******'});
+                request.post(option, (error, response, body) => {
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getCustNo error:', error);
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getCustNo statusCode:', response && response.statusCode);
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getCustNo body:', '******');
+                    if (error) {
+                        reject({message: '数据获取失败'});
+                    }
+                    if (body && body.returnCode == 0 && Array.isArray(body.body)) {
+                        resolve(body.body);
+                    }
+                    else if (body && body.returnCode != 0 && body.returnCode != 9999) {
+                        reject({message: body.returnMsg});
+                    }
+                    else {
+                        reject({message: '数据获取失败'});
+                    }
+                });
+            });
+        }
+
+        // 获取客户详细信息
+        function getUserDetailInfoByCustNo(custNo) {
+            return new Promise((resolve, reject) => {
+                let option = {
+                    req: req,
+                    url: apiUrl.custNoQuery,
+                    qs: {custNo: custNo},
+                    timeout: 15000,
+                    json: true
+                };
+                console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserDetailInfoByCustNo option:', {...option,req:'#',qs:'******'});
+                request(option, (error, response, body) => {
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserDetailInfoByCustNo error:', error);
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserDetailInfoByCustNo statusCode:', response && response.statusCode);
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserDetailInfoByCustNo body:', '******');
+                    if (error) {
+                        reject({message: '数据获取失败'});
+                    }
+                    if (body && body.returnCode == 0) {
+                        resolve(body.body);
+                    }
+                    else if (body && body.returnCode != 0 && body.returnCode != 9999) {
+                        reject({message: body.returnMsg});
+                    }
+                    else {
+                        reject({message: '数据获取失败'});
+                    }
+                });
+            });
+        }
+
+        // 获取银行卡信息
+        function getBankCardInfoByCustNo(custNo) {
+            return new Promise((resolve, reject) => {
+                // 获取银行卡信息
+                let getBankCardInfoList = function (custNo) {
+                    return new Promise((resolve, reject) => {
+                        let option = {
+                            req: req,
+                            url: apiUrl.bankCardQuery,
+                            qs: {custNo: custNo},
+                            timeout: 15000,
+                            json: true
+                        };
+                        console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getBankCardInfoByCustNo option:', {...option,req:'#',qs:'******'});
+                        request(option, (error, response, body) => {
+                            console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getBankCardInfoByCustNo error:', error);
+                            console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getBankCardInfoByCustNo statusCode:', response && response.statusCode);
+                            console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getBankCardInfoByCustNo body:', '******');
+                            if (error) {
+                                reject({message: '数据获取失败'});
+                            }
+                            if (body && body.returnCode == 0) {
+                                resolve(body.body);
+                            }
+                            else if (body && body.returnCode != 0 && body.returnCode != 9999) {
+                                reject({message: body.returnMsg});
+                            }
+                            else {
+                                reject({message: '数据获取失败'});
+                            }
+                        });
+                    });
+                };
+                // 翻译资金模式
+                let translateCapitalMode = function () {
+                    return new Promise((resolve, reject) => {
+                        let option = {
+                            req: req,
+                            url: apiUrl.capitalModeQuery,
+                            qs: {pmst: 'SYSTEM', pmkey: 'CAPITALMODE'},
+                            timeout: 15000,
+                            json: true
+                        };
+                        console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateCapitalMode option:', option);
+                        request(option, (error, response, body) => {
+                            console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateCapitalMode error:', error);
+                            console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateCapitalMode statusCode:', response && response.statusCode);
+                            console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateCapitalMode body:', '******');
+                            if (error) {
+                                return resolve([]);
+                            }
+                            if (body && body.returnCode == 0 && Array.isArray(body.body)) {
+                                resolve(body.body);
+                            }
+                            else if (body && body.returnCode != 0 && body.returnCode != 9999) {
+                                return resolve([]);
+                            }
+                            else {
+                                return resolve([]);
+                            }
+                        });
+                    });
+                };
+
+                let translateExtraData = function (item) {
+                    //翻译银行名称
+                    let translateBankName = function (item) {
+                        return new Promise((resolve, reject) => {
+                            let option = {
+                                req: req,
+                                url: apiUrl.queryBankName,
+                                qs: {bankNo: item.bankNo},
+                                timeout: 15000,
+                                json: true
+                            };
+                            console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankName option:', option);
+                            request(option, (error, response, body) => {
+                                console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankName error:', error);
+                                console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankName statusCode:', response && response.statusCode);
+                                console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankName body:', '******');
+                                if (error) {
+                                    return resolve([]);
+                                }
+                                if (body && body.returnCode == 0 ) {
+                                    item.bankNo=body.body.bnkNm;
+                                    resolve();
+                                }
+                                else if (body && body.returnCode != 0 && body.returnCode != 9999) {
+                                    return resolve([]);
+                                }
+                                else {
+                                    return resolve([]);
+                                }
+                            });
+                        });
+                    };
+                    //翻译银行证件类型
+                    let translateBankCardType = function (item) {
+                        return new Promise((resolve, reject) => {
+                            let option = {
+                                req: req,
+                                url: apiUrl.queryBankIdTp,
+                                qs: {bankNo: item.bankNo},
+                                timeout: 15000,
+                                json: true
+                            };
+                            // console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankCardType option:', option);
+                            request(option, (error, response, body) => {
+                                // console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankCardType error:', error);
+                                // console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankCardType statusCode:', response && response.statusCode);
+                                // console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankCardType body:', body);
+                                if (error) {
+                                    return resolve([]);
+                                }
+                                if (body && body.returnCode == 0 && Array.isArray(body.body)) {
+
+                                    body.body.forEach(function (CardTy) {
+                                        if(CardTy.bankIdTp==item.bankIdtp){
+                                            item.bankIdtp=CardTy.bankIdTpName;
+                                        }
+                                    });
+                                    resolve();
+                                }
+                                else if (body && body.returnCode != 0 && body.returnCode != 9999) {
+                                    return resolve([]);
+                                }
+                                else {
+                                    return resolve([]);
+                                }
+                            });
+                        });
+                    };
+                    return new Promise((resolve, reject) => {
+                        Promise.all([translateBankName(item), translateBankCardType(item)]).then(() => {
+                            resolve();
+                        });
+                    }).catch(error => {
+                        resolve();
+                    });
+                };
+
+                Promise.all([getBankCardInfoList(custNo), translateCapitalMode()]).then(([bankCardList, translateList]) => {
+                    bankCardList.forEach(item => {
+                        for (let translateInfo of translateList) {
+                            if (item.capitalMode == translateInfo.pmco) {
+                                item.capitalMode = translateInfo.pmnm;
+                                break;
+                            }
+                        }
+                    });
+                    Promise.all(bankCardList.map(item => translateExtraData(item))).then(() => {
+                        return resolve(bankCardList);
+                    });
+                }).catch(error => {
+                    reject({message: error.message});
+                });
+            });
+        }
+
+        //获取客户基金账号
+        function getUserfundAcctByCustNo(custNo) {
+            return new Promise((resolve, reject) => {
+                let option = {
+                    req: req,
+                    url: apiUrl.fundAcct,
+                    qs: {custNo: custNo},
+                    timeout: 15000,
+                    json: true
+                };
+                console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserfundAcctByCustNo option:', {...option,req:'#',qs:'******'});
+                request(option, (error, response, body) => {
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserfundAcctByCustNo error:', error);
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserfundAcctByCustNo statusCode:', response && response.statusCode);
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserfundAcctByCustNo body:', '******');
+                    if (error) {
+                        resolve({message: '数据获取失败'});
+                    }
+                    if (body && body.returnCode == 0) {
+                        console.log('------------', body.body, '------------------kan-----------');
+                        resolve(body.body);
+                    }
+                    else if (body && body.returnCode != 0 && body.returnCode != 9999) {
+                        resolve({message: body.returnMsg});
+                    }
+                    else {
+                        resolve({message: '数据获取失败'});
+                    }
+                });
+            });
+        }
+
+        getCustNo().then((resultArr) => {
+            if (resultArr.length === 0) {
+                return res.send({error: 1, msg: '无有效数据', data: null});
+            }
+            else if (resultArr.length === 1) {
+                let custNo = resultArr[0].custNo;
+                let resultData = {
+                    userInfo: null,
+                    bankCard: null,
+                    fundAcct: null
+                };
+                Promise.all([getUserDetailInfoByCustNo(custNo), getBankCardInfoByCustNo(custNo), getUserfundAcctByCustNo(custNo)]).then(result => {
+                    resultData.userInfo = result[0];
+                    resultData.bankCard = result[1];
+                    resultData.fundAcct = result[2];
+
+                    res.send({error: 0, msg: '请求成功', data: resultData});
+                }).catch(error => {
+                    res.send({error: 1, msg: error.message, data: null});
+                });
+            }
+            else if (resultArr.length > 1) {
+                resultArr.forEach(function (item) {
+                    item.invTp=item.invTp==0?'机构':item.invTp==1?'个人':'产品';
+                    switch(item.idTp){
+                        case '0':
+                            item.idTp='身份证';
+                            break;
+                        case '1' :
+                            item.idTp='护照';
+                            break;
+                        case '2' :
+                            item.idTp='军官证';
+                            break;
+                        case '3' :
+                            item.idTp='士兵证';
+                            break;
+                        case '4' :
+                            item.idTp='港澳居民来往内地通行证';
+                            break;
+                        case '5' :
+                            item.idTp='户口本';
+                            break;
+                        case '6' :
+                            item.idTp='外籍护照';
+                            break;
+                        case '7' :
+                            item.idTp='其他';
+                            break;
+                        case '8' :
+                            item.idTp='文职证';
+                            break;
+                        case '9' :
+                            item.idTp='警官证';
+                            break;
+                        case 'A' :
+                            item.idTp='台胞证';
+                            break;
+                        case 'B' :
+                            item.idTp='外国人永久居住证';
+                            break;
+                    }
+                });
+                return res.send({error: 0, msg: '请求成功', data: resultArr});
+            }
+            else {
+                return res.send({error: 1, msg: '无有效数据', data: null});
+            }
+        }).catch((error) => {
+            res.send({error: 1, msg: error.message, data: null});
+        });
+    });
+    app.post('/businessMgmt/attendQuery/customerDataQuery/userInfoByDialog.ajax', (req, res, next) => {
+
+        // 获取客户详细信息
+        function getUserDetailInfoByCustNo(custNo) {
+            return new Promise((resolve, reject) => {
+                let option = {
+                    req: req,
+                    url: apiUrl.custNoQuery,
+                    qs: {custNo: custNo},
+                    timeout: 15000,
+                    json: true
+                };
+                console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserDetailInfoByCustNo option:', {...option,req:'#',qs:'******'});
+                request(option, (error, response, body) => {
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserDetailInfoByCustNo error:', error);
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserDetailInfoByCustNo statusCode:', response && response.statusCode);
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserDetailInfoByCustNo body:', '******');
+                    if (error) {
+                        reject({message: '数据获取失败'});
+                    }
+                    if (body && body.returnCode == 0) {
+                        resolve(body.body);
+                    }
+                    else if (body && body.returnCode != 0 && body.returnCode != 9999) {
+                        reject({message: body.returnMsg});
+                    }
+                    else {
+                        reject({message: '数据获取失败'});
+                    }
+                });
+            });
+        }
+
+        // 获取银行卡信息
+        function getBankCardInfoByCustNo(custNo) {
+            return new Promise((resolve, reject) => {
+                // 获取银行卡信息
+                let getBankCardInfoList = function (custNo) {
+                    return new Promise((resolve, reject) => {
+                        let option = {
+                            req: req,
+                            url: apiUrl.bankCardQuery,
+                            qs: {custNo: custNo},
+                            timeout: 15000,
+                            json: true
+                        };
+                        console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getBankCardInfoByCustNo option:', {...option,req:'#',qs:'******'});
+                        request(option, (error, response, body) => {
+                            console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getBankCardInfoByCustNo error:', error);
+                            console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getBankCardInfoByCustNo statusCode:', response && response.statusCode);
+                            console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getBankCardInfoByCustNo body:', '******');
+                            if (error) {
+                                reject({message: '数据获取失败'});
+                            }
+                            if (body && body.returnCode == 0) {
+                                resolve(body.body);
+                            }
+                            else if (body && body.returnCode != 0 && body.returnCode != 9999) {
+                                reject({message: body.returnMsg});
+                            }
+                            else {
+                                reject({message: '数据获取失败'});
+                            }
+                        });
+                    });
+                };
+                // 翻译资金模式
+                let translateCapitalMode = function () {
+                    return new Promise((resolve, reject) => {
+                        let option = {
+                            req: req,
+                            url: apiUrl.capitalModeQuery,
+                            qs: {pmst: 'SYSTEM', pmkey: 'CAPITALMODE'},
+                            timeout: 15000,
+                            json: true
+                        };
+                        console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateCapitalMode option:', option);
+                        request(option, (error, response, body) => {
+                            console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateCapitalMode error:', error);
+                            console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateCapitalMode statusCode:', response && response.statusCode);
+                            console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateCapitalMode body:', '******');
+                            if (error) {
+                                return resolve([]);
+                            }
+                            if (body && body.returnCode == 0 && Array.isArray(body.body)) {
+                                resolve(body.body);
+                            }
+                            else if (body && body.returnCode != 0 && body.returnCode != 9999) {
+                                return resolve([]);
+                            }
+                            else {
+                                return resolve([]);
+                            }
+                        });
+                    });
+                };
+
+                let translateExtraData = function (item) {
+                    //翻译银行名称
+                    let translateBankName = function (item) {
+                        return new Promise((resolve, reject) => {
+                            let option = {
+                                req: req,
+                                url: apiUrl.queryBankName,
+                                qs: {bankNo: item.bankNo},
+                                timeout: 15000,
+                                json: true
+                            };
+                            console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankName option:', option);
+                            request(option, (error, response, body) => {
+                                console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankName error:', error);
+                                console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankName statusCode:', response && response.statusCode);
+                                console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankName body:', '******');
+                                if (error) {
+                                    return resolve([]);
+                                }
+                                if (body && body.returnCode == 0 ) {
+                                    item.bankNo=body.body.bnkNm;
+                                    resolve();
+                                }
+                                else if (body && body.returnCode != 0 && body.returnCode != 9999) {
+                                    return resolve([]);
+                                }
+                                else {
+                                    return resolve([]);
+                                }
+                            });
+                        });
+                    };
+                    //翻译银行证件类型
+                    let translateBankCardType = function (item) {
+                        return new Promise((resolve, reject) => {
+                            let option = {
+                                req: req,
+                                url: apiUrl.queryBankIdTp,
+                                qs: {bankNo: item.bankNo},
+                                timeout: 15000,
+                                json: true
+                            };
+                            // console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankCardType option:', option);
+                            request(option, (error, response, body) => {
+                                // console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankCardType error:', error);
+                                // console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankCardType statusCode:', response && response.statusCode);
+                                // console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --translateBankCardType body:', body);
+                                if (error) {
+                                    return resolve([]);
+                                }
+                                if (body && body.returnCode == 0 && Array.isArray(body.body)) {
+
+                                    body.body.forEach(function (CardTy) {
+                                        if(CardTy.bankIdTp==item.bankIdtp){
+                                            item.bankIdtp=CardTy.bankIdTpName;
+                                        }
+                                    });
+                                    resolve();
+                                }
+                                else if (body && body.returnCode != 0 && body.returnCode != 9999) {
+                                    return resolve([]);
+                                }
+                                else {
+                                    return resolve([]);
+                                }
+                            });
+                        });
+                    };
+                    return new Promise((resolve, reject) => {
+                        Promise.all([translateBankName(item), translateBankCardType(item)]).then(() => {
+                            resolve();
+                        });
+                    }).catch(error => {
+                        resolve();
+                    });
+                };
+
+                Promise.all([getBankCardInfoList(custNo), translateCapitalMode()]).then(([bankCardList, translateList]) => {
+                    bankCardList.forEach(item => {
+                        for (let translateInfo of translateList) {
+                            if (item.capitalMode == translateInfo.pmco) {
+                                item.capitalMode = translateInfo.pmnm;
+                                break;
+                            }
+                        }
+                    });
+                    Promise.all(bankCardList.map(item => translateExtraData(item))).then(() => {
+                        return resolve(bankCardList);
+                    });
+                }).catch(error => {
+                    reject({message: error.message});
+                });
+            });
+        }
+
+        //获取客户基金账号
+        function getUserfundAcctByCustNo(custNo) {
+            return new Promise((resolve, reject) => {
+                let option = {
+                    req: req,
+                    url: apiUrl.fundAcct,
+                    qs: {custNo: custNo},
+                    timeout: 15000,
+                    json: true
+                };
+                console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserfundAcctByCustNo option:', {...option,req:'#',qs:'******'});
+                request(option, (error, response, body) => {
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserfundAcctByCustNo error:', error);
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserfundAcctByCustNo statusCode:', response && response.statusCode);
+                    console.log('/businessMgmt/attendQuery/customerDataQuery/userInfo.ajax --getUserfundAcctByCustNo body:', '******');
+                    if (error) {
+                        resolve({message: '数据获取失败'});
+                    }
+                    if (body && body.returnCode == 0) {
+                        console.log('------------', body.body, '------------------kan-----------');
+                        resolve(body.body);
+                    }
+                    else if (body && body.returnCode != 0 && body.returnCode != 9999) {
+                        resolve({message: body.returnMsg});
+                    }
+                    else {
+                        resolve({message: '数据获取失败'});
+                    }
+                });
+            });
+        }
+
+        let custNo = req.body.custNo;
+        let resultData = {
+            userInfo: null,
+            bankCard: null,
+            fundAcct: null
+        };
+        Promise.all([getUserDetailInfoByCustNo(custNo), getBankCardInfoByCustNo(custNo), getUserfundAcctByCustNo(custNo)]).then(result => {
+            resultData.userInfo = result[0];
+            resultData.bankCard = result[1];
+            resultData.fundAcct = result[2];
+            res.send({error: 0, msg: '请求成功', data: resultData});
+        }).catch(error => {
+            res.send({error: 1, msg: error.message, data: null});
+        });
+    });
+};

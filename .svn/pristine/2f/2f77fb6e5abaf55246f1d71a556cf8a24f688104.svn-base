@@ -1,0 +1,497 @@
+const envConfig = {
+    devlopment: {
+        devFilePath: './uploadFiles',
+        pagePreviewUrl: 'http://appuat.99fund.com.cn:7081',
+        clientMgmtFilePathDev: './crmdataoicibientMgmt',
+        devIPOFilePath: './uploadFiles/businessMgmt',
+        VIPFilePath: './uploadFiles/businessMgmt',
+        // clientMgmtFilePath: './opt/crmdata/icib',
+        ncrm: 'http://10.50.115.12:8080/api/crm/main',
+        redisCluster: [{
+            port: 7000,
+            host: '10.50.115.71'
+        }, {
+            port: 7001,
+            host: '10.50.115.71'
+        }, {
+            port: 7003,
+            host: '10.50.115.72'
+        }, {
+            port: 7004,
+            host: '10.50.115.72'
+        }, {
+            port: 7005,
+            host: '10.50.115.73'
+        }, {
+            port: 7006,
+            host: '10.50.115.73'
+        }],
+        mysqlConfig: './local_data/mysqlConfig.json',
+        caa: 'http://10.50.115.71:2121',//问卷调查
+        // mysqlConfig: {
+        //     host: '10.50.115.115',
+        //     database: 'uop',
+        //     user: 'uop',
+        //     password: 'Uop@201903_',
+        // },
+        community: 'http://10.50.114.161:8100/',//社区
+        salary: 'http://10.50.114.170:8098',//工资宝
+        paramsMaintain: 'http://10.50.115.105:8081',//公共参数维护
+        inner_gateway: 'http://10.50.115.125:8089', //开发内部网关
+        // inner_gateway: 'http://10.50.115.163:8037', //sit
+        // inner_gateway: 'http://10.50.115.153:8037', //uat
+        resetPwd: 'http://10.50.115.163:8036',//sit
+        // resetPwd:'http://10.50.114.217:8080',//本地环境测试
+        // thirdPartyOperation: 'http://10.50.115.163:8037',
+        // thirdPartyOperation: 'http://10.50.254.19:7788',//连调接口
+        thirdPartyOperation: 'http://10.60.114.64:8081',//连调接口
+        marketingActive: 'http://10.50.114.239:8027',//营销活动
+        // awardMgmt: 'http://10.50.114.239:8027',//奖励系统
+        awardMgmt: 'http://10.50.16.9:8051',//奖励系统sit
+        awardMgmt_exchange: 'http://10.50.16.114:8065', //积分兑换
+        clientMgmt: 'http://10.50.115.43:8090',//客户管理
+        customerInformation:'http://10.50.115.36:8081',//客户信息查询
+        assetDataQuery:'http://10.50.16.233:8045',    //资产数据查询
+        labelApplication:'http://10.50.115.159:8017',//标签应用管理-标签模型配置
+        customerParam:'http://10.50.16.11:8060',     //标签应用管理-客群查询输出
+        member: 'http://10.50.115.36:8081',//会员等级管理页面
+        nonsupport: 'http://10.50.16.102:8065',//不支持特权折扣基金
+        // thirdPartyOperation: 'http://10.50.115.125:8089',// 开发网关
+        // authorityMgmt: 'http://10.50.115.187:8085',
+        // authorityMgmt: 'http://10.50.111.161:8088',
+        // authorityMgmt: 'http://10.50.115.125:8089',
+        authorityMgmt: 'http://10.50.115.187:8080',
+        operationMgmt: 'http://10.50.115.187:8080',
+        // 运维管理-渠道管理
+        channelMgmt: 'http://10.50.115.159:8027',
+        // authorityMgmt: 'http://10.50.115.153:8037',  //uat
+        // messageCenter: 'http://10.50.115.43:8082',
+        messageCenter: 'http://10.50.115.66:8046',
+        messageCenter_group: 'http://10.50.115.72:8099',
+        messageCenter_token: 'http://10.50.115.66:8047',
+        messageCenter_blackList: 'http://10.50.16.21:8047',
+        // 业务管理配置
+        whiteList: 'http://10.50.115.105:8081',
+        // businessMgmt: 'http://10.50.115.105:8081',//开发
+        businessMgmt: 'http://10.50.114.193:8081',
+        // 业务管理-产品开放日设置
+        productOpenDayMgmt: 'http://10.50.115.149:8019',
+        // 业务管理
+        icif: 'http://10.50.115.36:8081',
+        // 奖励系统
+        reward: 'http://10.50.16.114:8065',
+        highNetWorthEquityMgmt:'http://10.50.16.114:8065',
+        custGroupId:'http://10.50.16.9:8057',  //客群Id
+        // 高端理财
+        highFinancialMgmt: "http://10.50.16.232:8099",
+        // 高端企业版
+        highFinancialCompany: "http://10.50.16.232:8099",
+        // 留言管理
+        sfs: 'http://10.50.114.239:8100',
+        // 社交管理
+        scp: 'http://10.50.16.114:8064',
+        // 业务管理IPO设置
+        IPO: 'http://10.50.115.91:8019',
+        fof: 'http://10.50.17.43:8014',
+        // IPO: 'http://10.50.114.160:8089',
+        // 业务管理IPO 开关管理 设置
+        IPO_Switch: 'http://10.50.115.91:8089',
+        //业务管理-基金标签
+        fundTag: 'http://10.50.115.149:8019',
+        // 业务管理-组合产品配置-三方组合明细配置
+        tripleDirectSell: 'http://10.50.16.248:8019',
+        // 业务管理-组合产品配置
+        combinationMgmt: 'http://10.50.115.159:8019',
+        // 业务管理-组合产品配置新增窗口弹窗参数配置
+        combinationParam: 'http://10.50.115.163:8034',
+        // 业务管理-组合产品池
+        combinationPro: 'http://10.50.115.159:8019',
+        //业务管理-基金比对
+        fundComparison: 'http://10.50.115.113:8020',
+        mobileBff: 'http://10.50.110.25:8026',
+        CTS: 'http://10.50.144.216:8033',
+        //newbe
+        ANTI_NEWBE: 'http://10.50.115.187:8545',
+        //推荐系统接口
+        // RES: 'http://10.50.114.217:8201',
+        RES: 'http://10.50.114.108:8201',
+        // RES: 'http://10.50.16.235:8076',
+        // USERGROUP: 'http://10.50.114.82:8099',
+        // USERGROUP: 'http://10.50.16.6:8057',//uat
+        USERGROUP: 'http://10.50.114.108:8099',//
+        ATS_NG: 'http://10.50.115.71:8098',
+        //自动化运营接口
+        // AOS: 'http://10.50.114.239:8027',
+        // AOS: 'http://10.50.114.217:8027',
+        AOS: 'http://10.50.114.217:8027',
+        // AOS: 'http://10.50.114.82:8027',
+        // common-service(uat)
+        CS: 'http://10.50.115.163:8034',
+        //业务管理-基金比对 IPO管理_营运(复核)
+        IPOReview: 'http://10.50.114.160:8089',
+        // ESS  基金详情接口查询
+        ESS: 'http://10.50.16.233:8012',
+        // 客服操作
+        customerService:'http://10.50.16.238:7254',//客服操作接口总配置
+        customerMgmt:'http://10.50.16.234:7984',    //客服操作 渠道信息的获取
+        wechatPlatformMgmt:'http://10.50.16.235:7888',//公共配置 微信公众平台管理http:// http://10.50.114.155:8097
+        // wechatUserMgmt:'http://10.50.114.108:8097',//公共配置 微信公众平台管理,微信关注用户标签管理
+        // publicConfig: {
+        //     // shortLink: 'http://10.50.114.40:8081'
+        //     // shortLink: 'http://10.50.115.125:8081'
+        //     // shortLink: 'http://10.50.111.161:8088'
+        //     shortLink: 'http://10.50.115.163:8037'  //sit
+        // },
+        // cashMgmt: {
+        //     // livingPay_1:'http://10.50.115.187:8081',   //las manager url
+        //     // livingPay_2:'http://10.50.115.63:8016'     //las 提供的验证账单接口
+        //     // livingPay_1: 'http://10.50.115.153:8037/las/v1',        //las manager url  --- uat
+        //     // livingPay_2: 'http://10.50.115.153:8037/las-web/v1',      //las 提供的验证账单接口   --- uat
+        //     // livingPay_1: 'http://10.50.115.125:8089/las/v1',        //las manager url  --- dev
+        //     livingPay_1: 'http://10.50.115.187:8081/v1',        //las manager url  --- dev
+        //     livingPay_2: 'http://10.50.115.125:8089/las-web/v1'      //las 提供的验证账单接口   --- dev
+        // },
+        tableauServer: 'https://pie.htffund.com',  // 数据看板  //ip地址:http://172.26.254.30:8000
+        advertising: 'http://10.50.17.32:9280',  //广告宣传-添富赢家平台--开发环境dev:http://10.50.17.157:9280
+        advertisingUploadFile: 'http://10.50.17.157:6080',  //广告宣传-图片文件上传
+        tagMgmt:'http://10.50.16.231:8092',              //内容管理-标签管理
+        obs: {
+            keyStoneName: 'uop',
+            domain: 'default',
+            keyStonePassword: 'uop',
+            projectId: '69e83dd2473d4ee4baeea71d1dbc3f31',
+            keyStoneUrl: 'http://10.50.115.219:5000/v3/auth/tokens',
+            swiftUrl: 'http://10.50.115.219:8080/v1',
+            container: 'custImage'
+        },
+        inner_uaa: {
+            clientId: 'uop',
+            clientSecret: '123456',
+            grant_type: 'password',
+            scope: 'all',
+            // casAddress: 'http://10.50.115.187:8086',
+            casAddress: 'http://sso.htffund.com.cn:8008/cas',
+            grant_type_cas: 'htf_cas',
+            scope_cas: 'all'
+        }
+    },
+    stable: {
+        inner_gateway: 'http://10.50.115.163:8037', //sit
+        obs: {
+            keyStoneName: 'uop',
+            domain: 'default',
+            keyStonePassword: 'uop',
+            projectId: '69e83dd2473d4ee4baeea71d1dbc3f31',
+            keyStoneUrl: 'http://10.50.115.219:5000/v3/auth/tokens',
+            swiftUrl: 'http://10.50.115.219:8080/v1',
+            container: 'custImage'
+        },
+        inner_uaa: {
+            clientId: 'uop',
+            clientSecret: '123456',
+            grant_type: 'password',
+            scope: 'all'
+        }
+    },
+    sit: {
+        // IPOReview: 'http://10.50.113.25:8089',//IPO管理_营运(复核) local-wangpeng
+        // IPOReview: 'http://10.50.16.237:8089',//IPO管理_营运(复核) -- sit 环境20200408
+        // IPOReview: 'http://10.50.114.160:8089',//IPO管理_营运(复核) -- local -yihui
+        messageCenterFilePath: '/opt/NewMessageCenter/AppPush',
+        publicConfigFilePath: '/opt/uop/publicConfig',
+        clientMgmtFilePath: '/opt/crmdata/icib',
+        productIndexesFilePath: '/opt/productcenter/export/monitor_report',
+
+        uopStaticFilePath: '/opt/uopStatic',
+        uopStaticFilePath_url: 'http://10.50.115.48/uopStatic',
+        customerService: `http://10.50.16.238:7254`,//客服操作接口总配置
+        fof: 'http://10.50.17.43:8014',
+        // fof: 'http://10.50.16.126:8014',
+        pagePreviewImgurl: 'http://10.50.115.48',
+        pagePreviewUrl: 'http://appsit.99fund.com.cn:7081',
+        IPOFilePath: '/srv/www/vipupload',
+        VIPFilePath: '/srv/www/vipupload',
+        ncrm: 'http://10.50.115.12:8080/api/crm/main',
+        tableauServer: 'https://pie.htffund.com',  // 数据看板  //ip地址:http://172.26.254.30:8000
+        // advertising: 'http://10.50.17.32:9280',  //广告宣传-添富赢家-开发环境dev:http://10.50.17.157:9280
+        advertising: 'https://iapp-uat.htffund.com/rest/channelop',  //广告宣传-添富赢家-实际访问地址http://10.50.144.83:8080/rest/channelop/api/*
+        // advertisingUploadFile: 'https://iapp-uat.htffund.com/microservice/storage',  //广告宣传-添富赢家-图片文件上传https://iapp-uat.htffund.com/microservice/storage/api/file
+        advertisingUploadFile: 'https://iapp-uat.htffund.com/rest/storage',  //广告宣传-添富赢家-图片文件上传https://iapp-uat.htffund.com/microservice/storage/api/file
+        advertisingAuthorization: 'Basic dW9wOnUyVGJ3cA==', //广告宣传-添富赢家，调用外部IT网关接口需要鉴权
+        tagMgmt:'http://10.50.16.231:8092',              //内容管理-标签管理
+        redisCluster: [{
+            port: 7000,
+            host: '10.50.115.199'
+        }, {
+            port: 7001,
+            host: '10.50.115.199'
+        }, {
+            port: 7003,
+            host: '10.50.115.199'
+        }, {
+            port: 7004,
+            host: '10.50.115.199'
+        }, {
+            port: 7005,
+            host: '10.50.115.199'
+        }, {
+            port: 7006,
+            host: '10.50.115.199'
+        }],
+        mysqlConfig: '/srv/www/script/uopdatasource.json',
+        inner_gateway: 'http://10.50.115.163:8037', //sit
+        inner_uaa_schedule: 'http://10.50.16.10:8053',//sit定时任务inner_uaa
+        obs: {
+            keyStoneName: 'uop',
+            domain: 'default',
+            keyStonePassword: 'uop',
+            projectId: '69e83dd2473d4ee4baeea71d1dbc3f31',
+            keyStoneUrl: 'http://10.50.115.219:5000/v3/auth/tokens',
+            swiftUrl: 'http://10.50.115.219:8080/v1',
+            container: 'custImage'
+        },
+        inner_uaa: {
+            clientId: 'uop',
+            clientSecret: '123456',
+            grant_type: 'password',
+            scope: 'all',
+            casAddress: 'http://sso.htffund.com.cn:8008/cas',
+            grant_type_cas: 'htf_cas',
+            scope_cas: 'all'
+        },
+        // 业务管理
+        // icif: 'http://10.50.115.36:8081'
+        // 留言管理
+        // sfs:'http://10.50.114.239:8100',
+        //自动化运营接口
+        // AOS: 'http://10.50.114.239:8027'
+        //推荐系统接口
+        // RES: 'http://10.50.114.217:8201',
+    },
+    uat: {
+        messageCenterFilePath: '/opt/NewMessageCenter/AppPush',
+        publicConfigFilePath: '/opt/uop/publicConfig',
+        clientMgmtFilePath: '/opt/crmdata/icib',
+        productIndexesFilePath: '/opt/productcenter/export/monitor_report',
+
+        uopStaticFilePath: '/opt/uopStatic',
+        uopStaticFilePath_url: 'http://10.50.115.48/uopStatic',
+        pagePreviewImgurl: 'http://10.50.115.48',
+        pagePreviewUrl: 'http://appuat.99fund.com.cn:7081',
+        fof: 'http://10.50.16.126:8014',
+        IPOFilePath: '/srv/www/vipupload',
+
+        VIPFilePath: '/srv/www/vipupload',
+        ncrm: 'http://10.50.115.12:8080/api/crm/main',
+        tableauServer: 'https://pie.htffund.com',  // 数据看板  //ip地址:http://172.26.254.30:8000
+        // advertising: 'http://10.50.17.32:9280',  //广告宣传-添富赢家--开发环境dev:http://10.50.17.157:9280
+        advertising: 'https://iapp-uat.htffund.com/rest/channelop',  //广告宣传-添富赢家-实际访问地址http://10.50.144.83:8080/rest/channelop/api/*
+        // advertisingUploadFile: 'https://iapp-uat.htffund.com/microservice/storage',  //广告宣传-添富赢家-图片文件上传https://iapp-uat.htffund.com/microservice/storage/api/file
+        advertisingUploadFile: 'https://iapp-uat.htffund.com/rest/storage',
+        advertisingAuthorization: 'Basic dW9wOnUyVGJ3cA==', //广告宣传-添富赢家，调用外部IT网关接口需要鉴权
+        redisCluster: [{
+            port: 7000,
+            host: '10.50.115.199'
+        }, {
+            port: 7001,
+            host: '10.50.115.199'
+        }, {
+            port: 7002,
+            host: '10.50.115.199'
+        }, {
+            port: 7003,
+            host: '10.50.115.199'
+        }, {
+            port: 7004,
+            host: '10.50.115.199'
+        }, {
+            port: 7005,
+            host: '10.50.115.199'
+        }],
+        mysqlConfig: './local_data/mysqlConfig.json',
+        // mysqlConfig: '/srv/www/script/uopdatasource.json',
+        inner_gateway: 'http://10.50.115.153:8037', //uat
+        inner_uaa_schedule: 'http://10.50.16.7:8053',//uat定时任务inner_uaa
+        obs: {
+            keyStoneName: 'uop',
+            domain: 'default',
+            keyStonePassword: 'uop',
+            projectId: '69e83dd2473d4ee4baeea71d1dbc3f31',
+            keyStoneUrl: 'http://10.50.115.219:5000/v3/auth/tokens',
+            swiftUrl: 'http://10.50.115.219:8080/v1',
+            container: 'custImage'
+        },
+        inner_uaa: {
+            clientId: 'uop',
+            clientSecret: '123456',
+            grant_type: 'password',
+            scope: 'all',
+            casAddress: 'http://sso.htffund.com.cn:8008/cas',
+            grant_type_cas: 'htf_cas',
+            scope_cas: 'all'
+        }
+    },
+    yanlian: {
+        IPOReview: 'http://10.50.115.113:8019/productcenter-parallel',//IPO管理_营运(复核) -- uat 并行20200408
+
+        messageCenterFilePath: '/opt/NewMessageCenter/AppPush',
+        publicConfigFilePath: '/opt/uop/publicConfig',
+        clientMgmtFilePath: '/opt/crmdata/icib',
+        productIndexesFilePath: '/opt/productcenter/export/monitor_report',
+
+        uopStaticFilePath: '/opt/uopStatic',
+        fof: 'http://10.50.17.43:8014',
+        uopStaticFilePath_url: 'http://10.50.115.48/uopStatic',
+
+        IPOFilePath: '/srv/www/vipupload',
+        ncrm: 'http://10.50.115.12:8080/api/crm/main',
+        tableauServer: 'https://pie.htffund.com',  // 数据看板  //ip地址:http://172.26.254.30:8000 
+        
+        redisCluster: [{
+            port: 7000,
+            host: '10.50.144.163'
+        }, {
+            port: 7001,
+            host: '10.50.144.163'
+        }, {
+            port: 7002,
+            host: '10.50.144.164'
+        }, {
+            port: 7003,
+            host: '10.50.144.164'
+        }, {
+            port: 7004,
+            host: '10.50.144.165'
+        }, {
+            port: 7005,
+            host: '10.50.144.165'
+        }],
+        mysqlConfig: '/srv/www/script/uopdatasource.json',
+        inner_gateway: 'http://10.50.16.90:8037', //yanlian
+        obs: {
+            keyStoneName: 'uop',
+            domain: 'default',
+            keyStonePassword: 'uop',
+            projectId: '69e83dd2473d4ee4baeea71d1dbc3f31',
+            keyStoneUrl: 'http://10.50.115.219:5000/v3/auth/tokens',
+            swiftUrl: 'http://10.50.115.219:8080/v1',
+            container: 'custImage'
+        },
+        inner_uaa: {
+            clientId: 'uop',
+            clientSecret: '123456',
+            grant_type: 'password',
+            scope: 'all',
+            casAddress: 'http://sso.htffund.com.cn:8008/cas',
+            grant_type_cas: 'htf_cas',
+            scope_cas: 'all'
+        }
+    },
+    // 并行环境（业务管理--基金对比规则 专用，redis和inner-gateway配置与production不同）
+    parallel: {
+        messageCenterFilePath: '/opt/NewMessageCenter/AppPush',
+        publicConfigFilePath: '/opt/uop/publicConfig',
+        clientMgmtFilePath: '/opt/crmdata/icib',
+        clientMgmtFilePath: '/opt/crmdata/icib',
+        productIndexesFilePath: '/opt/productcenter/export/monitor_report',
+
+        uopStaticFilePath: '/opt/uopStatic',
+        uopStaticFilePath_url: 'https://static.99fund.com/uopStatic',
+        IPOFilePath: '/srv/www/vipupload',
+        fof: 'http://10.50.17.43:8014',
+        ncrm: 'http://10.50.115.12:8080/api/crm/main',
+        tableauServer: 'https://pie.htffund.com',  // 数据看板  //ip地址:http://172.26.254.30:8000 
+
+        redisCluster: [{
+            port: 7000,
+            host: '172.26.82.1'
+        }, {
+            port: 7002,
+            host: '172.26.82.2'
+        }, {
+            port: 7004,
+            host: '172.26.82.3'
+        }],
+        mysqlConfig: '/srv/www/script/uopdatasource.json',
+        inner_gateway: 'http://172.26.82.3:8037',
+        obs: {
+            keyStoneName: 'uop',
+            domain: 'default',
+            keyStonePassword: 'uop',
+            projectId: '78d01aeaf69a4d7096f6547f0c734e71',
+            keyStoneUrl: 'http://172.16.12.40:5000/v3/auth/tokens',
+            swiftUrl: 'http://172.16.12.40:8080/v1',
+            container: 'custImage'
+        },
+        inner_uaa: {
+            clientId: 'uop',
+            clientSecret: '123456',
+            grant_type: 'password',
+            scope: 'all',
+            casAddress: 'http://sso.htffund.com:8008/cas',
+            grant_type_cas: 'htf_cas',
+            scope_cas: 'all'
+        }
+    },
+    production: {
+        messageCenterFilePath: '/opt/NewMessageCenter/AppPush',
+        publicConfigFilePath: '/opt/uop/publicConfig',
+        clientMgmtFilePath: '/opt/crmdata/icib',
+        productIndexesFilePath: '/opt/productcenter/export/monitor_report',
+
+        uopStaticFilePath: '/opt/uopStatic',
+        uopStaticFilePath_url: 'https://static.99fund.com/uopStatic',
+        pagePreviewImgurl: 'https://static.99fund.com',
+        pagePreviewUrl: 'https://wx.99fund.com',
+        IPOFilePath: '/srv/www/vipupload',
+        fof: 'http://iram.htffund.com/api/fof',
+        ncrm: 'http://ncrm.htffund.com:8080/api/crm/main',
+        tableauServer: 'https://pie.htffund.com',  // 数据看板  //ip地址:http://172.26.254.30:8000 
+        advertising: 'https://iapp.htffund.com/microservice/channelop',  //广告宣传-添富赢家https://iapp.htffund.com/microservice/channelop/api/***
+        advertisingUploadFile: 'https://iapp.htffund.com/microservice/storage',  //广告宣传-添富赢家-图片文件上传https://iapp.htffund.com/microservice/storage/api/file
+        advertisingAuthorization: 'Basic YXBZY2JhOllGdnRDNTVzVE5RUmM4eHlobkRt', //广告宣传-添富赢家，调用外部IT网关接口需要鉴权
+        redisCluster: [{
+            port: 7000,
+            host: '172.16.12.69'
+        }, {
+            port: 7001,
+            host: '172.16.12.69'
+        }, {
+            port: 7002,
+            host: '172.16.12.70'
+        }, {
+            port: 7003,
+            host: '172.16.12.70'
+        }, {
+            port: 7004,
+            host: '172.16.12.71'
+        }, {
+            port: 7005,
+            host: '172.16.12.71'
+        }],
+        mysqlConfig: '/srv/www/script/uopdatasource.json',
+        inner_gateway: 'http://172.16.12.150:8037',
+        inner_uaa_schedule: 'http://172.16.12.150:8053',//production定时任务inner_uaa
+        emailForm: 'tupeng@htffund.com',
+        obs: {
+            keyStoneName: 'uop',
+            domain: 'default',
+            keyStonePassword: 'uop',
+            projectId: '78d01aeaf69a4d7096f6547f0c734e71',
+            keyStoneUrl: 'http://172.16.12.40:5000/v3/auth/tokens',
+            swiftUrl: 'http://172.16.12.40:8080/v1',
+            container: 'custImage'
+        },
+        inner_uaa: {
+            clientId: 'uop',
+            clientSecret: '123456',
+            grant_type: 'password',
+            scope: 'all',
+            casAddress: 'http://sso.htffund.com:8008/cas',
+            grant_type_cas: 'htf_cas',
+            scope_cas: 'all'
+        }
+    }
+};
+
+module.exports = envConfig;

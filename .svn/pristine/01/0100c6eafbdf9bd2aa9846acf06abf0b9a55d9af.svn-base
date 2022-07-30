@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+</head>
+<body class="no-skin">
+<% include ../../common/header.html %>
+<div class="main-container ace-save-state" id="main-container">
+    <% include ../../common/sidebar.html %>
+    <% include ../../common/left-menu.html %>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content" id="content">
+                <% include ../../common/breadcrumb.html %>
+                <% include ../../common/ace-settings-container.html %>
+                <!--信息提示弹窗-->
+                <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="padding: 10px;">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                <h4 class="modal-title">提示信息</h4>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h4 v-text="diaMsg"></h4>
+                            </div>
+                            <p class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定</button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label" style="width: 80px;">客户号:</label>
+                        <input type="text" style="width: 320px;" v-model="customNo">
+                    </div>
+                    <div class="form-group">
+                        <input type="button" class="btn btn-sm btn-primary" value="供应商系统查询" @click="search">
+                        <input type="button" class="btn btn-sm btn-primary" value="消息系统查询" @click="query">
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label" style="width: 80px;">推送token:</label>
+                        <input type="text" style="width: 550px;" v-model="pushToken">
+                    </div>
+                </div>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label" style="width: 80px;">所属系统:</label>
+                        <input type="text" v-model="os">
+                    </div>
+                </div>
+                <hr>
+                <div class="form-inline" style="padding: 10px 0;">
+                    <div class="form-group">
+                        <label class="control-label" style="width: 80px;">批次号:</label>
+                        <input type="text" style="width: 200px;" v-model="batchNo">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" style="width: 80px;text-align: right;">规则ID:</label>
+                        <input type="text" style="width: 200px;" v-model="ruleId">
+                    </div>
+                    <div class="form-group">
+                        <input type="button" class="btn btn-sm btn-primary" value="清除无效token" @click="clearToken">
+                    </div>
+                </div>
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    <% include ../../common/footer.html %>
+</div><!-- /.main-container -->
+<% include ../../common/basic-scripts.html %>
+<!-- 开发环境版本，包含了用帮助的命令行警告 -->
+<script src="/js/lib/vue.js"></script>
+<script>
+    new Vue({
+        el: '#content',
+        data: {
+            batchNo: '',
+            ruleId: '',
+            customNo: '',
+            pushToken: '',
+            os: '',
+            diaMsg: ''
+        },
+        mounted: function () {
+            var _this = this;
+            var dialogs = ['info'];
+            dialogs.forEach(function (id) {
+                $('#' + id).on('shown.bs.modal', function () {
+                    var $this = $(this);
+                    var dialog = $this.find('.modal-dialog');
+                    var top = ($(window).height() - dialog.height()) / 2;
+                    dialog.css({
+                        marginTop: top
+                    });
+                });
+            });
+        },
+        methods: {
+            search: function () {
+                if (!this.customNo) {
+                    this.showDialog('', 'info', false, '客户号不能为空');
+                    return;
+                }
+                var _this = this;
+                var params = {};
+                params.customNo = this.customNo;
+                $.post({
+                    url: '/messageCenter/tokenSearch/tokenSearch/query.ajax',
+                    data: params,
+                    success: function (result) {
+                        if (result.error === 0) {
+                            _this.pushToken = result.data.pushToken;
+                            _this.os = '';
+                        }
+                        else {
+                            _this.showDialog('', 'info', false, result.msg);
+                        }
+                    }
+                });
+            },
+            query: function () {
+                if (!this.customNo) {
+                    this.showDialog('', 'info', false, '客户号不能为空');
+                    return;
+                }
+                var _this = this;
+                var params = {};
+                params.customNo = this.customNo;
+                $.post({
+                    url: '/messageCenter/tokenSearch/tokenSearch/search.ajax',
+                    data: params,
+                    success: function (result) {
+                        if (result.error === 0) {
+                            _this.pushToken = result.data.pushToken;
+                            _this.os = result.data.os;
+                        }
+                        else {
+                            _this.showDialog('', 'info', false, result.msg);
+                        }
+                    }
+                });
+            },
+            clearToken: function () {
+                if (!this.batchNo) {
+                    this.showDialog('', 'info', false, '批次号不能为空');
+                    return;
+                }
+                if (!this.ruleId) {
+                    this.showDialog('', 'info', false, '规则ID不能为空');
+                    return;
+                }
+                var _this = this;
+                var params = {};
+                params.batchNo = this.batchNo;
+                params.ruleId = this.ruleId;
+                $.post({
+                    url: '/messageCenter/tokenSearch/tokenSearch/clearToken.ajax',
+                    data: params,
+                    success: function (result) {
+                        _this.showDialog('', 'info', false, result.msg);
+                    }
+                });
+            },
+            showDialog: function (dia1, dia2, callback, msg) {
+                if (msg) {
+                    this.diaMsg = msg;
+                }
+                else {
+                    msg = '输入条件错误';
+                }
+                if (!dia1) {
+                    $('#' + dia2).modal('show');
+                }
+                else if (!dia2) {
+                    $('#' + dia1).modal('hide');
+                }
+                else if (!callback) {
+                    $('#' + dia1).on("hidden.bs.modal", function () {
+                        $('#' + dia2).modal('show');
+                        $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia1).modal('hide');
+                }
+                else {
+                    $('#' + dia1).on("hidden.bs.modal", function () {
+                        $('#' + dia2).on("hidden.bs.modal", function () {
+                            $('#' + dia1).modal("show");
+                            $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                        });
+                        $('#' + dia2).modal("show");
+                        $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia1).modal('hide');
+                }
+            },
+        }
+    });
+</script>
+</body>
+</html>

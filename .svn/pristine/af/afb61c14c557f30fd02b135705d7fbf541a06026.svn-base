@@ -1,0 +1,246 @@
+
+new Vue({
+    el: '#content',
+    data: {
+        // 主页面相关数据
+        tableData: [],
+        diaMsg: '',
+
+        //主表格分页数据
+        currentIndex: 0,
+        maxSpace: 5,
+        totalPage: 0,
+        pageMaxNum: 100,
+
+        // 查询
+        invtp: '1',
+        invnm: '',//李清
+        idtp: '0',
+        idno: '',//410105198203233323
+        oldSerialid: '',
+        newSerialid: '',
+        loading: false,
+        handIdFacePhoto: [],
+        bankcardPhotos: [],
+        newBankcardPhotos: [],
+    },
+    mounted: function () {
+        var dialogs = ['info'];
+        var _this = this;
+        dialogs.forEach(function (id) {
+            $('#' + id).on('shown.bs.modal', function () {
+                var $this = $(this);
+                var dialog = $this.find('.modal-dialog');
+                var top = ($(window).height() - dialog.height()) / 2;
+                dialog.css({
+                    marginTop: top
+                });
+            });
+        });
+        // this.getTableData(0);
+    },
+    computed: {
+        pageList: function () {
+            var arr = [];
+            if (this.totalPage <= 2 * this.maxSpace) {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+                return arr;
+            }
+            if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = this.currentIndex - this.maxSpace; i < this.currentIndex + this.maxSpace; i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex <= this.maxSpace && this.totalPage - this.currentIndex > this.maxSpace) {
+                for (var i = 0; i < this.currentIndex + (2 * this.maxSpace - this.currentIndex); i++) {
+                    arr.push(i + 1);
+                }
+            } else if (this.currentIndex > this.maxSpace && this.totalPage - this.currentIndex <= this.maxSpace) {
+                var space = this.totalPage - this.currentIndex;
+                for (var i = this.currentIndex - (2 * this.maxSpace - space); i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            } else {
+                for (var i = 0; i < this.totalPage; i++) {
+                    arr.push(i + 1);
+                }
+            }
+            return arr;
+        },
+        count: function () {
+            return function (id) {
+                var num = 0;
+                this.tableData.some(function (item) {
+                    if (item.serialid === id) {
+                        num = item.residueCapital
+                    }
+                }, this)
+                return num;
+            }.bind(this)
+        }
+    },
+    watch: {
+        pageMaxNum: function () {
+            this.getTableData(0);
+        }
+    },
+    methods: {
+        getTableData: function (currentIndex) {
+            if (this.custNo === '') {
+                return this.showDialog('', 'info', false, '请输入客户号')
+            }
+            var params = {
+                invtp: this.invtp,
+                invnm: this.invnm,
+                idtp: this.idtp,
+                idno: this.idno
+            };
+            $.post({
+                url: '/customerService/bankCardAudit/changeCard/getList.ajax',
+                data: params,
+                success: function (result) {
+                    this.handIdFacePhoto = [];
+                    this.bankcardPhotos = [];
+                    this.newBankcardPhotos = [];
+                    if (result.error === 0) {
+                        this.tableData = result.data.cards;
+                    } else {
+                        this.tableData = [];
+                        this.currentIndex = 0;
+                        this.totalPage = 0;
+                        this.showDialog("", "info", false, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+
+        showDialog: function (dia1, dia2, callback, msg) {
+            if (msg) {
+                this.diaMsg = msg;
+            } else {
+                msg = '输入条件错误';
+            }
+            if (!dia1) {
+                $('#' + dia2).modal('show');
+            } else if (!dia2) {
+                $('#' + dia1).modal('hide');
+            } else if (!callback) {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).modal('show');
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            } else {
+                $('#' + dia1).on("hidden.bs.modal", function () {
+                    $('#' + dia2).on("hidden.bs.modal", function () {
+                        $('#' + dia1).modal("show");
+                        $('#' + dia2).off().on("hidden", "hidden.bs.modal");
+                    });
+                    $('#' + dia2).modal("show");
+                    $('#' + dia1).off().on("hidden", "hidden.bs.modal");
+                });
+                $('#' + dia1).modal('hide');
+            }
+        },
+        //主表格分页方法
+
+
+        prev: function () {
+            if (this.currentIndex <= 0) {
+                return;
+            }
+            this.getTableData(this.currentIndex - 1);
+        },
+        next: function () {
+            if (this.currentIndex >= this.totalPage - 1) {
+                return;
+            }
+            this.getTableData(this.currentIndex + 1);
+        },
+        changeIndex: function (index) {
+            this.getTableData(index - 1);
+        },
+        toFirst: function () {
+            this.getTableData(0);
+        },
+        toLast: function () {
+            this.getTableData(this.totalPage - 1);
+        },
+        fileUpload: function (fileElementId) {
+            var file = document.getElementById(fileElementId)
+            var afterFile = file.files[0].name.lastIndexOf('.');
+            afterFile = file.files[0].name.substr(afterFile - 0 + 1) //获取文件后缀名
+            afterFile = afterFile.toLocaleLowerCase() //转为小写
+            var fileType = ['png', 'pnge', 'jpge', 'jpg', 'gif']
+            if (fileType.indexOf(afterFile) === -1) {
+                this.showDialog('', 'info', true, '只支持png,jpg,gif格式');
+                file.value = '';
+                return;
+            }
+            this.loading = true;
+            var formData = new FormData();
+            // HTML 文件类型input，由用户选择
+            formData.append("file", file.files[0]);
+            $.ajax({
+                url: "/customerService/bankCardAudit/changeCard/upLoad.ajax",
+                type: "POST",
+                data: formData,
+                processData: false, // 不处理数据
+                contentType: false, // 不设置内容类型
+                success: function (result) {
+                    this.loading = false;
+                    file.value = '';
+                    if (result.error == 0) {
+                        this[fileElementId].push(result.data)
+                    } else {
+                        this.showDialog('', 'info', false, result.msg)
+                    }
+                }.bind(this)
+            });
+        },
+        submitModify: function () {
+            if (this.handIdFacePhoto.length === 0 || this.bankcardPhotos.length === 0 || this.newBankcardPhotos.length === 0) {
+                return this.showDialog('', 'info', false, '请上传照片')
+            }
+            if (this.oldBankNo === '' || this.newBankNo === '') {
+                return this.showDialog('', 'info', false, '请选择变更银行卡')
+            }
+            var newBankNo, oldBankNo, custNo = this.tableData[0].custno;
+            this.tableData.forEach(function (item) {
+                if (this.newSerialid === item.serialid) {
+                    newBankNo = item.bankno
+                }
+                if (this.oldSerialid === item.serialid) {
+                    oldBankNo = item.bankno
+                }
+            }, this)
+            var params = {
+                handIdFacePhoto: this.handIdFacePhoto.join(','),
+                bankcardPhotos: this.bankcardPhotos.join(','),
+                newBankcardPhotos: this.newBankcardPhotos.join(','),
+                newSerialid: this.newSerialid,
+                oldSerialid: this.oldSerialid,
+                newBankNo: newBankNo,
+                oldBankNo: oldBankNo,
+                custNo, custNo
+            };
+            $.post({
+                url: '/customerService/bankCardAudit/changeCard/submitModify.ajax',
+                data: params,
+                success: function (result) {
+                    if (result.error === 0) {
+                        this.handIdFacePhoto = [];
+                        this.bankcardPhotos = [];
+                        this.newBankcardPhotos = [];
+                        this.oldSerialid = '';
+                        this.newSerialid = '';
+                        this.showDialog("", "info", false, result.msg)
+                    } else {
+                        this.showDialog("", "info", false, result.msg)
+                    }
+                }.bind(this)
+            });
+        }
+    }
+});

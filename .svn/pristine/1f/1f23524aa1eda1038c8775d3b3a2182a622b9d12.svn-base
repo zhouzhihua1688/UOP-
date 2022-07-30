@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include ../../common/head.html %>
+    <!-- inline styles related to this page -->
+    <!-- <link rel="stylesheet" href="/ace/assets/css/bootstrap-datetimepicker.min.css" /> -->
+    <link rel="stylesheet" href="/ace/assets/css/select2.min.css" />
+    <style>
+        .table>tbody>tr>td {
+            vertical-align: middle;
+        }
+
+        .form-inline>div {
+            padding: 10px 0;
+            text-align: right;
+        }
+
+        .form-inline span {
+            text-align: left;
+        }
+
+        .select2-selection.select2-selection--single {
+            height: 30px !important;
+            line-height: 30px !important;
+            border-radius: 0 !important;
+            border: 1px solid #D5D5D5 !important;
+        }
+
+        .box h4 {
+            margin: 0;
+            padding: 0;
+            font-size: 20px;
+            font-weight: 900;
+            display: flex;
+            justify-content: start;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .box h4 span {
+            display: block;
+            height: 20px;
+            width: 5px;
+            background-color: #2b7dbc;
+            margin-right: 20px;
+        }
+
+        .dateRangeTypeList {
+            width: 400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            justify-content: space-evenly;
+            background-color: #f6f6f6;
+            border: 1px solid #dddddd;
+            border-radius: 5px;
+        }
+
+        .dateRangeTypeList span {
+            display: inline-block;
+            width: 100%;
+            padding: 8px 0;
+            height: 100%;
+            border-right: 1px solid #dddddd;
+        }
+
+        .dateRangeTypeList span.active {
+            background-color: #fff;
+        }
+
+        .dateRangeTypeList span:last-of-type {
+            border: none;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="no-skin">
+    <% include ../../common/header.html %>
+    <div class="main-container ace-save-state" id="main-container">
+        <% include ../../common/sidebar.html %>
+        <% include ../../common/left-menu.html %>
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <% include ../../common/breadcrumb.html %>
+                    <% include ../../common/ace-settings-container.html %>
+                    <div class="row" id="content">
+
+
+                        <div class="col-xs-12">
+                            <!--提示信息弹窗-->
+                            <div class="modal" id="info" tabindex="-1" role="dialog" aria-hidden="true"
+                                data-backdrop="static">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="padding: 10px;">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-hidden="true">×
+                                            </button>
+                                            <h4 class="modal-title">提示信息</h4>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <h4 v-text="diaMsg"></h4>
+                                        </div>
+                                        <p class="text-center">
+                                            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">确定
+                                            </button>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <!-- DIALOG ENDS -->
+
+                            <!-- <div class="form-inline">
+                                
+                            </div> -->
+                            <div class="form-inline">
+                                <div class="form-group ">
+                                    <label style="width: 80px;">产品ID：</label>
+                                    <select id="select2GroupId" name="state" class="select2">
+                                        <option value="">请选择</option>
+                                        <option :value="item.groupId" v-for='item in productList' :key='item.groupId'>
+																					{{item.groupId}}-{{item.groupName}}
+                                        </option>
+                                    </select>
+                                    
+                                </div>
+                                <div class="form-group ">
+                                    <label style="width: 80px;">截止日期：</label>
+                                    <!-- <date-picker v-model='startDate' :config="{format:'YYYY-MM-DD'}"
+                                        style="width: 140px;">
+                                        <span class="input-group-addon" slot='right'>
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </date-picker> -->
+                                    <input type="text" disabled v-model='startDate' style="width: 140px;">
+                                </div>
+                                <div class="form-group pull-right" style="margin-right:30px;">
+                                    <input type="button" class="btn btn-sm btn-primary " value="查询"
+                                        @click="getTableData(0)">
+                                </div>
+                                <!-- <div class="form-group pull-right" style="margin-right:30px;">
+                                    <input type="button" class="btn btn-sm btn-primary"  v-show='tableData.groupid' v-cloak
+                                        @click='indicatorExport' value="导出指标">
+                                </div> -->
+                            </div>
+                            <div class="table-header">
+                                <%= cpage %>--表格数据
+                            </div>
+                            <div style="width: 100%;">
+                                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="3" style="font-size: 20px;font-weight: 900;">
+                                                组合名称：{{tableData.groupName}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template>
+                                            <tr>
+                                                <td>业绩基准：
+                                                    <template v-for='(item,cmpIndex) of tableData.cmpDetailDOList'>
+                                                        <span>
+                                                            {{cmpIndex===0?"":"+"}}{{item.indexPercent}}%*{{item.indexName}}
+                                                        </span>
+                                                    </template>
+                                                </td>
+                                                <td class="center">
+                                                    截至日期：{{tableData.endDate?moment(tableData.endDate).format("YYYY/MM/DD"):'-'}}
+                                                </td>
+                                                <!-- <td class="center"><a href="javascript:;" v-show='tableData.groupid'
+                                                        @click='navExport(tableData.groupid)'>导出净值</a></td> -->
+                                            </tr>
+                                        </template>
+                                        <!-- <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                            </tr>
+                                        </template> -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div style="margin-top: 30px;" class="box">
+                                <h4><span></span>组合持仓配比</h4>
+                                <div style="height: 400px; display: flex;">
+                                    <div id="chartsPie" style="width: 100%;height: 100%;"></div>
+                                    <select style="width: 160px;" v-model='changeDate'>
+                                        <option :value="value" v-for='value of tableData.changeDateList'>
+                                            {{moment(value).format("YYYY-MM-DD")}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="margin-top: 30px;" class="box">
+                                <h4><span></span>组合大类配比</h4>
+                                <div style="height: 400px; display: flex;">
+                                    <div id="chartsPie1" style="width: 100%;height: 100%;"></div>
+                                    <select style="width: 160px;" v-model='changeDate'>
+                                        <option :value="value" v-for='value of tableData.changeDateList'>
+                                            {{moment(value).format("YYYY-MM-DD")}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="margin-top: 30px;" class="box">
+                                <h4><span></span>风险收益特征</h4>
+                                <table id="simple-table" class="table table-bordered table-hover dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th class="center"></th>
+                                            <th class="center">总收益率</th>
+                                            <th class="center">年化收益率</th>
+                                            <th class="center">年化波动率</th>
+                                            <th class="center">夏普比率</th>
+                                            <!-- <th class="center">信息比率</th> -->
+                                            <!-- <th class="center">索提诺比率</th> -->
+                                            <th class="center">最大回撤</th>
+                                            <th class="center">最大回撤回复天数</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template>
+                                            <tr v-for="(item,index) in yieldData" :key="index">
+                                                <td class="center">
+                                                    {{item.productType==='2' ? tableData.groupName :'基准'}}</td>
+                                                <td class="center"> {{item.yield==null?'-':item.yield+'%'}}
+                                                </td>
+                                                <td class="center">
+                                                    {{item.yieldAnnualized==null?'-':item.yieldAnnualized+'%'}}</td>
+                                                <td class="center">
+                                                    {{item.volatilityAnnualized==null?'-':item.volatilityAnnualized+'%'}}
+                                                </td>
+                                                <td class="center" v-text='item.sharpRate'></td>
+                                                <!-- <td class="center" v-text='item.informationRatio'></td> -->
+                                                <!-- <td class="center" v-text='item.sortinoRatio'></td> -->
+                                                <td class="center">
+                                                    {{item.maxDrawDown==null?'-':item.maxDrawDown+'%'}}</td>
+                                                <td class="center" v-text='item.maxRecoverDays'></td>
+                                            </tr>
+                                        </template>
+                                        <!-- <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                            </tr>
+                                        </template> -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div style="margin-top: 30px;" class="box">
+                                <h4><span></span>近期收益</h4>
+                                <table id="simple-table1" class="table table-bordered table-hover dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th class="center"></th>
+                                            <th class="center">近1月</th>
+                                            <th class="center">近3月</th>
+                                            <th class="center">近6月</th>
+                                            <th class="center">近9月</th>
+                                            <th class="center">今年以来</th>
+                                            <th class="center">近1年</th>
+                                            <th class="center">近1年最大回撤</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template>
+                                            <tr v-for="(item,index) in yieldData" :key="index">
+                                                <td class="center">
+                                                    {{item.productType==='2' ? tableData.groupName :'基准'}}</td>
+                                                <td class="center">
+                                                    {{item.nearMonthYield==null?'-':item.nearMonthYield+'%'}}</td>
+                                                <td class="center">
+                                                    {{item.nearThreeMonthYield==null?'-':item.nearThreeMonthYield+'%'}}
+                                                </td>
+                                                <td class="center">
+                                                    {{item.nearSixMonthYield==null?'-':item.nearSixMonthYield+'%'}}</td>
+                                                <td class="center">
+                                                    {{item.nearNineMonthYield==null?'-':item.nearNineMonthYield+'%'}}
+                                                </td>
+                                                <td class="center">
+                                                    {{item.fromYearYield==null?'-':item.fromYearYield+'%'}}</td>
+                                                <td class="center">
+                                                    {{item.nearYearYield==null?'-':item.nearYearYield+'%'}}</td>
+                                                <td class="center">
+                                                    {{item.nearYearMaxDrawDown==null?'-':item.nearYearMaxDrawDown+'%'}}
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <!-- <template v-else>
+                                            <tr>
+                                                <td class="center" v-text="'没有数据'" colspan="11"></td>
+                                            </tr>
+                                        </template> -->
+                                    </tbody>
+                                </table>
+                                <div style="height: 400px;margin-top: 30px;">
+                                    <div id="chartsBar" style="width: 100%;height: 100%;"></div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 30px;" class="box">
+                                <h4><span></span>收益走势图</h4>
+                                <div class="dateRangeTypeList" @click.capture='dateRange=$event.target.dataset.value'>
+                                    <span v-for='item of dateRangeType' :data-value='item.type'
+                                        :class='item.type===dateRange?"active":""'>{{item.desc}}</span>
+                                </div>
+                                <div style="height: 400px;">
+                                    <div id="chartsLine" style="width: 100%;height: 100%;"></div>
+                                </div>
+
+                            </div>
+
+
+                            <!--模板上传文件示例-->
+                            <!-- <table id="indicatorExport-table" border="1" style="display: none;">
+                                <tr>
+                                    <td colspan='5'>
+                                        {{waitExportsData.baseInfo.salePlatform}}-{{waitExportsData.baseInfo.salePosition}}-{{waitExportsData.baseInfo.productType=='2'?'组合':'基金'}}-{{waitExportsData.baseInfo.productid}}-{{waitExportsData.baseInfo.productName}}
+                                    </td>
+                                    <td></td>
+                                    <td colspan='3'>风险收益特征</td>
+                                </tr>
+                                <tr>
+                                    <td colspan='5'>业绩基准：
+                                        <template v-for='(item,cmpIndex) of tableData.cmpDetailDOList'>
+                                            <span>
+                                                {{cmpIndex===0?"":"+"}}{{item.indexPercent}}%*{{item.indexName}}
+                                            </span>
+                                        </template>
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>总收益率</td>
+                                    <td>年化收益率</td>
+                                    <td>年化波动率</td>
+                                    <td>夏普比率</td>
+                                    <td>最大回撤</td>
+                                    <td>最大回撤回复天数</td>
+                                </tr>
+
+                                <tr v-for="(item,index) in yieldData" :key="index">
+                                    <td colspan='5' v-if='index===0'>
+                                        截至日期：{{tableData.endDate?moment(tableData.endDate).format("YYYY/MM/DD"):'-'}}
+                                    </td>
+                                    <td colspan='5' v-else>
+                                    </td>
+                                    <td></td>
+                                    <td class="center">
+                                        {{item.productType==='2' ? tableData.groupName :'基准'}}</td>
+                                    <td class="center"> {{item.yield==null?'-':item.yield+'%'}}
+                                    </td>
+                                    <td class="center">
+                                        {{item.yieldAnnualized==null?'-':item.yieldAnnualized+'%'}}</td>
+                                    <td class="center">
+                                        {{item.volatilityAnnualized==null?'-':item.volatilityAnnualized+'%'}}
+                                    </td>
+                                    <td class="center" v-text='item.sharpRate'></td>
+                                    <td class="center">
+                                        {{item.maxDrawDown==null?'-':item.maxDrawDown+'%'}}</td>
+                                    <td class="center" v-text='item.maxRecoverDays'></td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan='5'>{{dateRangeType.filter(item=>item.type==dateRange)[0].desc}}</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td colspan='2'>日期</td>
+                                    <td>本组合</td>
+                                    <td>基准</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td colspan='3'>近期收益表现</td>
+                                </tr>
+                                <tr v-for='(yields,index) in waitExportsData.yieldList' :key='yields.yieldDate'>
+                                    <td colspan='2'>{{yields.yieldDate}}</td>
+                                    <td>{{yields.groupYield}}</td>
+                                    <td>{{yields.comparisonYield}}</td>
+                                    <td></td>
+                                    <template v-if='!index'>
+                                        <td></td>
+                                        <td></td>
+                                        <td>近1月</td>
+                                        <td>近3月</td>
+                                        <td>近6月</td>
+                                        <td>近9月</td>
+                                        <td>今年以来</td>
+                                        <td>近1年</td>
+                                        <td>近1年最大回撤</td>
+                                    </template>
+                                    <template v-if='index===ind+1' v-for="(item,ind) in yieldData">
+                                        <td></td>
+                                        <td class="center">
+                                            {{item.productType==='2' ? tableData.groupName :'基准'}}</td>
+                                        <td class="center">
+                                            {{item.nearMonthYield==null?'-':item.nearMonthYield+'%'}}</td>
+                                        <td class="center">
+                                            {{item.nearThreeMonthYield==null?'-':item.nearThreeMonthYield+'%'}}
+                                        </td>
+                                        <td class="center">
+                                            {{item.nearSixMonthYield==null?'-':item.nearSixMonthYield+'%'}}</td>
+                                        <td class="center">
+                                            {{item.nearNineMonthYield==null?'-':item.nearNineMonthYield+'%'}}
+                                        </td>
+                                        <td class="center">
+                                            {{item.fromYearYield==null?'-':item.fromYearYield+'%'}}</td>
+                                        <td class="center">
+                                            {{item.nearYearYield==null?'-':item.nearYearYield+'%'}}</td>
+                                        <td class="center">
+                                            {{item.nearYearMaxDrawDown==null?'-':item.nearYearMaxDrawDown+'%'}}
+                                        </td>
+                                    </template>
+                                </tr>
+                            </table> -->
+
+                        </div>
+                    </div><!-- /.row -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+        <% include ../../common/footer.html %>
+    </div><!-- /.main-container -->
+    <% include ../../common/basic-scripts.html %>
+    <!-- 开发环境版本，包含了用帮助的命令行警告 -->
+    <script src="/js/lib/vue.js"></script>
+    <script src="/ace/assets/js/moment.min.js"></script>
+    <!-- <script src="/ace/assets/js/bootstrap-datetimepicker.min.js"></script> -->
+    <!-- <script src="/ace/assets/js/v-datetimepicker.js"></script> -->
+    <script src="/ace/assets/js/select2.min.js"></script>
+    <script src="/js/lib/echarts5.0.1.min.js"></script>
+    <script src="/js/lib/xlsx.core.min.js"></script>
+    <script src="/js/investmentMgmt/investmentStrategyMonitoring/productIndexesForms.js"></script>
+</body>
+
+</html>

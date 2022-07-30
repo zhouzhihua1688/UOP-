@@ -1,0 +1,4 @@
+module.exports = function (app) {
+    require('./batchStaticFund')(app);
+    require('./staticFund')(app);
+};
